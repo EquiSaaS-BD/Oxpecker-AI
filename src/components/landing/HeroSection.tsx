@@ -13,16 +13,16 @@ export function HeroSection() {
     <>
       <section className="relative h-screen min-h-[600px] w-full flex items-center justify-center overflow-hidden bg-black">
         {/* Background Video (Seamless Crossfade System) */}
-        <div className="absolute inset-0 z-0 w-full h-full pointer-events-none">
+        <div className="absolute inset-0 z-0 w-full h-full pointer-events-none overflow-hidden bg-[#050b14]">
           <img
-            src="/Landing_page.gif"
-            alt=""
+            src="/videos/Landing_page.gif"
+            alt="Landing page background animation"
             fetchPriority="high"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover contrast-[1.1] saturate-[1.1] brightness-[1.1]"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-auto h-auto object-cover opacity-90 brightness-110 mix-blend-screen"
           />
           {/* Soft gradient at the bottom to blend with the next section seamlessly */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050b14]" />
         </div>
 
         {/* Content */}

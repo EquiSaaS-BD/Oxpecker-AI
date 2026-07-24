@@ -83,7 +83,7 @@ export function Navbar() {
                 const activeClass = "text-primary bg-primary/10 font-bold shadow-sm ring-1 ring-primary/20";
                 const inactiveClass = scrolled 
                   ? "text-black font-bold hover:text-primary hover:bg-primary/5 drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]" 
-                  : "text-slate-600 hover:text-primary hover:bg-primary/5";
+                  : "text-black font-bold hover:text-primary hover:bg-white/20";
                   
                 return (
                   <Link

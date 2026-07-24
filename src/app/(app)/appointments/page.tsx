@@ -39,10 +39,32 @@ export default function AppointmentsPage() {
   const [currentStageIndex, setCurrentStageIndex] = useState(3); // "Waiting"
   const [showNotification, setShowNotification] = useState(true);
 
+  // Live Queue Mock State
+  const [timer, setTimer] = useState(263); // Mock starting time 4:23
+  
+  const mockUpcomingQueue = [
+    { id: "S-02", waitTime: 12 },
+    { id: "S-03", waitTime: 25 },
+    { id: "S-04", waitTime: 38 }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   // Auto-hide notification after 6s for demo
   useEffect(() => {
-    const timer = setTimeout(() => setShowNotification(false), 6000);
-    return () => clearTimeout(timer);
+    const notifTimer = setTimeout(() => setShowNotification(false), 6000);
+    return () => clearTimeout(notifTimer);
   }, []);
 
   return (
@@ -112,22 +134,72 @@ export default function AppointmentsPage() {
                  </div>
                </div>
        
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-[#F8FAFC] rounded-[16px] p-5 my-5 border border-slate-100">
-                 <div className="flex flex-col border-r border-slate-200/60 pr-4">
-                   <span className="text-[13px] text-slate-500 font-bold tracking-wide uppercase mb-1">Your Token</span>
-                   <span className="text-[32px] font-extrabold text-[#00C2A8] leading-none">S-14</span>
+               <div className="flex flex-col xl:flex-row gap-4 my-6">
+                 {/* 1. Now Serving (TV Display logic) */}
+                 <div className="flex-1 bg-slate-900 rounded-[20px] p-5 flex flex-col items-center justify-center relative overflow-hidden shadow-lg border border-slate-800">
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-[50px] pointer-events-none" />
+                   
+                   <div className="flex items-center gap-2 mb-3 bg-emerald-500/20 px-4 py-1.5 rounded-full border border-emerald-500/30 relative z-10">
+                     <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+                     <span className="text-[14px] font-bold text-emerald-400 uppercase tracking-wider">Now Serving</span>
+                   </div>
+                   
+                   <h2 className="text-[64px] font-black text-white leading-none tracking-tighter drop-shadow-[0_0_20px_rgba(16,185,129,0.3)] relative z-10 mb-2">
+                     S-01
+                   </h2>
+                   
+                   <div className="bg-slate-800/80 backdrop-blur-md px-5 py-2 rounded-xl border border-slate-700/50 flex flex-col items-center relative z-10">
+                     <span className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Time Elapsed</span>
+                     <span className="text-[24px] font-mono font-bold text-emerald-400 leading-none">{formatTime(timer)}</span>
+                   </div>
                  </div>
-                 <div className="flex flex-col md:border-r border-slate-200/60 pr-4">
-                   <span className="text-[13px] text-slate-500 font-bold tracking-wide uppercase mb-1">Current Token</span>
-                   <span className="text-[32px] font-bold text-slate-800 leading-none">S-01</span>
+
+                 {/* 2. Patient's Target Token */}
+                 <div className="w-full xl:w-[200px] bg-[#F8FAFC] rounded-[20px] p-5 border border-slate-200 flex flex-col items-center justify-center shrink-0">
+                   <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider mb-2 text-center">Your Token</span>
+                   <div className="w-full flex items-center justify-center gap-2">
+                     <div className="w-4 h-4 rounded-full bg-[#00C2A8] animate-pulse" />
+                     <span className="text-[48px] font-black text-[#00C2A8] leading-none">S-14</span>
+                   </div>
+                   <div className="mt-4 pt-4 border-t border-slate-200/60 w-full flex flex-row xl:flex-col justify-between items-center text-center gap-2">
+                     <div>
+                       <span className="block text-[20px] font-bold text-[#F59E0B] leading-none">12</span>
+                       <span className="text-[11px] text-slate-500 font-bold uppercase">Ahead</span>
+                     </div>
+                     <div className="w-[1px] h-8 xl:w-full xl:h-[1px] bg-slate-200/60" />
+                     <div>
+                       <span className="block text-[20px] font-bold text-slate-800 leading-none">~45m</span>
+                       <span className="text-[11px] text-slate-500 font-bold uppercase">Est. Wait</span>
+                     </div>
+                   </div>
                  </div>
-                 <div className="flex flex-col border-r border-slate-200/60 pr-4 mt-4 md:mt-0">
-                   <span className="text-[13px] text-slate-500 font-bold tracking-wide uppercase mb-1">Patients Ahead</span>
-                   <span className="text-[32px] font-bold text-[#F59E0B] leading-none">12</span>
-                 </div>
-                 <div className="flex flex-col mt-4 md:mt-0">
-                   <span className="text-[13px] text-slate-500 font-bold tracking-wide uppercase mb-1">Est. Waiting</span>
-                   <span className="text-[32px] font-bold text-slate-800 flex items-baseline gap-1 leading-none">45 <span className="text-[14px] text-slate-500 font-medium">mins</span></span>
+                 
+                 {/* 3. Up Next Queue */}
+                 <div className="flex-[1.5] bg-[#F8FAFC] rounded-[20px] border border-slate-200 p-4 flex flex-col overflow-hidden">
+                   <div className="flex items-center justify-between mb-3">
+                     <h3 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                       <Users size={16} className="text-slate-500" /> Up Next
+                     </h3>
+                   </div>
+                   <div className="flex flex-col gap-2 overflow-y-auto max-h-[180px] custom-scrollbar pr-2">
+                     {mockUpcomingQueue.map((patient, idx) => (
+                       <div key={patient.id} className={`w-full p-3 rounded-xl flex items-center justify-between border ${idx === 0 ? 'bg-white border-[#2F80ED]/30 shadow-sm' : 'bg-slate-50 border-slate-100 hover:bg-white'} transition-colors`}>
+                         <div className="flex items-center gap-3">
+                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[13px] ${idx === 0 ? 'bg-[#2F80ED] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                             {idx + 1}
+                           </div>
+                           <div>
+                             <span className={`text-[20px] font-black leading-none ${idx === 0 ? 'text-slate-800' : 'text-slate-600'}`}>{patient.id}</span>
+                             <span className={`block text-[11px] font-bold mt-0.5 ${idx === 0 ? 'text-[#2F80ED]' : 'text-slate-400'}`}>{idx === 0 ? 'Be Ready' : 'In Line'}</span>
+                           </div>
+                         </div>
+                         <div className="text-right">
+                           <span className="text-[18px] font-bold text-amber-500 leading-none">~{patient.waitTime}m</span>
+                           <span className="block text-[11px] text-slate-400 font-bold">WAIT</span>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
                  </div>
                </div>
        

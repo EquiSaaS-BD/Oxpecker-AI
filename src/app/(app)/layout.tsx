@@ -23,7 +23,8 @@ export default function AppLayout({
     pathname === "/hospital" || pathname.startsWith("/hospital/") || 
     pathname === "/admin" || pathname.startsWith("/admin/") || 
     pathname === "/assistant" || pathname.startsWith("/assistant/") || 
-    pathname === "/patient" || pathname.startsWith("/patient/");
+    pathname === "/patient" || pathname.startsWith("/patient/") ||
+    pathname === "/tv-monitor" || pathname.startsWith("/tv-monitor/");
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">

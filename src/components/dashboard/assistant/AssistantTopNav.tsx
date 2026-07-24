@@ -1,15 +1,32 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Bell, Menu, Check, X as XIcon, Info } from 'lucide-react';
+import { Search, Bell, Menu, Check, X as XIcon, Info, LayoutDashboard, Users, Calendar, UserPlus, FileText, Clock, CreditCard, BarChart3, Settings, LogOut } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { toast, Toaster } from 'sonner';
 
+const navItems = [
+  { name: "Dashboard", href: "/assistant", icon: LayoutDashboard },
+  { name: "Patient Management", href: "/assistant/patients", icon: FileText },
+  { name: "Appointments", href: "/assistant/appointments", icon: Calendar },
+  { name: "Walk-in Patients", href: "/assistant/walk-in", icon: UserPlus },
+  { name: "Doctor Schedule", href: "/assistant/schedule", icon: Clock },
+  { name: "Prescription Queue", href: "/assistant/prescriptions", icon: FileText },
+  { name: "Payments", href: "/assistant/payments", icon: CreditCard },
+  { name: "Notifications", href: "/assistant/notifications", icon: Bell },
+  { name: "Reports", href: "/assistant/reports", icon: BarChart3 },
+  { name: "Settings", href: "/assistant/settings", icon: Settings },
+];
+
 export default function AssistantTopNav() {
   const { user } = useAuth();
+  const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [invites, setInvites] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   
@@ -63,13 +80,37 @@ export default function AssistantTopNav() {
 
   const totalNotifs = invites.length + notifications.length;
 
+  const navItems = [
+    { name: "Dashboard", href: "/assistant", icon: LayoutDashboard },
+    { name: "Patient Management", href: "/assistant/patients", icon: FileText },
+    { name: "Appointments", href: "/assistant/appointments", icon: Calendar },
+    { name: "Walk-in Patients", href: "/assistant/walk-in", icon: UserPlus },
+    { name: "Doctor Schedule", href: "/assistant/schedule", icon: Clock },
+    { name: "Prescription Queue", href: "/assistant/prescriptions", icon: FileText },
+    { name: "Payments", href: "/assistant/payments", icon: CreditCard },
+    { name: "Notifications", href: "/assistant/notifications", icon: Bell },
+    { name: "Reports", href: "/assistant/reports", icon: BarChart3 },
+    { name: "Settings", href: "/assistant/settings", icon: Settings },
+  ];
+
   return (
-    <header className="h-[80px] bg-white border-b border-assistant-border flex items-center justify-between px-6 lg:px-10 shrink-0 sticky top-0 z-40 shadow-sm relative">
+    <>
+    <header className="h-[80px] bg-white/70 backdrop-blur-xl border-b border-white/50 shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-10 shrink-0 sticky top-0 z-40 pt-safe-top relative">
       <Toaster position="top-center" />
       
-      {/* Left side: Doctor Profile & Chamber */}
-      <div className="flex items-center gap-6">
-        <div className="hidden md:flex flex-col">
+      {/* Left side: Hamburger & Doctor Profile */}
+      <div className="flex items-center gap-4 sm:gap-6 w-1/3 z-10 relative">
+        {/* Mobile menu toggle (Leftmost) */}
+        <button 
+          onClick={() => setShowMobileMenu(true)}
+          aria-label="Toggle menu" 
+          className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <Menu size={26} strokeWidth={2.5} />
+        </button>
+
+        {/* Doctor Info (Hidden on Mobile) */}
+        <div className="hidden lg:flex flex-col">
           <h2 className="text-[15px] font-bold text-slate-800">
             {invites.length === 0 && notifications.length === 0 ? "Dr. Sarah Rahman" : "Not Connected"}
           </h2>
@@ -77,25 +118,31 @@ export default function AssistantTopNav() {
             {invites.length === 0 && notifications.length === 0 ? "Chamber: City Hospital Unit 2" : "Awaiting Doctor Invite"}
           </span>
         </div>
-        <div className="hidden md:block h-10 w-[1px] bg-assistant-border"></div>
-        <div className="hidden lg:flex flex-col">
-          <span className="text-[13px] text-slate-500">Assistant Profile (ID: {(user as any)?.assistantId || 'N/A'})</span>
-          <h3 className="text-[15px] font-semibold text-slate-700">{user?.name || "Kamrul Hasan"}</h3>
+      </div>
+
+      {/* Middle: Global Search (Desktop) / Brand Logo (Mobile) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center w-full max-w-[400px] mt-[env(safe-area-inset-top)]">
+        {/* Mobile Logo */}
+        <div className="flex lg:hidden items-center gap-2 mx-auto">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+            <Image src="/images/shustota icon.png" alt="Shustota Icon" fill className="object-contain" />
+          </div>
+          <span className="text-[20px] font-black text-slate-800 tracking-tight">Shustota</span>
+        </div>
+        
+        {/* Desktop Search Bar */}
+        <div className="hidden lg:flex w-full relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search patients, appointments..." 
+            className="w-full h-11 pl-12 pr-4 bg-slate-100/50 border border-slate-200 rounded-2xl text-[14px] text-slate-700 outline-none focus:bg-white focus:ring-2 focus:ring-[#2F80ED]/20 focus:border-[#2F80ED]/30 transition-all"
+          />
         </div>
       </div>
 
-      {/* Middle: Search */}
-      <div className="flex-1 max-w-[420px] mx-4 hidden md:block relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-        <input 
-          type="text" 
-          placeholder="Search patient, ID, phone number..."
-          className="w-full h-[48px] bg-assistant-bg border border-assistant-border rounded-[12px] pl-11 pr-4 text-[15px] text-slate-700 focus:outline-none focus:border-assistant-primary transition-all"
-        />
-      </div>
-
       {/* Right side: Actions */}
-      <div className="flex items-center gap-4 lg:gap-6">
+      <div className="flex items-center justify-end gap-3 sm:gap-4 lg:gap-6 w-1/3">
         <div className="hidden xl:block text-[14px] font-medium text-slate-500 mr-2">
           {currentDate}
         </div>
@@ -104,7 +151,7 @@ export default function AssistantTopNav() {
           Emergency
         </button>
         
-        <div className="relative">
+        <div className="relative hidden lg:block">
           <button 
             aria-label="Notifications"
             onClick={() => setShowNotifications(!showNotifications)}
@@ -190,17 +237,91 @@ export default function AssistantTopNav() {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-3 cursor-pointer">
-          <div className="w-[48px] h-[48px] rounded-full overflow-hidden border-2 border-slate-100 relative bg-slate-200">
-            <Image src="/images/signup-doctor.png" alt="Assistant" fill className="object-cover" />
+        <Link href="/assistant/settings" className="flex items-center gap-3 cursor-pointer transition-transform active:scale-95">
+          <div className="w-10 h-10 sm:w-[48px] sm:h-[48px] rounded-full overflow-hidden border-2 border-slate-100 relative bg-slate-200 shadow-sm shrink-0">
+            <Image src={user?.image || "/images/signup-doctor.png"} alt="Assistant Profile" fill className="object-cover" />
           </div>
-        </div>
+        </Link>
 
-        <button aria-label="Toggle menu" className="md:hidden text-slate-500">
-          <Menu size={28} />
-        </button>
       </div>
 
     </header>
+
+      {/* Mobile Sidebar Drawer (Moved outside header to avoid clipping from backdrop-blur/overflow-hidden) */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileMenu(false)}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 lg:hidden"
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-[60] flex flex-col lg:hidden border-r border-slate-100"
+            >
+              <div className="h-[80px] flex items-center justify-between px-6 border-b border-slate-100 shrink-0 bg-slate-50">
+                <Link href="/" onClick={() => setShowMobileMenu(false)}>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-8 h-8">
+                      <Image src="/images/shustota icon.png" alt="Shustota Icon" fill className="object-contain" />
+                    </div>
+                    <span className="text-[18px] font-black text-slate-800 tracking-tight">Shustota</span>
+                  </div>
+                </Link>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 text-slate-400 bg-white rounded-full shadow-sm hover:text-slate-800 transition-colors">
+                  <XIcon size={18} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto custom-scrollbar py-6 px-4 flex flex-col gap-1.5">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  const isNotification = item.name === "Notifications";
+                  return (
+                    <Link 
+                      key={item.name} 
+                      href={item.href}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`flex items-center justify-between h-[52px] px-4 rounded-[14px] transition-all duration-200 ${
+                        isActive 
+                          ? "bg-gradient-to-tr from-[#2F80ED] to-[#2F80ED]/90 text-white font-semibold shadow-md" 
+                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800 font-medium"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-white" : "text-slate-400"} />
+                        <span className="text-[14px]">{item.name}</span>
+                      </div>
+                      
+                      {/* Notification Badge */}
+                      {isNotification && totalNotifs > 0 && (
+                        <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${isActive ? "bg-white text-[#2F80ED]" : "bg-red-500 text-white"}`}>
+                          {totalNotifs} New
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+
+              <div className="p-4 border-t border-slate-100 shrink-0 bg-slate-50">
+                <button className="flex items-center gap-3 h-[52px] px-4 w-full rounded-[14px] text-red-500 hover:bg-red-100 transition-all font-bold">
+                  <LogOut size={22} />
+                  <span className="text-[14px]">Logout</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
