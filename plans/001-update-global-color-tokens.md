@@ -38,7 +38,7 @@ A vibrant Stripe-inspired "Tech Medical" color palette (Indigo/Cyan).
 
 ## Boundaries
 - Do NOT touch layout logic.
-- Do NOT add new dependencies.
+- Do NOT add new dependencies.  (Hello akjdfd)
 
 ## Verification
 - **Mechanical**: `npm run build` passes.
