@@ -19,6 +19,7 @@ model Patient {
   phone         String?
   prescriptions Prescription[]
   labReports    LabReport[]
+  appointments  Appointment[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -52,4 +53,138 @@ model LabReport {
   pages     Int      @default(1)
   fileUrl   String?
   createdAt DateTime @default(now())
+}
+
+// ============================================
+// Oxpecker AI — Medical AI Assistant Models
+// ============================================
+
+model AiProvider {
+  id         String   @id @default(uuid())
+  name       String   // "openai", "google", "anthropic", "deepseek"
+  model      String   // "gpt-4o-mini", "gemini-2.0-flash", etc.
+  apiKey     String   @db.Text // Encrypted at application layer
+  priority   Int      @default(0)
+  isEnabled  Boolean  @default(true)
+  isDefault  Boolean  @default(false)
+  rateLimit  Int?
+  usageCount Int      @default(0)
+  totalCost  Float    @default(0)
+  lastUsed   DateTime?
+  healthOk   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ChatThread {
+  id        String        @id @default(uuid())
+  userId    String?
+  title     String?
+  mode      String?       // "symptom_checker", "medicine", "nutrition", etc.
+  language  String        @default("en")
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id        String     @id @default(uuid())
+  threadId  String
+  thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      String     // "user", "assistant", "system"
+  content   String     @db.LongText
+  metadata  Json?      // tool calls, sources, structured cards
+  createdAt DateTime   @default(now())
+}
+
+// ============================================
+// Phase 2 — Doctor, Hospital, Medicine Search
+// ============================================
+
+model Doctor {
+  id              String        @id @default(uuid())
+  name            String
+  degree          String
+  speciality      String
+  experience      Int           // years
+  hospital        String
+  consultationFee Float
+  languages       Json          // ["Bangla", "English"]
+  availableSlots  Json?         // structured availability
+  location        String
+  lat             Float?
+  lng             Float?
+  rating          Float         @default(0)
+  reviewCount     Int           @default(0)
+  photoUrl        String?
+  videoConsult    Boolean       @default(false)
+  isActive        Boolean       @default(true)
+  appointments    Appointment[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Hospital {
+  id              String   @id @default(uuid())
+  name            String
+  address         String
+  specialities    Json     // ["Cardiology", "Gynecology", ...]
+  hasEmergency    Boolean  @default(false)
+  hasICU          Boolean  @default(false)
+  hasNICU         Boolean  @default(false)
+  bedAvailability Int?
+  consultationFee Float?
+  lat             Float?
+  lng             Float?
+  rating          Float    @default(0)
+  website         String?
+  phone           String?
+  photoUrl        String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DiagnosticCentre {
+  id              String   @id @default(uuid())
+  name            String
+  address         String
+  packages        Json     // [{name, price, discount}]
+  homeCollection  Boolean  @default(false)
+  lat             Float?
+  lng             Float?
+  rating          Float    @default(0)
+  phone           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model Medicine {
+  id            String   @id @default(uuid())
+  brandName     String
+  genericName   String
+  manufacturer  String
+  strength      String
+  price         Float
+  availability  Boolean  @default(true)
+  category      String?
+  dosageForm    String?  // tablet, syrup, injection
+  warnings      Json?    // ["pregnancy", "kidney"]
+  alternatives  Json?    // [{brandName, price, manufacturer}]
+  createdAt     DateTime @default(now())
+}
+
+model Appointment {
+  id            String   @id @default(uuid())
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId      String
+  doctor        Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dateTime      DateTime
+  type          String   // "in_person", "video"
+  status        String   @default("pending") // pending, confirmed, cancelled
+  paymentStatus String   @default("unpaid")
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

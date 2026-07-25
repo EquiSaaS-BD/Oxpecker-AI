@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Calendar, MapPin, User, Activity, FileText, ChevronRight, CheckCircle2, AlertCircle, Download, Clock, ChevronLeft, ChevronDown } from 'lucide-react';
 import { useDoctor } from '@/context/DoctorContext';
 import { toast } from 'sonner';
 import { PatientDetailsDrawer } from '@/components/patients/PatientDetailsDrawer';
+import { useSearchParams } from 'next/navigation';
 
-export default function DoctorPatientsPage() {
+function DoctorPatientsContent() {
   const { patients: contextPatients } = useDoctor();
   const [patients, setPatients] = useState<any[]>(contextPatients);
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +35,20 @@ export default function DoctorPatientsPage() {
       })
       .catch(e => console.error("Failed to load DB patients:", e));
   }, [contextPatients]);
+
+  // Open profile automatically if redirected from prescription finalize
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const idFromUrl = searchParams?.get('id');
+    if (idFromUrl && patients.length > 0 && !selectedPatient) {
+      const patient = patients.find(p => p.id === idFromUrl);
+      if (patient) {
+        setSelectedPatient(patient);
+        // Remove id from URL so it doesn't re-open on refresh
+        window.history.replaceState(null, '', '/doctor/dashboard/patients');
+      }
+    }
+  }, [searchParams, patients, selectedPatient]);
 
   // Filter & Sort Logic
   const filteredPatients = useMemo(() => {
@@ -237,5 +252,13 @@ export default function DoctorPatientsPage() {
         patient={selectedPatient}
       />
     </div>
+  );
+}
+
+export default function DoctorPatientsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading patients...</div>}>
+      <DoctorPatientsContent />
+    </Suspense>
   );
 }

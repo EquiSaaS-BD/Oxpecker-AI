@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, Mic, Camera, ArrowRight, FileText, Activity, Image as ImageIcon, Pill, Apple, FileOutput, X, Paperclip } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSpeechToText, VoiceMicButton, VoiceWaveform } from "./VoiceInput";
 
 export type ChatMode = {
   title: string;
@@ -11,18 +12,32 @@ export type ChatMode = {
 
 export function ChatInput({ 
   onSend, 
+  onFileUpload,
   selectedMode, 
   onSelectMode 
 }: { 
   onSend: (text: string) => void;
+  onFileUpload?: (file: File, analysisType: string) => void;
   selectedMode?: ChatMode | null;
   onSelectMode?: (mode: ChatMode | null) => void;
 }) {
   const [text, setText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pendingAnalysisType, setPendingAnalysisType] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Voice input
+  const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useSpeechToText();
+
+  // Sync voice transcript to textarea
+  useEffect(() => {
+    if (transcript) {
+      setText(prev => prev + transcript);
+      setTranscript("");
+    }
+  }, [transcript, setTranscript]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -52,12 +67,12 @@ export function ChatInput({
   };
 
   const menuItems = [
-    { icon: FileText, title: "Scan Prescription", desc: "Extract medicine & instructions", color: "text-blue-600", bg: "bg-blue-100" },
-    { icon: FileOutput, title: "Upload Medical Report", desc: "Analyze blood test, MRI, etc.", color: "text-purple-600", bg: "bg-purple-100" },
-    { icon: Activity, title: "Upload Lab Result", desc: "Check parameters against normal", color: "text-rose-600", bg: "bg-rose-100" },
-    { icon: ImageIcon, title: "Upload X-Ray / Image", desc: "Visual AI analysis", color: "text-amber-600", bg: "bg-amber-100" },
+    { icon: FileText, title: "Scan Prescription", desc: "Extract medicine & instructions", color: "text-blue-600", bg: "bg-blue-100", analysisType: "prescription" },
+    { icon: FileOutput, title: "Upload Medical Report", desc: "Analyze blood test, MRI, etc.", color: "text-purple-600", bg: "bg-purple-100", analysisType: "report" },
+    { icon: Activity, title: "Upload Lab Result", desc: "Check parameters against normal", color: "text-rose-600", bg: "bg-rose-100", analysisType: "report" },
+    { icon: ImageIcon, title: "Upload X-Ray / Image", desc: "Visual AI analysis", color: "text-amber-600", bg: "bg-amber-100", analysisType: "image" },
     { icon: Pill, title: "Compare Medicines", desc: "Check alternatives & side-effects", color: "text-teal-600", bg: "bg-teal-100" },
-    { icon: Apple, title: "Food Calorie Scanner", desc: "Upload food image for nutrition", color: "text-green-600", bg: "bg-green-100" },
+    { icon: Apple, title: "Food Calorie Scanner", desc: "Upload food image for nutrition", color: "text-green-600", bg: "bg-green-100", analysisType: "food" },
     { icon: Paperclip, title: "Upload from Device", desc: "Select photo, report or document", color: "text-slate-700", bg: "bg-slate-100", isAction: true },
   ];
 
@@ -86,6 +101,10 @@ export function ChatInput({
                       className="group flex items-center gap-3.5 w-full p-2.5 rounded-2xl hover:bg-white transition-all duration-300 text-left border border-transparent hover:border-slate-100 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)]"
                       onClick={() => {
                         if (item.title === "Upload from Device") {
+                          setPendingAnalysisType('image');
+                          fileInputRef.current?.click();
+                        } else if (item.analysisType) {
+                          setPendingAnalysisType(item.analysisType);
                           fileInputRef.current?.click();
                         } else {
                           if (onSelectMode) onSelectMode(item);
@@ -115,11 +134,14 @@ export function ChatInput({
           className="hidden" 
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) {
+            if (file && onFileUpload) {
+              onFileUpload(file, pendingAnalysisType || 'image');
+              setPendingAnalysisType(null);
+            } else if (file) {
               onSend(`[Uploaded File: ${file.name}]`);
-              // Reset input
-              e.target.value = '';
             }
+            // Reset input
+            e.target.value = '';
           }} 
           accept="image/*,.pdf,.doc,.docx"
         />
@@ -178,7 +200,7 @@ export function ChatInput({
                   handleSend();
                 }
               }}
-              placeholder={selectedMode ? `Add a message about ${selectedMode.title.toLowerCase()}...` : "Ask Shustota AI anything..."}
+              placeholder={selectedMode ? `Add a message about ${selectedMode.title.toLowerCase()}...` : "Ask Oxpecker AI a health question..."}
               className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-400 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-tight"
               rows={1}
             />
@@ -186,10 +208,21 @@ export function ChatInput({
 
           {/* Right Actions */}
           <div className="flex items-center gap-1 shrink-0 mb-0.5 pr-0.5">
-            <button className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
-              <Mic size={20} />
-            </button>
-            <button className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+            {/* Voice Waveform (visible when listening) */}
+            <VoiceWaveform isActive={isListening} />
+            
+            {/* Mic Button */}
+            <div className="hidden sm:flex">
+              <VoiceMicButton isListening={isListening} onToggle={toggleListening} isSupported={voiceSupported} />
+            </div>
+            <button 
+              type="button"
+              onClick={() => {
+                setPendingAnalysisType('image');
+                fileInputRef.current?.click();
+              }}
+              className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            >
               <Camera size={20} />
             </button>
             <button 

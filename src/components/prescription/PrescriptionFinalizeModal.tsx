@@ -58,7 +58,7 @@ export function PrescriptionFinalizeModal({ isOpen, onClose }: PrescriptionFinal
     });
 
     onClose();
-    router.push("/doctor/dashboard/patients");
+    router.push(`/doctor/dashboard/patients?id=${encodeURIComponent(pId)}&name=${encodeURIComponent(pName)}`);
   };
 
   if (!mounted) return null;

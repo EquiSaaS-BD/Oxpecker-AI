@@ -3,14 +3,58 @@
 import { Bot } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import { DoctorRecommendationLoader, HospitalRecommendationLoader, MedicineRecommendationLoader } from "./cards/RecommendationLoaders";
+import { EmergencyAlert } from "./cards/EmergencyAlert";
+import { NutritionCard } from "./cards/NutritionCard";
+import { PrescriptionCard } from "./cards/PrescriptionCard";
+import { ReportCard } from "./cards/ReportCard";
 
 interface MessageBubbleProps {
   role: "user" | "bot";
   content: string;
 }
 
+/**
+ * Parses structured JSON blocks from AI response.
+ * Format: ```json:block_type { ... } ```
+ */
+function parseStructuredBlocks(content: string) {
+  const blocks: { type: string; data: any; start: number; end: number }[] = [];
+  const regex = /```json:([\w_]+)\s*\n?([\s\S]*?)```/g;
+  let match;
+
+  while ((match = regex.exec(content)) !== null) {
+    try {
+      const data = JSON.parse(match[2].trim());
+      blocks.push({
+        type: match[1],
+        data,
+        start: match.index,
+        end: match.index + match[0].length,
+      });
+    } catch {
+      // Skip invalid JSON
+    }
+  }
+
+  return blocks;
+}
+
+/**
+ * Removes structured JSON blocks from content for clean markdown rendering
+ */
+function cleanContent(content: string): string {
+  return content.replace(/```json:[\w_]+\s*\n?[\s\S]*?```/g, '').trim();
+}
+
 export function MessageBubble({ role, content }: MessageBubbleProps) {
   const isUser = role === "user";
+
+  // Parse structured blocks from bot messages
+  const structuredBlocks = !isUser ? parseStructuredBlocks(content) : [];
+  const cleanedContent = !isUser && structuredBlocks.length > 0 
+    ? cleanContent(content) 
+    : content;
 
   return (
     <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"} mb-6`}>
@@ -22,14 +66,46 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
         </div>
 
         {/* Message Content */}
-        <div className={`flex-1 ${isUser ? "bg-[#f4f4f4] px-5 py-3.5 rounded-3xl" : "pt-1"}`}>
+        <div className={`flex-1 min-w-0 ${isUser ? "bg-[#f4f4f4] px-5 py-3.5 rounded-3xl" : "pt-1"}`}>
           {isUser ? (
             <div className="text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap">
               {content}
             </div>
           ) : (
-            <div className="prose prose-slate max-w-none text-[16px] leading-relaxed prose-p:mb-4 prose-headings:font-semibold prose-a:text-primary hover:prose-a:underline prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800">
-              <ReactMarkdown>{content}</ReactMarkdown>
+            <div className="space-y-4">
+              {/* Markdown content */}
+              {cleanedContent && (
+                <div className="prose prose-slate max-w-none text-[16px] leading-relaxed prose-p:mb-4 prose-headings:font-semibold prose-a:text-primary hover:prose-a:underline prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800">
+                  <ReactMarkdown>{cleanedContent}</ReactMarkdown>
+                </div>
+              )}
+
+              {/* Structured cards */}
+              {structuredBlocks.map((block, idx) => (
+                <div key={idx} className="mt-3 w-full">
+                  {block.type === 'doctor_recommendation' && (
+                    <DoctorRecommendationLoader data={block.data} />
+                  )}
+                  {block.type === 'hospital_recommendation' && (
+                    <HospitalRecommendationLoader data={block.data} />
+                  )}
+                  {block.type === 'medicine_info' && (
+                    <MedicineRecommendationLoader data={block.data} />
+                  )}
+                  {block.type === 'emergency_alert' && (
+                    <EmergencyAlert alert={block.data} />
+                  )}
+                  {block.type === 'nutrition_analysis' && (
+                    <NutritionCard data={block.data} />
+                  )}
+                  {block.type === 'prescription_analysis' && (
+                    <PrescriptionCard data={block.data} />
+                  )}
+                  {block.type === 'report_analysis' && (
+                    <ReportCard data={block.data} />
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

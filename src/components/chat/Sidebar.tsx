@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Plus, MessageSquare, History, Settings, User, MoreHorizontal, LogOut, Stethoscope, Building2, Pill, Apple, FileText, Calendar, Bookmark } from "lucide-react";
+import { Search, Plus, MessageSquare, History, Settings, User, MoreHorizontal, LogOut, Stethoscope, Building2, Pill, Apple, FileText, Calendar, Bookmark, Cpu, BarChart3, ScrollText } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -19,6 +19,12 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     { icon: FileText, label: "Reports", href: "/reports" },
     { icon: Calendar, label: "Appointments", href: "/appointments" },
     { icon: Bookmark, label: "Saved", href: "/saved" },
+  ];
+
+  const adminItems = [
+    { icon: Cpu, label: "AI Providers", href: "/admin/ai-providers" },
+    { icon: BarChart3, label: "AI Analytics", href: "/admin/ai-analytics" },
+    { icon: ScrollText, label: "Audit Logs", href: "/admin/ai-logs" },
   ];
 
   const chatHistory = [
@@ -69,6 +75,29 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           {/* Main Navigation */}
           <div className="space-y-0.5 mb-6">
             {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    flex items-center gap-3 w-full h-12 px-3 rounded-lg text-[15px] transition-colors
+                    ${isActive 
+                      ? "bg-primary/5 font-semibold text-primary" 
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"}
+                  `}
+                >
+                  <item.icon size={20} className={isActive ? "text-primary" : "text-slate-400"} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Admin Section */}
+          <div className="space-y-0.5 mb-6">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Admin</p>
+            {adminItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
