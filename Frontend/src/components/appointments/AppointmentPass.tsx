@@ -105,23 +105,34 @@ export function AppointmentPass({ data }: { data: PassData }) {
         </div>
 
         {/* Financial Breakdown (Memo Style) */}
-        <div className="bg-slate-50 rounded-[16px] p-5 mb-8 border border-slate-100">
-          <h4 className="text-[11px] font-[800] text-slate-400 uppercase tracking-wider mb-4">Payment Summary</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between text-[14px] text-slate-600 font-medium">
-              <span>Total Amount</span>
-              <span>৳{data.fee}</span>
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-[20px] p-6 mb-8 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          
+          <h4 className="text-[12px] font-[800] text-slate-500 uppercase tracking-wider mb-5 flex items-center gap-2">
+            Payment Summary
+          </h4>
+          
+          <div className="space-y-4 relative z-10">
+            <div className="flex justify-between items-center text-[15px] text-slate-600 font-medium">
+              <span>Consultation Fee</span>
+              <span className="font-semibold text-slate-800">৳{data.fee}</span>
             </div>
             {data.advancePaid !== undefined && data.advancePaid > 0 && (
-              <div className="flex justify-between text-[14px] text-primary font-bold">
+              <div className="flex justify-between items-center text-[15px] text-emerald-600 font-bold bg-emerald-50/50 -mx-2 px-2 py-1.5 rounded-lg border border-emerald-100/50">
                 <span>Advance Paid</span>
                 <span>- ৳{data.advancePaid}</span>
               </div>
             )}
-            <hr className="border-slate-200" />
-            <div className="flex justify-between text-[16px] font-[800] text-slate-900">
-              <span>Due at Hospital</span>
-              <span>৳{dueAmount}</span>
+            
+            <div className="pt-5 mt-2 border-t border-dashed border-slate-300 flex justify-between items-end">
+              <div>
+                <span className="block text-[15px] font-bold text-slate-900 mb-0.5">Due Amount</span>
+                <span className="text-[13px] text-slate-500 font-medium">To be paid at hospital</span>
+              </div>
+              <div className="flex items-start gap-1 text-primary">
+                <span className="text-[18px] font-bold mt-1">৳</span>
+                <span className="text-[40px] font-[900] leading-none tracking-tight">{dueAmount}</span>
+              </div>
             </div>
           </div>
         </div>

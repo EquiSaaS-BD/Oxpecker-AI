@@ -1,66 +1,10 @@
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
-
-// Helper for fetch with credentials
-async function fetchWithCreds(endpoint: string, options: RequestInit = {}) {
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    credentials: "include", // Important for sending/receiving HTTP-only cookies
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "An error occurred");
-  }
-
-  return await res.json();
-}
-
-export async function apiRegister(data: any) {
-  return fetchWithCreds("/auth/register", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function apiLogin(data: any) {
-  return fetchWithCreds("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function apiLogout() {
-  return fetchWithCreds("/auth/logout", {
-    method: "POST",
-  });
-}
-
-export async function apiGetMe() {
-  return fetchWithCreds("/auth/me", {
-    method: "GET",
-  });
-}
-
-export async function apiGetProfile() {
-  return fetchWithCreds("/profile/me", {
-    method: "GET",
-  });
-}
-
-export async function apiUpdateProfile(data: any) {
-  return fetchWithCreds("/profile/me", {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://shustota-backend.onrender.com/api/v1";
 
 export async function fetchDoctors() {
   try {
-    return await fetchWithCreds("/doctors");
+    const res = await fetch(`${API_BASE_URL}/doctors`);
+    if (!res.ok) throw new Error("Failed to fetch doctors");
+    return await res.json();
   } catch (error) {
     // Return mock data for UI demonstration if backend is down
     return [
@@ -83,6 +27,16 @@ export async function fetchDoctors() {
         rating: 4.9,
         image: "https://i.pravatar.cc/150?u=salma",
         fees: 1200
+      },
+      {
+        id: 3,
+        name: "Dr. Kamrul Hasan",
+        specialty: "Medicine Specialist",
+        degree: "MBBS, FCPS (Medicine)",
+        hospital: "Dhaka Medical College",
+        rating: 4.7,
+        image: "https://i.pravatar.cc/150?u=kamrul",
+        fees: 800
       }
     ];
   }
@@ -90,7 +44,9 @@ export async function fetchDoctors() {
 
 export async function fetchMedicines() {
   try {
-    return await fetchWithCreds("/medicines");
+    const res = await fetch(`${API_BASE_URL}/medicines`);
+    if (!res.ok) throw new Error("Failed to fetch medicines");
+    return await res.json();
   } catch (error) {
     // Return mock data for UI demonstration if backend is down
     return [
@@ -109,6 +65,14 @@ export async function fetchMedicines() {
         company: "Healthcare Pharmaceuticals Ltd.",
         price: 7.00,
         type: "Capsule"
+      },
+      {
+        id: 3,
+        name: "Fexo 120",
+        generic: "Fexofenadine Hydrochloride",
+        company: "Square Pharmaceuticals Ltd.",
+        price: 8.00,
+        type: "Tablet"
       }
     ];
   }
@@ -116,7 +80,9 @@ export async function fetchMedicines() {
 
 export async function fetchDashboardStats() {
   try {
-    return await fetchWithCreds("/dashboard/stats");
+    const res = await fetch(`${API_BASE_URL}/dashboard/stats`);
+    if (!res.ok) throw new Error("Failed to fetch dashboard stats");
+    return await res.json();
   } catch (error) {
     console.error(error);
     return null;
@@ -125,10 +91,13 @@ export async function fetchDashboardStats() {
 
 export async function analyzeChatSymptoms(text: string, language: string = "bn") {
   try {
-    return await fetchWithCreds("/chat/analyze", {
+    const res = await fetch(`${API_BASE_URL}/chat/analyze`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, language }),
     });
+    if (!res.ok) throw new Error("Failed to analyze symptoms");
+    return await res.json();
   } catch (error) {
     console.error(error);
     return null;

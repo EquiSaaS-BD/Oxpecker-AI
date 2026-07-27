@@ -46,7 +46,7 @@ export function FeaturesOverview() {
   ];
 
   return (
-    <section className="relative py-24 lg:py-32 bg-slate-50 overflow-hidden">
+    <section id="features" className="relative py-16 lg:py-32 bg-slate-50 overflow-hidden">
       {/* Aurora Background Effect */}
       <div className="absolute inset-0 bg-aurora opacity-50 pointer-events-none" />
 
@@ -54,12 +54,13 @@ export function FeaturesOverview() {
         
         <div className="text-center max-w-4xl mx-auto mb-16 lg:mb-20">
           <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
             className="text-3xl lg:text-4xl font-bold text-[#0a1628]"
           >
-            <span className="text-primary">{t("Why Millions Will Choose Us: ", "কেন সবাই Shustota বেছে নেবেঃ ")}</span>
+            <span className="text-primary">{t("Why Millions Will Choose Us: ", "কেন সবাই Shustota বেছে নেবে: ")}</span>
             <span className="text-slate-700">{t("Everything You Need in One Platform.", "আপনার স্বাস্থ্যসেবার সবকিছু এক প্ল্যাটফর্মে।")}</span>
           </motion.h2>
         </div>
@@ -81,12 +82,11 @@ export function FeaturesOverview() {
             {features.map((f, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -5 }}
-                className={`glass-card rounded-2xl p-6 border-t-4 ${f.border} shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 flex flex-col group bg-white/90 backdrop-blur-xl relative`}
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: i * 0.08, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+                className={`glass-card rounded-2xl p-6 border-t-4 ${f.border} shadow-sm hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col group bg-white/90 backdrop-blur-xl relative hover:scale-[1.02] cursor-default`}
               >
                 {/* Step Number Badge */}
                 <div className={`absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gradient-to-br ${f.color} text-white flex items-center justify-center text-sm font-bold shadow-md border-2 border-white`}>

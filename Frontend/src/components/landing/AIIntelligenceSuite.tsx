@@ -9,7 +9,7 @@ export function AIIntelligenceSuite() {
   const { t } = useLanguage();
 
   return (
-    <section className="relative py-24 lg:py-32 bg-white overflow-hidden">
+    <section className="relative py-16 lg:py-32 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 space-y-32">
         
         {/* 1. AI Symptom Checker */}

@@ -8,7 +8,7 @@ export function DashboardPreview() {
   const { t } = useLanguage();
 
   return (
-    <section className="relative py-24 lg:py-32 bg-[#050b14] overflow-hidden">
+    <section className="relative py-16 lg:py-32 bg-[#050b14] overflow-hidden">
       
       {/* Dark Theme Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20" />
@@ -35,22 +35,22 @@ export function DashboardPreview() {
           
           {/* Main Hologram Card */}
           <motion.div
-            initial={{ opacity: 0, rotateX: 20, y: 50, scale: 0.9 }}
-            whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
+            initial={{ opacity: 0, rotateX: 15, scale: 0.95 }}
+            whileInView={{ opacity: 1, rotateX: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1, type: "spring", bounce: 0.3 }}
-            className="w-full max-w-4xl aspect-[16/9] glass-card !bg-[#0f172a]/60 !border-white/10 rounded-3xl p-8 shadow-[0_0_50px_rgba(0,82,204,0.3)] relative overflow-hidden"
+            transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
+            className="w-full max-w-4xl md:aspect-[16/9] glass-card !bg-[#0f172a]/60 !border-white/10 rounded-3xl p-5 sm:p-8 shadow-[0_12px_32px_rgba(0,82,204,0.15)] relative overflow-hidden"
           >
             {/* Hologram scan line inside card */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-laser-scan opacity-50" />
 
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
               <div>
                 <h3 className="text-2xl font-bold text-white">{t("Health Score", "হেলথ স্কোর")}</h3>
                 <p className="text-slate-400">Based on recent AI analysis</p>
               </div>
-              <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-primary">
-                92<span className="text-2xl text-slate-500">/100</span>
+              <div className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-primary">
+                92<span className="text-xl sm:text-2xl text-slate-500">/100</span>
               </div>
             </div>
 
@@ -63,9 +63,9 @@ export function DashboardPreview() {
               ].map((m, i) => (
                 <motion.div 
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 + i * 0.08, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
                   className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors"
                 >
                   <m.icon size={24} className={`${m.color} mb-3`} />

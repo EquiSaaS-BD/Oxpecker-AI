@@ -2,8 +2,6 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { MouseMagneticEffect } from "@/components/landing/MouseMagneticEffect";
-import { FloatingAIAssistant } from "@/components/landing/FloatingAIAssistant";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { TrustedBySection } from "@/components/landing/TrustedBySection";
 import { AIIntelligenceSuite } from "@/components/landing/AIIntelligenceSuite";
@@ -14,14 +12,13 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { SecurityAndFAQ } from "@/components/landing/SecurityAndFAQ";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { MedicalDirectory } from "@/components/landing/MedicalDirectory";
+import { MedicineMarqueeSection } from "@/components/landing/MedicineMarqueeSection";
 
 export default function LandingPage() {
   return (
     <>
-      <MouseMagneticEffect />
-      <FloatingAIAssistant />
       
-      <div className="min-h-screen bg-white flex flex-col overflow-x-hidden w-full pt-16 sm:pt-20 selection:bg-primary/20 selection:text-primary">
+      <div className="min-h-screen bg-white flex flex-col overflow-x-hidden w-full selection:bg-primary/20 selection:text-primary">
         <Navbar />
 
         <main className="flex-1">
@@ -33,6 +30,7 @@ export default function LandingPage() {
           <AIIntelligenceSuite />
           <DashboardPreview />
           <MedicalDirectory />
+          <MedicineMarqueeSection />
           
           <HowItWorksSection />
           <TestimonialsSection />

@@ -15,9 +15,10 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shustota AI - AI-powered Healthcare Assistant for Everyone",
+  metadataBase: new URL("https://shushthota.equisaas-bd.com"),
+  title: "Shustota AI - Your Personal AI Health Assistant",
   description:
-    "Shustota একটি AI-চালিত Healthcare Platform, যা আপনাকে স্বাস্থ্য-সংক্রান্ত তথ্য, প্রাথমিক নির্দেশনা এবং চিকিৎসা-সহায়ক সেবা প্রদান করে। Experience intelligent healthcare guidance powered by advanced AI.",
+    "Shustota is an advanced AI-powered healthcare platform providing instant symptom analysis, prescription scanning, and expert doctor connections. Completely free and secure.",
   keywords: [
     "AI Healthcare",
     "Health Assistant",
@@ -25,21 +26,75 @@ export const metadata: Metadata = {
     "Medicine Intelligence",
     "Shustota",
     "স্বাস্থ্যসেবা",
+    "Symptom Checker",
+    "Prescription Scanner"
   ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Shustota AI - Your Personal AI Health Assistant",
+    description: "Instant AI-powered health guidance, symptom analysis, and prescription insights.",
+    url: "https://shushthota.equisaas-bd.com",
+    siteName: "Shustota AI",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Shustota AI Healthcare Dashboard",
+      },
+    ],
+    locale: "bn_BD",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shustota AI - Your Personal AI Health Assistant",
+    description: "Instant AI-powered health guidance, symptom analysis, and prescription insights.",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import Script from "next/script";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "MedicalOrganization",
+    "name": "Shustota AI",
+    "url": "https://shushthota.equisaas-bd.com",
+    "logo": "https://shushthota.equisaas-bd.com/images/shustota%20ai%20logo.png",
+    "description": "AI-powered healthcare platform for symptom analysis, doctor discovery, and medical intelligence.",
+    "isAccessibleForFree": true,
+    "sameAs": [
+      "https://facebook.com/shustota",
+      "https://linkedin.com/company/shustota"
+    ],
+    "medicalSpecialty": [
+      "PublicHealth",
+      "PrimaryCare"
+    ]
+  };
+
   return (
     <html lang="bn" translate="no" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <Script
+          id="shustota-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <LanguageProvider>

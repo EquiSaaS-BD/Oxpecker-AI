@@ -41,7 +41,7 @@ export function TestimonialsSection() {
   ];
 
   return (
-    <section className="relative py-24 lg:py-32 bg-slate-50 overflow-hidden">
+    <section className="relative py-16 lg:py-32 bg-slate-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-4xl mx-auto mb-16 lg:mb-20">

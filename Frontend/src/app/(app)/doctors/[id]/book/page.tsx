@@ -157,7 +157,12 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 ))}
               </div>
 
-              <h3 className="text-[18px] font-bold text-slate-900 mt-6 mb-5">Available Slots</h3>
+              <div className="flex flex-wrap items-center justify-between mt-6 mb-5 gap-2">
+                <h3 className="text-[18px] font-bold text-slate-900">Available Slots</h3>
+                <span className="text-xs font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg animate-pulse border border-rose-100 flex items-center gap-1">
+                  Slots filling fast: Only 2 left
+                </span>
+              </div>
               <div className="grid grid-cols-3 gap-3">
                 {doctor.timeSlots.map((time, i) => (
                   <button
@@ -195,8 +200,8 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   </div>
                   <div>
                     <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-3">Gender</label>
-                    <select defaultValue="" className="w-full pb-3 bg-transparent text-[18px] text-slate-900 border-b border-slate-200 focus:border-primary outline-none transition-colors cursor-pointer appearance-none">
-                      <option value="" disabled className="text-slate-300">Select Gender</option>
+                    <select className="w-full pb-3 bg-transparent text-[18px] text-slate-900 border-b border-slate-200 focus:border-primary outline-none transition-colors cursor-pointer appearance-none">
+                      <option value="" disabled selected className="text-slate-300">Select Gender</option>
                       <option>Male</option>
                       <option>Female</option>
                       <option>Other</option>
@@ -258,9 +263,19 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-1">
-                <span className="font-medium text-[18px] text-slate-500">Total Payable Amount</span>
-                <span className="font-[800] text-[32px] text-slate-900 tracking-tight">৳{doctor.fee}</span>
+              <div className="bg-gradient-to-r from-primary/5 via-primary/[0.08] to-primary/5 p-6 rounded-[24px] border border-primary/20 relative overflow-hidden group">
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                  <div>
+                    <span className="block font-[800] text-[18px] text-slate-900 mb-1">Total Payable Amount</span>
+                    <span className="text-[13px] text-slate-500 font-medium bg-white/50 px-2 py-0.5 rounded-md border border-slate-200/50">Includes all taxes and fees</span>
+                  </div>
+                  <div className="flex items-start gap-1 text-primary">
+                    <span className="text-[20px] font-bold mt-1.5">৳</span>
+                    <span className="font-[900] text-[48px] tracking-tight leading-none drop-shadow-sm">{doctor.fee}</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -339,9 +354,16 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                     <span className="text-slate-500">Service Charge</span>
                     <span className="text-slate-900 font-bold">৳50</span>
                   </div>
-                  <div className="pt-4 mt-2 border-t border-slate-200 flex justify-between items-center">
-                    <span className="text-slate-900 font-bold text-[15px]">Total to Pay</span>
-                    <span className="text-primary font-[800] text-[20px]">৳{doctor.fee + 50}</span>
+                  
+                  <div className="pt-4 mt-2 border-t border-dashed border-slate-200">
+                    <span className="text-slate-500 text-[12px] font-bold uppercase tracking-wider mb-2 block">Total to Pay</span>
+                    <div className="bg-gradient-to-r from-primary/5 to-transparent p-4 rounded-xl border border-primary/10 flex items-center justify-between">
+                      <span className="text-slate-800 font-bold text-[14px]">Payable Now</span>
+                      <div className="flex items-start gap-1 text-primary">
+                        <span className="text-[16px] font-bold mt-0.5">৳</span>
+                        <span className="text-[32px] font-[900] leading-none tracking-tight">{doctor.fee + 50}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

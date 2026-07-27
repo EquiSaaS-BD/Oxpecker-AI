@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, SlidersHorizontal } from "lucide-react";
 
 interface DoctorFilterModalProps {
@@ -15,6 +15,16 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
   const [selectedAvail, setSelectedAvail] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [feeRange, setFeeRange] = useState<number>(5000);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to trigger CSS transition
+      requestAnimationFrame(() => setVisible(true));
+    } else {
+      setVisible(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -23,7 +33,6 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
   };
 
   const handleApply = () => {
-    // In a real app, you would pass these filters up to the parent component
     onClose();
   };
 
@@ -34,40 +43,50 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
     setFeeRange(5000);
   };
 
-  return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 300);
+  };
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-xl w-full max-w-[500px] shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-fade-in-up border border-slate-200">
+  return (
+    <div className="fixed inset-0 z-[120] flex justify-end">
+      {/* Backdrop */}
+      <div 
+        className={`absolute inset-0 bg-slate-900/30 backdrop-blur-[2px] transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`} 
+        onClick={handleClose} 
+      />
+
+      {/* Side Panel */}
+      <div className={`relative w-full max-w-[420px] h-full bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}>
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-[18px] font-bold text-slate-900 flex items-center gap-2">
-            <SlidersHorizontal size={18} className="text-slate-500" />
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <h2 className="text-[18px] font-bold text-slate-900 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <SlidersHorizontal size={16} className="text-primary" />
+            </div>
             Filters
           </h2>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:bg-slate-50 rounded-md transition-colors">
+          <button onClick={handleClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto scrollbar-thin space-y-6">
+        <div className="flex-1 p-6 overflow-y-auto scrollbar-thin space-y-7">
           
           {/* Speciality */}
           <div>
-            <h3 className="text-[14px] font-bold text-slate-900 mb-3">Speciality</h3>
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider mb-3">Speciality</h3>
             <div className="flex flex-wrap gap-2">
               {specializations.map(spec => (
                 <button 
                   key={spec}
                   onClick={() => toggleSelection(setSelectedSpecs, selectedSpecs, spec)}
-                  className={`px-4 py-2 rounded-md text-[13px] font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                     selectedSpecs.includes(spec) 
-                      ? "bg-slate-900 text-white" 
-                      : "bg-slate-50 text-slate-600 border border-slate-200 hover:border-slate-300"
+                      ? "bg-primary text-white shadow-md shadow-primary/20" 
+                      : "bg-slate-50 text-slate-600 border border-slate-200 hover:border-primary/40 hover:bg-primary/5"
                   }`}
                 >
                   {spec}
@@ -78,16 +97,16 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
 
           {/* Consultation Type */}
           <div>
-            <h3 className="text-[15px] font-bold text-[#0F172A] mb-3">Consultation Type</h3>
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider mb-3">Consultation Type</h3>
             <div className="flex flex-wrap gap-2">
               {consultationTypes.map(type => (
                 <button 
                   key={type}
                   onClick={() => toggleSelection(setSelectedTypes, selectedTypes, type)}
-                  className={`px-[16px] py-[8px] rounded-full text-[13px] font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                     selectedTypes.includes(type) 
-                      ? "bg-primary text-white border-primary" 
-                      : "bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0] hover:border-primary/50"
+                      ? "bg-primary text-white shadow-md shadow-primary/20" 
+                      : "bg-slate-50 text-slate-600 border border-slate-200 hover:border-primary/40 hover:bg-primary/5"
                   }`}
                 >
                   {type}
@@ -98,16 +117,16 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
 
           {/* Availability */}
           <div>
-            <h3 className="text-[15px] font-bold text-[#0F172A] mb-3">Availability</h3>
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider mb-3">Availability</h3>
             <div className="flex flex-wrap gap-2">
               {availability.map(avail => (
                 <button 
                   key={avail}
                   onClick={() => toggleSelection(setSelectedAvail, selectedAvail, avail)}
-                  className={`px-[16px] py-[8px] rounded-full text-[13px] font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                     selectedAvail.includes(avail) 
-                      ? "bg-primary text-white border-primary" 
-                      : "bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0] hover:border-primary/50"
+                      ? "bg-primary text-white shadow-md shadow-primary/20" 
+                      : "bg-slate-50 text-slate-600 border border-slate-200 hover:border-primary/40 hover:bg-primary/5"
                   }`}
                 >
                   {avail}
@@ -119,10 +138,10 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
           {/* Consultation Fee */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-[15px] font-bold text-[#0F172A]">Consultation Fee</h3>
-              <span className="text-[14px] font-bold text-primary">Up to ৳{feeRange}</span>
+              <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">Consultation Fee</h3>
+              <span className="text-[14px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">Up to ৳{feeRange}</span>
             </div>
-            <div className="px-1">
+            <div className="px-1 mt-4">
               <input 
                 type="range" 
                 min="500" 
@@ -130,9 +149,9 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
                 step="500"
                 value={feeRange}
                 onChange={(e) => setFeeRange(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-primary"
+                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
               />
-              <div className="flex justify-between text-[12px] text-[#64748B] mt-2 font-medium">
+              <div className="flex justify-between text-[12px] text-slate-500 mt-2 font-medium">
                 <span>৳500</span>
                 <span>৳5000+</span>
               </div>
@@ -142,16 +161,16 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 bg-white flex items-center gap-3 shrink-0">
           <button 
             onClick={handleClear}
-            className="px-6 py-2.5 text-slate-600 hover:text-slate-900 font-medium transition-colors text-[14px]"
+            className="flex-1 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-bold transition-colors text-[14px] rounded-xl border border-slate-200"
           >
-            Clear
+            Clear All
           </button>
           <button 
             onClick={handleApply}
-            className="px-6 py-2.5 bg-primary hover:bg-[#0052cc] text-white rounded-md font-medium transition-colors text-[14px]"
+            className="flex-1 px-4 py-3 bg-primary hover:bg-[#0052cc] text-white rounded-xl font-bold transition-colors text-[14px] shadow-lg shadow-primary/20"
           >
             Show Results
           </button>

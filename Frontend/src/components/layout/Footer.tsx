@@ -11,7 +11,6 @@ import {
   Building2,
   Heart,
 } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
 
 /* ── Inline brand SVGs (lucide-react doesn't ship brand icons reliably) ── */
 const Facebook = ({ size = 16 }: { size?: number }) => (
@@ -37,26 +36,24 @@ const PARTNER_CLINICS = [
 ];
 
 export function Footer() {
-  const { t } = useLanguage();
-
   const FOOTER_LINKS = {
     service: [
-      { label: t("AI হেলথ চ্যাট", "AI Health Chat"), href: "/chat" },
-      { label: t("ডাক্তার খুঁজুন", "Find Doctors"), href: "/doctors" },
-      { label: t("ওষুধের তথ্য", "Medicine Info"), href: "/medicines" },
-      { label: t("পার্টনার হাসপাতাল", "Partner Hospitals"), href: "/#partners" },
+      { label: "AI Health Chat", href: "/chat" },
+      { label: "Find Doctors", href: "/doctors" },
+      { label: "Medicine Info", href: "/medicines" },
+      { label: "Partner Hospitals", href: "/#partners" },
     ],
     company: [
-      { label: t("আমাদের সম্পর্কে", "About Us"), href: "/about" },
-      { label: t("যোগাযোগ", "Contact"), href: "/contact" },
-      { label: t("ক্যারিয়ার", "Careers"), href: "/careers" },
-      { label: t("মিডিয়া", "Media"), href: "/press" },
+      { label: "About Us", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "Careers", href: "/careers" },
+      { label: "Media", href: "/press" },
     ],
     legal: [
-      { label: t("গোপনীয়তা নীতি", "Privacy Policy"), href: "/privacy" },
-      { label: t("ব্যবহারের শর্তাবলী", "Terms of Use"), href: "/terms" },
-      { label: t("মেডিকেল ডিসক্লেইমার", "Medical Disclaimer"), href: "/disclaimer" },
-      { label: t("রিফান্ড নীতি", "Refund Policy"), href: "/refund" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Use", href: "/terms" },
+      { label: "Medical Disclaimer", href: "/disclaimer" },
+      { label: "Refund Policy", href: "/refund" },
     ],
   };
 
@@ -71,10 +68,10 @@ export function Footer() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <span className="text-[#4dd0e1] font-semibold text-xs tracking-widest uppercase">
-                {t("আস্থার নেটওয়ার্ক", "Network of Trust")}
+                Network of Trust
               </span>
               <h3 className="text-white text-lg sm:text-xl font-bold mt-2 tracking-tight">
-                {t("আমাদের পার্টনার ক্লিনিক ও হাসপাতাল", "Our Partner Clinics & Hospitals")}
+                Our Partner Clinics & Hospitals
               </h3>
             </div>
             <Building2 size={28} className="text-white/10 hidden sm:block" />
@@ -102,18 +99,15 @@ export function Footer() {
             <Image
               src="/images/shustota ai logo.png"
               alt="Shustota AI"
-              width={160}
-              height={44}
-              className="h-10 w-auto object-contain brightness-0 invert opacity-80"
+              width={240}
+              height={70}
+              className="h-16 sm:h-20 w-auto object-contain brightness-0 invert opacity-90 mb-2"
             />
             <p className="text-sm leading-relaxed text-white/40 max-w-[320px]">
-              {t(
-                "Shustota একটি AI-চালিত স্বাস্থ্যসেবা প্ল্যাটফর্ম - লক্ষণ বিশ্লেষণ, বিশেষজ্ঞ ডাক্তার সংযোগ এবং যাচাইকৃত ওষুধের তথ্য, সম্পূর্ণ বিনামূল্যে।",
-                "Shustota is an AI-powered healthcare platform - symptom analysis, expert doctor connections, and verified drug information, completely free."
-              )}
+              Shustota is an AI-powered healthcare platform: offering symptom analysis, expert doctor connections, and verified drug information, completely free.
             </p>
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400/80">
-              <ShieldCheck size={14} /> {t("ডেটা এনক্রিপ্টেড ও সুরক্ষিত", "Data Encrypted & Secure")}
+              <ShieldCheck size={14} /> Data Encrypted & Secure
             </div>
             <div className="flex items-center gap-2.5 pt-1">
               {[Facebook, Youtube, Instagram, Linkedin].map((Icon, i) => (
@@ -131,24 +125,24 @@ export function Footer() {
 
           {/* Link Columns */}
           <div className="lg:col-span-2">
-            <FooterCol title={t("সেবাসমূহ", "Services")} links={FOOTER_LINKS.service} />
+            <FooterCol title="Services" links={FOOTER_LINKS.service} />
           </div>
           <div className="lg:col-span-2">
-            <FooterCol title={t("কোম্পানি", "Company")} links={FOOTER_LINKS.company} />
+            <FooterCol title="Company" links={FOOTER_LINKS.company} />
           </div>
           <div className="lg:col-span-2">
-            <FooterCol title={t("নীতিমালা", "Legal")} links={FOOTER_LINKS.legal} />
+            <FooterCol title="Legal" links={FOOTER_LINKS.legal} />
           </div>
 
           {/* Contact Column */}
           <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-white/90 font-semibold text-sm tracking-wide">{t("যোগাযোগ", "Contact")}</h4>
+            <h4 className="text-white/90 font-semibold text-sm tracking-wide">Contact</h4>
             <div className="space-y-3 text-sm">
               <p className="flex items-start gap-2.5 text-white/40">
-                <MapPin size={15} className="shrink-0 mt-0.5" /> {t("ঢাকা, বাংলাদেশ", "Dhaka, Bangladesh")}
+                <MapPin size={15} className="shrink-0 mt-0.5" /> Dhaka, Bangladesh
               </p>
               <a href="tel:16263" className="flex items-center gap-2.5 text-white/40 hover:text-white transition-colors duration-200">
-                <PhoneCall size={15} className="shrink-0" /> 16263 {t("(সার্বক্ষণিক)", "(24/7)")}
+                <PhoneCall size={15} className="shrink-0" /> 16263 (24/7)
               </a>
               <a
                 href="mailto:support@shustota.com"
@@ -162,15 +156,22 @@ export function Footer() {
 
         {/* ── Bottom Bar ── */}
         <div className="py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
-          <p className="flex items-center gap-1">
-            &copy; {new Date().getFullYear()} Shustota.{" "}
-            {t("সর্বস্বত্ব সংরক্ষিত।", "All rights reserved.")}
+          <p className="flex flex-wrap items-center gap-1">
+            <span>&copy; {new Date().getFullYear()} Shustota.</span>
+            <span>All rights reserved.</span>
+            <span className="text-white/20">|</span>
+            <span>Developed by</span>
+            <a 
+              href="https://equisaas-bd.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[#4dd0e1] hover:underline font-bold"
+            >
+              EquiSaaS BD
+            </a>
           </p>
           <p className="flex items-center gap-1.5 text-center">
-            {t(
-              "এই প্ল্যাটফর্মটি ডাক্তারি পরামর্শের বিকল্প নয়",
-              "Not a substitute for professional medical advice"
-            )}
+            Not a substitute for professional medical advice
             <Heart size={10} className="text-red-400/60" />
           </p>
         </div>

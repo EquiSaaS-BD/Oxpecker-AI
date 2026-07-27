@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Stethoscope, Pill, FileText, Activity, Apple, Building2, User, HeartPulse } from "lucide-react";
+import { ChatMode } from "./ChatInput";
 
-export function WelcomeScreen() {
+export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode) => void }) {
   const timeOfDay = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -44,19 +45,20 @@ export function WelcomeScreen() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full"
+        className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full"
       >
         {suggestions.map((item, idx) => (
           <motion.button
             key={idx}
+            onClick={() => onSelect(item)}
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex flex-col items-start justify-between w-full h-[110px] p-4 bg-white border border-slate-200 rounded-[18px] hover:border-slate-300 hover:shadow-md transition-all text-left"
+            className="flex flex-col items-start justify-between w-full h-[90px] sm:h-[110px] p-3 sm:p-4 bg-white border border-slate-200/80 rounded-[16px] sm:rounded-[18px] hover:border-slate-300 hover:shadow-md transition-all text-left shadow-sm"
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.bg} ${item.color}`}>
-              <item.icon size={18} />
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center ${item.bg} ${item.color} mb-1 sm:mb-0`}>
+              <item.icon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
             </div>
-            <span className="text-sm font-medium text-slate-700 leading-snug">
+            <span className="text-[12px] sm:text-[14px] font-[800] text-slate-700 leading-tight">
               {item.title}
             </span>
           </motion.button>

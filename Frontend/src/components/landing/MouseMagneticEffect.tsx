@@ -7,8 +7,8 @@ export function MouseMagneticEffect() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
-  // Smooth springs for trailing effect
-  const springConfig = { damping: 25, stiffness: 150, mass: 0.5 };
+  // Smooth springs for trailing effect (Emil Kowalski / Apple physics)
+  const springConfig = { stiffness: 100, damping: 10 };
   const smoothX = useSpring(0, springConfig);
   const smoothY = useSpring(0, springConfig);
 

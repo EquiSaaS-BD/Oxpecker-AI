@@ -23,6 +23,18 @@ export default function MedicinesPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  
+  // Labor Illusion states
+  const [scanProgress, setScanProgress] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  
+  const scanSteps = [
+    { title: "Initializing High-Resolution Image Capture...", pct: 15 },
+    { title: "Running Optical Character Recognition (OCR)...", pct: 40 },
+    { title: "Parsing Active Pharmaceutical Ingredients (APIs)...", pct: 65 },
+    { title: "Mapping Generic Equivalents & Querying DGDA Database...", pct: 85 },
+    { title: "Optimizing Pricing Algorithms & Finding Nearest Alternatives...", pct: 99 }
+  ];
 
   // Simulate initial data loading
   useEffect(() => {
@@ -42,25 +54,48 @@ export default function MedicinesPage() {
     
     setIsScanning(true);
     setScanResult(null);
-    // Simulate AI scanning delay
-    setTimeout(() => {
-      setIsScanning(false);
-      // Simulate finding a drug and its cheaper alternatives
-      const scannedGroup = [
-        { id: "a1", name: "Nexum 20mg", company: "Incepta", price: 8.00 },
-        { id: "a2", name: "Maxpro 20mg", company: "Renata", price: 7.00 },
-        { id: "a3", name: "Emax 20mg", company: "Beximco", price: 5.50 },
-        { id: "a4", name: "Sergel 20mg", company: "Healthcare", price: 7.00 }
-      ];
-      
-      // Smart Pricing Logic: Sort from Lowest Price to Highest Price
-      scannedGroup.sort((a, b) => a.price - b.price);
-      
-      setScanResult({
-        detected: "Esomeprazole 20mg (Gastric)",
-        alternatives: scannedGroup
-      });
-    }, 2500);
+    setScanProgress(0);
+    setCurrentStepIndex(0);
+
+    // Dynamic step animation representing the "Labor Illusion"
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      if (progress >= 100) {
+        clearInterval(interval);
+        setScanProgress(100);
+        
+        setTimeout(() => {
+          setIsScanning(false);
+          // Simulate finding a drug and its cheaper alternatives
+          const scannedGroup = [
+            { id: "a1", name: "Nexum 20mg", company: "Incepta", price: 8.00 },
+            { id: "a2", name: "Maxpro 20mg", company: "Renata", price: 7.00 },
+            { id: "a3", name: "Emax 20mg", company: "Beximco", price: 5.50 },
+            { id: "a4", name: "Sergel 20mg", company: "Healthcare", price: 7.00 }
+          ];
+          
+          // Smart Pricing Logic: Sort from Lowest Price to Highest Price
+          scannedGroup.sort((a, b) => a.price - b.price);
+          
+          setScanResult({
+            detected: "Esomeprazole 20mg (Gastric)",
+            alternatives: scannedGroup
+          });
+        }, 500);
+      } else {
+        setScanProgress(progress);
+        
+        // Update current step index based on progress percent thresholds
+        let nextStepIndex = 0;
+        for (let i = 0; i < scanSteps.length; i++) {
+          if (progress >= scanSteps[i].pct) {
+            nextStepIndex = Math.min(i + 1, scanSteps.length - 1);
+          }
+        }
+        setCurrentStepIndex(nextStepIndex);
+      }
+    }, 150); // Complete scan in ~3 seconds with smooth micro-ticks
   };
 
   return (
@@ -136,9 +171,21 @@ export default function MedicinesPage() {
                     <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
                     <div className="absolute top-0 left-0 w-full h-[2px] bg-primary animate-scan-line shadow-[0_0_8px_2px_#6DDA6E]"></div>
                   </div>
-                  <div className="bg-white/80 backdrop-blur px-4 py-2 rounded-xl">
-                    <h3 className="text-[16px] font-bold text-slate-900">AI is analyzing...</h3>
-                    <p className="text-[13px] text-slate-600 font-medium">Extracting medicines from prescription</p>
+                  <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-md border border-slate-100 w-full max-w-[320px]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[12px] font-bold text-primary uppercase tracking-wider">Analyzing Rx</span>
+                      <span className="text-[14px] font-black text-slate-800">{scanProgress}%</span>
+                    </div>
+                    {/* Progress Bar Container */}
+                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-3">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-150 ease-out"
+                        style={{ width: `${scanProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-[13px] text-slate-700 font-bold text-left animate-pulse">
+                      {scanSteps[currentStepIndex]?.title}
+                    </p>
                   </div>
                 </div>
               ) : (

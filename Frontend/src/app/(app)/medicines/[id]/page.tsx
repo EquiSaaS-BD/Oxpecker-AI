@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { 
   Pill, AlertTriangle, ShieldAlert, Sparkles, CheckCircle2, ChevronRight,
   Info, Activity, HeartPulse, Stethoscope, Droplet, Star, ArrowRightLeft,
-  Share2, Heart, Search, FileText, Baby, PersonStanding, ShoppingCart, MessageSquareText
+  Share2, Heart, Search, FileText, Baby, PersonStanding, ShoppingCart, MessageSquareText, MapPin, Clock
 } from "lucide-react";
 
 // --- MOCK DATA ---
@@ -85,7 +85,7 @@ const medicine = {
 // --- ANIMATION VARIANTS ---
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25 } }
 };
 
 

@@ -1,16 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { apiGetMe, apiLogout } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
-export type UserRole = 'patient' | 'doctor' | 'hospital' | 'admin' | null;
+export type UserRole = 'patient' | 'doctor' | 'hospital' | 'admin' | 'assistant' | null;
 
 interface User {
   id: string;
   name: string;
   role: UserRole;
   email: string;
+  image?: string;
 }
 
 interface AuthContextType {
@@ -18,7 +18,8 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   login: (userData: User) => void;
-  logout: () => Promise<void>;
+  logout: () => void;
+  updateUser: (userData: User) => void;
   isLoading: boolean;
 }
 
@@ -28,61 +29,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
-  // On mount, check session using HTTP-only cookies
+  // On mount, check if there's a user in localStorage
   useEffect(() => {
-    async function verifySession() {
+    const storedUser = localStorage.getItem('shustota_user');
+    if (storedUser) {
       try {
-        const response = await apiGetMe();
-        if (response?.data?.user) {
-          setUser({
-            id: response.data.user.id,
-            name: response.data.user.full_name,
-            email: response.data.user.email,
-            role: response.data.user.role,
-          });
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Session verification failed", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse user from local storage");
       }
     }
-
-    verifySession();
-  }, [pathname]); // Also re-verify occasionally when routing (or handle specifically)
+    setIsLoading(false);
+  }, []);
 
   const login = (userData: User) => {
     setUser(userData);
+    localStorage.setItem('shustota_user', JSON.stringify(userData));
     
     // Route based on role
     if (userData.role === 'patient') {
-      router.push('/dashboard');
+      router.push('/chat'); // Patient Dashboard is the AI Chat Interface
     } else if (userData.role === 'doctor') {
-      router.push('/doctor/settings');
+      router.push('/doctor/dashboard'); // Doctor dashboard
     } else if (userData.role === 'hospital') {
       router.push('/hospital/dashboard');
     } else if (userData.role === 'admin') {
       router.push('/admin/dashboard');
+    } else if (userData.role === 'assistant') {
+      router.push('/assistant');
     } else {
       router.push('/');
     }
   };
 
-  const logout = async () => {
-    setIsLoading(true);
-    try {
-      await apiLogout();
-    } catch(err) {
-      console.error("Logout failed", err);
-    }
+  const logout = () => {
     setUser(null);
-    setIsLoading(false);
+    localStorage.removeItem('shustota_user');
     router.push('/login');
+  };
+
+  const updateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('shustota_user', JSON.stringify(userData));
   };
 
   return (
@@ -93,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         login,
         logout,
+        updateUser,
         isLoading
       }}
     >

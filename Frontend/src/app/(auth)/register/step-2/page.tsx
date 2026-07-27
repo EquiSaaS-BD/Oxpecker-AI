@@ -1,3 +1,4 @@
+"use client";
 export default function RegisterStep2Page() {
   return (
     <>
@@ -66,7 +67,7 @@ export default function RegisterStep2Page() {
 <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
 {/*  Role: Patient/User  */}
 <label className="cursor-pointer">
-<input checked="" className="peer sr-only" name="user_role" type="radio" value="user"/>
+<input defaultChecked className="peer sr-only" name="user_role" type="radio" value="user"/>
 <div className="p-lg border-2 border-outline-variant rounded-xl text-center hover:bg-surface-container transition-colors peer-checked:role-card-active h-full flex flex-col items-center justify-center">
 <span className="material-symbols-outlined text-primary mb-sm text-5xl" >how_to_reg</span>
 <p className="font-headline-sm text-headline-sm text-on-surface">ব্যবহারকারী / রোগী</p>
@@ -94,7 +95,7 @@ export default function RegisterStep2Page() {
 </div>
 </div>
 <div className="mt-auto pt-xl flex justify-end">
-<button className="px-xl py-sm bg-primary text-on-primary rounded-md font-label-md text-label-md hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-xs shadow-md" onclick="nextStep(2)" type="button">
+<button className="px-xl py-sm bg-primary text-on-primary rounded-md font-label-md text-label-md hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-xs shadow-md" onClick={() => {}} type="button">
 <span>পরবর্তী (Next)</span>
 <span className="material-symbols-outlined text-sm">arrow_forward</span>
 </button>
@@ -143,7 +144,7 @@ export default function RegisterStep2Page() {
 <div className="space-y-sm">
 <label className="font-label-md text-label-md text-on-surface-variant block">লিঙ্গ</label>
 <select className="w-full bg-surface border border-outline-variant rounded-md px-md py-sm font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary transition-shadow">
-<option disabled="" selected="" value="">Select Gender</option>
+<option disabled  value="">Select Gender</option>
 <option>পুরুষ (Male)</option>
 <option>মহিলা (Female)</option>
 <option>অন্যান্য (Other)</option>
@@ -152,11 +153,11 @@ export default function RegisterStep2Page() {
 </div>
 </div>
 <div className="mt-auto pt-xl flex justify-between items-center">
-<button className="px-lg py-sm border border-outline-variant text-on-surface rounded-md font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-xs" onclick="nextStep(1)" type="button">
+<button className="px-lg py-sm border border-outline-variant text-on-surface rounded-md font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-xs" onClick={() => {}} type="button">
 <span className="material-symbols-outlined text-sm">arrow_back</span>
 <span>পেছনে (Back)</span>
 </button>
-<button className="px-xl py-sm bg-primary text-on-primary rounded-md font-label-md text-label-md hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-xs shadow-md" onclick="nextStep(3)" type="button">
+<button className="px-xl py-sm bg-primary text-on-primary rounded-md font-label-md text-label-md hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-xs shadow-md" onClick={() => {}} type="button">
 <span>পরবর্তী (Next)</span>
 <span className="material-symbols-outlined text-sm">arrow_forward</span>
 </button>
@@ -191,7 +192,7 @@ export default function RegisterStep2Page() {
 </div>
 {/*  Actions  */}
 <div className="mt-auto pt-xl flex flex-col md:flex-row gap-md items-center justify-between">
-<button className="px-lg py-sm border border-outline-variant text-on-surface rounded-md font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-xs" onclick="nextStep(2)" type="button">
+<button className="px-lg py-sm border border-outline-variant text-on-surface rounded-md font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-xs" onClick={() => {}} type="button">
 <span className="material-symbols-outlined text-sm">arrow_back</span>
 <span>পেছনে (Back)</span>
 </button>
@@ -199,10 +200,10 @@ export default function RegisterStep2Page() {
 <span className="font-body-sm text-on-surface-variant">অথবা (Or connect with)</span>
 <div className="flex gap-sm">
 <button className="p-sm border border-outline-variant rounded-full hover:bg-surface-container transition-colors" title="Google" type="button">
-<svg className="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
+<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
 </button>
 <button className="p-sm border border-outline-variant rounded-full hover:bg-surface-container transition-colors" title="Apple" type="button">
-<svg className="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.89-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-1.12.5-2.27 1.18-3.08.74-.89 1.99-1.56 2.99-1.56.12 0 .22.02.3.03zm.256 12.33c-.025-3.69 3.018-5.46 3.16-5.55-1.72-2.52-4.38-2.86-5.32-2.9-2.26-.23-4.43 1.34-5.59 1.34-1.15 0-2.94-1.3-4.78-1.27-2.4.03-4.63 1.4-5.85 3.53-2.48 4.31-.63 10.68 1.78 14.16 1.17 1.7 2.56 3.6 4.38 3.53 1.76-.07 2.42-1.14 4.56-1.14 2.13 0 2.73 1.14 4.57 1.1 1.9-.03 3.1-1.75 4.26-3.46 1.34-1.96 1.89-3.86 1.92-3.96-.04-.02-3.07-1.18-3.09-5.38z"></path></svg>
+<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.89-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-1.12.5-2.27 1.18-3.08.74-.89 1.99-1.56 2.99-1.56.12 0 .22.02.3.03zm.256 12.33c-.025-3.69 3.018-5.46 3.16-5.55-1.72-2.52-4.38-2.86-5.32-2.9-2.26-.23-4.43 1.34-5.59 1.34-1.15 0-2.94-1.3-4.78-1.27-2.4.03-4.63 1.4-5.85 3.53-2.48 4.31-.63 10.68 1.78 14.16 1.17 1.7 2.56 3.6 4.38 3.53 1.76-.07 2.42-1.14 4.56-1.14 2.13 0 2.73 1.14 4.57 1.1 1.9-.03 3.1-1.75 4.26-3.46 1.34-1.96 1.89-3.86 1.92-3.96-.04-.02-3.07-1.18-3.09-5.38z"></path></svg>
 </button>
 </div>
 <button className="w-full md:w-auto px-xl py-sm bg-primary text-on-primary rounded-md font-label-md text-label-md hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-xs shadow-md" type="button">

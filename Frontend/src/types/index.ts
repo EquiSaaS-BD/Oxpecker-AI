@@ -162,3 +162,38 @@ export interface NutritionData {
   water: { current: number; goal: number; unit: string };
   weeklyRating: string;
 }
+
+// ====== Doctor Dashboard Types ======
+export interface DoctorDashboardStats {
+  totalPatients: number;
+  totalPatientsChange: number;
+  todayAppointments: number;
+  todayAppointmentsChange: number;
+  pendingPrescriptions: number;
+  pendingPrescriptionsChange: number;
+  upcomingConsultations: number;
+  upcomingConsultationsChange: number;
+}
+
+export interface DoctorPatient {
+  id: string;
+  name: string;
+  age: number;
+  gender: "Male" | "Female" | "Other";
+  lastVisit: string;
+  condition: string;
+  status: "Stable" | "Follow-up" | "Critical" | "New";
+  avatar: string;
+  phone: string;
+}
+
+export interface DoctorAppointment {
+  id: string;
+  patientName: string;
+  patientAvatar: string;
+  time: string;
+  date: string;
+  type: "Online" | "Offline";
+  status: "Confirmed" | "Pending" | "Completed" | "Cancelled";
+  condition: string;
+}

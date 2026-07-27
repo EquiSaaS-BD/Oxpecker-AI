@@ -3,13 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, ChevronRight, Globe } from "lucide-react";
+import { ChevronRight, Home, Stethoscope, Pill, HelpCircle, Layers } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-  const { lang, setLang, t } = useLanguage();
+  const [activeSection, setActiveSection] = useState("");
+  const { t } = useLanguage();
+
+  const NAV_LINKS = [
+    { href: "/#features", id: "features", label: t("Services", "সেবাসমূহ"), icon: Layers },
+    { href: "/#doctors", id: "doctors", label: t("Doctors", "ডাক্তার"), icon: Stethoscope },
+    { href: "/#medicines", id: "medicines", label: t("Medicines", "ওষুধের তথ্য"), icon: Pill },
+    { href: "/#faq", id: "faq", label: t("FAQ", "প্রশ্নোত্তর"), icon: HelpCircle },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -18,146 +25,133 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Intersection Observer for Scroll Spy
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
+    const ids = ["features", "doctors", "medicines", "faq"];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px" }
+    );
 
-  const NAV_LINKS = [
-    { href: "/#features", label: t("সেবাসমূহ", "Services") },
-    { href: "/#how-it-works", label: t("কিভাবে কাজ করে", "How it works") },
-    { href: "/doctors", label: t("ডাক্তার", "Doctors") },
-    { href: "/medicines", label: t("ওষুধের তথ্য", "Medicines") },
-    { href: "/#faq", label: t("প্রশ্নোত্তর", "FAQ") },
-  ];
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
 
-  const toggleLang = () => setLang(lang === "bn" ? "en" : "bn");
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] border-b border-slate-100"
-          : "bg-transparent"
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
-        {/* ── Left Side (Logo + Nav) ── */}
-        <div className="flex items-center gap-8 lg:gap-12">
-          {/* ── Logo ── */}
-          <Link href="/" className="shrink-0 flex items-center">
-            <Image
-              src="/images/shustota ai logo.png"
-              alt="Shustota AI"
-              width={240}
-              height={80}
-              className="h-10 sm:h-12 lg:h-[3.5rem] w-auto object-contain"
-              priority
-            />
-          </Link>
-
-          {/* ── Desktop Nav ── */}
-          <div className="hidden lg:flex items-center gap-1.5">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative px-4 py-2 text-[14px] font-semibold text-slate-600 rounded-lg hover:text-primary hover:bg-primary/5 transition-all duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Desktop Actions ── */}
-        <div className="hidden lg:flex items-center gap-2.5">
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/80"
-            aria-label="Toggle Language"
-          >
-            <Globe size={14} className="text-primary" />
-            {lang === "bn" ? "EN" : "বাংলা"}
-          </button>
-
-          <Link
-            href="/login"
-            className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors"
-          >
-            {t("লগ ইন", "Log In")}
-          </Link>
-          <Link
-            href="/register"
-            className="group inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 hover:bg-[#002d75] transition-all duration-300"
-          >
-            {t("শুরু করুন", "Get Started")}
-            <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
-
-        {/* ── Mobile Actions ── */}
-        <div className="lg:hidden flex items-center gap-2">
-          <button
-            onClick={toggleLang}
-            className="flex items-center justify-center w-9 h-9 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200/80"
-            aria-label="Toggle Language"
-          >
-            {lang === "bn" ? "EN" : "বাং"}
-          </button>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-      </nav>
-
-      {/* ── Mobile Menu ── */}
-      {/* Overlay */}
-      <div
-        className={`lg:hidden fixed inset-0 top-[72px] bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setOpen(false)}
-      />
-      <div
-        className={`lg:hidden absolute top-[72px] left-0 right-0 bg-white border-b border-slate-100 shadow-xl transition-all duration-300 ease-out ${
-          open ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-700 overflow-hidden ${
+          scrolled
+            ? "bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] border-b border-white/80"
+            : "bg-transparent"
         }`}
       >
-        <div className="px-5 py-4 flex flex-col gap-0.5 max-h-[calc(100vh-72px)] overflow-y-auto">
-          {NAV_LINKS.map((link, i) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              style={{ animationDelay: open ? `${i * 50}ms` : "0ms" }}
-              className="px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-primary/5 hover:text-primary transition-all"
-            >
-              {link.label}
+        {/* ── Glassmorphism Animated Shine ── */}
+        {scrolled && (
+          <div className="absolute top-0 -inset-full h-full w-1/2 z-0 block bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-30 animate-[shine_6s_infinite]" />
+        )}
+
+        <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[64px] lg:h-[72px] flex items-center justify-between">
+          {/* ── Left Side (Logo + Nav) ── */}
+          <div className="flex items-center gap-8 lg:gap-12">
+            {/* ── Logo ── */}
+            <Link href="/" className="shrink-0 flex items-center">
+              <Image
+                src="/images/shustota ai logo.png"
+                alt="Shustota AI"
+                width={280}
+                height={95}
+                className="h-[52px] sm:h-[56px] lg:h-[4.5rem] w-auto object-contain transition-all duration-300 origin-left scale-[1.15] sm:scale-100"
+                priority
+              />
             </Link>
-          ))}
-          <div className="flex items-center gap-3 mt-3 pt-4 border-t border-slate-100">
+
+            {/* ── Desktop Nav ── */}
+            <div className="hidden lg:flex items-center gap-4 xl:gap-6">
+              {NAV_LINKS.map((link) => {
+                const isActive = activeSection === link.id;
+                const activeClass = "text-primary bg-primary/10 font-bold shadow-sm ring-1 ring-primary/20";
+                const inactiveClass = scrolled 
+                  ? "text-black font-bold hover:text-primary hover:bg-primary/5 drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]" 
+                  : "text-black font-bold hover:text-primary hover:bg-white/20";
+                  
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`relative px-4 py-2 text-[14px] font-semibold rounded-lg transition-all duration-300 emil-button ${
+                      isActive ? activeClass : inactiveClass
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Desktop & Mobile Actions (Always Visible Login/Signup) ── */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <Link
               href="/login"
-              onClick={() => setOpen(false)}
-              className="flex-1 text-center px-4 py-3 text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl hover:border-primary/30 transition-colors"
+              className="px-3 sm:px-5 py-2 text-[12px] sm:text-sm font-bold rounded-lg sm:rounded-xl border border-primary/20 text-primary hover:bg-primary/5 transition-colors emil-button"
             >
-              {t("লগ ইন", "Log In")}
+              Log In
             </Link>
             <Link
               href="/register"
-              onClick={() => setOpen(false)}
-              className="flex-1 text-center px-4 py-3 bg-primary text-white text-sm font-semibold rounded-xl shadow-md shadow-primary/20"
+              className="group inline-flex items-center gap-1 px-3 sm:px-5 py-2 bg-primary text-white text-[12px] sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-sm sm:shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:bg-[#002d75] emil-button"
             >
-              {t("শুরু করুন", "Get Started")}
+              Sign up
+              <ChevronRight size={14} className="hidden sm:block group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
+        </nav>
+      </header>
+
+      {/* ── Mobile Bottom Navigation Bar ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] px-4 pb-4 pt-2 pointer-events-none">
+        <div className="bg-white/60 backdrop-blur-2xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.1)] rounded-lg px-2 sm:px-6 py-2.5 flex items-center justify-between pointer-events-auto h-auto">
+          
+          {/* Home Link (Always needed in bottom nav) */}
+          <Link 
+            href="/" 
+            className={`flex flex-col items-center justify-center gap-1 px-3 py-1.5 transition-all rounded-md ${
+              activeSection === "" || activeSection === "hero" ? "text-primary bg-primary/10 scale-105 shadow-sm shadow-primary/5" : "text-slate-800 hover:text-black hover:bg-white/50"
+            }`}
+          >
+            <Home size={20} className={activeSection === "" || activeSection === "hero" ? "fill-primary/20" : ""} />
+            <span className={`text-[10px] font-bold tracking-wide transition-all ${activeSection === "" || activeSection === "hero" ? "text-primary" : "text-slate-800"}`}>Home</span>
+          </Link>
+
+          {/* Dynamic Links */}
+          {NAV_LINKS.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex flex-col items-center justify-center gap-1 px-3 py-1.5 transition-all rounded-md ${
+                  isActive ? "text-primary bg-primary/10 scale-105 shadow-sm shadow-primary/5" : "text-slate-800 hover:text-black hover:bg-white/50"
+                }`}
+              >
+                <link.icon size={20} className={isActive ? "fill-primary/20" : ""} />
+                <span className={`text-[10px] font-bold tracking-wide transition-all ${isActive ? "text-primary" : "text-slate-800"}`}>{link.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
-    </header>
+    </>
   );
 }
