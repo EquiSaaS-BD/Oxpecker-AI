@@ -7,7 +7,7 @@ import { TrustedBySection } from "@/components/landing/TrustedBySection";
 import { AIIntelligenceSuite } from "@/components/landing/AIIntelligenceSuite";
 import { FeaturesOverview } from "@/components/landing/FeaturesOverview";
 import { DashboardPreview } from "@/components/landing/DashboardPreview";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { SystemArchitectureDiagram } from "@/components/landing/SystemArchitectureDiagram";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { SecurityAndFAQ } from "@/components/landing/SecurityAndFAQ";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
@@ -32,7 +32,7 @@ export default function LandingPage() {
           <MedicalDirectory />
           <MedicineMarqueeSection />
           
-          <HowItWorksSection />
+          <SystemArchitectureDiagram />
           <TestimonialsSection />
           <SecurityAndFAQ />
           <FinalCTASection />

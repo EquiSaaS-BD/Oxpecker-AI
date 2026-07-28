@@ -11,6 +11,8 @@ interface User {
   role: UserRole;
   email: string;
   image?: string;
+  assistantId?: string;
+  doctorId?: string;
 }
 
 interface AuthContextType {
@@ -30,12 +32,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // On mount, check if there's a user in localStorage
+  // On mount, check if there's a user in localStorage and sync with users DB
   useEffect(() => {
     const storedUser = localStorage.getItem('shustota_user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        let parsedUser = JSON.parse(storedUser);
+        
+        // Sync with users database to ensure latest fields (assistantId, doctorId) are present
+        const usersStr = localStorage.getItem('shustota_users');
+        if (usersStr) {
+          const users = JSON.parse(usersStr);
+          const dbUser = users.find((u: any) => u.id === parsedUser.id);
+          if (dbUser) {
+            parsedUser = { 
+              ...parsedUser, 
+              assistantId: dbUser.assistantId || parsedUser.assistantId, 
+              doctorId: dbUser.doctorId || parsedUser.doctorId 
+            };
+            // Persist the synced user back
+            localStorage.setItem('shustota_user', JSON.stringify(parsedUser));
+          }
+        }
+        
+        setUser(parsedUser);
       } catch (e) {
         console.error("Failed to parse user from local storage");
       }

@@ -6,6 +6,7 @@ import { Users, Clock, MonitorPlay, UserCheck, Activity, Smartphone, Plus, X, To
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 import { useDoctor } from '@/context/DoctorContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -29,6 +30,7 @@ const chartData = [
 ];
 
 export default function DoctorDashboardPage() {
+  const { user } = useAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteId, setInviteId] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -78,7 +80,16 @@ export default function DoctorDashboardPage() {
     
     const invitesStr = localStorage.getItem('shustota_invites');
     const invites = invitesStr ? JSON.parse(invitesStr) : [];
-    invites.push({ id: Date.now().toString(), assistantId: inviteId, email: inviteEmail, role: inviteRole, status: 'pending' });
+    invites.push({ 
+      id: Date.now().toString(), 
+      assistantId: inviteId, 
+      email: inviteEmail, 
+      role: inviteRole, 
+      status: 'pending',
+      doctorId: user?.id || 'doctor-test-101',
+      doctorName: user?.name || 'Dr. Sarah Rahman',
+      doctorEmail: user?.email || 'doctor@shustota.com'
+    });
     localStorage.setItem('shustota_invites', JSON.stringify(invites));
 
     setShowInviteModal(false);

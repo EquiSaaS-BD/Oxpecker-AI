@@ -351,33 +351,6 @@ export default function AssistantSettingsPage() {
                       </div>
                     </div>
 
-                    {/* Assigned Doctor Display */}
-                    <div className="bg-white/80 backdrop-blur-xl rounded-[20px] lg:rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-[18px] font-bold text-slate-800 flex items-center gap-2">
-                          <Stethoscope className="text-emerald-500" /> Assigned Doctor
-                        </h3>
-                        <span className="bg-emerald-100 text-emerald-600 text-[12px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                          <CheckCircle2 size={14} /> Active
-                        </span>
-                      </div>
-                      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100/60 rounded-[16px] p-5 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full bg-white shadow-sm border border-emerald-100 overflow-hidden relative shrink-0">
-                          <Image 
-                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Doctor1&backgroundColor=bbf7d0" 
-                            alt="Doctor Avatar"
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-[13px] text-emerald-600 font-bold uppercase tracking-wider mb-0.5">Assisting</p>
-                          <h4 className="text-[17px] font-bold text-slate-800">Dr. Mahmud Hasan</h4>
-                          <p className="text-[14px] text-slate-500 font-medium">Senior Cardiologist</p>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Verification Center (3-Step Workflow) */}
                     <div className="bg-white/80 backdrop-blur-xl rounded-[20px] lg:rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60">
                       <div className="flex items-center justify-between mb-6">

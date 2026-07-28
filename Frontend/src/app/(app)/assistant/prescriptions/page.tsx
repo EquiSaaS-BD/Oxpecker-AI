@@ -25,7 +25,7 @@ export default function PrescriptionQueuePage() {
     <div className="w-full flex flex-col font-sans">
       
       {/* Mobile/Desktop Header Area */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-safe-top sticky top-0 z-30 -mx-4 sm:mx-0 sm:bg-transparent sm:backdrop-blur-none sm:border-none sm:p-0 sm:pt-0 mb-4 sm:mb-6">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-safe-top relative z-10 -mx-4 sm:mx-0 sm:bg-transparent sm:backdrop-blur-none sm:border-none sm:p-0 sm:pt-0 mb-4 sm:mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-[20px] sm:text-[32px] font-bold text-[#111827] tracking-tight flex items-center gap-2">

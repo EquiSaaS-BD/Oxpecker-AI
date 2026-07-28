@@ -98,7 +98,7 @@ export default function AssistantPaymentsPage() {
     <div className="flex-1 flex flex-col bg-slate-50 min-h-screen pb-24 lg:pb-10 font-sans">
       
       {/* Mobile/Desktop Header Area */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 lg:px-8 py-5 lg:py-6 pt-safe-top sticky top-0 z-30">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 lg:px-8 py-5 lg:py-6 pt-safe-top relative z-10">
         <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between">
           <div>
             <h1 className="text-[20px] lg:text-[24px] font-bold text-slate-800 flex items-center gap-3">

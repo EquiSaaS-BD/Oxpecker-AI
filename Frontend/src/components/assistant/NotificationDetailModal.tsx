@@ -8,7 +8,7 @@ interface NotificationDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   notification: any;
-  onInviteResponse?: (id: number, status: 'accepted' | 'declined') => void;
+  onInviteResponse?: (id: number | string, status: 'accepted' | 'declined') => void;
 }
 
 export function NotificationDetailModal({ isOpen, onClose, notification, onInviteResponse }: NotificationDetailModalProps) {

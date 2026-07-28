@@ -23,46 +23,116 @@ const navItems = [
 ];
 
 export default function AssistantTopNav() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [invites, setInvites] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [assignedDoctor, setAssignedDoctor] = useState<{name: string, location: string} | null>(null);
   
   // Format current date e.g., Oct 24, 2026
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   useEffect(() => {
-    // Load invites targeted at this assistant
-    if ((user as any)?.assistantId) {
-      const invitesStr = localStorage.getItem('shustota_invites');
-      if (invitesStr) {
-        const allInvites = JSON.parse(invitesStr);
-        setInvites(allInvites.filter((i: any) => i.assistantId === (user as any).assistantId && i.status === 'pending'));
+    const loadData = () => {
+      // Load invites targeted at this assistant
+      if ((user as any)?.assistantId) {
+        const invitesStr = localStorage.getItem('shustota_invites');
+        if (invitesStr) {
+          const allInvites = JSON.parse(invitesStr);
+          setInvites(allInvites.filter((i: any) => i.assistantId === (user as any).assistantId && i.status === 'pending'));
+        }
       }
-    }
+      
+      // Load notifications targeted at this assistant
+      if (user?.id) {
+        const notifStr = localStorage.getItem('shustota_notifications');
+        if (notifStr) {
+          const allNotifs = JSON.parse(notifStr);
+          setNotifications(allNotifs.filter((n: any) => n.targetId === (user as any).assistantId || n.targetId === user.id));
+        }
+
+        // Load assigned doctor info
+        if ((user as any).doctorId) {
+          const usersStr = localStorage.getItem('shustota_users');
+          if (usersStr) {
+            const users = JSON.parse(usersStr);
+            const doc = users.find((u: any) => u.id === (user as any).doctorId);
+            if (doc) {
+              setAssignedDoctor({
+                name: doc.name || 'Assigned Doctor',
+                location: doc.location || 'Central Hospital'
+              });
+            }
+          }
+        }
+      }
+    };
+
+    // Initial load
+    loadData();
+
+    // Real-time sync across tabs
+    window.addEventListener('storage', loadData);
     
-    // Load notifications targeted at this assistant
-    if (user?.id) {
-      const notifStr = localStorage.getItem('shustota_notifications');
-      if (notifStr) {
-        const allNotifs = JSON.parse(notifStr);
-        setNotifications(allNotifs.filter((n: any) => n.targetId === (user as any).assistantId || n.targetId === user.id));
-      }
-    }
+    // Polling fallback to ensure instant updates even in the same tab session
+    const interval = setInterval(loadData, 1000);
+
+    return () => {
+      window.removeEventListener('storage', loadData);
+      clearInterval(interval);
+    };
   }, [user, showNotifications]);
 
   const handleAcceptInvite = (inviteId: string) => {
     const invitesStr = localStorage.getItem('shustota_invites');
     if (invitesStr) {
       const allInvites = JSON.parse(invitesStr);
-      const updatedInvites = allInvites.map((i: any) => 
-        i.id === inviteId ? { ...i, status: 'accepted' } : i
-      );
+      let doctorName = "the doctor";
+      let doctorId = "";
+      
+      const updatedInvites = allInvites.map((i: any) => {
+        if (i.id === inviteId) {
+          doctorName = i.doctorName || doctorName;
+          doctorId = i.doctorId || "";
+          return { ...i, status: 'accepted' };
+        }
+        return i;
+      });
+      
       localStorage.setItem('shustota_invites', JSON.stringify(updatedInvites));
       setInvites(updatedInvites.filter((i: any) => i.assistantId === (user as any)?.assistantId && i.status === 'pending'));
-      toast.success("Invite accepted! You are now connected.");
+
+      if (doctorId && user) {
+        const usersStr = localStorage.getItem('shustota_users');
+        if (usersStr) {
+          const users = JSON.parse(usersStr);
+          const uIdx = users.findIndex((u: any) => u.id === user.id);
+          if (uIdx !== -1) {
+            users[uIdx].doctorId = doctorId;
+            localStorage.setItem('shustota_users', JSON.stringify(users));
+          }
+        }
+        updateUser({ ...user, doctorId });
+        
+        // Update Doctor's connected assistants list so they see it in real-time
+        const asstStr = localStorage.getItem('shustota_assistants');
+        if (asstStr) {
+          const docAssistants = JSON.parse(asstStr);
+          const aIdx = docAssistants.findIndex((a: any) => a.id === user.assistantId);
+          if (aIdx !== -1) {
+            docAssistants[aIdx].status = "Connected";
+            docAssistants[aIdx].name = user.name;
+            docAssistants[aIdx].color = "text-[#22C55E]";
+            docAssistants[aIdx].bg = "bg-[#22C55E]";
+            docAssistants[aIdx].isPending = false;
+            localStorage.setItem('shustota_assistants', JSON.stringify(docAssistants));
+          }
+        }
+      }
+
+      toast.success(`Invite accepted! You are now connected to ${doctorName}.`);
     }
   };
 
@@ -112,10 +182,10 @@ export default function AssistantTopNav() {
         {/* Doctor Info (Hidden on Mobile) */}
         <div className="hidden lg:flex flex-col">
           <h2 className="text-[15px] font-bold text-slate-800">
-            {invites.length === 0 && notifications.length === 0 ? "Dr. Sarah Rahman" : "Not Connected"}
+            {assignedDoctor ? assignedDoctor.name : "Not Connected"}
           </h2>
           <span className="text-[13px] text-slate-500">
-            {invites.length === 0 && notifications.length === 0 ? "Chamber: City Hospital Unit 2" : "Awaiting Doctor Invite"}
+            {assignedDoctor ? `Chamber: ${assignedDoctor.location}` : "Awaiting Doctor Invite"}
           </span>
         </div>
       </div>

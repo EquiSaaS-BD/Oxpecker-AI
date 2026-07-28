@@ -220,7 +220,13 @@ export default function RegisterPage() {
     
     await new Promise((r) => setTimeout(r, 1500));
     
-    login({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role });
+    login({ 
+      id: newUser.id, 
+      name: newUser.name, 
+      email: newUser.email, 
+      role: newUser.role,
+      assistantId: newUser.assistantId
+    });
   };
 
   const slideVariants = {

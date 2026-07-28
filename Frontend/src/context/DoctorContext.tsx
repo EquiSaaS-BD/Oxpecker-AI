@@ -109,16 +109,30 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   
   const [connectedAssistants, setConnectedAssistants] = useState<any[]>([]);
   
-  // Load assistants from local storage on mount
+  // Load assistants from local storage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('shustota_assistants');
-      if (saved) {
-        try {
-          setConnectedAssistants(JSON.parse(saved));
-        } catch (e) {}
+    const loadAssistants = () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('shustota_assistants');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            // Remove duplicates if any got stuck
+            const uniqueAssistants = Array.from(new Map(parsed.map((a: any) => [a.id, a])).values());
+            setConnectedAssistants(uniqueAssistants);
+          } catch (e) {}
+        }
       }
-    }
+    };
+    
+    loadAssistants();
+    window.addEventListener('storage', loadAssistants);
+    const interval = setInterval(loadAssistants, 1500);
+    
+    return () => {
+      window.removeEventListener('storage', loadAssistants);
+      clearInterval(interval);
+    };
   }, []);
 
   const persistAssistants = (newAssistants: any[]) => {
@@ -159,7 +173,9 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   };
 
   const addAssistant = (assistant: any) => {
-    persistAssistants([assistant, ...connectedAssistants]);
+    if (!connectedAssistants.some(a => a.id === assistant.id)) {
+      persistAssistants([assistant, ...connectedAssistants]);
+    }
   };
 
   const removeAssistant = (id: string) => {

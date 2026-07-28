@@ -3,47 +3,77 @@
 import React, { useState } from "react";
 import { Bell, CheckCircle2, Calendar, CreditCard, MessageSquare, UserPlus, Clock } from "lucide-react";
 import { NotificationDetailModal } from "@/components/assistant/NotificationDetailModal";
-
-const MOCK_NOTIFICATIONS = [
-  {
-    id: 1,
-    type: "doctor_invite",
-    title: "Connection Request",
-    message: "Dr. Anisur Rahman (Cardiologist) wants to connect with you. If you accept, you will gain access to their patient queue and prescriptions.",
-    time: "Just now",
-    unread: true,
-    doctorName: "Dr. Anisur Rahman",
-    specialty: "Cardiology"
-  },
-  {
-    id: 2,
-    type: "appointment",
-    title: "New Appointment Request",
-    message: "Patient Rahim Chowdhury requested a booking for today at 5:00 PM. Please confirm the booking.",
-    time: "2 mins ago",
-    unread: true
-  },
-  {
-    id: 3,
-    type: "payment",
-    title: "Payment Received",
-    message: "Received ৳1500 via bKash from Fatema Begum for consultation and pathology tests.",
-    time: "15 mins ago",
-    unread: true
-  },
-  {
-    id: 4,
-    type: "message",
-    title: "Message from Dr. Anisur",
-    message: "Please prepare the lab reports for patient K 99 11 32 before the evening session begins.",
-    time: "1 hour ago",
-    unread: true
-  }
-];
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 export default function AssistantNotificationsPage() {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const { user, updateUser } = useAuth();
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
+
+  React.useEffect(() => {
+    if (!user) return;
+    
+    const loadData = () => {
+      const allNotifs: any[] = [];
+      const currentAssistantId = (user as any).assistantId;
+      
+      // Load invites targeted at this assistant
+      if (currentAssistantId) {
+        const invitesStr = localStorage.getItem('shustota_invites');
+        if (invitesStr) {
+          try {
+            const allInvites = JSON.parse(invitesStr);
+            const targetedInvites = allInvites.filter((i: any) => i.assistantId === currentAssistantId && i.status === 'pending');
+            
+            targetedInvites.forEach((inv: any) => {
+               allNotifs.push({
+                 id: inv.id,
+                 type: 'doctor_invite',
+                 title: 'Connection Request',
+                 message: `${inv.doctorName || 'A Doctor'} (${inv.email}) wants to connect with you. If you accept, you will gain access to their queue.`,
+                 time: 'Just now',
+                 unread: true,
+                 doctorName: inv.doctorName || inv.email,
+                 specialty: inv.role || "General"
+               });
+            });
+          } catch (e) {}
+        }
+      }
+      
+      // Load system notifications
+      const notifStr = localStorage.getItem('shustota_notifications');
+      if (notifStr) {
+        try {
+          const sysNotifs = JSON.parse(notifStr);
+          const targeted = sysNotifs.filter((n: any) => n.targetId === currentAssistantId || n.targetId === user.id);
+          
+          targeted.forEach((n: any) => {
+            allNotifs.push({
+               id: n.id,
+               type: 'message',
+               title: 'System Alert',
+               message: n.message,
+               time: 'Just now',
+               unread: !n.read
+            });
+          });
+        } catch (e) {}
+      }
+      
+      setNotifications(allNotifs);
+    };
+
+    loadData();
+    window.addEventListener('storage', loadData);
+    const interval = setInterval(loadData, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', loadData);
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
@@ -51,7 +81,7 @@ export default function AssistantNotificationsPage() {
     setNotifications(notifications.map(n => ({ ...n, unread: false })));
   };
 
-  const markAsRead = (id: number) => {
+  const markAsRead = (id: number | string) => {
     setNotifications(notifications.map(n => n.id === id ? { ...n, unread: false } : n));
   };
 
@@ -62,17 +92,66 @@ export default function AssistantNotificationsPage() {
     setSelectedNotification(notif);
   };
 
-  const handleInviteResponse = (id: number, status: 'accepted' | 'declined') => {
-    // Update local list mock
+  const handleInviteResponse = (id: number | string, status: 'accepted' | 'declined') => {
+    // Find the invite in localStorage
+    const invitesStr = localStorage.getItem('shustota_invites');
+    let doctorName = "the doctor";
+    let doctorId = "";
+    
+    if (invitesStr) {
+      const allInvites = JSON.parse(invitesStr);
+      const inviteIndex = allInvites.findIndex((i: any) => i.id === id);
+      
+      if (inviteIndex !== -1) {
+        allInvites[inviteIndex].status = status;
+        doctorName = allInvites[inviteIndex].doctorName || doctorName;
+        doctorId = allInvites[inviteIndex].doctorId || "";
+        localStorage.setItem('shustota_invites', JSON.stringify(allInvites));
+      }
+    }
+
+    if (status === 'accepted' && doctorId && user) {
+      // 1. Update global users list
+      const usersStr = localStorage.getItem('shustota_users');
+      if (usersStr) {
+        const users = JSON.parse(usersStr);
+        const uIdx = users.findIndex((u: any) => u.id === user.id);
+        if (uIdx !== -1) {
+          users[uIdx].doctorId = doctorId;
+          localStorage.setItem('shustota_users', JSON.stringify(users));
+        }
+      }
+      
+      // 2. Update current auth user context
+      updateUser({ ...user, doctorId });
+      toast.success(`You are now officially connected to ${doctorName}!`);
+
+      // 3. Update Doctor's connected assistants list so they see it in real-time
+      const asstStr = localStorage.getItem('shustota_assistants');
+      if (asstStr) {
+        const docAssistants = JSON.parse(asstStr);
+        const aIdx = docAssistants.findIndex((a: any) => a.id === user.assistantId);
+        if (aIdx !== -1) {
+          docAssistants[aIdx].status = "Connected";
+          docAssistants[aIdx].name = user.name;
+          docAssistants[aIdx].color = "text-[#22C55E]";
+          docAssistants[aIdx].bg = "bg-[#22C55E]";
+          docAssistants[aIdx].isPending = false;
+          localStorage.setItem('shustota_assistants', JSON.stringify(docAssistants));
+        }
+      }
+    }
+
+    // Update local state to reflect UI change instantly
     setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, status: status, message: status === 'accepted' ? "You are now connected with Dr. Anisur Rahman." : "You declined the connection request." } : n
+      n.id === id ? { ...n, status: status, message: status === 'accepted' ? `You are now connected with ${doctorName}.` : "You declined the connection request." } : n
     ));
     
     if (selectedNotification && selectedNotification.id === id) {
        setSelectedNotification({
          ...selectedNotification,
          status: status,
-         message: status === 'accepted' ? "You are now connected with Dr. Anisur Rahman. You can now manage their patients and prescriptions." : "You declined the connection request."
+         message: status === 'accepted' ? `You are now connected with ${doctorName}. You can now manage their patients and prescriptions.` : "You declined the connection request."
        });
     }
   };
@@ -126,6 +205,16 @@ export default function AssistantNotificationsPage() {
 
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 space-y-3 sm:space-y-4 max-w-[1200px] mx-auto w-full mt-2 lg:mt-4">
         
+        {notifications.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+              <Bell size={32} className="text-slate-300" />
+            </div>
+            <h3 className="text-[18px] font-bold text-slate-600 mb-1">No Notifications</h3>
+            <p className="text-[14px] text-slate-400 max-w-[300px]">When a doctor sends you an invite or you receive alerts, they will appear here.</p>
+          </div>
+        )}
+
         {notifications.map((notif) => (
           <div 
             key={notif.id} 

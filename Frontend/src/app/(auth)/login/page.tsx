@@ -44,7 +44,9 @@ export default function LoginPage() {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        assistantId: user.assistantId,
+        doctorId: user.doctorId
       });
       
       toast.success("Login successful!", {

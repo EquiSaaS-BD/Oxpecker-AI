@@ -8,6 +8,7 @@ import {
   FileText, MoreVertical, Search, Plus, TrendingUp, TrendingDown, CheckCircle2, ChevronDown, X, BellRing, User, Receipt
 } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 
 const stats = [
   { title: "Today's Appts", count: "42", trend: "+12%", trendUp: true, icon: Users, color: "text-[#6DDA6E]", bg: "bg-[#6DDA6E]/10" },
@@ -23,10 +24,25 @@ const INITIAL_QUEUE = [
 ];
 
 export default function AssistantDashboardPage() {
+  const { user } = useAuth();
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [queue, setQueue] = useState(INITIAL_QUEUE);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [assignedDoctorName, setAssignedDoctorName] = useState("Not Connected");
+
+  useEffect(() => {
+    if ((user as any)?.doctorId) {
+      const usersStr = localStorage.getItem('shustota_users');
+      if (usersStr) {
+        const users = JSON.parse(usersStr);
+        const doc = users.find((u: any) => u.id === (user as any).doctorId);
+        if (doc) {
+          setAssignedDoctorName(doc.name || "Assigned Doctor");
+        }
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     // Simulate fetching dashboard data
@@ -327,7 +343,7 @@ export default function AssistantDashboardPage() {
                <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=e0f2fe" alt="Doctor" fill className="object-cover" />
             </div>
             <div>
-              <h3 className="text-[18px] font-bold text-slate-800">Dr. Sarah Rahman</h3>
+              <h3 className="text-[18px] font-bold text-slate-800">{assignedDoctorName}</h3>
               <div className="flex items-center gap-2 mt-1">
                 {queueState === 'idle' ? (
                   <><div className="w-2.5 h-2.5 bg-slate-400 rounded-full"></div><span className="text-[14px] font-bold text-slate-500">Waiting for Patient</span></>

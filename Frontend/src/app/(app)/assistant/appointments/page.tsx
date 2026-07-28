@@ -101,7 +101,7 @@ export default function AppointmentsPage() {
     <div className="w-full flex flex-col font-sans pb-24 -mt-6 lg:-mt-10">
       
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-white/50 px-4 lg:px-8 py-5 lg:py-6 shadow-[0_4px_30px_rgba(0,0,0,0.03)] sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-10 mb-4 sm:mb-6 pt-6 lg:pt-10">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-white/50 px-4 lg:px-8 py-5 lg:py-6 shadow-[0_4px_30px_rgba(0,0,0,0.03)] relative z-10 -mx-4 sm:-mx-6 lg:-mx-10 mb-4 sm:mb-6 pt-6 lg:pt-10">
         <div className="max-w-[1200px] mx-auto w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-[20px] lg:text-[24px] font-bold text-slate-800 flex items-center gap-3">
