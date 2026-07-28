@@ -1,6 +1,6 @@
 ---
 title: "Patient Journey"
-description: "The complete workflow for a patient navigating Shustota AI."
+description: "The frictionless, end-to-end patient journey powered by Oxpecker AI."
 order: 1
 ---
 

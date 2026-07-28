@@ -1,12 +1,12 @@
 ---
 title: "AI OCR Pipeline"
-description: "How medical documents are digitized into structured data."
+description: "Instant, AI-powered digitization of complex medical documents into structured data."
 order: 1
 ---
 
 # Optical Character Recognition (OCR)
 
-Shustota AI utilizes an advanced background processing pipeline to convert uploaded handwritten prescriptions and printed lab reports into structured, machine-readable JSON data.
+Oxpecker AI utilizes an advanced background processing pipeline to convert uploaded handwritten prescriptions and printed lab reports into structured, machine-readable JSON data.
 
 ## Workflow Pipeline
 

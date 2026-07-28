@@ -1,12 +1,12 @@
 ---
 title: "System Overview"
-description: "High-level architecture and infrastructure of the platform."
+description: "A resilient, microservices-inspired system engineered for scale, concurrency, and real-time medical AI."
 order: 1
 ---
 
 # Architecture Overview
 
-Shustota AI operates on a modern microservices-inspired architecture, neatly divided between a fast frontend client and a robust backend API. 
+Oxpecker AI operates on a modern microservices-inspired architecture, neatly divided between a fast frontend client and a robust backend API. 
 
 ## End-to-End System Flow
 
@@ -51,7 +51,7 @@ The backend is written in Python using **FastAPI**. It handles authentication, a
 ## Folder Structure
 
 ```text
-Shustota.ai/
+Oxpecker.ai/
 ├── Frontend/             # Next.js Application
 │   ├── src/
 │   │   ├── app/          # App Router Pages & API Routes

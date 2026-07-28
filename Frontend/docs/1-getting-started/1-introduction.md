@@ -1,16 +1,16 @@
 ---
 title: "Introduction"
-description: "Welcome to the Shustota AI Documentation Center."
+description: "The intelligent healthcare ecosystem empowering doctors and patients through seamless AI integration."
 order: 1
 ---
 
-# Shustota AI
+# Oxpecker AI
 
-Welcome to **Shustota AI**, an enterprise-grade medical assistant platform designed to revolutionize healthcare delivery in Bangladesh and beyond. This platform connects patients, doctors, and hospital administrators through a seamlessly integrated ecosystem powered by Artificial Intelligence.
+Welcome to **Oxpecker AI**, an enterprise-grade medical assistant platform designed to revolutionize healthcare delivery in Bangladesh and beyond. This platform connects patients, doctors, and hospital administrators through a seamlessly integrated ecosystem powered by Artificial Intelligence.
 
 ## Overview
 
-Shustota AI is built on a modern stack comprising a **Next.js (App Router)** frontend for blazing-fast performance and a highly concurrent **FastAPI (Python)** backend. It integrates advanced machine learning models for disease prediction and an Optical Character Recognition (OCR) pipeline for digitizing handwritten medical records.
+Oxpecker AI is built on a modern stack comprising a **Next.js (App Router)** frontend for blazing-fast performance and a highly concurrent **FastAPI (Python)** backend. It integrates advanced machine learning models for disease prediction and an Optical Character Recognition (OCR) pipeline for digitizing handwritten medical records.
 
 ### Key Features
 - **Smart Patient Dashboard:** Patients can book appointments, view digital prescriptions, and order medicines.

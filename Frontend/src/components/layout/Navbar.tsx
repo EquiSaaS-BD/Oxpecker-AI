@@ -16,7 +16,7 @@ export function Navbar() {
     { href: "/#doctors", id: "doctors", label: t("Doctors", "ডাক্তার"), icon: Stethoscope },
     { href: "/#medicines", id: "medicines", label: t("Medicines", "ওষুধের তথ্য"), icon: Pill },
     { href: "/#faq", id: "faq", label: t("FAQ", "প্রশ্নোত্তর"), icon: HelpCircle },
-    { href: "/docs", id: "docs", label: "DOCS", icon: BookText },
+    { href: "/docs", id: "docs", label: "DOC", icon: BookText },
   ];
 
   useEffect(() => {

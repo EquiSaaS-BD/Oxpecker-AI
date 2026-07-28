@@ -5,5 +5,8 @@
     "dev": "npx concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd Frontend && npm run dev",
     "dev:backend": "cd Backend && python main.py"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
   }
 }

@@ -1,16 +1,16 @@
 ---
 title: "API Reference"
-description: "Core REST API endpoints and authentication flow."
+description: "The complete, strictly-typed REST API blueprint for secure backend communication."
 order: 1
 ---
 
 # API Reference
 
-The Shustota AI backend exposes a RESTful API built with **FastAPI**. All requests and responses are strictly typed and validated using Pydantic schemas.
+The Oxpecker AI backend exposes a RESTful API built with **FastAPI**. All requests and responses are strictly typed and validated using Pydantic schemas.
 
 ## Base URL
 All API requests in production should be directed to the API Gateway:
-`https://api.shustota.ai/v1`
+`https://api.oxpecker.ai/v1`
 
 ## Authentication
 

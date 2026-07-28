@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
 
 const docsDirectory = path.join(process.cwd(), 'docs');
 
@@ -32,6 +31,37 @@ export function getDocSlugs(dir = docsDirectory): string[] {
   return slugs;
 }
 
+// Simple regex parser for markdown frontmatter
+function parseFrontmatter(fileContents: string) {
+  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+  const match = fileContents.match(frontmatterRegex);
+  
+  if (!match) return { data: {}, content: fileContents };
+  
+  const rawData = match[1];
+  const content = match[2];
+  const data: Record<string, any> = {};
+  
+  rawData.split('\n').forEach(line => {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx > -1) {
+      const key = line.slice(0, colonIdx).trim();
+      let value = line.slice(colonIdx + 1).trim();
+      // Remove surrounding quotes if they exist
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.substring(1, value.length - 1);
+      }
+      if (key === 'order') {
+        data[key] = parseInt(value, 10);
+      } else {
+        data[key] = value;
+      }
+    }
+  });
+  
+  return { data, content };
+}
+
 export function getDocBySlug(slug: string[] | string): DocPost | null {
   try {
     const realSlug = Array.isArray(slug) ? slug.join('/') : slug;
@@ -41,7 +71,7 @@ export function getDocBySlug(slug: string[] | string): DocPost | null {
     if (!fs.existsSync(fullPath)) return null;
 
     const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data, content } = matter(fileContents);
+    const { data, content } = parseFrontmatter(fileContents);
 
     // Extract category from path
     const parts = realSlug.split('/');
