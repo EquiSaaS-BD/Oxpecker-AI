@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, Home, Stethoscope, Pill, HelpCircle, Layers } from "lucide-react";
+import { ChevronRight, Home, Stethoscope, Pill, HelpCircle, Layers, BookText } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Navbar() {
@@ -16,6 +16,7 @@ export function Navbar() {
     { href: "/#doctors", id: "doctors", label: t("Doctors", "ডাক্তার"), icon: Stethoscope },
     { href: "/#medicines", id: "medicines", label: t("Medicines", "ওষুধের তথ্য"), icon: Pill },
     { href: "/#faq", id: "faq", label: t("FAQ", "প্রশ্নোত্তর"), icon: HelpCircle },
+    { href: "/docs", id: "docs", label: "DOCS", icon: BookText },
   ];
 
   useEffect(() => {
