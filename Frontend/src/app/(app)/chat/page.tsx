@@ -129,9 +129,9 @@ export default function ChatPage() {
             messages: [...messages, { role: "user" as const, content: apiContent }].map(m => ({
               role: m.role === "bot" ? "assistant" as const : "user" as const,
               content: m.content,
-            })),
-            signal: abortControllerRef.current.signal 
+            }))
         }),
+        signal: abortControllerRef.current.signal 
       });
 
       if (!response.ok) {
