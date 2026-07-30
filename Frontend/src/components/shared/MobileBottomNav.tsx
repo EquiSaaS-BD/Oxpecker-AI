@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 export function MobileBottomNav() {
   const pathname = usePathname();
 
-  // Hide on chat/home route where the AI chat interface is active
-  if (pathname === "/" || pathname === "/chat") {
+  // Hide on chat route where the AI chat interface is active
+  if (pathname === "/chat") {
     return null;
   }
 

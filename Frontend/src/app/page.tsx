@@ -9,9 +9,7 @@ import { FeaturesOverview } from "@/components/landing/FeaturesOverview";
 import { DashboardPreview } from "@/components/landing/DashboardPreview";
 import { SystemArchitectureDiagram } from "@/components/landing/SystemArchitectureDiagram";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
-import { SecurityAndFAQ } from "@/components/landing/SecurityAndFAQ";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
-import { MedicalDirectory } from "@/components/landing/MedicalDirectory";
 import { MedicineMarqueeSection } from "@/components/landing/MedicineMarqueeSection";
 
 export default function LandingPage() {
@@ -29,12 +27,10 @@ export default function LandingPage() {
           <FeaturesOverview />
           <AIIntelligenceSuite />
           <DashboardPreview />
-          <MedicalDirectory />
           <MedicineMarqueeSection />
           
           <SystemArchitectureDiagram />
           <TestimonialsSection />
-          <SecurityAndFAQ />
           <FinalCTASection />
         </main>
 

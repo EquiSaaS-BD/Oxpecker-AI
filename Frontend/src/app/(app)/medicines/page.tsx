@@ -2,24 +2,47 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, ScanBarcode, ChevronRight, ShoppingCart, UploadCloud, CheckCircle2, TrendingDown, Image as ImageIcon, Sparkles } from "lucide-react";
+import { 
+  Search, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
+  CheckCircle2, TrendingDown, Image as ImageIcon, Sparkles,
+  Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ShieldCheck, ArrowRight,
+  SlidersHorizontal, X, Syringe, FlaskConical, Bandage
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
-// E-commerce Mock Data
-const ECOMMERCE_MEDICINES = [
-  { id: "m1", name: "Napa Extend", generic: "Paracetamol", company: "Beximco Pharma", price: 2.50, type: "Tablet", img: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=300&fit=crop" },
-  { id: "m2", name: "Sergel 20mg", generic: "Esomeprazole", company: "Healthcare Pharma", price: 7.00, type: "Capsule", img: "https://images.unsplash.com/photo-1628771065518-0d82f1938462?w=300&h=300&fit=crop" },
-  { id: "m3", name: "Losectil 20mg", generic: "Omeprazole", company: "SK+F", price: 5.00, type: "Capsule", img: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&h=300&fit=crop" },
-  { id: "m4", name: "Fexo 120", generic: "Fexofenadine", company: "Square Pharma", price: 8.00, type: "Tablet", img: "https://images.unsplash.com/photo-1550572017-edb73cefb180?w=300&h=300&fit=crop" },
-  { id: "m5", name: "Calbo D", generic: "Calcium + Vit D3", company: "Square Pharma", price: 4.50, type: "Tablet", img: "https://images.unsplash.com/photo-1576073719676-aa95576db207?w=300&h=300&fit=crop" },
-  { id: "m6", name: "Alatrol 10mg", generic: "Cetirizine", company: "Square Pharma", price: 3.00, type: "Tablet", img: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=300&h=300&fit=crop" },
-  { id: "m7", name: "Maxpro 20mg", generic: "Esomeprazole", company: "Renata Ltd", price: 7.00, type: "Capsule", img: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=300&h=300&fit=crop" },
-  { id: "m8", name: "Finix 20", generic: "Rabeprazole", company: "Opsonin Pharma", price: 6.00, type: "Tablet", img: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=300&h=300&fit=crop" },
+const CATEGORIES = [
+  { id: "All", name: "All", icon: Pill, color: "text-slate-500", bg: "bg-slate-100" },
+  { id: "Painkiller", name: "Fever & Pain", icon: Thermometer, color: "text-rose-500", bg: "bg-rose-50" },
+  { id: "Gastric", name: "Gastric & Ulcer", icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
+  { id: "Antibiotic", name: "Antibiotics", icon: BugOff, color: "text-purple-500", bg: "bg-purple-50" },
+  { id: "Allergy", name: "Asthma & Allergy", icon: Wind, color: "text-sky-500", bg: "bg-sky-50" },
+  { id: "Vitamins", name: "Vitamins & Calcium", icon: Apple, color: "text-amber-500", bg: "bg-amber-50" },
+  { id: "Cardiac", name: "Heart & Pressure", icon: Heart, color: "text-red-500", bg: "bg-red-50" }
 ];
 
 export default function MedicinesPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const getBgIcon = (type: string) => {
+    if (!type) return Pill;
+    const t = type.toLowerCase();
+    if (t.includes('syrup') || t.includes('suspension')) return FlaskConical;
+    if (t.includes('injection') || t.includes('iv')) return Syringe;
+    if (t.includes('cream') || t.includes('ointment')) return Bandage;
+    return Pill;
+  };
+  
+  // Real Data States
+  const [medicines, setMedicines] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -36,13 +59,53 @@ export default function MedicinesPage() {
     { title: "Optimizing Pricing Algorithms & Finding Nearest Alternatives...", pct: 99 }
   ];
 
-  // Simulate initial data loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const fetchMedicines = async (pageNum: number, isNewSearch: boolean = false) => {
+    try {
+      if (isNewSearch) setIsLoading(true);
+      else setIsLoadingMore(true);
+
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+        limit: "20",
+        category: activeCategory,
+        q: searchQuery
+      });
+
+      const res = await fetch(`/api/medicines/all?${params.toString()}`);
+      const data = await res.json();
+
+      if (data && data.data) {
+        if (isNewSearch) {
+          setMedicines(data.data);
+        } else {
+          setMedicines(prev => [...prev, ...data.data]);
+        }
+        setHasMore(data.hasMore);
+        setTotalCount(data.totalCount);
+      }
+    } catch (err) {
+      console.error("Failed to fetch medicines:", err);
+    } finally {
       setIsLoading(false);
-    }, 1500); // 1.5 seconds loading simulation
+      setIsLoadingMore(false);
+    }
+  };
+
+  // Trigger search/filter changes
+  useEffect(() => {
+    // Debounce search slightly
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchMedicines(1, true);
+    }, 400);
     return () => clearTimeout(timer);
-  }, []);
+  }, [searchQuery, activeCategory]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchMedicines(newPage, true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleUploadPrescription = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,29 +162,37 @@ export default function MedicinesPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] overflow-y-auto">
+    <div className="flex flex-col h-full bg-[#F8FAFC] overflow-y-auto pb-24 lg:pb-0">
       
       {/* Search & Scanner Hero Banner */}
-      <div className="relative shrink-0 bg-white border-b border-slate-200 px-4 md:px-8 py-8 overflow-hidden z-10 shadow-sm">
+      <div className="relative shrink-0 bg-white border-b border-slate-200 px-4 md:px-8 pt-20 lg:pt-8 pb-8 overflow-hidden z-10 shadow-sm">
         <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row gap-8 items-center justify-between">
           
           {/* Left: Search Title & Bar */}
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full min-w-0">
             <h1 className="text-[28px] md:text-[36px] font-[800] text-slate-900 mb-2 leading-tight">Search or Upload Prescription</h1>
             <p className="text-[15px] text-slate-500 font-medium mb-6">Find medicines, compare prices, or upload your prescription to automatically find the best alternatives.</p>
             
-            <div className="bg-slate-50 rounded-[16px] flex items-center p-2 border border-slate-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm max-w-[600px]">
-              <div className="pl-4 pr-3 text-slate-400">
-                <Search size={20} />
+            <div className="flex items-center gap-2 max-w-[600px] w-full">
+              <div className="flex-1 bg-slate-50 rounded-[16px] flex items-center p-2 border border-slate-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
+                <div className="pl-4 pr-3 text-slate-400">
+                  <Search size={20} />
+                </div>
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search medicine, generic..." 
+                  className="flex-1 bg-transparent border-none outline-none py-2 text-[15px] font-medium text-slate-800 placeholder:text-slate-400 min-w-0"
+                />
               </div>
-              <input 
-                type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by medicine name, generic, or symptoms..." 
-                className="flex-1 bg-transparent border-none outline-none py-2 text-[15px] font-medium text-slate-800 placeholder:text-slate-400"
-              />
-              <button className="bg-slate-900 hover:bg-slate-800 text-white rounded-[12px] px-6 py-3 flex items-center gap-2 text-[14px] font-bold transition-colors ml-2 shadow-sm">
+              <button 
+                onClick={() => setIsFilterOpen(true)}
+                className="bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-primary rounded-[16px] w-[54px] h-[54px] shrink-0 flex items-center justify-center transition-all shadow-sm"
+              >
+                <SlidersHorizontal size={20} />
+              </button>
+              <button className="hidden sm:flex bg-slate-900 hover:bg-slate-800 text-white rounded-[16px] px-6 h-[54px] items-center justify-center gap-2 text-[14px] font-bold transition-colors shadow-sm shrink-0">
                 Search
               </button>
             </div>
@@ -144,8 +215,10 @@ export default function MedicinesPage() {
           <div className="w-full lg:w-[400px] shrink-0">
             <label 
               htmlFor="rx-upload"
-              className={`block border-2 border-dashed rounded-[24px] p-8 text-center transition-all relative overflow-hidden ${
-                isScanning ? 'border-primary cursor-wait' : 'border-slate-300 bg-slate-50 hover:border-primary hover:bg-primary/5 cursor-pointer'
+              className={`block transition-all relative overflow-hidden ${
+                isScanning 
+                  ? 'border-2 border-dashed rounded-[24px] p-6 lg:p-8 text-center border-primary cursor-wait bg-primary/5' 
+                  : 'flex lg:block items-center justify-center h-[54px] lg:h-auto rounded-[16px] lg:rounded-[24px] bg-slate-900 lg:bg-slate-50 text-white lg:text-slate-900 shadow-md shadow-slate-900/20 lg:shadow-none lg:border-2 lg:border-dashed lg:border-slate-300 lg:p-8 hover:bg-slate-800 lg:hover:border-primary lg:hover:bg-primary/5 cursor-pointer'
               }`}
             >
               {/* Hidden file input */}
@@ -189,18 +262,26 @@ export default function MedicinesPage() {
                   </div>
                 </div>
               ) : (
-                <div className="relative z-10 flex flex-col items-center justify-center space-y-3">
-                  <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100">
-                    <ImageIcon size={28} className="text-slate-400" />
+                <>
+                  {/* Desktop Upload Box */}
+                  <div className="hidden lg:flex relative z-10 flex-col items-center justify-center space-y-3">
+                    <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100">
+                      <ImageIcon size={28} className="text-slate-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-[16px] font-bold text-slate-900 mb-1">Upload Prescription</h3>
+                      <p className="text-[13px] text-slate-500 font-medium mb-4">Click here to upload an image of your Rx</p>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl font-bold text-[14px] shadow-sm hover:border-primary hover:text-primary transition-all pointer-events-none">
+                      <UploadCloud size={18} /> Upload Image
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-[16px] font-bold text-slate-900 mb-1">Upload Prescription</h3>
-                    <p className="text-[13px] text-slate-500 font-medium mb-4">Click here to upload an image of your Rx</p>
+                  
+                  {/* Mobile Upload Button */}
+                  <div className="flex lg:hidden items-center justify-center gap-2 w-full h-full font-bold text-[15px] pointer-events-none relative z-10">
+                    <UploadCloud size={20} /> Upload Prescription
                   </div>
-                  <div className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl font-bold text-[14px] shadow-sm hover:border-primary hover:text-primary transition-all pointer-events-none">
-                    <UploadCloud size={18} /> Upload Image
-                  </div>
-                </div>
+                </>
               )}
             </label>
           </div>
@@ -255,104 +336,258 @@ export default function MedicinesPage() {
         )}
 
         {/* E-Commerce Medicine Grid */}
-        <div className="flex justify-between items-end mb-6">
+        <div className="flex justify-between items-end mb-6 mt-8">
           <div>
-            <h2 className="text-[24px] font-[800] text-slate-900">
-              {searchQuery ? `Search Results for "${searchQuery}"` : "Popular Medicines"}
+            <h2 className="text-[28px] md:text-[32px] font-[800] text-slate-900">
+              {searchQuery ? `Search Results for "${searchQuery}"` : "Find Medicines by Category"}
             </h2>
-            <p className="text-[14px] text-slate-500 font-medium mt-1">Stock up on daily essentials</p>
+            <p className="text-[15px] text-slate-500 font-medium mt-2">
+              Browse {totalCount > 0 ? totalCount.toLocaleString() : 'thousands of'} commonly prescribed medicines grouped by their primary usage.
+            </p>
           </div>
-          {!searchQuery && (
-            <button className="text-[14px] font-bold text-primary hover:underline flex items-center gap-1">
-              View All <ChevronRight size={16} />
-            </button>
-          )}
         </div>
 
+        {/* Category Tabs moved to Sidebar Drawer */}
         {(() => {
           if (isLoading) {
             return (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((skeleton) => (
-                  <div key={skeleton} className="bg-white rounded-[20px] border border-slate-200 overflow-hidden flex flex-col h-full shadow-sm">
-                    {/* Image Skeleton */}
-                    <div className="h-[180px] bg-slate-100 animate-pulse relative p-4 flex items-center justify-center border-b border-slate-50">
-                      <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
-                    </div>
-                    {/* Info Skeleton */}
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="w-1/2 h-3 bg-slate-200 animate-pulse rounded mb-3"></div>
-                      <div className="w-3/4 h-5 bg-slate-200 animate-pulse rounded mb-2"></div>
-                      <div className="w-full h-3 bg-slate-100 animate-pulse rounded mb-4"></div>
-                      
-                      <div className="mt-auto flex items-center justify-between">
-                        <div className="w-20 h-6 bg-slate-200 animate-pulse rounded"></div>
-                        <div className="w-10 h-10 bg-slate-200 animate-pulse rounded-xl"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((skeleton) => (
+                  <div key={skeleton} className="bg-white rounded-[24px] border border-slate-200 overflow-hidden h-[200px] shadow-sm p-5 flex flex-col justify-between">
+                    <div className="flex gap-4">
+                      <div className="w-[60px] h-[60px] bg-slate-100 animate-pulse rounded-2xl shrink-0"></div>
+                      <div className="flex-1">
+                        <div className="w-3/4 h-5 bg-slate-200 animate-pulse rounded mb-2"></div>
+                        <div className="w-1/2 h-3 bg-slate-100 animate-pulse rounded"></div>
                       </div>
                     </div>
+                    <div className="w-full h-8 bg-slate-100 animate-pulse rounded mt-auto"></div>
                   </div>
                 ))}
               </div>
             );
           }
 
-          const filteredMedicines = ECOMMERCE_MEDICINES.filter(med => 
-            med.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            med.generic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            med.company.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-
-          if (filteredMedicines.length === 0) {
+          if (medicines.length === 0) {
             return (
-              <div className="text-center py-20">
+              <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
                 <Search size={48} className="mx-auto text-slate-300 mb-4" />
-                <h3 className="text-[18px] font-bold text-slate-900 mb-2">No medicines found</h3>
-                <p className="text-[14px] text-slate-500">We couldn't find anything matching "{searchQuery}". Try a different term.</p>
-                <Button onClick={() => setSearchQuery("")} variant="outline" className="mt-4">Clear Search</Button>
+                <h3 className="text-[20px] font-bold text-slate-900 mb-2">No medicines found</h3>
+                <p className="text-[15px] text-slate-500 mb-6">We couldn't find anything matching your filters. Try a different term or category.</p>
+                <Button onClick={() => { setSearchQuery(""); setActiveCategory("All"); }} variant="outline" size="lg">Clear Filters</Button>
               </div>
             );
           }
 
-          return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {filteredMedicines.map((med) => (
-                <div key={med.id} className="bg-white rounded-[20px] border border-slate-200 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all group flex flex-col h-full">
-                  
-                  {/* Image Container */}
-                  <div className="h-[180px] bg-white relative p-4 flex items-center justify-center border-b border-slate-50">
-                    <div className="relative w-full h-full">
-                      <Image src={med.img} alt={med.name} fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
-                    </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
-                        {med.type}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Info Container */}
-                  <div className="p-5 flex flex-col flex-1">
-                    <p className="text-[11px] font-[800] text-slate-400 uppercase tracking-widest mb-1 truncate">{med.company}</p>
-                    <h3 className="text-[16px] font-bold text-slate-900 leading-tight mb-1 group-hover:text-primary transition-colors">{med.name}</h3>
-                    <p className="text-[13px] text-slate-500 font-medium mb-4 line-clamp-1">{med.generic}</p>
-                    
-                    <div className="mt-auto flex items-center justify-between">
-                      <div>
-                        <span className="text-[18px] font-[800] text-slate-900">৳ {med.price.toFixed(2)}</span>
-                      </div>
-                      <button className="w-10 h-10 bg-slate-50 hover:bg-slate-900 hover:text-white text-slate-600 rounded-xl flex items-center justify-center transition-colors">
-                        <ShoppingCart size={18} />
-                      </button>
-                    </div>
-                  </div>
+          // Helper to get Category Icon
+          const getCategoryDetails = (catId: string) => {
+            return CATEGORIES.find(c => c.id === catId) || CATEGORIES[0];
+          };
 
-                </div>
-              ))}
+          return (
+            <div className="space-y-10">
+              <motion.div 
+                layout
+                className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6"
+              >
+                <AnimatePresence>
+                  {medicines.map((med) => {
+                    const catDetails = getCategoryDetails(med.category);
+                    const MedIcon = catDetails.icon;
+                    const BgIcon = getBgIcon(med.type);
+                    return (
+                      <motion.div
+                        key={med.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="block relative bg-white border border-slate-200 p-3 sm:p-5 rounded-[16px] sm:rounded-[24px] shadow-sm hover:shadow-[0_16px_48px_rgba(0,61,155,0.08)] hover:border-primary/30 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-transparent to-transparent opacity-50 pointer-events-none z-0"></div>
+                          
+                          <BgIcon 
+                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-200/50 -rotate-12 pointer-events-none group-hover:scale-110 group-hover:rotate-0 transition-transform duration-500" 
+                            strokeWidth={1}
+                          />
+
+                          <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
+                            <div className={`w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${catDetails.color.replace('text-', 'bg-').replace('500', '500/10')} border-${catDetails.color.split('-')[1]}-200 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                              <MedIcon className={`w-5 h-5 sm:w-7 sm:h-7 ${catDetails.color}`} strokeWidth={1.5} />
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center min-w-0 mt-1 sm:mt-0">
+                              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                                <h3 className="text-[14px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-primary transition-colors tracking-tight truncate pr-2" title={med.name}>{med.name}</h3>
+                                <div className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50 shrink-0">
+                                  <ShieldCheck size={12} />
+                                </div>
+                              </div>
+                              <p className="text-[11px] sm:text-[12px] font-semibold text-slate-500 mb-0.5 sm:mb-1 line-clamp-1" title={med.generic}>{med.generic} <span className="hidden sm:inline">• {med.type}</span></p>
+                              <p className={`text-[10px] sm:text-[12px] font-bold ${catDetails.color} truncate`}>
+                                <span className="hidden sm:inline">For: </span><span className="font-medium text-slate-600">{med.useFor}</span>
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-100">
+                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">৳{med.price.toFixed(2)}</span>
+                            <button className="flex items-center justify-center gap-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 hover:bg-primary text-slate-600 hover:text-white transition-colors group/btn">
+                              <ShoppingCart className="w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] group-hover/btn:scale-110 transition-transform" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Functional Pagination */}
+              {(() => {
+                const ITEMS_PER_PAGE = 20;
+                const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+                
+                if (totalPages <= 1) return null;
+
+                return (
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-12 mb-4">
+                    <button 
+                      onClick={() => handlePageChange(Math.max(1, page - 1))}
+                      disabled={page === 1 || isLoading}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const p = i + 1;
+                      if (p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)) {
+                        return (
+                          <button 
+                            key={p}
+                            onClick={() => handlePageChange(p)}
+                            disabled={isLoading}
+                            className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${
+                              page === p 
+                                ? 'bg-primary text-white shadow-md shadow-primary/20' 
+                                : 'border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      } else if (p === page - 2 || p === page + 2) {
+                        return <span key={p} className="text-slate-400 font-bold px-1 sm:px-2">...</span>;
+                      }
+                      return null;
+                    })}
+
+                    <button 
+                      onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages || isLoading}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           );
         })()}
 
       </div>
+
+      {/* Premium Filter Sidebar Drawer */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsFilterOpen(false)}
+              className="fixed inset-0 bg-[#0a1628]/40 backdrop-blur-md z-[100]"
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "100%", opacity: 0.5 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 300, mass: 0.8 }}
+              className="fixed top-0 right-0 h-full w-full max-w-[340px] bg-white/95 backdrop-blur-xl shadow-[-20px_0_40px_rgba(0,0,0,0.1)] z-[101] flex flex-col rounded-l-[32px] border-l border-white/50 overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100/50">
+                <h3 className="text-[20px] font-extrabold text-slate-900 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <SlidersHorizontal size={16} className="text-primary" />
+                  </div>
+                  Filters
+                </h3>
+                <button 
+                  onClick={() => setIsFilterOpen(false)}
+                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-rose-50 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
+                <motion.div 
+                  className="flex flex-col gap-3"
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+                    }
+                  }}
+                >
+                  <motion.p variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0 } }} className="text-[13px] font-bold text-slate-400 uppercase tracking-wider mb-2">Categories</motion.p>
+                  
+                  {CATEGORIES.map(cat => (
+                    <motion.button
+                      variants={{
+                        hidden: { opacity: 0, x: 20 },
+                        show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+                      }}
+                      key={cat.id}
+                      onClick={() => {
+                        setActiveCategory(cat.id);
+                        setIsFilterOpen(false); // Optionally close after selecting
+                      }}
+                      className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-[15px] transition-colors duration-200 ${
+                        activeCategory === cat.id 
+                          ? `${cat.bg} ${cat.color}` 
+                          : "bg-transparent text-slate-600 hover:bg-slate-100/80"
+                      }`}
+                    >
+                      <cat.icon size={20} className={activeCategory === cat.id ? cat.color : "text-slate-400 group-hover:text-slate-600"} />
+                      {cat.name}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              </div>
+              
+              <div className="p-6 md:p-8 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
+                <Button 
+                  onClick={() => { setActiveCategory("All"); setSearchQuery(""); setIsFilterOpen(false); }}
+                  variant="outline" 
+                  className="w-full h-[54px] rounded-2xl border-none bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                >
+                  Clear All Filters
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Global CSS for scanning animation */}
       <style dangerouslySetInnerHTML={{__html: `

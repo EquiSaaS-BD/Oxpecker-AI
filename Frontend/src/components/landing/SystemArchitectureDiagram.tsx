@@ -82,7 +82,7 @@ export function SystemArchitectureDiagram() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-slate-400 text-[15px] sm:text-lg max-w-3xl mx-auto"
+            className="text-slate-400 text-[14px] sm:text-lg max-w-[95vw] lg:max-w-3xl mx-auto whitespace-nowrap overflow-hidden text-ellipsis px-4"
           >
             A seamlessly connected healthcare platform. Data flows in real-time between patients, doctors, and assistants.
           </motion.p>
