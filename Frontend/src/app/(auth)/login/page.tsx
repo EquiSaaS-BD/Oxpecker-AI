@@ -105,7 +105,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <Link href="/" className="mb-8">
-          <Image src="/images/shustota ai logo.png" alt="Shustota AI" width={400} height={140} className="h-24 sm:h-28 w-auto object-contain" />
+          <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={400} height={140} className="h-24 sm:h-28 w-auto object-contain" />
         </Link>
 
         <div className="w-full max-w-[460px]">

@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
 description: "The intelligent healthcare ecosystem empowering doctors and patients through seamless AI integration."
-order: 1
+order:1
 ---
 
 # Oxpecker AI

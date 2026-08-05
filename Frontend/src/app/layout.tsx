@@ -15,16 +15,16 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://shushthota.equisaas-bd.com"),
-  title: "Shustota AI - Your Personal AI Health Assistant",
+  metadataBase: new URL("https://oxpecker.equisaas-bd.com"),
+  title: "Oxpecker AI - Your Personal AI Health Assistant",
   description:
-    "Shustota is an advanced AI-powered healthcare platform providing instant symptom analysis, prescription scanning, and expert doctor connections. Completely free and secure.",
+    "Oxpecker is an advanced AI-powered healthcare platform providing instant symptom analysis, prescription scanning, and expert doctor connections. Completely free and secure.",
   keywords: [
     "AI Healthcare",
     "Health Assistant",
     "Doctor Discovery",
     "Medicine Intelligence",
-    "Shustota",
+    "Oxpecker",
     "স্বাস্থ্যসেবা",
     "Symptom Checker",
     "Prescription Scanner"
@@ -33,16 +33,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Shustota AI - Your Personal AI Health Assistant",
+    title: "Oxpecker AI - Your Personal AI Health Assistant",
     description: "Instant AI-powered health guidance, symptom analysis, and prescription insights.",
-    url: "https://shushthota.equisaas-bd.com",
-    siteName: "Shustota AI",
+    url: "https://oxpecker.equisaas-bd.com",
+    siteName: "Oxpecker AI",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Shustota AI Healthcare Dashboard",
+        alt: "Oxpecker AI Healthcare Dashboard",
       },
     ],
     locale: "bn_BD",
@@ -50,12 +50,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shustota AI - Your Personal AI Health Assistant",
+    title: "Oxpecker AI - Your Personal AI Health Assistant",
     description: "Instant AI-powered health guidance, symptom analysis, and prescription insights.",
     images: ["/og-image.png"],
   },
   icons: {
-    icon: "/favicon.png",
+    icon: "/images/Oxpecker_icon.png",
   },
 };
 

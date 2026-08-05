@@ -68,8 +68,8 @@ export function Navbar() {
             {/* ── Logo ── */}
             <Link href="/" className="shrink-0 flex items-center">
               <Image
-                src="/images/shustota ai logo.png"
-                alt="Shustota AI"
+                src="/images/Oxpecker_full_size.png"
+                alt="Oxpecker AI"
                 width={280}
                 height={95}
                 className="h-[52px] sm:h-[56px] lg:h-[4.5rem] w-auto object-contain transition-all duration-300 origin-left scale-[1.15] sm:scale-100"

@@ -253,7 +253,7 @@ export default function RegisterPage() {
 
         {/* Logo */}
       <Link href="/" className="mb-12">
-        <Image src="/images/shustota ai logo.png" alt="Shustota AI" width={400} height={140} className="h-28 sm:h-32 w-auto object-contain" />
+        <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={400} height={140} className="h-28 sm:h-32 w-auto object-contain" />
       </Link>
 
       {/* Main Container */}
