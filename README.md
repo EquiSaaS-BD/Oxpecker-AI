@@ -2,7 +2,7 @@
 
 An enterprise-grade, zero-overhead AI healthcare ecosystem designed for low-bandwidth, high-volume patient-doctor-hospital management. Engineered for instant clinical symptom analysis, prescription OCR scanning, and intelligent medical directory mapping. 
 
-Fully optimized to run at zero operating cost on free tier cloud infrastructures.
+Fully optimized to run at zero operating cost on free tier cloud infrastructures. -- - - - - 
 
 ---
 
