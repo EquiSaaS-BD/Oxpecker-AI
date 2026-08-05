@@ -63,22 +63,20 @@ export function Navbar() {
         )}
 
         <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[64px] lg:h-[72px] flex items-center justify-between">
-          {/* ── Left Side (Logo + Nav) ── */}
-          <div className="flex items-center gap-8 lg:gap-12">
-            {/* ── Logo ── */}
-            <Link href="/" className="shrink-0 flex items-center">
-              <Image
-                src="/images/Oxpecker_full_size.png"
-                alt="Oxpecker AI"
-                width={280}
-                height={95}
-                className="h-[52px] sm:h-[56px] lg:h-[4.5rem] w-auto object-contain transition-all duration-300 origin-left scale-[1.15] sm:scale-100"
-                priority
-              />
-            </Link>
+          {/* ── Left Side (Logo) ── */}
+          <Link href="/" className="shrink-0 flex items-center -ml-8 sm:-ml-12 lg:-ml-16">
+            <Image
+              src="/images/Oxpecker_full_size.png"
+              alt="Oxpecker AI"
+              width={280}
+              height={95}
+              className="h-[60px] lg:h-[72px] w-auto object-contain transition-all duration-300 origin-left scale-[1.6] sm:scale-[1.8] lg:scale-[2.0]"
+              priority
+            />
+          </Link>
 
             {/* ── Desktop Nav ── */}
-            <div className="hidden lg:flex items-center gap-4 xl:gap-6">
+            <div className="hidden lg:flex items-center gap-3 xl:gap-5 absolute left-1/2 -translate-x-1/2">
               {NAV_LINKS.map((link) => {
                 const isActive = activeSection === link.id;
                 const activeClass = "text-primary bg-primary/10 font-bold shadow-sm ring-1 ring-primary/20";
@@ -90,6 +88,8 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    target={link.id === "docs" ? "_blank" : undefined}
+                    rel={link.id === "docs" ? "noopener noreferrer" : undefined}
                     className={`relative px-4 py-2 text-[14px] font-semibold rounded-lg transition-all duration-300 emil-button ${
                       isActive ? activeClass : inactiveClass
                     }`}
@@ -99,10 +99,9 @@ export function Navbar() {
                 );
               })}
             </div>
-          </div>
 
-          {/* ── Desktop & Mobile Actions (Always Visible Login/Signup) ── */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* ── Right Side (Desktop & Mobile Actions) ── */}
+          <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
             <Link
               href="/login"
               className="px-3 sm:px-5 py-2 text-[12px] sm:text-sm font-bold rounded-lg sm:rounded-xl border border-primary/20 text-primary hover:bg-primary/5 transition-colors emil-button"
@@ -142,6 +141,8 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                target={link.id === "docs" ? "_blank" : undefined}
+                rel={link.id === "docs" ? "noopener noreferrer" : undefined}
                 className={`flex flex-col items-center justify-center gap-1 px-3 py-1.5 transition-all rounded-md ${
                   isActive ? "text-primary bg-primary/10 scale-105 shadow-sm shadow-primary/5" : "text-slate-800 hover:text-black hover:bg-white/50"
                 }`}

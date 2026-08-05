@@ -11,6 +11,8 @@ import { SystemArchitectureDiagram } from "@/components/landing/SystemArchitectu
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { MedicineMarqueeSection } from "@/components/landing/MedicineMarqueeSection";
+import { MedicalDirectory } from "@/components/landing/MedicalDirectory";
+import { SecurityAndFAQ } from "@/components/landing/SecurityAndFAQ";
 
 export default function LandingPage() {
   return (
@@ -27,10 +29,13 @@ export default function LandingPage() {
           <FeaturesOverview />
           <AIIntelligenceSuite />
           <DashboardPreview />
+          
+          <MedicalDirectory />
           <MedicineMarqueeSection />
           
           <SystemArchitectureDiagram />
           <TestimonialsSection />
+          <SecurityAndFAQ />
           <FinalCTASection />
         </main>
 

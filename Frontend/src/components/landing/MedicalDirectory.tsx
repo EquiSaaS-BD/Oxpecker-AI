@@ -37,12 +37,12 @@ export function MedicalDirectory() {
     setActiveTab(searchType);
   }, [searchType]);
 
-  // Mobile Auto-Scroll Logic
+  // Auto-Scroll Logic (Desktop & Mobile)
   useEffect(() => {
     if (!isPlaying) return;
 
     const interval = setInterval(() => {
-      if (window.innerWidth < 768 && scrollRef.current) {
+      if (scrollRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
         // If reached the end, loop back to start instantly to avoid rewind animation
         if (scrollLeft + clientWidth >= scrollWidth - 20) {
