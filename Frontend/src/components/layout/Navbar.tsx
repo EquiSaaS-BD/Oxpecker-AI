@@ -64,13 +64,13 @@ export function Navbar() {
 
         <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[64px] lg:h-[72px] flex items-center justify-between">
           {/* ── Left Side (Logo) ── */}
-          <Link href="/" className="shrink-0 flex items-center -ml-8 sm:-ml-12 lg:-ml-16">
+          <Link href="/" className="shrink-0 flex items-center">
             <Image
               src="/images/Oxpecker_full_size.png"
               alt="Oxpecker AI"
-              width={280}
-              height={95}
-              className="h-[60px] lg:h-[72px] w-auto object-contain transition-all duration-300 origin-left scale-[1.6] sm:scale-[1.8] lg:scale-[2.0]"
+              width={180}
+              height={55}
+              className="h-10 lg:h-12 w-auto object-contain transition-all duration-300"
               priority
             />
           </Link>

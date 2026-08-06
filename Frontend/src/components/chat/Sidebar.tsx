@@ -80,11 +80,14 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       `}>
         {/* Top Header */}
         <div className="p-4 flex flex-col gap-4">
-          <Link href="/" className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 flex items-center justify-center relative">
-              <Image src="/images/shustota-icon.png" alt="Shustota AI" fill sizes="40px" className="object-contain" />
-            </div>
-            <span className="font-[800] text-[20px] text-slate-900 tracking-tight">Shustota</span>
+          <Link href="/" className="flex items-center px-2 mb-2">
+            <Image 
+              src="/images/Oxpecker_full_size.png" 
+              alt="Oxpecker AI" 
+              width={140} 
+              height={50} 
+              className="w-[140px] h-auto object-contain origin-left" 
+            />
           </Link>
 
           <button 
