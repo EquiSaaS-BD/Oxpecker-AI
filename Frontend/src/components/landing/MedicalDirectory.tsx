@@ -17,11 +17,23 @@ export function MedicalDirectory() {
   const [isFocused, setIsFocused] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   
-  const initialHospitals = [
-    { id: 1, name: "Square Hospitals Ltd.", type: "Multi-specialty", rating: "4.8", loc: "Panthapath, Dhaka", img: "https://ui-avatars.com/api/?name=Square+Hospital&background=e8edff&color=003d9b" },
-    { id: 2, name: "Evercare Hospital", type: "JCI Accredited", rating: "4.9", loc: "Bashundhara, Dhaka", img: "https://ui-avatars.com/api/?name=Evercare+Hospital&background=e8edff&color=003d9b" },
-    { id: 3, name: "Labaid Specialized", type: "Cardiac & General", rating: "4.7", loc: "Dhanmondi, Dhaka", img: "https://ui-avatars.com/api/?name=Labaid+Specialized&background=e8edff&color=003d9b" },
-  ];
+  const [hospitals, setHospitals] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/data/hospitals.json')
+      .then(res => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then(data => {
+        let finalData = data;
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          finalData = data.flat();
+        }
+        setHospitals(Array.isArray(finalData) ? finalData : []);
+      })
+      .catch(err => console.error("Error fetching hospitals", err));
+  }, []);
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -65,11 +77,17 @@ export function MedicalDirectory() {
     return matchesQuery && matchesLocation;
   });
 
-  const filteredHospitals = initialHospitals.filter(hosp => {
-    const matchesQuery = !searchQuery || 
-                         hosp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         hosp.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = !searchLocation || hosp.loc.toLowerCase().includes(searchLocation.toLowerCase());
+  const filteredHospitals = hospitals.filter(hosp => {
+    const query = searchQuery.toLowerCase();
+    const location = searchLocation.toLowerCase();
+    
+    const matchesQuery = !query || 
+                         hosp.name?.toLowerCase()?.includes(query) || 
+                         hosp.specialty?.toLowerCase()?.includes(query) ||
+                         hosp.type?.toLowerCase()?.includes(query);
+                         
+    const matchesLocation = !location || hosp.address?.toLowerCase()?.includes(location);
+    
     return matchesQuery && matchesLocation;
   });
 
@@ -312,34 +330,31 @@ export function MedicalDirectory() {
                     <p>{t("No hospitals found matching your search.", "আপনার খোঁজা হাসপাতাল পাওয়া যায়নি।")}</p>
                   </div>
                 ) : (
-                  filteredHospitals.map((hosp) => (
+                  filteredHospitals.map((hosp, idx) => (
                     <motion.div 
-                      key={hosp.id}
-                    whileHover={{ y: -5 }}
-                    className="w-[85vw] max-w-[320px] sm:min-w-[320px] snap-center bg-white border border-slate-100 rounded-3xl p-6 shadow-lg shadow-slate-200/40 group hover:border-secondary/20 transition-all shrink-0"
-                  >
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm p-1">
-                        <img src={hosp.img} alt={hosp.name} className="w-full h-full object-cover rounded-xl" />
+                      key={`hosp-${hosp.id || idx}-${idx}`}
+                      whileHover={{ y: -5 }}
+                      className="w-[85vw] max-w-[320px] sm:min-w-[320px] snap-center bg-white border border-slate-100 rounded-3xl p-6 shadow-lg shadow-slate-200/40 group hover:border-secondary/20 transition-all shrink-0 flex flex-col"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm p-1 flex items-center justify-center shrink-0">
+                          <Building2 size={28} className="text-secondary/60" />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold">
-                        <Star size={12} className="fill-orange-500" />
-                        {hosp.rating}
+                      <h3 className="font-bold text-[18px] text-[#0a1628] mb-1 line-clamp-1">{hosp.name}</h3>
+                      <p className="text-secondary font-medium text-[13px] mb-4">{hosp.specialty || hosp.type}</p>
+                      
+                      <div className="space-y-2 mb-6 w-full flex flex-col bg-slate-50/50 p-3 rounded-2xl border border-slate-100 flex-grow">
+                        <div className="flex items-start gap-2 text-slate-600 text-[13px] font-medium">
+                          <MapPin size={16} className="text-slate-400 shrink-0 mt-0.5" /> 
+                          <span className="line-clamp-2">{hosp.address}</span>
+                        </div>
                       </div>
-                    </div>
-                    <h3 className="font-bold text-xl text-[#0a1628] mb-1">{hosp.name}</h3>
-                    <p className="text-secondary font-medium text-sm mb-4">{hosp.type}</p>
-                    
-                    <div className="space-y-2 mb-6">
-                      <div className="flex items-center gap-2 text-slate-500 text-sm">
-                        <MapPin size={16} /> {hosp.loc}
-                      </div>
-                    </div>
 
-                    <Link href="/hospitals" className="w-full bg-slate-50 hover:bg-secondary hover:text-white text-secondary font-bold text-sm py-3 rounded-xl flex items-center justify-center transition-colors">
-                      {t("View Details", "বিস্তারিত দেখুন")}
-                    </Link>
-                  </motion.div>
+                      <div className="w-full bg-slate-50 hover:bg-secondary hover:text-white text-secondary font-bold text-[14px] py-2.5 rounded-xl flex items-center justify-center transition-colors mt-auto cursor-pointer border border-secondary/10">
+                        {t("View Details", "বিস্তারিত দেখুন")}
+                      </div>
+                    </motion.div>
                   ))
                 )}
                 </div>
