@@ -1,53 +1,45 @@
-# dependencies
+# Dependencies
 node_modules/
-**/node_modules/
 /.pnp
 .pnp.js
 
-# python
+# Python & Backend
 __pycache__/
-**/__pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-env/
-venv/
-.venv/
-ENV/
 *.db
 *.sqlite
 *.sqlite3
+.venv/
+env/
+venv/
 
-# next.js
-.next/
+# Next.js & Build
 **/.next/
 **/*.sst
 **/*.pack
 /out/
 /build
+.vercel
 
-# misc
+# Environment variables
+.env
+.env*.local
+Backend/.env
+Frontend/.env
+Frontend/.env.local
+
+# Misc & Debug
 .DS_Store
-Thumbs.db
 *.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
-.env
-**/.env
-
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma generated
 /src/generated/prisma
