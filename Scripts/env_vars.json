@@ -1,0 +1,5 @@
+[
+  { "key": "DATABASE_URL", "value": "mysql+aiomysql://avnadmin:AVNS_GnRRYe2LSAx9gRxReV8@mysql-9efbf77-kholifaahmadalamin-e541.k.aivencloud.com:27278/defaultdb?ssl_mode=REQUIRED" },
+  { "key": "REDIS_URL", "value": "rediss://default:gQAAAAAAAnN0AAIgcDJkYWE3ZTc5YTVjNmQ0ODhkODE1MWRmMjcxODg2MGU4MA@flexible-pigeon-160628.upstash.io:6379" },
+  { "key": "PYTHON_VERSION", "value": "3.11.0" }
+]
