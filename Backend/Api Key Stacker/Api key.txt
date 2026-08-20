@@ -1,0 +1,16 @@
+[ Shostota ai User Interface ]
+                               |
+            +------------------+------------------+
+            |                                     |
+    (Chat & Booking)                     (Report Analysis)
+            v                                     v
+      [ Groq API ]                        [ Gemini 2.5 API ]
+  (Fast, Real-time Agent)               (Heavy Vision & Logic)
+
+
+
+
+
+Groq Api: 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
+
+Gemini Api: AIzaSyBzMLxU5OTUJy0SPTtU4ZyQB73N3vlwccU

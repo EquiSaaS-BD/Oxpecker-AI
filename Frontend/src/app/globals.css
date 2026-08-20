@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-primary: #020617; /* Slate 950 - Absolute strict dark */
+  --color-secondary: #334155; /* Slate 700 */
+  --color-tertiary: #f8fafc; /* Slate 50 */
+  
+  --color-glass-bg: rgba(255, 255, 255, 0.85);
+  --color-glass-border: rgba(226, 232, 240, 0.8); /* Slate 200 */
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #020617;
+    
+    /* Strict spatial design constraints */
+    --radius-lg: 1.5rem;
+    --radius-md: 1rem;
+    --radius-sm: 0.5rem;
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    /* Premium typography features */
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  /* =========================================
+     PREMIUM SPATIAL SHADOWS (APPLE-LIKE)
+     ========================================= */
+  .spatial-shadow {
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.03),
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      0 16px 32px rgba(0, 0, 0, 0.04);
+  }
+
+  .spatial-shadow-hover {
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.03),
+      0 4px 16px rgba(0, 0, 0, 0.06),
+      0 24px 48px rgba(0, 0, 0, 0.05);
+  }
+
+  /* =========================================
+     PREMIUM GLASSMORPHISM (BLUR-HEAVY)
+     ========================================= */
+  .glass-panel {
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--color-glass-border);
+  }
+
+  /* =========================================
+     MINIMALIST BENTO GRID
+     ========================================= */
+  .bento-container {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  .bento-card {
+    @apply bg-white rounded-3xl p-8 border border-slate-200 transition-all duration-300;
+  }
+  .bento-card:hover {
+    @apply border-slate-300;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.03);
+  }
+
+  /* Scrollbar */
+  .scrollbar-hide::-webkit-scrollbar,
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .scrollbar-hide,
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* =========================================
+   CANDY UI UNIVERSAL SCROLLBARS
+   ========================================= */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  box-shadow: 0 2px 12px rgba(2, 132, 199, 0.5);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #38bdf8 rgba(241, 245, 249, 0.5);
+}
+
+.candy-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.candy-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.candy-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  border-radius: 9999px;
+}

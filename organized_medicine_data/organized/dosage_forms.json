@@ -1,0 +1,684 @@
+{
+  "total_count": 113,
+  "generated_at": "2026-07-30 18:01:46",
+  "data": [
+    {
+      "id": 179,
+      "name": "Bolus Tablet",
+      "slug": "bolus-tablet-179",
+      "brand_names_count": 89
+    },
+    {
+      "id": 2,
+      "name": "Capsule",
+      "slug": "capsule-2",
+      "brand_names_count": 2011
+    },
+    {
+      "id": 82,
+      "name": "Capsule (Controlled Release)",
+      "slug": "capsule-controlled-release-82",
+      "brand_names_count": 4
+    },
+    {
+      "id": 60,
+      "name": "Capsule (Delayed Release)",
+      "slug": "capsule-delayed-release-60",
+      "brand_names_count": 438
+    },
+    {
+      "id": 80,
+      "name": "Capsule (Extended Release)",
+      "slug": "capsule-extended-release-80",
+      "brand_names_count": 9
+    },
+    {
+      "id": 109,
+      "name": "Capsule (Modified Release)",
+      "slug": "capsule-modified-release-109",
+      "brand_names_count": 36
+    },
+    {
+      "id": 38,
+      "name": "Capsule (Sustained Release)",
+      "slug": "capsule-sustained-release-38",
+      "brand_names_count": 65
+    },
+    {
+      "id": 81,
+      "name": "Capsule (Timed Release)",
+      "slug": "capsule-timed-release-81",
+      "brand_names_count": 144
+    },
+    {
+      "id": 24,
+      "name": "Chewable Tablet",
+      "slug": "chewable-tablet-24",
+      "brand_names_count": 284
+    },
+    {
+      "id": 149,
+      "name": "Chewing Gum Tablet",
+      "slug": "chewing-gum-tablet-149",
+      "brand_names_count": 1
+    },
+    {
+      "id": 8,
+      "name": "Cream",
+      "slug": "cream-8",
+      "brand_names_count": 496
+    },
+    {
+      "id": 122,
+      "name": "Dental Gel",
+      "slug": "dental-gel-122",
+      "brand_names_count": 2
+    },
+    {
+      "id": 110,
+      "name": "Dialysis Solution",
+      "slug": "dialysis-solution-110",
+      "brand_names_count": 9
+    },
+    {
+      "id": 28,
+      "name": "Dispersible Tablet",
+      "slug": "dispersible-tablet-28",
+      "brand_names_count": 80
+    },
+    {
+      "id": 72,
+      "name": "Ear Drop",
+      "slug": "ear-drop-72",
+      "brand_names_count": 21
+    },
+    {
+      "id": 27,
+      "name": "Effervescent Granules",
+      "slug": "effervescent-granules-27",
+      "brand_names_count": 8
+    },
+    {
+      "id": 164,
+      "name": "Effervescent Powder",
+      "slug": "effervescent-powder-164",
+      "brand_names_count": 24
+    },
+    {
+      "id": 31,
+      "name": "Effervescent Tablet",
+      "slug": "effervescent-tablet-31",
+      "brand_names_count": 37
+    },
+    {
+      "id": 178,
+      "name": "Emulsion for infusion",
+      "slug": "emulsion-for-infusion-178",
+      "brand_names_count": 7
+    },
+    {
+      "id": 159,
+      "name": "Eye Capsule",
+      "slug": "eye-capsule-159",
+      "brand_names_count": 23
+    },
+    {
+      "id": 175,
+      "name": "Flash Tablet",
+      "slug": "flash-tablet-175",
+      "brand_names_count": 11
+    },
+    {
+      "id": 6,
+      "name": "Gel",
+      "slug": "gel-6",
+      "brand_names_count": 53
+    },
+    {
+      "id": 94,
+      "name": "Hand Rub",
+      "slug": "hand-rub-94",
+      "brand_names_count": 71
+    },
+    {
+      "id": 69,
+      "name": "IM Injection",
+      "slug": "im-injection-69",
+      "brand_names_count": 293
+    },
+    {
+      "id": 147,
+      "name": "IM/IA Injection",
+      "slug": "imia-injection-147",
+      "brand_names_count": 10
+    },
+    {
+      "id": 68,
+      "name": "IM/IV Injection",
+      "slug": "imiv-injection-68",
+      "brand_names_count": 646
+    },
+    {
+      "id": 105,
+      "name": "IM/SC Injection",
+      "slug": "imsc-injection-105",
+      "brand_names_count": 36
+    },
+    {
+      "id": 17,
+      "name": "IV Infusion",
+      "slug": "iv-infusion-17",
+      "brand_names_count": 509
+    },
+    {
+      "id": 70,
+      "name": "IV Injection",
+      "slug": "iv-injection-70",
+      "brand_names_count": 406
+    },
+    {
+      "id": 134,
+      "name": "IV Injection or Infusion",
+      "slug": "iv-injection-or-infusion-134",
+      "brand_names_count": 159
+    },
+    {
+      "id": 133,
+      "name": "IV/SC Injection",
+      "slug": "ivsc-injection-133",
+      "brand_names_count": 52
+    },
+    {
+      "id": 136,
+      "name": "Inhalation Capsule",
+      "slug": "inhalation-capsule-136",
+      "brand_names_count": 111
+    },
+    {
+      "id": 14,
+      "name": "Inhaler",
+      "slug": "inhaler-14",
+      "brand_names_count": 96
+    },
+    {
+      "id": 12,
+      "name": "Injection",
+      "slug": "injection-12",
+      "brand_names_count": 234
+    },
+    {
+      "id": 104,
+      "name": "Intra-articular Injection",
+      "slug": "intra-articular-injection-104",
+      "brand_names_count": 4
+    },
+    {
+      "id": 180,
+      "name": "Intracameral Injection",
+      "slug": "intracameral-injection-180",
+      "brand_names_count": 1
+    },
+    {
+      "id": 107,
+      "name": "Intraspinal Injection",
+      "slug": "intraspinal-injection-107",
+      "brand_names_count": 9
+    },
+    {
+      "id": 59,
+      "name": "Intratracheal Suspension",
+      "slug": "intratracheal-suspension-59",
+      "brand_names_count": 2
+    },
+    {
+      "id": 119,
+      "name": "Intravitreal Injection",
+      "slug": "intravitreal-injection-119",
+      "brand_names_count": 2
+    },
+    {
+      "id": 108,
+      "name": "Irrigation Solution",
+      "slug": "irrigation-solution-108",
+      "brand_names_count": 7
+    },
+    {
+      "id": 162,
+      "name": "Liquid",
+      "slug": "liquid-162",
+      "brand_names_count": 14
+    },
+    {
+      "id": 92,
+      "name": "Liquid Cleanser Soap",
+      "slug": "liquid-cleanser-soap-92",
+      "brand_names_count": 1
+    },
+    {
+      "id": 166,
+      "name": "Long Acting Injection",
+      "slug": "long-acting-injection-166",
+      "brand_names_count": 3
+    },
+    {
+      "id": 63,
+      "name": "Long Acting Tablet",
+      "slug": "long-acting-tablet-63",
+      "brand_names_count": 3
+    },
+    {
+      "id": 9,
+      "name": "Lotion",
+      "slug": "lotion-9",
+      "brand_names_count": 45
+    },
+    {
+      "id": 151,
+      "name": "MUPS Tablet",
+      "slug": "mups-tablet-151",
+      "brand_names_count": 43
+    },
+    {
+      "id": 88,
+      "name": "Medicated Bar",
+      "slug": "medicated-bar-88",
+      "brand_names_count": 2
+    },
+    {
+      "id": 176,
+      "name": "Microgranules",
+      "slug": "microgranules-176",
+      "brand_names_count": 2
+    },
+    {
+      "id": 95,
+      "name": "Mouthwash",
+      "slug": "mouthwash-95",
+      "brand_names_count": 36
+    },
+    {
+      "id": 124,
+      "name": "Muscle Rub",
+      "slug": "muscle-rub-124",
+      "brand_names_count": 2
+    },
+    {
+      "id": 174,
+      "name": "Nail Lacquer",
+      "slug": "nail-lacquer-174",
+      "brand_names_count": 2
+    },
+    {
+      "id": 10,
+      "name": "Nasal Drop",
+      "slug": "nasal-drop-10",
+      "brand_names_count": 46
+    },
+    {
+      "id": 165,
+      "name": "Nasal Ointment",
+      "slug": "nasal-ointment-165",
+      "brand_names_count": 1
+    },
+    {
+      "id": 53,
+      "name": "Nasal Spray",
+      "slug": "nasal-spray-53",
+      "brand_names_count": 65
+    },
+    {
+      "id": 141,
+      "name": "Nebuliser Solution",
+      "slug": "nebuliser-solution-141",
+      "brand_names_count": 22
+    },
+    {
+      "id": 139,
+      "name": "Nebuliser Suspension",
+      "slug": "nebuliser-suspension-139",
+      "brand_names_count": 7
+    },
+    {
+      "id": 181,
+      "name": "OROS Tablet",
+      "slug": "oros-tablet-181",
+      "brand_names_count": 1
+    },
+    {
+      "id": 170,
+      "name": "Ocular Spray",
+      "slug": "ocular-spray-170",
+      "brand_names_count": 1
+    },
+    {
+      "id": 7,
+      "name": "Ointment",
+      "slug": "ointment-7",
+      "brand_names_count": 242
+    },
+    {
+      "id": 157,
+      "name": "Ophthalmic Emulsion",
+      "slug": "ophthalmic-emulsion-157",
+      "brand_names_count": 8
+    },
+    {
+      "id": 76,
+      "name": "Ophthalmic Gel",
+      "slug": "ophthalmic-gel-76",
+      "brand_names_count": 21
+    },
+    {
+      "id": 19,
+      "name": "Ophthalmic Ointment",
+      "slug": "ophthalmic-ointment-19",
+      "brand_names_count": 77
+    },
+    {
+      "id": 148,
+      "name": "Ophthalmic Solution",
+      "slug": "ophthalmic-solution-148",
+      "brand_names_count": 728
+    },
+    {
+      "id": 118,
+      "name": "Ophthalmic Suspension",
+      "slug": "ophthalmic-suspension-118",
+      "brand_names_count": 116
+    },
+    {
+      "id": 142,
+      "name": "Oral Emulsion",
+      "slug": "oral-emulsion-142",
+      "brand_names_count": 10
+    },
+    {
+      "id": 78,
+      "name": "Oral Gel",
+      "slug": "oral-gel-78",
+      "brand_names_count": 22
+    },
+    {
+      "id": 22,
+      "name": "Oral Paste",
+      "slug": "oral-paste-22",
+      "brand_names_count": 7
+    },
+    {
+      "id": 20,
+      "name": "Oral Powder",
+      "slug": "oral-powder-20",
+      "brand_names_count": 122
+    },
+    {
+      "id": 144,
+      "name": "Oral Soluble Film",
+      "slug": "oral-soluble-film-144",
+      "brand_names_count": 2
+    },
+    {
+      "id": 18,
+      "name": "Oral Solution",
+      "slug": "oral-solution-18",
+      "brand_names_count": 263
+    },
+    {
+      "id": 5,
+      "name": "Oral Suspension",
+      "slug": "oral-suspension-5",
+      "brand_names_count": 576
+    },
+    {
+      "id": 21,
+      "name": "Pediatric Drops",
+      "slug": "pediatric-drops-21",
+      "brand_names_count": 245
+    },
+    {
+      "id": 44,
+      "name": "Powder for Injection",
+      "slug": "powder-for-injection-44",
+      "brand_names_count": 3
+    },
+    {
+      "id": 33,
+      "name": "Powder for Solution",
+      "slug": "powder-for-solution-33",
+      "brand_names_count": 73
+    },
+    {
+      "id": 75,
+      "name": "Powder for Suspension",
+      "slug": "powder-for-suspension-75",
+      "brand_names_count": 1011
+    },
+    {
+      "id": 36,
+      "name": "Rectal Ointment",
+      "slug": "rectal-ointment-36",
+      "brand_names_count": 5
+    },
+    {
+      "id": 131,
+      "name": "Rectal Saline",
+      "slug": "rectal-saline-131",
+      "brand_names_count": 2
+    },
+    {
+      "id": 172,
+      "name": "Respirator Solution",
+      "slug": "respirator-solution-172",
+      "brand_names_count": 11
+    },
+    {
+      "id": 79,
+      "name": "Retard Tablet",
+      "slug": "retard-tablet-79",
+      "brand_names_count": 11
+    },
+    {
+      "id": 67,
+      "name": "SC Injection",
+      "slug": "sc-injection-67",
+      "brand_names_count": 225
+    },
+    {
+      "id": 89,
+      "name": "Scalp Lotion",
+      "slug": "scalp-lotion-89",
+      "brand_names_count": 4
+    },
+    {
+      "id": 127,
+      "name": "Scalp Ointment",
+      "slug": "scalp-ointment-127",
+      "brand_names_count": 3
+    },
+    {
+      "id": 90,
+      "name": "Scalp Solution",
+      "slug": "scalp-solution-90",
+      "brand_names_count": 21
+    },
+    {
+      "id": 125,
+      "name": "Shampoo",
+      "slug": "shampoo-125",
+      "brand_names_count": 14
+    },
+    {
+      "id": 85,
+      "name": "Solution",
+      "slug": "solution-85",
+      "brand_names_count": 37
+    },
+    {
+      "id": 48,
+      "name": "Solution for Inhalation",
+      "slug": "solution-for-inhalation-48",
+      "brand_names_count": 9
+    },
+    {
+      "id": 146,
+      "name": "Sprinkle Capsule",
+      "slug": "sprinkle-capsule-146",
+      "brand_names_count": 3
+    },
+    {
+      "id": 152,
+      "name": "Sublingual Tablet",
+      "slug": "sublingual-tablet-152",
+      "brand_names_count": 4
+    },
+    {
+      "id": 4,
+      "name": "Suppository",
+      "slug": "suppository-4",
+      "brand_names_count": 64
+    },
+    {
+      "id": 96,
+      "name": "Surgical Scrub",
+      "slug": "surgical-scrub-96",
+      "brand_names_count": 2
+    },
+    {
+      "id": 3,
+      "name": "Syrup",
+      "slug": "syrup-3",
+      "brand_names_count": 1010
+    },
+    {
+      "id": 1,
+      "name": "Tablet",
+      "slug": "tablet-1",
+      "brand_names_count": 9368
+    },
+    {
+      "id": 43,
+      "name": "Tablet (Controlled Release)",
+      "slug": "tablet-controlled-release-43",
+      "brand_names_count": 65
+    },
+    {
+      "id": 132,
+      "name": "Tablet (Delayed Release)",
+      "slug": "tablet-delayed-release-132",
+      "brand_names_count": 122
+    },
+    {
+      "id": 46,
+      "name": "Tablet (Enteric Coated)",
+      "slug": "tablet-enteric-coated-46",
+      "brand_names_count": 308
+    },
+    {
+      "id": 41,
+      "name": "Tablet (Extended Release)",
+      "slug": "tablet-extended-release-41",
+      "brand_names_count": 247
+    },
+    {
+      "id": 154,
+      "name": "Tablet (Immediate Release)",
+      "slug": "tablet-immediate-release-154",
+      "brand_names_count": 1
+    },
+    {
+      "id": 42,
+      "name": "Tablet (Modified Release)",
+      "slug": "tablet-modified-release-42",
+      "brand_names_count": 55
+    },
+    {
+      "id": 160,
+      "name": "Tablet (Prolonged Release)",
+      "slug": "tablet-prolonged-release-160",
+      "brand_names_count": 2
+    },
+    {
+      "id": 37,
+      "name": "Tablet (Sustained Release)",
+      "slug": "tablet-sustained-release-37",
+      "brand_names_count": 127
+    },
+    {
+      "id": 138,
+      "name": "Topical Gel",
+      "slug": "topical-gel-138",
+      "brand_names_count": 30
+    },
+    {
+      "id": 168,
+      "name": "Topical Powder",
+      "slug": "topical-powder-168",
+      "brand_names_count": 10
+    },
+    {
+      "id": 93,
+      "name": "Topical Solution",
+      "slug": "topical-solution-93",
+      "brand_names_count": 20
+    },
+    {
+      "id": 39,
+      "name": "Topical Spray",
+      "slug": "topical-spray-39",
+      "brand_names_count": 20
+    },
+    {
+      "id": 126,
+      "name": "Topical Suspension",
+      "slug": "topical-suspension-126",
+      "brand_names_count": 1
+    },
+    {
+      "id": 62,
+      "name": "Transdermal Patch",
+      "slug": "transdermal-patch-62",
+      "brand_names_count": 6
+    },
+    {
+      "id": 64,
+      "name": "Vaginal Cream",
+      "slug": "vaginal-cream-64",
+      "brand_names_count": 11
+    },
+    {
+      "id": 112,
+      "name": "Vaginal Gel",
+      "slug": "vaginal-gel-112",
+      "brand_names_count": 5
+    },
+    {
+      "id": 65,
+      "name": "Vaginal Pessary",
+      "slug": "vaginal-pessary-65",
+      "brand_names_count": 1
+    },
+    {
+      "id": 113,
+      "name": "Vaginal Suppository",
+      "slug": "vaginal-suppository-113",
+      "brand_names_count": 9
+    },
+    {
+      "id": 86,
+      "name": "Vaginal Tablet",
+      "slug": "vaginal-tablet-86",
+      "brand_names_count": 10
+    },
+    {
+      "id": 169,
+      "name": "Viscoelastic Solution",
+      "slug": "viscoelastic-solution-169",
+      "brand_names_count": 5
+    },
+    {
+      "id": 140,
+      "name": "Viscous Eye Drop",
+      "slug": "viscous-eye-drop-140",
+      "brand_names_count": 2
+    }
+  ]
+}
