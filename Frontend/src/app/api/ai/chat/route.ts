@@ -280,7 +280,7 @@ async function callGoogleStream(provider: ProviderConfig, messages: ChatMessage[
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
+        systemInstruction: { parts: [{ text: systemInstruction }] },
         contents,
         generationConfig: {
           temperature: 0.7,
@@ -578,6 +578,8 @@ function detectLanguage(text: string): string {
 // ============================================
 // POST /api/ai/chat
 // ============================================
+
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
