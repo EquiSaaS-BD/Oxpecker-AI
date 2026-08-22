@@ -56,42 +56,42 @@ export function PatientMegaMenuNavbar() {
       href: "/hospitals",
       icon: Building2,
       color: "bg-indigo-100 text-indigo-600",
-      desc: "হাসপাতাল বেড ও আইসিইউ ট্র্যাকার"
+      desc: "Find hospitals and check live ICU bed status"
     },
     {
       label: "Medicines Guide",
       href: "/medicines",
       icon: Pill,
       color: "bg-blue-100 text-blue-600",
-      desc: "ওষুধ নির্দেশিকা ও সেবনবিধি"
+      desc: "Search medicines, alternatives and pricing"
     },
     {
       label: "Nutrition & Diet",
       href: "/nutrition",
       icon: Apple,
       color: "bg-orange-100 text-orange-600",
-      desc: "খাবারের ক্যালোরি স্ক্যান ও ডায়েট চার্ট"
+      desc: "Personalized diet plans and nutrition guide"
     },
     {
       label: "Saved Records",
       href: "/saved",
       icon: Bookmark,
       color: "bg-teal-100 text-teal-600",
-      desc: "সংরক্ষিত ডাক্তার ও বুকমার্ক তালিকা"
+      desc: "Access your saved reports and prescriptions"
     },
     {
       label: "Patient Profile",
       href: "/patient/profile",
       icon: HeartPulse,
       color: "bg-amber-100 text-amber-600",
-      desc: "রোগীর হেলথ প্রোফাইল ও ভিটালস"
+      desc: "Manage your personal health information"
     },
     {
       label: "Emergency Hotline",
       href: "/contact",
       icon: PhoneCall,
       color: "bg-rose-100 text-rose-600",
-      desc: "২৪/৭ জরুরী হটলাইন ও অ্যাম্বুলেন্স"
+      desc: "24/7 emergency contact numbers and support"
     },
   ];
 

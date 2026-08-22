@@ -105,8 +105,8 @@ export function HeroSection() {
           className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8 font-medium"
         >
           {t(
-            "Discover verified doctors, registered medicines, hospitals, and real-time healthcare availability across Bangladesh.",
-            "বিশেষজ্ঞ ডাক্তার, ঔষধের সঠিক তথ্য, লাইভ বেড প্রাপ্যতা এবং এআই পরামর্শ,একটি স্মার্ট প্ল্যাটফর্মে।"
+            "Symptoms analysis, medicine guide, live doctor booking, and medical report translation in one intelligent platform.",
+            "লক্ষণ বিশ্লেষণ, ঔষধের গাইড, সরাসরি ডাক্তার অ্যাপয়েন্টমেন্ট এবং মেডিকেল রিপোর্ট অনুবাদ—সবই একটি বুদ্ধিমান প্ল্যাটফর্মে।"
           )}
         </motion.p>
 
@@ -187,7 +187,7 @@ export function HeroSection() {
               type="submit"
               className="h-11 px-6 bg-[#0878C9] hover:bg-[#0665aa] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 shrink-0"
             >
-              <span>{t("Search", "অনুসন্ধান")}</span>
+              <span>{t("Search", "খুঁজুন")}</span>
               <ArrowRight size={16} />
             </button>
           </form>
@@ -200,7 +200,7 @@ export function HeroSection() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
         >
-          <span className="text-slate-500 font-semibold">{t("Explore by specialty:", "বিভাগ অনুযায়ী খুঁজুন:")}</span>
+          <span className="text-slate-500 font-semibold">{t("Explore by specialty:", "বিশেষজ্ঞ বিভাগ খুঁজুন:")}</span>
           {POPULAR_SPECIALTIES.map((spec) => (
             <Link
               key={spec.name}
