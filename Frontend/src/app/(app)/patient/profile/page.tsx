@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { User, Activity, Heart, Clock, CheckCircle2, ShieldCheck, Phone, Calendar, ArrowRight, FileText } from "lucide-react";
-import { SystemStatusMonitor } from "@/components/dashboard/SystemStatusMonitor";
 
 export default function PatientProfilePage() {
   return (
@@ -161,9 +160,6 @@ export default function PatientProfilePage() {
 
         </div>
       </div>
-
-      {/* System & MCP Integrations Status Monitor */}
-      <SystemStatusMonitor />
     </div>
   );
 }
