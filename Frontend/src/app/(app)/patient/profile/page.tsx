@@ -1,160 +1,171 @@
-"use client";
-
+import React from "react";
 import Link from "next/link";
-import { User, Activity, Heart, Clock, CheckCircle2, ShieldCheck, Phone, Calendar, ArrowRight, FileText } from "lucide-react";
+import { 
+  Heart, 
+  Activity, 
+  FileText, 
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2
+} from "lucide-react";
 
 export default function PatientProfilePage() {
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* Header Info */}
-      <div>
-        <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-          রোগীর প্রোফাইল (Patient Profile)
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          সর্বশেষ আপডেট: আজ সকাল ১০:৩০
-        </p>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Patient Dashboard</h1>
+        <p className="text-slate-500 mt-1">Manage your health profile and upcoming appointments.</p>
       </div>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         
         {/* Patient Info Card (Span 4) */}
-        <div className="md:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 flex flex-col items-center text-center shadow-xs relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-24 bg-sky-50" />
+        <div className="lg:col-span-4 bento-card spatial-shadow-sm flex flex-col items-center text-center relative overflow-hidden p-0">
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-sky-50 to-slate-100 border-b border-slate-200/50" />
           <img
-            className="w-24 h-24 rounded-full object-cover border-4 border-white relative z-10 mt-4 shadow-sm bg-slate-100"
+            className="w-28 h-28 rounded-full object-cover border-4 border-white relative z-10 mt-10 shadow-md bg-slate-50"
             src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300"
             alt="Patient Avatar"
           />
-          <h2 className="text-xl font-bold mt-4 text-slate-900">রহিম উদ্দিন</h2>
-          <p className="text-sm text-slate-500 font-medium">রোগী আইডি: #SHU-8492</p>
+          <div className="px-6 pb-8 w-full flex flex-col items-center">
+            <h2 className="text-2xl font-black mt-4 text-slate-900">Arif Hossain</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 bg-slate-100 px-3 py-1 rounded-full">ID: #SHU-8492</p>
 
-          <div className="mt-6 w-full flex flex-col gap-3 text-left">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-semibold text-slate-500">বয়স / লিঙ্গ</span>
-              <span className="text-sm font-bold text-slate-800">৪৫ / পুরুষ</span>
+            <div className="mt-8 w-full flex flex-col gap-4 text-left">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <span className="text-sm font-semibold text-slate-500">Age / Gender</span>
+                <span className="text-sm font-bold text-slate-800">32 / Male</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <span className="text-sm font-semibold text-slate-500">Blood Group</span>
+                <span className="text-sm font-black text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-lg shadow-xs">O+</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <span className="text-sm font-semibold text-slate-500">Insurance</span>
+                <span className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                  MetLife Gold <ShieldCheck size={16} className="text-sky-600" />
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-slate-500">NID Verified</span>
+                <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5">
+                  Verified <CheckCircle2 size={16} className="text-emerald-600" />
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-semibold text-slate-500">রক্তের গ্রুপ</span>
-              <span className="text-sm font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">O+</span>
-            </div>
-            <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-semibold text-slate-500">যোগাযোগ</span>
-              <span className="text-sm font-bold text-slate-800 flex items-center gap-1">
-                +৮৮০ ১৭১২-৩৪৫৬৭৮ <ShieldCheck size={16} className="text-sky-600" />
-              </span>
-            </div>
-            <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-semibold text-slate-500">পরিচয় যাচাইকরণ</span>
-              <span className="text-sm font-bold text-emerald-600 flex items-center gap-1">
-                NID: যাচাইকৃত <CheckCircle2 size={16} className="text-emerald-600" />
-              </span>
-            </div>
+
+            <Link 
+              href="/settings"
+              className="mt-8 w-full btn-clay text-sm py-3.5 px-4 rounded-2xl text-center flex justify-center items-center gap-2"
+            >
+              Edit Profile
+            </Link>
           </div>
-
-          <Link 
-            href="/settings"
-            className="mt-6 w-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm py-3 px-4 rounded-xl transition-colors text-center shadow-xs"
-          >
-            প্রোফাইল সম্পাদনা করুন
-          </Link>
         </div>
 
         {/* Health Metrics & Medical History (Span 8) */}
-        <div className="md:col-span-8 flex flex-col gap-6">
+        <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
           
-          {/* Vitals Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          {/* Vitals Grid (Bento style) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bento-card spatial-shadow-sm p-6 group">
               <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500">রক্তচাপ</span>
-                <Heart size={20} className="text-rose-500" />
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black text-slate-900">120/80 <span className="text-xs text-slate-400 font-normal">mmHg</span></div>
-                <span className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
-                  স্বাভাবিক
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500">হৃদস্পন্দন</span>
-                <Activity size={20} className="text-sky-600" />
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black text-slate-900">72 <span className="text-xs text-slate-400 font-normal">bpm</span></div>
-                <span className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 text-xs font-bold">
-                  স্থিতিশীল
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500">রক্তের শর্করা</span>
-                <Activity size={20} className="text-amber-500" />
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black text-slate-900">5.8 <span className="text-xs text-slate-400 font-normal">mmol/L</span></div>
-                <span className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">
-                  সীমানায়
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Medical History Summary */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-slate-900">চিকিৎসার ইতিহাস</h3>
-              <Link href="/reports" className="text-xs font-bold text-sky-600 hover:underline">সব দেখুন</Link>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="p-2.5 rounded-xl bg-sky-100 text-sky-700">
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">উচ্চ রক্তচাপ নিয়ন্ত্রণ</h4>
-                  <p className="text-xs text-slate-500">ডাঃ শফিকুল ইসলাম - গত ২ বছর ধরে চিকিৎসাধীন</p>
+                <span className="text-sm font-bold text-slate-500">Blood Pressure</span>
+                <div className="p-2 bg-rose-50 rounded-xl text-rose-500 group-hover:scale-110 transition-transform">
+                  <Heart size={20} />
                 </div>
               </div>
-              <div className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700">
+              <div className="mt-4">
+                <div className="text-3xl font-black text-slate-900 tracking-tight">120/80 <span className="text-sm text-slate-400 font-semibold tracking-normal">mmHg</span></div>
+                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold">
+                  Normal
+                </span>
+              </div>
+            </div>
+
+            <div className="bento-card spatial-shadow-sm p-6 group">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-bold text-slate-500">Heart Rate</span>
+                <div className="p-2 bg-sky-50 rounded-xl text-sky-600 group-hover:scale-110 transition-transform">
                   <Activity size={20} />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">বার্ষিক স্বাস্থ্য পরীক্ষা</h4>
-                  <p className="text-xs text-slate-500">শুশ্রূষতা ডায়াগনস্টিক - ১৫ জানুয়ারী, ২০২৪</p>
+              </div>
+              <div className="mt-4">
+                <div className="text-3xl font-black text-slate-900 tracking-tight">72 <span className="text-sm text-slate-400 font-semibold tracking-normal">bpm</span></div>
+                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-sky-50 border border-sky-100 text-sky-700 text-xs font-bold">
+                  Resting
+                </span>
+              </div>
+            </div>
+
+            <div className="bento-card spatial-shadow-sm p-6 group">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-bold text-slate-500">Blood Sugar</span>
+                <div className="p-2 bg-amber-50 rounded-xl text-amber-500 group-hover:scale-110 transition-transform">
+                  <Activity size={20} />
                 </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-3xl font-black text-slate-900 tracking-tight">5.8 <span className="text-sm text-slate-400 font-semibold tracking-normal">mmol/L</span></div>
+                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold">
+                  Fasting
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Upcoming Appointments */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-slate-900">আসন্ন অ্যাপয়েন্টমেন্ট</h3>
-              <Link href="/doctors" className="text-xs font-bold bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg hover:bg-sky-100 transition-colors">
-                + নতুন বুকিং
-              </Link>
-            </div>
-            <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between bg-slate-50 hover:shadow-xs transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col items-center justify-center bg-sky-600 text-white rounded-xl w-12 h-12 shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider">মে</span>
-                  <span className="text-lg font-black leading-none">১২</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {/* Upcoming Appointments */}
+            <div className="bento-card spatial-shadow-sm p-6 sm:p-8 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-black text-slate-900">Appointments</h3>
+                <Link href="/doctors" className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-colors">
+                  + Book New
+                </Link>
+              </div>
+              <div className="border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between bg-white spatial-shadow hover:spatial-shadow-hover transition-all cursor-pointer group">
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col items-center justify-center bg-sky-50 border border-sky-100 text-sky-700 rounded-xl w-14 h-14 shrink-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider">OCT</span>
+                    <span className="text-xl font-black leading-none">24</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Dr. Anisul Islam</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Cardiology • 5:30 PM</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">ডাঃ নাদিয়া সুলতানা</h4>
-                  <p className="text-xs text-slate-500">কার্ডিওলজিস্ট • বিকাল ৪:০০</p>
+                <ArrowRight size={18} className="text-slate-300 group-hover:text-sky-600 transition-colors transform group-hover:translate-x-1" />
+              </div>
+            </div>
+
+            {/* Medical History Summary */}
+            <div className="bento-card spatial-shadow-sm p-6 sm:p-8 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-black text-slate-900">Recent Reports</h3>
+                <Link href="/reports" className="text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors">View All</Link>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 group cursor-pointer">
+                  <div className="p-3 rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors shrink-0">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition-colors">CBC Blood Test</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Popular Diagnostic • 12 Oct 2026</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 group cursor-pointer">
+                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
+                    <Activity size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">ECG Scan Result</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Labaid Hospital • 05 Sep 2026</p>
+                  </div>
                 </div>
               </div>
-              <ArrowRight size={18} className="text-slate-400" />
             </div>
           </div>
 

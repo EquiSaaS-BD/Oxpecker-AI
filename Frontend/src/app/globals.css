@@ -36,30 +36,84 @@
 
 @layer utilities {
   /* =========================================
-     PREMIUM SPATIAL SHADOWS (APPLE-LIKE)
+     PREMIUM SPATIAL SHADOWS (APPLE/STRIPE-LIKE)
      ========================================= */
-  .spatial-shadow {
+  .spatial-shadow-sm {
     box-shadow: 
-      0 0 0 1px rgba(0, 0, 0, 0.03),
-      0 2px 8px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.02),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  .spatial-shadow-md {
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.02),
+      0 4px 12px rgba(0, 0, 0, 0.04),
       0 16px 32px rgba(0, 0, 0, 0.04);
+  }
+
+  .spatial-shadow-lg {
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.02),
+      0 8px 24px rgba(0, 0, 0, 0.06),
+      0 32px 64px rgba(0, 0, 0, 0.06);
   }
 
   .spatial-shadow-hover {
     box-shadow: 
       0 0 0 1px rgba(0, 0, 0, 0.03),
-      0 4px 16px rgba(0, 0, 0, 0.06),
-      0 24px 48px rgba(0, 0, 0, 0.05);
+      0 8px 24px rgba(0, 0, 0, 0.08),
+      0 32px 64px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
   }
 
   /* =========================================
      PREMIUM GLASSMORPHISM (BLUR-HEAVY)
      ========================================= */
   .glass-panel {
-    background: var(--color-glass-bg);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid var(--color-glass-border);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 
+                0 4px 24px rgba(0, 0, 0, 0.03);
+  }
+
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5),
+                0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  /* =========================================
+     CLAYMORPHISM CTA (TACTILE BUTTONS)
+     ========================================= */
+  .btn-clay {
+    background: #0284c7; /* Sky 600 */
+    color: #ffffff;
+    box-shadow: 
+      inset 0 4px 6px rgba(255, 255, 255, 0.3), /* Top highlight */
+      inset 0 -4px 6px rgba(0, 0, 0, 0.15),     /* Bottom shadow */
+      0 4px 12px rgba(2, 132, 199, 0.4);        /* Drop shadow */
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .btn-clay:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 
+      inset 0 4px 6px rgba(255, 255, 255, 0.4),
+      inset 0 -4px 6px rgba(0, 0, 0, 0.15),
+      0 6px 16px rgba(2, 132, 199, 0.5);
+  }
+
+  .btn-clay:active {
+    transform: translateY(2px);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      0 1px 2px rgba(2, 132, 199, 0.3);
   }
 
   /* =========================================
@@ -69,11 +123,11 @@
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
   }
   .bento-card {
-    @apply bg-white rounded-3xl p-8 border border-slate-200 transition-all duration-300;
+    @apply bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 transition-all duration-300;
   }
   .bento-card:hover {
     @apply border-slate-300;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.03);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.04);
   }
 
   /* Scrollbar */

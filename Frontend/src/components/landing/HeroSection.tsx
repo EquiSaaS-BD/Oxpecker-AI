@@ -115,7 +115,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="w-full max-w-3xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-sky-900/10 border border-slate-200 p-2 sm:p-3 text-left relative z-20"
+          className="w-full max-w-3xl glass-panel spatial-shadow-lg rounded-[2rem] p-3 sm:p-4 text-left relative z-20"
         >
           {/* Search Tabs */}
           <div className="flex gap-1.5 p-1 overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 mb-2">
@@ -185,7 +185,7 @@ export function HeroSection() {
 
             <button
               type="submit"
-              className="h-11 px-6 bg-[#0878C9] hover:bg-[#0665aa] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 shrink-0"
+              className="h-11 px-6 btn-clay rounded-2xl text-sm font-bold flex items-center justify-center gap-1.5 shrink-0"
             >
               <span>{t("Search", "খুঁজুন")}</span>
               <ArrowRight size={16} />
@@ -219,7 +219,7 @@ export function HeroSection() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-10 pt-6 border-t border-slate-200/80 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-4xl text-left"
         >
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
             <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200">
               <CheckCircle2 size={18} />
             </div>
@@ -229,7 +229,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
             <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 border border-sky-200">
               <Pill size={18} />
             </div>
@@ -239,7 +239,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
             <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200 relative">
               <Building2 size={18} />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-white" />
@@ -252,7 +252,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/60 border border-slate-100">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
             <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
               <Clock size={18} />
             </div>

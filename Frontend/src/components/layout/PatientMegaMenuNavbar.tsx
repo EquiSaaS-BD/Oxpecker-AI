@@ -98,7 +98,7 @@ export function PatientMegaMenuNavbar() {
   return (
     <header
       ref={navRef}
-      className="hidden lg:flex 2xl:hidden sticky top-0 left-0 right-0 h-[72px] bg-white/95 backdrop-blur-xl border-b border-slate-200/80 items-center px-6 z-[60] shadow-xs justify-between"
+      className="hidden lg:flex 2xl:hidden sticky top-0 left-0 right-0 h-[72px] glass-panel border-x-0 border-t-0 border-b border-slate-200/50 items-center px-6 z-[60] spatial-shadow-sm justify-between"
     >
       {/* 1. Clickable Logo + New Chat + Primary Links */}
       <div className="flex items-center gap-5">
@@ -127,7 +127,7 @@ export function PatientMegaMenuNavbar() {
         {/* New Chat Button */}
         <button
           onClick={() => createNewThread("New Chat")}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all shadow-xs shrink-0 active:scale-95"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full btn-clay text-xs font-extrabold shrink-0"
           title="Start a New AI Health Chat"
         >
           <Plus size={14} strokeWidth={3} />

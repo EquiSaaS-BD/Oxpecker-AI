@@ -40,13 +40,13 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 auto-rows-auto">
+      <div className="bento-container">
         {/* 01: AI Health Assistant */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="col-span-1 md:col-span-2 row-span-1 rounded-3xl bg-gradient-to-br from-sky-900 to-slate-900 text-white p-6 sm:p-8 relative overflow-hidden group shadow-lg min-h-[200px] flex flex-col justify-between"
+          className="bento-card col-span-1 md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white spatial-shadow-md border-0 group"
         >
           <div className="relative z-10">
             <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-sky-400 mb-4 backdrop-blur-md">
@@ -73,7 +73,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="col-span-1 md:col-span-1 row-span-1 rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow min-h-[200px] flex flex-col justify-between"
+          className="bento-card col-span-1 md:col-span-1 flex flex-col justify-between"
         >
           <div>
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-4">
@@ -97,7 +97,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="col-span-1 md:col-span-1 row-span-1 rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow min-h-[200px] flex flex-col justify-between"
+          className="bento-card col-span-1 md:col-span-1 flex flex-col justify-between"
         >
           <div>
             <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-4">
@@ -121,7 +121,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="col-span-1 md:col-span-2 row-span-1 rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow min-h-[200px] flex flex-col justify-between"
+          className="bento-card col-span-1 md:col-span-2 flex flex-col justify-between"
         >
           <div>
             <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
