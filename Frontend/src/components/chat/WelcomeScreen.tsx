@@ -6,15 +6,16 @@ import { Stethoscope, Pill, FileText, Activity, Apple, Building2, User, HeartPul
 import { ChatMode } from "./ChatInput";
 
 export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { promptText?: string }) => void }) {
+  const [mounted, setMounted] = useState(false);
   const [formattedTime, setFormattedTime] = useState<string>("");
-  const [greeting, setGreeting] = useState<string>("Good Evening");
+  const [greeting, setGreeting] = useState<string>("Hello");
 
   useEffect(() => {
+    setMounted(true);
     const updateClock = () => {
       const now = new Date();
       const hour = now.getHours();
       
-      // Dynamic Greeting based on device local hour
       if (hour >= 5 && hour < 12) {
         setGreeting("Good Morning");
       } else if (hour >= 12 && hour < 17) {
@@ -23,7 +24,6 @@ export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { prom
         setGreeting("Good Evening");
       }
 
-      // 12-hour AM/PM Time Format
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
       setFormattedTime(timeStr);
     };
@@ -46,28 +46,27 @@ export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { prom
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto mt-8 md:mt-20 px-4 relative z-10">
-      {/* Dynamic Greeting & 12-Hour AM/PM Time Badge */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        {/* Device Time Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 border border-slate-200 text-slate-600 text-xs font-semibold shadow-xs mb-4">
           <Clock size={14} className="text-primary animate-pulse" />
-          <span className="tracking-wide">{formattedTime || "Local Time"}</span>
+          <span className="tracking-wide" suppressHydrationWarning>
+            {mounted ? (formattedTime || "Local Time") : "Local Time"}
+          </span>
         </div>
 
-        <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight mb-3">
-          {greeting},
+        <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight mb-3" suppressHydrationWarning>
+          {mounted ? greeting : "Hello"},
         </h1>
         <h2 className="text-lg md:text-2xl text-slate-500 font-medium">
           How can I help with your health today?
         </h2>
       </motion.div>
 
-      {/* Suggestion Cards */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
