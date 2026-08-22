@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/chat/Sidebar";
 import { ContextPanel } from "@/components/chat/ContextPanel";
 import { Menu, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
 import { MobileBottomNav } from "@/components/shared/MobileBottomNav";
@@ -19,6 +20,7 @@ export default function AppLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contextPanelOpen, setContextPanelOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const isSpecialRoute = 
     pathname === "/doctor" || pathname.startsWith("/doctor/") || 
@@ -61,10 +63,15 @@ export default function AppLayout({
             
             {/* Profile Link */}
             <Link 
-              href="/settings"
-              className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-slate-200 shadow-sm hover:scale-105 transition-transform"
+              href="/profile"
+              className="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-black overflow-hidden border border-slate-200 shadow-xs hover:scale-105 transition-transform relative shrink-0"
+              title={user?.name || "User Profile"}
             >
-              <span className="truncate">U</span>
+              {user?.image ? (
+                <Image src={user.image} alt={user?.name || "User"} fill sizes="32px" className="object-cover" />
+              ) : (
+                user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+              )}
             </Link>
           </header>
         )}
@@ -96,9 +103,21 @@ export default function AppLayout({
                </nav>
              </div>
              
-             <div className="flex items-center gap-4">
-                <Link href="/settings" className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center text-white text-sm font-bold shadow-sm hover:scale-105 transition-transform">
-                  U
+             <div className="flex items-center gap-3">
+                <Link 
+                  href="/profile" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors border border-slate-200/80"
+                >
+                  <div className="w-7 h-7 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-black overflow-hidden relative shrink-0 shadow-xs">
+                    {user?.image ? (
+                      <Image src={user.image} alt={user?.name || "User"} fill sizes="28px" className="object-cover" />
+                    ) : (
+                      user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-slate-800 max-w-[120px] truncate">
+                    {user?.name || 'My Profile'}
+                  </span>
                 </Link>
              </div>
           </header>
