@@ -162,6 +162,24 @@ export function DoctorHeader({ onMenuClick }: DoctorHeaderProps) {
           )}
         </div>
 
+              {/* Profile Link */}
+        <Link href="/doctor/settings/profile" className="flex items-center gap-2 pl-2">
+          <div className="hidden sm:block text-right">
+            <p className="text-xs font-bold text-slate-800 line-clamp-1 max-w-[120px]">
+              {user?.name || "Dr. User"}
+            </p>
+            <p className="text-[10px] text-sky-600 font-extrabold uppercase tracking-wider">
+              Specialist
+            </p>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-black overflow-hidden border border-slate-200 shadow-xs relative shrink-0">
+            {user?.image ? (
+              <Image src={user.image} alt={user?.name || "Doctor"} fill sizes="36px" className="object-cover" />
+            ) : (
+              user?.name ? user.name.charAt(0).toUpperCase() : "D"
+            )}
+          </div>
+        </Link>
       </div>
     </header>
   );

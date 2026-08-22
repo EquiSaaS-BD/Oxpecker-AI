@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import {
   Search,
@@ -118,22 +119,23 @@ export function PatientHeader({ onMenuClick }: PatientHeaderProps) {
         </div>
 
         {/* Profile Dropdown */}
-        <div className="flex items-center gap-2 pl-2">
+        <Link href="/patient/profile" className="flex items-center gap-2 pl-2">
           <div className="hidden sm:block text-right">
-            <p className="text-sm font-semibold text-slate-800 line-clamp-1 max-w-[120px]">
+            <p className="text-xs font-bold text-slate-800 line-clamp-1 max-w-[120px]">
               {user?.name || "Patient User"}
             </p>
-            <p className="text-xs text-indigo-600 font-medium flex items-center justify-end gap-1">
-              Basic Plan
+            <p className="text-[10px] text-sky-600 font-bold flex items-center justify-end gap-1">
+              Verified Patient
             </p>
           </div>
-          <button className="flex items-center gap-1 hover:opacity-80 transition-opacity">
-            <div className="w-9 h-9 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-sm">
-              {user?.name?.charAt(0) || "P"}
-            </div>
-            <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
-          </button>
-        </div>
+          <div className="w-9 h-9 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-black overflow-hidden border border-slate-200 shadow-xs relative shrink-0">
+            {user?.image ? (
+              <Image src={user.image} alt={user?.name || "Patient"} fill sizes="36px" className="object-cover" />
+            ) : (
+              user?.name ? user.name.charAt(0).toUpperCase() : "P"
+            )}
+          </div>
+        </Link>
       </div>
     </header>
   );
