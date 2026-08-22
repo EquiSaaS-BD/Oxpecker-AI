@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { User, Activity, Heart, Clock, CheckCircle2, ShieldCheck, Phone, Calendar, ArrowRight, FileText } from "lucide-react";
+import { SystemStatusMonitor } from "@/components/dashboard/SystemStatusMonitor";
 
 export default function PatientProfilePage() {
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 md:py-10">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8">
       
       {/* Header Info */}
-      <div className="mb-8">
+      <div>
         <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
           রোগীর প্রোফাইল (Patient Profile)
         </h1>
@@ -160,6 +161,9 @@ export default function PatientProfilePage() {
 
         </div>
       </div>
+
+      {/* System & MCP Integrations Status Monitor */}
+      <SystemStatusMonitor />
     </div>
   );
 }

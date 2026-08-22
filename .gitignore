@@ -54,3 +54,7 @@ Thumbs.db
 # Scratch & Temporary local files
 scratch/
 *.tmp
+
+
+# Antigravity local config
+.gemini/
