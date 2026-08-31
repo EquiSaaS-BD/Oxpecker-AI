@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/dashboard/
+Disallow: /doctor/settings/
+Disallow: /hospital/dashboard/
+Disallow: /patient/
+
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: Applebot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /doctors
+Allow: /hospitals
+Allow: /medicines
+Allow: /about
+Allow: /contact
+Disallow: /api/
+Disallow: /admin/
+Disallow: /doctor/dashboard/
+Disallow: /hospital/dashboard/
+
+Sitemap: https://oxpecker.equisaas-bd.com/sitemap.xml

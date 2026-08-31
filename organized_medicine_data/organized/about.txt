@@ -1,0 +1,127 @@
+════════════════════════════════════════════════════════
+  MedEx Bangladesh - Medicine Database Summary
+════════════════════════════════════════════════════════
+Generated on: 2026-07-30 18:01:47
+
+══════════════════════════════════════
+  📊 DATABASE STATISTICS
+══════════════════════════════════════
+Total Generic Medicines      : 1,711
+Total Brand Medicines        : 21,714
+Total Dosage Forms           : 113
+Total Drug Classes           : 453
+Total Indications/Diseases   : 2,043
+Total Manufacturers          : 240
+
+Unique Generic Names (in brands) : 1,661
+
+══════════════════════════════════════
+  💊 MEDICINE TYPES
+══════════════════════════════════════
+  Allopathic                     : 21,363
+  Herbal                         : 351
+
+══════════════════════════════════════
+  🏭 TOP MANUFACTURERS (by brand count)
+══════════════════════════════════════
+   1. Incepta Pharmaceuticals Ltd.                  — 1,188 brands (689 generics)
+   2. Opsonin Pharma Ltd.                           — 910 brands (467 generics)
+   3. Square Pharmaceuticals Ltd.                   — 905 brands (546 generics)
+   4. Beximco Pharmaceuticals Ltd.                  — 703 brands (386 generics)
+   5. ACME Laboratories Ltd.                        — 696 brands (410 generics)
+   6. ACI Limited                                   — 687 brands (352 generics)
+   7. Drug International Ltd.                       — 681 brands (418 generics)
+   8. Eskayef Pharmaceuticals Ltd.                  — 664 brands (364 generics)
+   9. Aristopharma Ltd.                             — 516 brands (312 generics)
+  10. Healthcare Pharmaceuticals Ltd.               — 506 brands (272 generics)
+  11. Renata Limited                                — 501 brands (273 generics)
+  12. Ibn Sina Pharmaceuticals Ltd.                 — 467 brands (283 generics)
+  13. Popular Pharmaceuticals Ltd.                  — 445 brands (287 generics)
+  14. General Pharmaceuticals Ltd.                  — 442 brands (271 generics)
+  15. UniMed UniHealth                              — 440 brands (249 generics)
+
+══════════════════════════════════════
+  💉 TOP DOSAGE FORMS (by brand count)
+══════════════════════════════════════
+   1. Tablet                                   — 9,368 brands
+   2. Capsule                                  — 2,011 brands
+   3. Powder for Suspension                    — 1,011 brands
+   4. Syrup                                    — 1,010 brands
+   5. Ophthalmic Solution                      — 728 brands
+   6. IM/IV Injection                          — 646 brands
+   7. Oral Suspension                          — 576 brands
+   8. IV Infusion                              — 509 brands
+   9. Cream                                    — 496 brands
+  10. Capsule (Delayed Release)                — 438 brands
+  11. IV Injection                             — 406 brands
+  12. Tablet (Enteric Coated)                  — 308 brands
+  13. IM Injection                             — 293 brands
+  14. Chewable Tablet                          — 284 brands
+  15. Oral Solution                            — 263 brands
+
+══════════════════════════════════════
+  🔬 TOP GENERIC MEDICINES (most brands)
+══════════════════════════════════════
+   1. Cefixime Trihydrate                           — 341 brands
+   2. Cephradine                                    — 310 brands
+   3. Ceftriaxone Sodium                            — 295 brands
+   4. Cefuroxime Axetil                             — 278 brands
+   5. Azithromycin Dihydrate                        — 274 brands
+   6. Ciprofloxacin                                 — 260 brands
+   7. Esomeprazole                                  — 255 brands
+   8. Omeprazole                                    — 235 brands
+   9. Amoxicillin Trihydrate                        — 226 brands
+  10. Paracetamol                                   — 218 brands
+  11. Flucloxacillin Sodium                         — 212 brands
+  12. Domperidone Maleate                           — 205 brands
+  13. Ketorolac Tromethamine                        — 204 brands
+  14. Fluconazole                                   — 200 brands
+  15. Montelukast Sodium                            — 195 brands
+  16. Fexofenadine Hydrochloride                    — 193 brands
+  17. Metformin Hydrochloride                       — 189 brands
+  18. Pregabalin                                    — 187 brands
+  19. Metronidazole                                 — 177 brands
+  20. Diclofenac Sodium                             — 176 brands
+
+══════════════════════════════════════
+  📁 FILE DESCRIPTIONS
+══════════════════════════════════════
+  generics.json       : All generic medicines with full pharmacological info
+                        (indication, dosage, side effects, interactions etc.)
+  medicines.json      : All brand medicines with pricing, strength, manufacturer
+  dosage_forms.json   : All dosage form categories (Tablet, Syrup, Injection...)
+  drug_classes.json   : All drug classification categories
+  indications.json    : All diseases/indications with linked generic count
+  manufacturers.json  : All pharmaceutical companies with product counts
+
+══════════════════════════════════════
+  🔍 HOW TO USE / SEARCH GUIDE
+══════════════════════════════════════
+  1. জেনেরিক নাম দিয়ে সার্চ:
+     → generics.json-এ "name" ফিল্ড দিয়ে সার্চ করুন
+     → ফার্মাকোলজি, ডোসেজ, সাইড ইফেক্ট সব পাবেন
+
+  2. জেনেরিক নামে ব্র্যান্ড খুঁজুন:
+     → medicines.json-এ "generic_name" ফিল্ড দিয়ে ফিল্টার করুন
+     → একই জেনেরিকের সব ব্র্যান্ড, দাম, স্ট্রেংথ পাবেন
+
+  3. কোম্পানির ওষুধ খুঁজুন:
+     → medicines.json-এ "manufacturer" ফিল্ড দিয়ে ফিল্টার করুন
+
+  4. রোগ অনুযায়ী ওষুধ খুঁজুন:
+     → generics.json-এ "indication" ফিল্ড দিয়ে সার্চ করুন
+
+  5. ওষুধের ধরন অনুযায়ী খুঁজুন:
+     → medicines.json-এ "dosage_form" ফিল্ড দিয়ে ফিল্টার করুন
+       (Tablet, Syrup, Injection, Capsule ইত্যাদি)
+
+══════════════════════════════════════
+  ⚙️ DATA NOTES
+══════════════════════════════════════
+  • Source: MedEx Bangladesh (medex.com.bd)
+  • All HTML tags have been stripped from generic descriptions
+  • Prices are in Bangladeshi Taka (৳ / BDT)
+  • Medicine types include: allopathic, herbal
+  • Some manufacturers are international (no local brand/generic counts)
+
+════════════════════════════════════════════════════════

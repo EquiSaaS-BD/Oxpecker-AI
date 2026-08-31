@@ -1,0 +1,28 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every 3 days
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase database endpoint to keep project active..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "https://nisjigguleygbjcvfmbb.supabase.co/rest/v1/profiles?select=count")
+          echo "Supabase Response HTTP Status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Supabase successfully pinged and is active."
+          else
+            echo "Warning: Received HTTP $STATUS, but endpoint was reached."
+          fi

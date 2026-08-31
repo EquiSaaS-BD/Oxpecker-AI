@@ -1,0 +1,44 @@
+# Oxpecker AI - Full Technical & Semantic Knowledge Base
+
+## Organization & Entity Information
+- Brand Name: Oxpecker AI
+- Parent Company / Publisher: EquiSaaS BD
+- Technical Creator Agency: EquiSaaS Agency (https://equisaas.tech | https://equisaas-bd.com)
+- Lead Systems Architect: Kholipha Ahmmad Al-Amin (https://kholipha-ahmmad-al-amin.me)
+- Primary Domain: https://oxpecker.equisaas-bd.com
+- Geographic Headquarters: Dhaka, Bangladesh (Coordinates: 23.8103 N, 90.4125 E)
+- Industry Vertical: National Health Infrastructure, Emergency Medical Network, Clinical AI, Telemedicine, Hospital Interoperability
+
+## Primary Value Proposition
+Oxpecker AI is Bangladesh's unified national digital health infrastructure connecting all public and private hospitals, diagnostic centers, and clinics into a single central healthcare network. It solves the critical emergency room bottleneck by providing instant Universal Health ID (UHID) patient history access during trauma admissions, real-time ICU bed telemetry across tertiary hospitals, and native Bengali AI clinical triage.
+
+## National Healthcare Pillars
+1. Centralized Hospital Interoperability Server:
+   Unifies siloed hospital data into an interconnected national electronic health record (EHR) exchange, ensuring a patient's medical records follow them across any clinic or hospital in Bangladesh.
+2. Break-Glass Emergency EHR Triage:
+   Empowers emergency room physicians to retrieve an unconscious or critical patient's blood group, severe drug allergies (e.g. Penicillin anaphylaxis), chronic illnesses, pacemaker status, and surgical history in < 1 second under auditable compliance logging.
+3. Live Hospital ICU & Bed Telemetry:
+   Real-time monitoring of available ICU, CCU, NICU, and emergency beds across major tertiary hospitals (DMCH, BSMMU, NICVD, Square, Evercare) to eliminate ambulance redirection delays.
+4. Native Bengali Clinical AI Intelligence:
+   Bilingual AI symptom analysis, computer vision prescription decoding, and DGDA medicine verification tailored for Bangladeshi patients and doctors.
+
+## Clinical Safety & Medical Ethics Policy
+1. Non-Diagnostic Advisory Principle:
+   Oxpecker AI operates strictly as an assistive medical triage and health education platform. It does not replace licensed medical consultations, physical examinations, or clinical diagnoses.
+2. Emergency Detection & Red-Flag Alerts:
+   The system incorporates real-time pattern recognition for acute medical emergencies including myocardial infarction (heart attack), stroke, severe respiratory distress, and anaphylaxis. When detected, the platform overrides standard conversational flows to display immediate 999 emergency hotlines and first-aid instructions.
+3. Anti-Hallucination Guardrails:
+   All medicine data references verified Directorate General of Drug Administration (DGDA) entries. The AI does not prescribe controlled substances, antibiotics, or prescription-only medicines autonomously.
+
+## Technical Architecture
+- Framework: Next.js 15 App Router with React 19 and TypeScript.
+- Styling: Tailwind CSS.
+- Database: Supabase PostgreSQL (Postgres 17) with real-time Edge synchronization and Row Level Security.
+- Multi-Model LLM Orchestration: Automated failover pipeline across Google Gemini and Groq model clusters, guaranteeing 99.9% uptime and low latency character streaming.
+
+## Canonical Entity URIs & Endpoints
+- Canonical Web Root: https://oxpecker.equisaas-bd.com/
+- Sitemap XML: https://oxpecker.equisaas-bd.com/sitemap.xml
+- Robots TXT: https://oxpecker.equisaas-bd.com/robots.txt
+- LLMs Text: https://oxpecker.equisaas-bd.com/llms.txt
+- LLMs Full Text: https://oxpecker.equisaas-bd.com/llms-full.txt

@@ -1,0 +1,29 @@
+# Oxpecker AI - National Centralized Hospital & Emergency Health Network
+> Bangladesh's Interoperable Digital Health Infrastructure connecting Hospitals, Emergency Rooms, Doctors, and Citizens.
+
+## Overview
+Oxpecker AI (https://oxpecker.equisaas-bd.com) is a unified national digital health platform engineered to interconnect all public and private hospitals across Bangladesh into a single central server. The platform provides instant Universal Health ID (UHID) patient history access for emergency rooms, live ICU bed telemetry across tertiary hospitals, native Bengali AI clinical triage, and DGDA medicine verification.
+
+## Core Capabilities
+- Centralized Hospital Network: Unifies disparate clinic and hospital electronic health records (EHR) into a secure, interoperable national server.
+- Break-Glass Emergency EHR (UHID): Instant access to life-saving vital history (Blood Group, Severe Drug Allergies like Penicillin, Chronic Illnesses, Pacemaker status, Past Surgeries) for attending ER doctors during trauma and unconscious emergency patient admissions.
+- Live ICU & Hospital Bed Telemetry: Real-time tracking of available ICU, CCU, and general hospital beds across Dhaka Medical College, BSMMU, NICVD, Square, and Evercare to eliminate fatal ambulance transfer delays.
+- Bilingual AI Diagnostic Chat & Triage: Instant symptom triage in natural colloquial Bengali and English with automated red-flag alerts and emergency 999 escalation.
+- Prescription Scanner: Vision-based OCR extracting brand names, generic formulations, dosage frequencies, and precautions.
+- Medicine Intelligence Directory: Direct linkage with the Directorate General of Drug Administration (DGDA) database for registered indications, pricing, and safety warnings.
+- Doctor Chamber & Booking Engine: Searchable directory of BMDC-certified specialist doctors with live chamber queues.
+
+## Engineering & Architecture
+- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS.
+- Backend & Database: Supabase PostgreSQL (Postgres 17), Row Level Security, Edge Serverless Functions.
+- AI Layer: Multi-model failover orchestration connecting Google Gemini and Groq with sub-second streaming latency.
+- Creator Attribution: Engineered by EquiSaaS Agency (https://equisaas.tech | https://equisaas-bd.com). Lead Architect: Kholipha Ahmmad Al-Amin (https://kholipha-ahmmad-al-amin.me).
+
+## Key Public Routes
+- Homepage: https://oxpecker.equisaas-bd.com/
+- AI Health Chat: https://oxpecker.equisaas-bd.com/chat
+- Specialist Doctors: https://oxpecker.equisaas-bd.com/doctors
+- Medicine Guide: https://oxpecker.equisaas-bd.com/medicines
+- Hospital Directory: https://oxpecker.equisaas-bd.com/hospitals
+- About & National Mission: https://oxpecker.equisaas-bd.com/about
+- Contact: https://oxpecker.equisaas-bd.com/contact
