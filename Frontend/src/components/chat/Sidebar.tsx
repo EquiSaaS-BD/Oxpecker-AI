@@ -132,13 +132,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                   href={item.href}
                   onClick={onClose}
                   className={`
-                    flex items-center gap-3 w-full h-12 px-3 rounded-lg text-[15px] transition-colors
+                    flex items-center gap-3 w-full h-12 px-3.5 rounded-[12px] text-[15px] transition-all duration-150
                     ${isActive 
-                      ? "bg-primary/5 font-semibold text-primary" 
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"}
+                      ? "bg-sky-50 text-sky-600 font-semibold border border-sky-100/80 shadow-[0_2px_6px_rgba(2,132,199,0.06)]" 
+                      : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-medium"}
                   `}
                 >
-                  <item.icon size={20} className={isActive ? "text-primary" : "text-slate-500"} />
+                  <item.icon size={20} className={isActive ? "text-sky-600" : "text-slate-500"} />
                   {item.label}
                 </Link>
               );
@@ -163,10 +163,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                         }
                         onClose();
                       }}
-                      className={`group flex items-center justify-between h-10 px-2 rounded-lg cursor-pointer text-sm transition-colors ${
+                      className={`group flex items-center justify-between h-10 px-2.5 rounded-[12px] cursor-pointer text-sm transition-colors ${
                         activeThreadId === chat.id 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                          ? "bg-sky-50 text-sky-600 font-medium border border-sky-100/60" 
+                          : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-800"
                       }`}
                     >
                       <span className="truncate pr-2">{chat.title}</span>
@@ -191,7 +191,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           <div className="p-4 border-t border-slate-100 flex flex-col gap-1 shrink-0 bg-slate-50/50">
             {user ? (
               <>
-                <Link href="/settings" onClick={onClose} className="flex items-center gap-3 w-full h-11 px-3 rounded-lg hover:bg-slate-100 text-slate-600 text-[14px] font-medium transition-colors">
+                <Link href="/settings" onClick={onClose} className="flex items-center gap-3 w-full h-11 px-3 rounded-[12px] hover:bg-slate-100 text-slate-600 text-[14px] font-medium transition-colors">
                   <Settings size={18} className="text-slate-500" /> Settings
                 </Link>
                 
@@ -200,13 +200,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                     logout();
                     onClose();
                   }}
-                  className="flex items-center gap-3 w-full h-11 px-3 rounded-lg hover:bg-rose-50 text-rose-600 text-[14px] font-medium transition-colors text-left"
+                  className="flex items-center gap-3 w-full h-11 px-3 rounded-[12px] hover:bg-rose-50 text-rose-600 text-[14px] font-medium transition-colors text-left"
                 >
                   <LogOut size={18} className="text-rose-500" /> Sign Out
                 </button>
               </>
             ) : (
-              <Link href="/login" onClick={onClose} className="flex items-center justify-center gap-2 w-full h-11 px-3 rounded-lg bg-sky-600/10 hover:bg-sky-600/20 text-sky-600 text-[14px] font-bold transition-colors">
+              <Link href="/login" onClick={onClose} className="flex items-center justify-center gap-2 w-full h-11 px-3 rounded-[12px] bg-sky-600/10 hover:bg-sky-600/20 text-sky-600 text-[14px] font-bold transition-colors">
                 <LogOut size={16} className="rotate-180" /> 
                 Log In
               </Link>

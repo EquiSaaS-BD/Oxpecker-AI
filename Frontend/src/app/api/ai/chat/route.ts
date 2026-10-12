@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { analyzeClinicalCase, ClinicalAnalysis } from '@/lib/clinical-engine';
 
 // ============================================
 // Types
@@ -22,7 +23,7 @@ interface ProviderConfig {
 // Oxpecker AI System Prompt
 // ============================================
 
-function getSystemPrompt(language: string = 'en', patientContext?: any): string {
+function getSystemPrompt(language: string = 'en', patientContext?: any, clinicalAnalysis?: ClinicalAnalysis): string {
   const langInstruction = language === 'bn' 
     ? 'Respond in Bangla (বাংলা) language.' 
     : language === 'hi' 
@@ -47,10 +48,39 @@ function getSystemPrompt(language: string = 'en', patientContext?: any): string 
     }
   }
 
+  let clinicalGroundingSnippet = '';
+  if (clinicalAnalysis && clinicalAnalysis.isHealthQuery) {
+    const topMatches = clinicalAnalysis.primaryMatches.map(m => 
+      `- **${m.disease.bengali_name} (${m.disease.name})**: ${m.matchScore}% Match | Triage: ${m.triageLevel} | Specialty: ${m.disease.speciality} | Diagnostic Tests: ${m.disease.diagnostic_tests.join(', ')} | Primary Care: ${m.disease.primary_advice_bn}`
+    ).join('\n');
+
+    let otcSnippet = '';
+    if (clinicalAnalysis.otcGuidance) {
+      const otcMeds = clinicalAnalysis.otcGuidance.medicines.map(m => 
+        `- [${m.brand_name}](${m.google_search_url}) (${m.generic_name}, ${m.form}) by ${m.manufacturer}: ${m.instruction} [Max: ${m.max_daily_dose}]`
+      ).join('\n');
+      otcSnippet = `\n### Verified OTC First-Aid Guidance:\nCondition: ${clinicalAnalysis.otcGuidance.name_bn} (${clinicalAnalysis.otcGuidance.name_en})\nAction: ${clinicalAnalysis.otcGuidance.recommended_action}\nMedicines:\n${otcMeds}\n`;
+    }
+
+    clinicalGroundingSnippet = `
+## STRICT CLINICAL GROUNDING & ZERO-HALLUCINATION PROTOCOL (WHO & DGHS GUIDELINES)
+The patient's input was evaluated through Oxpecker's clinical engine:
+Detected Symptoms: ${clinicalAnalysis.detectedSymptoms.join(', ') || 'General Health Query'}
+${topMatches ? `\n### Probable Medical Conditions:\n${topMatches}\n` : ''}${otcSnippet}
+MANDATORY CLINICAL RESPONSE RULES:
+1. Ground your response STRICTLY on the above verified clinical facts. Do NOT invent unverified diseases or unapproved medications.
+2. Structure your response with clean Markdown Tables for symptoms, test recommendations, and OTC medicines.
+3. For recommended OTC medications, ALWAYS include the clickable Google Search links provided above in Markdown format (e.g. \`[Ace Plus](https://www.google.com/search?q=Ace+Plus+tablet+Square+Pharma+uses+dosage)\`).
+4. NEVER give definitive diagnoses; frame them as probable conditions based on clinical presentation.
+5. ALWAYS append the specialist recommendation block (\`\`\`json:doctor_recommendation\`) and the clinical disclaimer.
+`;
+  }
+
   return `You are **Oxpecker AI**, an enterprise-grade AI-powered Medical Assistant designed by Oxpecker AI.
 
 ${langInstruction}
 ${contextSnippet}
+${clinicalGroundingSnippet}
 
 ## CORE CONVERSATIONAL RULES & STYLE
 1. **Greetings & Friendly Conversation**:
@@ -474,14 +504,16 @@ function transformAnthropicStream(body: ReadableStream): ReadableStream {
   });
 }
 
-async function callMockStream(messages: ChatMessage[], language: string = 'en'): Promise<ReadableStream> {
+async function callMockStream(messages: ChatMessage[], language: string = 'en', clinicalAnalysis?: ClinicalAnalysis): Promise<ReadableStream> {
   const encoder = new TextEncoder();
   const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
   const isBangla = language === 'bn' || /[\u0980-\u09FF]/.test(lastUserMsg);
 
   let mockText = "Hello! I am Oxpecker AI. How can I assist with your health today? If you are experiencing any physical discomfort or need guidance on medicines, doctors, or hospitals, please let me know.";
 
-  if (isBangla) {
+  if (clinicalAnalysis && clinicalAnalysis.isHealthQuery && clinicalAnalysis.formattedMarkdownReport) {
+    mockText = clinicalAnalysis.formattedMarkdownReport;
+  } else if (isBangla) {
     if (lastUserMsg.includes("hello") || lastUserMsg.includes("hi") || lastUserMsg.includes("হ্যালো") || lastUserMsg.includes("হাই") || lastUserMsg.includes("আসসালামু") || lastUserMsg.includes("কেমন")) {
       mockText = "ওয়ালাইকুম আসসালাম! আমি Oxpecker AI মেডিকেল অ্যাসিস্ট্যান্ট। আজ আপনাকে স্বাস্থ্যবিষয়ক কীভাবে সাহায্য করতে পারি? আপনার কি কোনো শারীরিক সমস্যা বা ওষুধ/হাসপাতাল বিষয়ে কিছু জানার আছে?";
     } else {
@@ -495,7 +527,7 @@ async function callMockStream(messages: ChatMessage[], language: string = 'en'):
       for (const word of words) {
         const chunk = `data: ${JSON.stringify({ content: word + " " })}\n\n`;
         controller.enqueue(encoder.encode(chunk));
-        await new Promise((resolve) => setTimeout(resolve, 30));
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
       controller.enqueue(encoder.encode('data: [DONE]\n\n'));
       controller.close();
@@ -507,7 +539,7 @@ async function callMockStream(messages: ChatMessage[], language: string = 'en'):
 // AI Gateway with Failover
 // ============================================
 
-async function callProviderStream(provider: ProviderConfig, messages: ChatMessage[], language: string = 'en'): Promise<ReadableStream> {
+async function callProviderStream(provider: ProviderConfig, messages: ChatMessage[], language: string = 'en', clinicalAnalysis?: ClinicalAnalysis): Promise<ReadableStream> {
   switch (provider.name) {
     case 'groq':
     case 'openai':
@@ -521,13 +553,13 @@ async function callProviderStream(provider: ProviderConfig, messages: ChatMessag
     case 'zhipu':
       return callZhipuStream(provider, messages);
     case 'mock_ai':
-      return callMockStream(messages, language);
+      return callMockStream(messages, language, clinicalAnalysis);
     default:
       throw new Error(`Unknown provider: ${provider.name}`);
   }
 }
 
-async function getStreamWithFailover(messages: ChatMessage[], language: string = 'en'): Promise<{ stream: ReadableStream; provider: string }> {
+async function getStreamWithFailover(messages: ChatMessage[], language: string = 'en', clinicalAnalysis?: ClinicalAnalysis): Promise<{ stream: ReadableStream; provider: string }> {
   const providers = getProviders();
 
   if (providers.length === 0) {
@@ -541,7 +573,7 @@ async function getStreamWithFailover(messages: ChatMessage[], language: string =
     
     try {
       console.log(`[Oxpecker AI] Trying provider: ${provider.name} (${provider.model})`);
-      const stream = await callProviderStream(provider, messages, language);
+      const stream = await callProviderStream(provider, messages, language, clinicalAnalysis);
       console.log(`[Oxpecker AI] Success with provider: ${provider.name}`);
       return { stream, provider: provider.name };
     } catch (error: any) {
@@ -551,13 +583,17 @@ async function getStreamWithFailover(messages: ChatMessage[], language: string =
     }
   }
 
-  // If all providers fail, return a mock fallback stream instead of crashing
-  console.error(`[Oxpecker AI] All providers failed. Falling back to mock response.\n${errors.join('\n')}`);
+  // If all providers fail, return a clinical mock fallback stream instead of crashing
+  console.error(`[Oxpecker AI] All providers failed. Falling back to clinical report.\n${errors.join('\n')}`);
   
   const isBangla = language === 'bn' || messages.some(m => /[\u0980-\u09FF]/.test(m.content));
-  const mockText = isBangla
+  let mockText = isBangla
     ? "ধন্যবাদ। আমি Oxpecker AI মেডিকেল অ্যাসিস্ট্যান্ট। আপনার স্বাস্থ্যবিষয়ক লক্ষণ বা প্রশ্নটি বিস্তারিত লিখে জানান (যেমন কতদিন ধরে সমস্যা, তীব্রতা কেমন), যাতে সঠিকভাবে সহায়তা করতে পারি। জরুরি প্রয়োজনে অবিলম্বে ৯৯৯ নম্বরে কল করুন।"
     : "Hello! I am Oxpecker AI, your AI Medical Assistant. Please describe your health concerns or questions in detail so I can assist you appropriately. In case of an emergency, please call 999 immediately.";
+
+  if (clinicalAnalysis && clinicalAnalysis.isHealthQuery && clinicalAnalysis.formattedMarkdownReport) {
+    mockText = clinicalAnalysis.formattedMarkdownReport;
+  }
   
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -566,14 +602,14 @@ async function getStreamWithFailover(messages: ChatMessage[], language: string =
       for (let i = 0; i < words.length; i++) {
         const chunk = `data: ${JSON.stringify({ content: words[i] + ' ' })}\n\n`;
         controller.enqueue(encoder.encode(chunk));
-        await new Promise(r => setTimeout(r, 30));
+        await new Promise(r => setTimeout(r, 20));
       }
       controller.enqueue(encoder.encode('data: [DONE]\n\n'));
       controller.close();
     }
   });
   
-  return { stream, provider: 'mock_fallback' };
+  return { stream, provider: 'clinical_engine' };
 }
 
 // ============================================
@@ -620,13 +656,17 @@ export async function POST(request: NextRequest) {
 
     // Auto-detect language from the latest user message
     const lastUserMessage = validUserMessages.filter((m: ChatMessage) => m.role === 'user').pop();
+    const queryText = lastUserMessage ? lastUserMessage.content : '';
     const detectedLanguage = lastUserMessage 
       ? detectLanguage(lastUserMessage.content) 
       : 'en';
     const language = requestedLanguage || detectedLanguage;
 
-    // Build the full message array with system prompt & patient health memory context
-    const systemPrompt = getSystemPrompt(language, patientContext);
+    // Run deterministic clinical analysis (150 diseases + OTC first aid)
+    const clinicalAnalysis = analyzeClinicalCase(queryText, language);
+
+    // Build the full message array with system prompt, patient context, and verified clinical grounding
+    const systemPrompt = getSystemPrompt(language, patientContext, clinicalAnalysis);
     const fullMessages: ChatMessage[] = [
       { role: 'system', content: systemPrompt },
       ...validUserMessages.map((m: any) => ({
@@ -636,7 +676,7 @@ export async function POST(request: NextRequest) {
     ];
 
     // Get streaming response with automatic failover
-    const { stream, provider } = await getStreamWithFailover(fullMessages, language);
+    const { stream, provider } = await getStreamWithFailover(fullMessages, language, clinicalAnalysis);
 
     // Return the stream as SSE
     return new Response(stream, {

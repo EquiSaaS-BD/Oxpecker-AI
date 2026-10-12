@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { LogOut, User, Camera, Save, Shield, Bell, ChevronDown, ChevronUp, Droplet } from "lucide-react";
+import { LogOut, User, Camera, Save, Shield, Bell, ChevronDown, ChevronUp, Droplet, Pencil, X, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
@@ -25,6 +26,13 @@ export default function SettingsPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Edit Mode & Custom Dropdowns State
+  const [isEditing, setIsEditing] = useState(false);
+  const [isGenderOpen, setIsGenderOpen] = useState(false);
+  const [isBloodGroupOpen, setIsBloodGroupOpen] = useState(false);
+  const genderDropdownRef = useRef<HTMLDivElement>(null);
+  const bloodDropdownRef = useRef<HTMLDivElement>(null);
 
   // Expandable sections state (Security, Notifications only)
   const [expandedSection, setExpandedSection] = useState<'security' | 'notifications' | null>(null);
@@ -57,6 +65,20 @@ export default function SettingsPage() {
       loadProfileData();
     }
   }, [user, loadProfileData]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (genderDropdownRef.current && !genderDropdownRef.current.contains(event.target as Node)) {
+        setIsGenderOpen(false);
+      }
+      if (bloodDropdownRef.current && !bloodDropdownRef.current.contains(event.target as Node)) {
+        setIsBloodGroupOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Profile Completion Logic
   const calculateCompletion = () => {
@@ -106,6 +128,9 @@ export default function SettingsPage() {
       });
 
       toast.success("Profile updated successfully in database!");
+      setIsEditing(false);
+      setIsGenderOpen(false);
+      setIsBloodGroupOpen(false);
 
       if (user) {
         const p = res?.data?.profile;
@@ -171,8 +196,12 @@ export default function SettingsPage() {
                 {completionPercentage}% Complete
               </span>
             </div>
-            <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-2">
-              <div className="bg-white h-full transition-all duration-500 rounded-full" style={{ width: `${completionPercentage}%` }} />
+            {/* Enhanced High-Contrast Progress Bar */}
+            <div className="w-full bg-slate-100 border border-slate-200/90 h-3 rounded-full overflow-hidden mb-2 p-[2px] shadow-inner">
+              <div 
+                className="bg-gradient-to-r from-sky-500 via-teal-500 to-emerald-500 h-full rounded-full transition-all duration-700 shadow-xs" 
+                style={{ width: `${Math.max(completionPercentage, 5)}%` }} 
+              />
             </div>
             <p className="text-xs text-slate-500">{email} • {user.role?.toUpperCase()}</p>
           </div>
@@ -180,23 +209,59 @@ export default function SettingsPage() {
 
         {/* PERSONAL DETAILS FORM */}
         <form onSubmit={handleSaveProfile} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
-          <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <User size={18} className="text-slate-700" /> Personal Details
-          </h2>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <User size={18} className="text-sky-600" /> Personal Details
+            </h2>
+            {!isEditing ? (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold border border-sky-200 transition-colors shadow-xs cursor-pointer"
+              >
+                <Pencil size={13} />
+                Edit Profile
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setIsGenderOpen(false);
+                  setIsBloodGroupOpen(false);
+                  loadProfileData();
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <X size={13} />
+                Cancel
+              </button>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name</label>
               <input
-                type="text" required value={name} onChange={e => setName(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+                type="text"
+                required
+                disabled={!isEditing}
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
+                }`}
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address</label>
               <input
-                type="email" disabled value={email}
+                type="email"
+                disabled
+                value={email}
                 className="w-full h-11 px-4 border border-slate-100 rounded-xl text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
               />
             </div>
@@ -204,8 +269,15 @@ export default function SettingsPage() {
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Phone / Mobile Number</label>
               <input
-                type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+                type="tel"
+                disabled={!isEditing}
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
+                }`}
                 placeholder="+880 1700-000000"
               />
             </div>
@@ -213,56 +285,222 @@ export default function SettingsPage() {
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Date of Birth</label>
               <input
-                type="date" value={dob} onChange={e => setDob(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+                type="date"
+                disabled={!isEditing}
+                value={dob}
+                onChange={e => setDob(e.target.value)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
+                }`}
               />
             </div>
 
-            <div>
+            {/* Custom Gender Dropdown Pop-up */}
+            <div className="relative" ref={genderDropdownRef}>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Gender</label>
-              <select
-                value={gender} onChange={e => setGender(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+              <button
+                type="button"
+                disabled={!isEditing}
+                onClick={() => isEditing && setIsGenderOpen(!isGenderOpen)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm flex items-center justify-between transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : isGenderOpen
+                    ? "bg-white border-sky-500 ring-4 ring-sky-500/10 shadow-xs cursor-pointer text-slate-900"
+                    : "bg-white border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer text-slate-900"
+                }`}
               >
-                <option value="">Select Gender...</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+                <span className={gender ? "font-semibold text-slate-900" : "text-slate-400 font-normal"}>
+                  {gender ? (
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${
+                        gender === "Male" ? "bg-sky-500" : gender === "Female" ? "bg-rose-500" : "bg-purple-500"
+                      }`} />
+                      {gender}
+                    </span>
+                  ) : (
+                    "Select Gender..."
+                  )}
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  className={`text-slate-400 transition-transform duration-200 ${isGenderOpen ? "rotate-180 text-sky-600" : ""}`} 
+                />
+              </button>
+
+              <AnimatePresence>
+                {isEditing && isGenderOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                  >
+                    <div className="space-y-0.5">
+                      {[
+                        { label: "Male", desc: "Male biological gender", color: "bg-sky-100 text-sky-700" },
+                        { label: "Female", desc: "Female biological gender", color: "bg-rose-100 text-rose-700" },
+                        { label: "Other", desc: "Non-binary / Other", color: "bg-purple-100 text-purple-700" },
+                      ].map((item) => {
+                        const isSelected = gender === item.label;
+                        return (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => {
+                              setGender(item.label);
+                              setIsGenderOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer ${
+                              isSelected
+                                ? "bg-sky-50 text-sky-900 font-bold border border-sky-100"
+                                : "hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-medium"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${item.color}`}>
+                                {item.label.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold">{item.label}</p>
+                                <p className="text-[11px] text-slate-400 font-normal">{item.desc}</p>
+                              </div>
+                            </div>
+                            {isSelected && <Check size={16} className="text-sky-600" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div>
+            {/* Custom Blood Group Dropdown Pop-up */}
+            <div className="relative" ref={bloodDropdownRef}>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Blood Group</label>
-              <select
-                value={bloodGroup} onChange={e => setBloodGroup(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+              <button
+                type="button"
+                disabled={!isEditing}
+                onClick={() => isEditing && setIsBloodGroupOpen(!isBloodGroupOpen)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm flex items-center justify-between transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : isBloodGroupOpen
+                    ? "bg-white border-sky-500 ring-4 ring-sky-500/10 shadow-xs cursor-pointer text-slate-900"
+                    : "bg-white border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer text-slate-900"
+                }`}
               >
-                <option value="">Select Blood Group...</option>
-                {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => (
-                  <option key={bg} value={bg}>{bg}</option>
-                ))}
-              </select>
+                <span className={bloodGroup ? "font-semibold text-slate-900" : "text-slate-400 font-normal"}>
+                  {bloodGroup ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-md bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xs font-bold">
+                        <Droplet size={11} className="fill-rose-500 text-rose-500" />
+                      </span>
+                      <span className="font-bold text-rose-950">{bloodGroup}</span>
+                    </span>
+                  ) : (
+                    "Select Blood Group..."
+                  )}
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  className={`text-slate-400 transition-transform duration-200 ${isBloodGroupOpen ? "rotate-180 text-sky-600" : ""}`} 
+                />
+              </button>
+
+              <AnimatePresence>
+                {isEditing && isBloodGroupOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl p-2.5 shadow-[0_16px_36px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                  >
+                    <div className="px-2 py-1 mb-1.5 flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select Blood Type</span>
+                      <Droplet size={13} className="text-rose-500 fill-rose-500" />
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => {
+                        const isSelected = bloodGroup === bg;
+                        return (
+                          <button
+                            key={bg}
+                            type="button"
+                            onClick={() => {
+                              setBloodGroup(bg);
+                              setIsBloodGroupOpen(false);
+                            }}
+                            className={`flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+                              isSelected
+                                ? "bg-rose-50 text-rose-700 font-extrabold border-rose-300 shadow-xs scale-[1.02]"
+                                : "bg-slate-50/60 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border-slate-200/80 font-bold"
+                            }`}
+                          >
+                            <span className="text-sm">{bg}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Address</label>
               <input
-                type="text" value={address} onChange={e => setAddress(e.target.value)}
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-900 bg-white"
+                type="text"
+                disabled={!isEditing}
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
+                  !isEditing
+                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
+                }`}
                 placeholder="House/Road, Thana, District"
               />
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end">
-            <button
-              type="submit" disabled={isSaving}
-              className="flex items-center gap-2 px-6 h-11 bg-white hover:bg-slate-50 text-slate-900 font-bold rounded-xl transition-all shadow-sm text-sm disabled:opacity-70"
-            >
-              {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={16} />}
-              Save Changes
-            </button>
-          </div>
+          {isEditing ? (
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setIsGenderOpen(false);
+                  setIsBloodGroupOpen(false);
+                  loadProfileData();
+                }}
+                className="px-5 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="flex items-center gap-2 px-6 h-11 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl transition-all shadow-md shadow-sky-600/20 text-sm disabled:opacity-70 cursor-pointer"
+              >
+                {isSaving ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                Save Changes
+              </button>
+            </div>
+          ) : (
+            <div className="pt-1 flex items-center justify-between text-xs text-slate-400">
+              <span>Click "Edit Profile" above to update your personal information.</span>
+            </div>
+          )}
         </form>
 
         {/* EXPANDABLE SECTIONS (Security & Notifications) */}
