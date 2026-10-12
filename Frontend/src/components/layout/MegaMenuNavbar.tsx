@@ -19,6 +19,7 @@ import {
   Apple,
   Briefcase,
   BookOpen,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,7 +54,7 @@ export function MegaMenuNavbar({
   ...props
 }: MegaMenuNavbarProps) {
   const { t, lang: language } = useLanguage();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, logout } = useAuth();
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = React.useState<DesktopMenu>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -506,18 +507,28 @@ export function MegaMenuNavbar({
                   </Link>
               </>
             ) : (
-              <Link
-                href={
-                  role === "patient" ? "/chat" :
-                  role === "doctor" ? "/doctor/dashboard" :
-                  role === "hospital" ? "/hospital/dashboard" :
-                  role === "admin" ? "/admin/dashboard" :
-                  role === "assistant" ? "/assistant" : "/"
-                }
-                className="px-3.5 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-[#0ea5e9] hover:bg-sky-600 text-white rounded-xl shadow-md transition-all active:scale-[0.98] shrink-0"
-              >
-                {t("Dashboard", "ড্যাশবোর্ড")}
-              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href={
+                    role === "patient" ? "/chat" :
+                    role === "doctor" ? "/doctor/dashboard" :
+                    role === "hospital" ? "/hospital/dashboard" :
+                    role === "admin" ? "/admin/dashboard" :
+                    role === "assistant" ? "/assistant" : "/"
+                  }
+                  className="px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-[#0ea5e9] hover:bg-sky-600 text-white rounded-xl shadow-md transition-all active:scale-[0.98] shrink-0"
+                >
+                  {t("Dashboard", "ড্যাশবোর্ড")}
+                </Link>
+                <button
+                  onClick={logout}
+                  className="px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs active:scale-[0.98]"
+                  title="Sign Out"
+                >
+                  <LogOut className="size-3.5" />
+                  <span className="hidden sm:inline">{t("Logout", "লগআউট")}</span>
+                </button>
+              </div>
             )}
           </div>
 
