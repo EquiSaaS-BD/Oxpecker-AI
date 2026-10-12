@@ -2,56 +2,58 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ShieldAlert, ArrowRight, Clock } from "lucide-react";
+import { ShieldAlert, Clock, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export function PendingApprovalModal() {
   const router = useRouter();
+  const { user, updateUser } = useAuth();
+
+  const handleDemoApprove = () => {
+    if (user) {
+      updateUser({
+        ...user,
+        status: "active",
+      });
+      window.location.reload();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-50 flex items-center justify-center">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[20rem] -right-[10rem] w-[50rem] h-[50rem] bg-orange-500/5 rounded-full blur-[100px]"
-        />
-      </div>
-
+    <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="w-[90%] max-w-[480px] bg-white backdrop-blur-xl border border-slate-200 shadow-xl rounded-[32px] overflow-hidden relative z-10"
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[480px] bg-white rounded-[32px] border border-slate-100 shadow-2xl overflow-hidden relative z-10"
       >
-        <div className="p-10 flex flex-col items-center text-center">
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", damping: 15, delay: 0.2 }}
-            className="w-[100px] h-[100px] bg-orange-50 rounded-[28px] flex items-center justify-center mb-6 relative border border-orange-100"
-          >
-            <Clock size={48} className="text-orange-500" strokeWidth={1.5} />
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.6, type: "spring" }}
-              className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center border border-slate-200"
-            >
-              <ShieldAlert size={22} className="text-orange-500" />
-            </motion.div>
-          </motion.div>
+        <div className="p-8 sm:p-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-amber-50 rounded-[24px] flex items-center justify-center mb-6 relative border border-amber-200">
+            <Clock size={40} className="text-amber-500" strokeWidth={1.75} />
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center border border-slate-200 shadow-sm">
+              <ShieldAlert size={16} className="text-amber-500" />
+            </div>
+          </div>
 
-          <h2 className="text-[28px] font-extrabold text-slate-800 mb-3 tracking-tight">Pending Approval</h2>
+          <h2 className="text-2xl font-extrabold text-slate-800 mb-2 tracking-tight">Pending Approval</h2>
           
-          <p className="text-[15px] text-slate-500 leading-relaxed mb-10 px-2 font-medium">
-            Your account is currently under review by the Super Admin. You will be notified once your identity and credentials have been verified.
+          <p className="text-sm text-slate-500 leading-relaxed mb-6 font-medium">
+            Your account is currently under review by the Super Admin. In production, hospitals and doctors are verified before granting access to patient records.
           </p>
 
           <button
-            onClick={() => router.push("/")}
-            className="w-full h-[56px] bg-slate-900 text-white text-[16px] font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3"
+            onClick={handleDemoApprove}
+            className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm mb-3"
           >
-            Return to Homepage
+            <CheckCircle2 size={16} />
+            <span>Instant Verify & Enter (Demo Mode)</span>
+          </button>
+
+          <button
+            onClick={() => router.push("/")}
+            className="w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 text-sm"
+          >
+            <span>Return to Homepage</span>
           </button>
         </div>
       </motion.div>

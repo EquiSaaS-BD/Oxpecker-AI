@@ -20,6 +20,9 @@ export interface AppUser {
   image?: string;
   assistantId?: string;
   doctorId?: string;
+  hospital_name?: string;
+  specialty?: string;
+  bmdc?: string;
   status?: "active" | "pending" | "banned";
 }
 

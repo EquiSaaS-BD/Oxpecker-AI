@@ -31,8 +31,8 @@ export default function HospitalDashboardLayout({
   }
 
   // Access control
-  if (!isAuthenticated || role !== "hospital") {
-    return <AccessDeniedModal />;
+  if (!isAuthenticated || (role !== "hospital" && role !== "admin")) {
+    return <AccessDeniedModal requiredRole="hospital" portalName="Hospital Dashboard" />;
   }
   
   if (user && user.status === "pending") {
