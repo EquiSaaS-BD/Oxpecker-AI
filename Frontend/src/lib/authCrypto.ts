@@ -1,15 +1,11 @@
 import crypto from "crypto";
+import { SessionPayload, parseSessionPayload } from "./sessionPayload";
+
+export type { SessionPayload };
+export { parseSessionPayload };
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "oxpecker-super-secure-auth-secret-key-2026";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
-export interface SessionPayload {
-  userId: string;
-  email: string;
-  role: string;
-  name: string;
-  exp: number;
-}
 
 /**
  * Hashes a plaintext password with a random 16-byte salt using PBKDF2 (SHA-512).
@@ -87,25 +83,4 @@ export function verifySessionToken(token: string): SessionPayload | null {
   }
 }
 
-/**
- * Edge-safe lightweight session payload parser for Middleware.
- */
-export function parseSessionPayload(token?: string): SessionPayload | null {
-  if (!token || typeof token !== "string") return null;
 
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 2) return null;
-    const b64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
-    const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
-    const jsonStr = atob(b64 + pad);
-    const payload: SessionPayload = JSON.parse(jsonStr);
-
-    if (payload.exp && Date.now() > payload.exp) {
-      return null;
-    }
-    return payload;
-  } catch {
-    return null;
-  }
-}
