@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +10,7 @@ import {
   Stethoscope, Bed, LayoutGrid, Car, Wifi, Coffee, Star, 
   ChevronRight, X, Building2, Pill, ActivitySquare, AlertCircle, Search, ChevronLeft
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 // --- MOCK DATA ---
 const hospital = {
@@ -106,8 +108,66 @@ const itemVariants = {
 };
 
 export default function HospitalProfile() {
+  const params = useParams();
+  const rawId = (params?.id as string) || "hosp_01";
+  const [currentHospital, setCurrentHospital] = useState<any>(hospital);
+  const [bedsData, setBedsData] = useState<any[]>(hospital.beds);
   const [galleryOpen, setGalleryOpen] = useState<number | null>(null);
   
+  useEffect(() => {
+    async function loadHospitalDetails() {
+      try {
+        let query = supabase.from("hospitals").select("*");
+        const isValidUuid = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+        if (isValidUuid(rawId)) {
+          query = query.eq("id", rawId);
+        } else {
+          query = query.or(`code.eq.${rawId},name.ilike.%${rawId}%`);
+        }
+
+        const { data: dbHosp } = await query.maybeSingle();
+        if (dbHosp) {
+          setCurrentHospital((prev: any) => ({
+            ...prev,
+            id: dbHosp.id,
+            name: dbHosp.name || prev.name,
+            type: dbHosp.type || prev.type,
+            city: dbHosp.city || prev.city,
+            capacity: dbHosp.bed_count ? `${dbHosp.bed_count} Beds` : prev.capacity,
+            icu: dbHosp.icu_total ? `Available (${dbHosp.icu_available || 0} / ${dbHosp.icu_total} Beds)` : prev.icu,
+          }));
+        }
+
+        // Fetch beds from hospital_beds table
+        const { data: dbBeds } = await supabase
+          .from("hospital_beds")
+          .select("*")
+          .or(`hospital_id.eq.${rawId},hospital_name.ilike.%${dbHosp?.name || rawId}%`);
+
+        if (dbBeds && dbBeds.length > 0) {
+          const mappedBeds = dbBeds.map((b: any, idx: number) => ({
+            id: b.id.substring(0, 8),
+            type: b.bed_type,
+            price: Number(b.price_per_day) || 2000,
+            available: b.available_beds || 0,
+            category: b.bed_type.includes("ICU") ? "ICU" : b.bed_type.includes("Cabin") ? "VIP" : "Economy",
+            features: ["AC", "Oxygen Support", "Nurse Call"],
+            image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=600&h=400&fit=crop",
+            roomNo: `Ward-${idx + 1}`,
+            floor: "Level 3"
+          }));
+          setBedsData(mappedBeds);
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic hospital details:", err);
+      }
+    }
+
+    if (rawId) {
+      loadHospitalDetails();
+    }
+  }, [rawId]);
+
   // Bed Filters & Pagination State
   const [bedCategory, setBedCategory] = useState("All");
   const [bedSearch, setBedSearch] = useState("");
@@ -116,7 +176,7 @@ export default function HospitalProfile() {
   const [currentPage, setCurrentPage] = useState(1);
   const bedsPerPage = 3;
 
-  const filteredBeds = hospital.beds
+  const filteredBeds = bedsData
     .filter(b => {
       const matchesCat = bedCategory === "All" || b.category === bedCategory;
       const matchesSearch = b.type.toLowerCase().includes(bedSearch.toLowerCase()) || 
@@ -132,14 +192,14 @@ export default function HospitalProfile() {
 
   const totalPages = Math.ceil(filteredBeds.length / bedsPerPage);
   const paginatedBeds = filteredBeds.slice((currentPage - 1) * bedsPerPage, currentPage * bedsPerPage);
-  const floors = ["All Floors", ...Array.from(new Set(hospital.beds.map(b => b.floor)))];
+  const floors = ["All Floors", ...Array.from(new Set(bedsData.map(b => b.floor)))];
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50 font-sans pb-24 relative scroll-smooth">
       
       {/* 1. Header & Cover Image (Cleaner design) */}
       <div className="relative w-full h-[280px] md:h-[340px] bg-white">
-        <Image src={hospital.coverImage} alt={hospital.name} fill className="object-cover opacity-70" priority />
+        <Image src={currentHospital.coverImage} alt={currentHospital.name} fill className="object-cover opacity-70" priority />
         <div className="absolute inset-0  from-black/80 via-black/20 " />
         
         <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 flex items-end justify-between max-w-[1200px] mx-auto">
@@ -150,7 +210,7 @@ export default function HospitalProfile() {
               transition={{ duration: 0.5 }}
               className="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-white p-2 shrink-0 shadow-lg relative overflow-hidden"
             >
-              <Image src={hospital.logo} alt="Logo" fill sizes="112px" className="object-contain p-2" />
+              <Image src={currentHospital.logo} alt="Logo" fill sizes="112px" className="object-contain p-2" />
             </motion.div>
             
             <motion.div 
@@ -160,12 +220,12 @@ export default function HospitalProfile() {
               className="text-slate-900 mb-1 md:mb-2"
             >
               <h1 className="text-2xl md:text-4xl font-bold leading-tight mb-2 tracking-tight">
-                {hospital.name}
+                {currentHospital.name}
               </h1>
               <div className="flex flex-wrap items-center gap-3 text-sm md:text-base text-slate-700 font-medium">
-                <span className="flex items-center gap-1.5"><MapPin size={16} /> {hospital.city}</span>
+                <span className="flex items-center gap-1.5"><MapPin size={16} /> {currentHospital.city}</span>
                 <span className="hidden md:inline w-1 h-1 bg-white/50 rounded-full" />
-                <span className="flex items-center gap-1.5 text-blue-300"><Clock size={16} /> {hospital.status}</span>
+                <span className="flex items-center gap-1.5 text-blue-300"><Clock size={16} /> {currentHospital.status}</span>
               </div>
             </motion.div>
           </div>
@@ -192,10 +252,10 @@ export default function HospitalProfile() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {[
-            { icon: Star, label: "Rating", value: `${hospital.rating}` },
-            { icon: Stethoscope, label: "Doctors", value: hospital.totalDoctors },
-            { icon: Bed, label: "Beds", value: hospital.capacity },
-            { icon: LayoutGrid, label: "Depts", value: hospital.totalDepartments },
+            { icon: Star, label: "Rating", value: `${currentHospital.rating}` },
+            { icon: Stethoscope, label: "Doctors", value: currentHospital.totalDoctors },
+            { icon: Bed, label: "Beds", value: currentHospital.capacity },
+            { icon: LayoutGrid, label: "Depts", value: currentHospital.totalDepartments },
           ].map((stat, i) => (
             <motion.div key={i} variants={itemVariants} className="bg-white rounded-2xl p-5 shadow-sm flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
               <div className="w-10 h-10 bg-sky-600/5 rounded-full flex items-center justify-center mb-2">

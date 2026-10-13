@@ -42,74 +42,24 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const lowerEmail = email.toLowerCase().trim();
-      let determinedRole: "patient" | "doctor" | "hospital" | "admin" | "assistant" = "patient";
-      if (lowerEmail.includes("doctor") || lowerEmail.includes("dr")) {
-        determinedRole = "doctor";
-      } else if (lowerEmail.includes("hospital") || lowerEmail.includes("clinic")) {
-        determinedRole = "hospital";
-      } else if (lowerEmail.includes("admin")) {
-        determinedRole = "admin";
-      } else if (lowerEmail.includes("assistant")) {
-        determinedRole = "assistant";
-      }
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Check if profile exists in Supabase
-      let dbProfile: any = null;
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .ilike("email", lowerEmail)
-          .maybeSingle();
-        dbProfile = data;
-      } catch (err) {
-        console.error("Supabase profile lookup error:", err);
-      }
+      const data = await res.json();
 
-      let userId = dbProfile?.id;
-      let userName = dbProfile?.name || email.split("@")[0] || "User";
-      let userRole = (dbProfile?.role as any) || determinedRole;
-
-      if (!dbProfile) {
-        try {
-          const { data: inserted } = await supabase
-            .from("profiles")
-            .insert({
-              name: userName,
-              email: lowerEmail,
-              role: determinedRole,
-              status: "active"
-            })
-            .select()
-            .maybeSingle();
-          if (inserted?.id) {
-            userId = inserted.id;
-          }
-        } catch (insertErr) {
-          console.error("Auto-provision profile error:", insertErr);
-        }
+      if (!res.ok) {
+        toast.error(data.error || "Login failed. Please check your credentials.");
+        return;
       }
 
       toast.success("Login successful!");
-      
-      login({
-        id: userId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-0000-0000-000000000001"),
-        name: userName,
-        email: dbProfile?.email || lowerEmail || "user@oxpecker.ai",
-        role: userRole,
-        phone: dbProfile?.phone || undefined,
-        date_of_birth: dbProfile?.date_of_birth || undefined,
-        gender: dbProfile?.gender || undefined,
-        blood_group: dbProfile?.blood_group || undefined,
-        address: dbProfile?.address || undefined,
-        image: dbProfile?.image || undefined,
-        status: dbProfile?.status || "active",
-      } as any);
-
+      login(data.user);
     } catch (err: any) {
       console.error("Login error:", err);
-      toast.error("Login failed.");
+      toast.error("Unable to connect to server. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BedDouble, Plus, X, Search, Filter, Activity, Users, CheckCircle2, AlertTriangle } from "lucide-react";
+import { BedDouble, Plus, X, Search, Filter, Activity, Users, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
+import { toast, Toaster } from "sonner";
 
-// Sample Bed Data
+// Sample Fallback Data
 const initialBeds = [
   { id: "B-101", ward: "General Ward A", type: "General", status: "Vacant", price: "৳ 1,500/day" },
   { id: "B-102", ward: "General Ward A", type: "General", status: "Occupied", patient: "Rahim Uddin", price: "৳ 1,500/day" },
@@ -15,9 +18,39 @@ const initialBeds = [
 ];
 
 export default function BedManagementPage() {
-  const [beds, setBeds] = useState(initialBeds);
+  const { user } = useAuth();
+  const [beds, setBeds] = useState<any[]>(initialBeds);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBed, setNewBed] = useState({ id: "", ward: "", type: "General", status: "Vacant", price: "" });
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Load beds from Supabase
+  useEffect(() => {
+    async function loadBeds() {
+      try {
+        const { data, error } = await supabase
+          .from("hospital_beds")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (data && data.length > 0) {
+          const mapped = data.map(b => ({
+            id: b.id.substring(0, 8),
+            dbId: b.id,
+            ward: b.bed_type,
+            type: b.bed_type.includes("ICU") ? "ICU" : b.bed_type.includes("Cabin") ? "Cabin" : "General",
+            status: (b.available_beds || 0) > 0 ? "Vacant" : "Occupied",
+            price: `৳ ${(b.price_per_day || 1500).toLocaleString()}/day`,
+            hospitalName: b.hospital_name
+          }));
+          setBeds(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load hospital beds:", err);
+      }
+    }
+    loadBeds();
+  }, []);
 
   const stats = [
     { label: "Total Beds", value: beds.length, icon: BedDouble, color: "text-blue-600", bg: "bg-blue-50" },
@@ -26,11 +59,55 @@ export default function BedManagementPage() {
     { label: "Maintenance", value: beds.filter(b => b.status === "Maintenance").length, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
   ];
 
-  const handleAddBed = (e: React.FormEvent) => {
+  const handleAddBed = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBeds([...beds, newBed]);
-    setIsModalOpen(false);
-    setNewBed({ id: "", ward: "", type: "General", status: "Vacant", price: "" });
+    try {
+      const priceNum = parseFloat(newBed.price.replace(/[^0-9.]/g, "")) || 1500;
+      const { data: inserted, error } = await supabase
+        .from("hospital_beds")
+        .insert({
+          hospital_id: user?.id || "hosp_01",
+          hospital_name: user?.name || "Hospital Partner",
+          bed_type: `${newBed.ward} (${newBed.type})`,
+          total_beds: 1,
+          available_beds: newBed.status === "Vacant" ? 1 : 0,
+          price_per_day: priceNum,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Failed to add bed to database.");
+        return;
+      }
+
+      const added = {
+        id: inserted.id.substring(0, 8),
+        dbId: inserted.id,
+        ward: `${newBed.ward} (${newBed.type})`,
+        type: newBed.type,
+        status: newBed.status,
+        price: `৳ ${priceNum.toLocaleString()}/day`,
+        hospitalName: user?.name || "Hospital Partner",
+      };
+
+      setBeds([added, ...beds]);
+      setIsModalOpen(false);
+      setNewBed({ id: "", ward: "", type: "General", status: "Vacant", price: "" });
+      toast.success("Bed added successfully to database!");
+    } catch (err) {
+      toast.error("An error occurred while adding bed.");
+    }
+  };
+
+  const handleDeleteBed = async (bedItem: any) => {
+    if (bedItem.dbId) {
+      try {
+        await supabase.from("hospital_beds").delete().eq("id", bedItem.dbId);
+        toast.success("Bed removed from database.");
+      } catch {}
+    }
+    setBeds(beds.filter(b => b !== bedItem));
   };
 
   const getStatusColor = (status: string) => {
@@ -112,12 +189,24 @@ export default function BedManagementPage() {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-[18px] font-bold">{bed.id}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">{bed.id}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/60`}>
+                      {bed.status}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteBed(bed); }}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                      title="Delete Bed"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
                 <p className="text-[13px] opacity-80">{bed.ward}</p>
               </div>
-              <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/60`}>
-                {bed.status}
-              </span>
             </div>
             
             <div className="space-y-1">

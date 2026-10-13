@@ -223,7 +223,7 @@ export function MegaMenuNavbar({
         <div className="flex h-16 lg:h-20 items-center justify-between">
           
           {/* Left Brand Logo */}
-          <Link href="/" className="relative z-10 flex shrink-0 items-center max-w-[125px] sm:max-w-none">
+          <Link href={isAuthenticated ? "/?view=home" : "/"} className="relative z-10 flex shrink-0 items-center max-w-[125px] sm:max-w-none">
             <Image
               src="/images/Oxpecker_full_size.png"
               alt="Oxpecker AI"

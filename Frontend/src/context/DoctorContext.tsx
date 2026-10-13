@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 // Types
 export interface Patient {
@@ -108,8 +109,50 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   const [previousQueue, setPreviousQueue] = useState<QueuePatient[]>([]);
   
   const [connectedAssistants, setConnectedAssistants] = useState<any[]>([]);
-  
-  // Load assistants from local storage
+
+  // Load real appointments from Supabase bookings table and subscribe to realtime updates
+  useEffect(() => {
+    async function loadBookings() {
+      try {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .order("booking_date", { ascending: false });
+
+        if (data && data.length > 0) {
+          const mappedAppointments: Appointment[] = data.map((b: any) => ({
+            id: b.id,
+            token: `BK-${b.id.substring(0, 4).toUpperCase()}`,
+            name: b.patient_name || "Patient",
+            phone: b.patient_phone || "N/A",
+            date: b.booking_date || "Today",
+            time: b.booking_time || "10:00 AM",
+            type: "Online Booking",
+            status: b.status === "confirmed" ? "Upcoming" : b.status === "completed" ? "Completed" : "Waiting",
+            bookedBy: "Online",
+            assistant: null
+          }));
+
+          setAppointments(mappedAppointments);
+        }
+      } catch (err) {
+        console.error("Failed to load doctor bookings:", err);
+      }
+    }
+
+    loadBookings();
+
+    const channel = supabase
+      .channel("doctor-bookings-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => {
+        loadBookings();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   useEffect(() => {
     const loadAssistants = () => {
       if (typeof window !== 'undefined') {

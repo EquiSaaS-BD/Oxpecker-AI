@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -7,10 +9,46 @@ import {
   FileText, 
   ArrowRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Calendar,
+  Phone,
+  MapPin,
+  User
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { apiGetProfile } from "@/lib/api";
 
 export default function PatientProfilePage() {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await apiGetProfile();
+        if (res?.data?.profile) {
+          setProfile(res.data.profile);
+        }
+      } catch (err) {
+        console.error("Failed to load patient profile:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, [user]);
+
+  const p = profile || user || {};
+  const displayName = p.name || p.full_name || "Patient";
+  const displayEmail = p.email || "patient@oxpecker.ai";
+  const displayPhone = p.phone || "Not added yet";
+  const displayBlood = p.blood_group || p.bloodGroup || "O+";
+  const displayGender = p.gender || "Not specified";
+  const displayDob = p.date_of_birth || p.dob || "Not specified";
+  const displayAddress = p.address || "Not specified";
+  const displayImage = p.image || p.avatar_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300";
+
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
@@ -27,33 +65,41 @@ export default function PatientProfilePage() {
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-sky-50 to-slate-100 border-b border-slate-200/50" />
           <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white relative z-10 mt-10 shadow-md bg-slate-50">
             <Image
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300"
-              alt="Patient Avatar"
+              src={displayImage}
+              alt={displayName}
               fill
               className="object-cover"
             />
           </div>
           <div className="px-6 pb-8 w-full flex flex-col items-center">
-            <h2 className="text-2xl font-black mt-4 text-slate-900">Arif Hossain</h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 bg-slate-100 px-3 py-1 rounded-full">ID: #OX-8492</p>
+            <h2 className="text-2xl font-black mt-4 text-slate-900">{displayName}</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 bg-slate-100 px-3 py-1 rounded-full">
+              {p.id ? `ID: #${p.id.substring(0, 7).toUpperCase()}` : "ID: #OX-USER"}
+            </p>
 
             <div className="mt-8 w-full flex flex-col gap-4 text-left">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <span className="text-sm font-semibold text-slate-500">Age / Gender</span>
-                <span className="text-sm font-bold text-slate-800">32 / Male</span>
+                <span className="text-sm font-semibold text-slate-500">Gender / DOB</span>
+                <span className="text-sm font-bold text-slate-800">{displayGender} / {displayDob}</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <span className="text-sm font-semibold text-slate-500">Blood Group</span>
-                <span className="text-sm font-black text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-lg shadow-xs">O+</span>
+                <span className="text-sm font-black text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-lg shadow-xs">{displayBlood}</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <span className="text-sm font-semibold text-slate-500">Insurance</span>
+                <span className="text-sm font-semibold text-slate-500">Phone</span>
                 <span className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                  MetLife Gold <ShieldCheck size={16} className="text-sky-600" />
+                  {displayPhone}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <span className="text-sm font-semibold text-slate-500">Email</span>
+                <span className="text-sm font-bold text-slate-800 truncate max-w-[180px]">
+                  {displayEmail}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-slate-500">NID Verified</span>
+                <span className="text-sm font-semibold text-slate-500">Health ID Status</span>
                 <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5">
                   Verified <CheckCircle2 size={16} className="text-emerald-600" />
                 </span>
@@ -61,7 +107,7 @@ export default function PatientProfilePage() {
             </div>
 
             <Link 
-              href="/settings"
+              href="/profile"
               className="mt-8 w-full btn-clay text-sm py-3.5 px-4 rounded-2xl text-center flex justify-center items-center gap-2"
             >
               Edit Profile
@@ -69,114 +115,52 @@ export default function PatientProfilePage() {
           </div>
         </div>
 
-        {/* Health Metrics & Medical History (Span 8) */}
-        <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
-          
-          {/* Vitals Grid (Bento style) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bento-card spatial-shadow-sm p-6 group">
-              <div className="flex justify-between items-start">
-                <span className="text-sm font-bold text-slate-500">Blood Pressure</span>
-                <div className="p-2 bg-rose-50 rounded-xl text-rose-500 group-hover:scale-110 transition-transform">
-                  <Heart size={20} />
-                </div>
+        {/* Quick Actions & Recent Health Data (Span 8) */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link href="/appointments" className="bento-card p-5 hover:border-sky-300 transition-all group flex flex-col justify-between">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+                <Calendar size={20} />
               </div>
               <div className="mt-4">
-                <div className="text-3xl font-black text-slate-900 tracking-tight">120/80 <span className="text-sm text-slate-500 font-semibold tracking-normal">mmHg</span></div>
-                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold">
-                  Normal
-                </span>
+                <h3 className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Appointments</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Track and view scheduled doctor visits</p>
               </div>
-            </div>
+            </Link>
 
-            <div className="bento-card spatial-shadow-sm p-6 group">
-              <div className="flex justify-between items-start">
-                <span className="text-sm font-bold text-slate-500">Heart Rate</span>
-                <div className="p-2 bg-sky-50 rounded-xl text-sky-600 group-hover:scale-110 transition-transform">
-                  <Activity size={20} />
-                </div>
+            <Link href="/chat" className="bento-card p-5 hover:border-emerald-300 transition-all group flex flex-col justify-between">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <Activity size={20} />
               </div>
               <div className="mt-4">
-                <div className="text-3xl font-black text-slate-900 tracking-tight">72 <span className="text-sm text-slate-500 font-semibold tracking-normal">bpm</span></div>
-                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-sky-50 border border-sky-100 text-sky-700 text-xs font-bold">
-                  Resting
-                </span>
+                <h3 className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">AI Health Chat</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Get 24/7 symptom guidance and insights</p>
               </div>
-            </div>
+            </Link>
 
-            <div className="bento-card spatial-shadow-sm p-6 group">
-              <div className="flex justify-between items-start">
-                <span className="text-sm font-bold text-slate-500">Blood Sugar</span>
-                <div className="p-2 bg-amber-50 rounded-xl text-amber-500 group-hover:scale-110 transition-transform">
-                  <Activity size={20} />
-                </div>
+            <Link href="/medicines" className="bento-card p-5 hover:border-indigo-300 transition-all group flex flex-col justify-between">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <FileText size={20} />
               </div>
               <div className="mt-4">
-                <div className="text-3xl font-black text-slate-900 tracking-tight">5.8 <span className="text-sm text-slate-500 font-semibold tracking-normal">mmol/L</span></div>
-                <span className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold">
-                  Fasting
-                </span>
+                <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Prescriptions & Meds</h3>
+                <p className="text-xs text-slate-500 mt-0.5">DGDA verified medication guides</p>
+              </div>
+            </Link>
+          </div>
+
+          <div className="bento-card p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-4">Patient Address & Location</h3>
+            <div className="flex items-start gap-3 text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <MapPin size={20} className="text-sky-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-sm">{displayAddress}</p>
+                <p className="text-xs text-slate-500 mt-1">To update your address or emergency contacts, visit your profile settings.</p>
               </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {/* Upcoming Appointments */}
-            <div className="bento-card spatial-shadow-sm p-6 sm:p-8 flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-black text-slate-900">Appointments</h3>
-                <Link href="/doctors" className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-colors">
-                  + Book New
-                </Link>
-              </div>
-              <Link 
-                href="/appointments"
-                className="border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between bg-white spatial-shadow hover:spatial-shadow-hover transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col items-center justify-center bg-sky-50 border border-sky-100 text-sky-700 rounded-xl w-14 h-14 shrink-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider">OCT</span>
-                    <span className="text-xl font-black leading-none">24</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Dr. Anisul Islam</h4>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Cardiology • 5:30 PM</p>
-                  </div>
-                </div>
-                <ArrowRight size={18} className="text-slate-600 group-hover:text-sky-600 transition-colors transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-
-            {/* Medical History Summary */}
-            <div className="bento-card spatial-shadow-sm p-6 sm:p-8 flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-black text-slate-900">Recent Reports</h3>
-                <Link href="/reports" className="text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors">View All</Link>
-              </div>
-              <div className="space-y-4">
-                <Link href="/reports" className="flex items-start gap-4 group cursor-pointer block">
-                  <div className="p-3 rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors shrink-0">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition-colors">CBC Blood Test</h4>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Popular Diagnostic • 12 Oct 2026</p>
-                  </div>
-                </Link>
-                <Link href="/reports" className="flex items-start gap-4 group cursor-pointer block">
-                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
-                    <Activity size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">ECG Scan Result</h4>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Labaid Hospital • 05 Sep 2026</p>
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </div>
-
         </div>
+
       </div>
     </div>
   );

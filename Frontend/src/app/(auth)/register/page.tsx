@@ -208,91 +208,32 @@ export default function RegisterPage() {
     const role = formData.accountType || "patient";
 
     try {
-      // 1. Check if user with this email already exists
-      const { data: existingUser } = await supabase
-        .from("profiles")
-        .select("id, email")
-        .ilike("email", email)
-        .maybeSingle();
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name || "User",
+          email: email,
+          password: formData.password,
+          role: role,
+          phone: phone || null,
+          date_of_birth: formData.accountType === "patient" ? formData.patientDob || null : null,
+          gender: formData.accountType === "patient" ? formData.patientGender || null : null,
+          specialty: formData.accountType === "doctor" ? formData.doctorSpec || null : null,
+          hospital_name: formData.accountType === "hospital" ? formData.hospitalName || null : null,
+          address: formData.accountType === "hospital" ? formData.hospitalAddress || null : null,
+        }),
+      });
 
-      if (existingUser) {
-        toast.error("An account with this email already exists. Please log in.");
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Registration failed. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      // 2. Insert new profile into Supabase profiles table
-      const profileInsertData: any = {
-        name: name || "User",
-        email: email,
-        role: role,
-        status: "active",
-        phone: phone || null,
-        password: formData.password,
-        date_of_birth: formData.accountType === "patient" ? formData.patientDob || null : null,
-        gender: formData.accountType === "patient" ? formData.patientGender || null : null,
-        specialty: formData.accountType === "doctor" ? formData.doctorSpec || null : null,
-        hospital_name: formData.accountType === "hospital" ? formData.hospitalName || null : null,
-        address: formData.accountType === "hospital" ? formData.hospitalAddress || null : null,
-        join_date: new Date().toISOString().split("T")[0]
-      };
-
-      const { data: newProfile, error: profileError } = await supabase
-        .from("profiles")
-        .insert(profileInsertData)
-        .select()
-        .single();
-
-      if (profileError) {
-        console.error("Supabase profile registration error:", profileError);
-        throw profileError;
-      }
-
-      // 3. Role specific table inserts
-      if (role === "doctor" && newProfile?.id) {
-        try {
-          await supabase.from("doctors").insert({
-            profile_id: newProfile.id,
-            name: name,
-            specialty: formData.doctorSpec || "General Physician",
-            hospital: "Oxpecker Partner Hospital",
-            is_verified: true
-          });
-        } catch (docErr) {
-          console.warn("Doctor table insert warning:", docErr);
-        }
-      } else if (role === "hospital" && newProfile?.id) {
-        try {
-          await supabase.from("hospitals").insert({
-            profile_id: newProfile.id,
-            name: formData.hospitalName,
-            email: email,
-            phone: formData.hospitalPhone || null,
-            address: formData.hospitalAddress || null,
-            is_verified: true
-          });
-        } catch (hospErr) {
-          console.warn("Hospital table insert warning:", hospErr);
-        }
-      }
-
-      const registeredUser = {
-        id: newProfile.id,
-        name: newProfile.name,
-        email: newProfile.email,
-        role: newProfile.role,
-        phone: newProfile.phone,
-        image: newProfile.image,
-        date_of_birth: newProfile.date_of_birth,
-        gender: newProfile.gender,
-        blood_group: newProfile.blood_group,
-        address: newProfile.address,
-        specialty: newProfile.specialty,
-        hospital_name: newProfile.hospital_name
-      };
-
       toast.success("Account created successfully!");
-      login(registeredUser as any);
+      login(data.user);
     } catch (err: any) {
       console.error("Registration error:", err);
       toast.error(err?.message || "Registration failed. Please try again.");

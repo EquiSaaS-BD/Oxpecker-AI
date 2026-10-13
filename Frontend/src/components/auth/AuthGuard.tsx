@@ -56,14 +56,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // 2. Role-Based Access Control (RBAC) for Authenticated Users:
     let hasAccess = true;
+    const cleanPath = pathname.replace(/\/$/, "");
 
-    if (pathname.startsWith("/admin")) {
+    if (cleanPath === "/admin" || cleanPath.startsWith("/admin/")) {
       hasAccess = role === "admin";
-    } else if (pathname.startsWith("/hospital/")) {
+    } else if (cleanPath === "/hospital" || cleanPath.startsWith("/hospital/")) {
       hasAccess = role === "hospital" || role === "admin";
-    } else if (pathname.startsWith("/assistant")) {
+    } else if (cleanPath === "/assistant" || cleanPath.startsWith("/assistant/")) {
       hasAccess = role === "assistant" || role === "admin";
-    } else if (pathname.startsWith("/doctor/")) {
+    } else if (cleanPath === "/doctor" || cleanPath.startsWith("/doctor/")) {
       hasAccess = role === "doctor" || role === "admin";
     }
 

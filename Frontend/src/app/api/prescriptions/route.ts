@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
   try {
@@ -10,80 +10,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Patient ID (MRN) is required" }, { status: 400 });
     }
 
-    // Upsert Patient by MRN
-    const patient = await prisma.patient.upsert({
-      where: { mrn },
-      update: { name: patientName },
-      create: {
-        mrn,
-        name: patientName || "Unknown Patient",
-      },
-    });
+    const newRx = {
+      doctor_name: prescriptionData.doctorName || "Dr. Assigned",
+      doctor_id: prescriptionData.doctorId || null,
+      patient_id: mrn,
+      patient_name: patientName || "Patient",
+      diagnosis: prescriptionData.diagnosis || null,
+      medicines: prescriptionData.medicines || [],
+      test_recommendations: prescriptionData.investigationsList || [],
+      advice: prescriptionData.advice || null,
+      follow_up_date: prescriptionData.followUp || null,
+    };
 
-    // We'll either create a new prescription or update the existing one for this patient
-    // If the frontend sends an 'id', we update that specific prescription.
-    // Otherwise, we check if there's an active draft (e.g. created today), or just create a new one.
-    let prescription;
+    const { data: inserted, error } = await supabase
+      .from('prescriptions')
+      .insert(newRx)
+      .select()
+      .single();
 
-    if (prescriptionData.id) {
-      prescription = await prisma.prescription.update({
-        where: { id: prescriptionData.id },
-        data: {
-          chiefComplaint: prescriptionData.chiefComplaint,
-          physicalExam: prescriptionData.physicalExam,
-          vitals: prescriptionData.vitals,
-          diagnosis: prescriptionData.diagnosis,
-          investigations: prescriptionData.investigations,
-          investigationsList: prescriptionData.investigationsList,
-          medicines: prescriptionData.medicines,
-          advice: prescriptionData.advice,
-          followUp: prescriptionData.followUp,
-          theme: prescriptionData.theme,
-        },
-      });
-    } else {
-      // Find latest prescription to avoid creating too many empty ones
-      const latest = await prisma.prescription.findFirst({
-        where: { patientId: patient.id },
-        orderBy: { updatedAt: 'desc' }
-      });
-
-      if (latest) {
-        prescription = await prisma.prescription.update({
-          where: { id: latest.id },
-          data: {
-            chiefComplaint: prescriptionData.chiefComplaint,
-            physicalExam: prescriptionData.physicalExam,
-            vitals: prescriptionData.vitals,
-            diagnosis: prescriptionData.diagnosis,
-            investigations: prescriptionData.investigations,
-            investigationsList: prescriptionData.investigationsList,
-            medicines: prescriptionData.medicines,
-            advice: prescriptionData.advice,
-            followUp: prescriptionData.followUp,
-            theme: prescriptionData.theme,
-          },
-        });
-      } else {
-        prescription = await prisma.prescription.create({
-          data: {
-            patientId: patient.id,
-            chiefComplaint: prescriptionData.chiefComplaint,
-            physicalExam: prescriptionData.physicalExam,
-            vitals: prescriptionData.vitals,
-            diagnosis: prescriptionData.diagnosis,
-            investigations: prescriptionData.investigations,
-            investigationsList: prescriptionData.investigationsList,
-            medicines: prescriptionData.medicines,
-            advice: prescriptionData.advice,
-            followUp: prescriptionData.followUp,
-            theme: prescriptionData.theme,
-          },
-        });
-      }
+    if (error) {
+      console.error("Supabase insert prescription error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, prescriptionId: prescription.id });
+    return NextResponse.json({ success: true, data: inserted });
   } catch (error) {
     console.error("Failed to save prescription:", error);
     return NextResponse.json({ error: "Failed to save data" }, { status: 500 });
@@ -93,29 +43,18 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const mrn = searchParams.get('mrn');
+    const patientId = searchParams.get("patientId");
 
-    if (!mrn) {
-      return NextResponse.json({ error: "MRN is required" }, { status: 400 });
+    let query = supabase.from("prescriptions").select("*").order("created_at", { ascending: false });
+    if (patientId) {
+      query = query.eq("patient_id", patientId);
     }
 
-    const patient = await prisma.patient.findUnique({
-      where: { mrn },
-      include: {
-        prescriptions: {
-          orderBy: { updatedAt: 'desc' },
-          take: 1, // Get the most recent draft
-        }
-      }
-    });
+    const { data, error } = await query;
+    if (error) throw error;
 
-    if (!patient || patient.prescriptions.length === 0) {
-      return NextResponse.json({ data: null });
-    }
-
-    return NextResponse.json({ data: patient.prescriptions[0] });
+    return NextResponse.json({ success: true, data: data || [] });
   } catch (error) {
-    console.error("Failed to fetch prescription:", error);
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch prescriptions" }, { status: 500 });
   }
 }

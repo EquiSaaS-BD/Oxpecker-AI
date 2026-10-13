@@ -1,46 +1,47 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(req: Request) {
   try {
-    const patients = await prisma.patient.findMany({
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        prescriptions: {
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
+    const { data: records, error } = await supabase
+      .from('patient_health_records')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    // Map to frontend format
-    const formattedPatients = patients.map(p => {
-      // Find latest prescription for diagnosis, etc.
-      const latestRx = p.prescriptions[0];
+    if (error) {
+      console.error("Supabase patient_health_records error:", error);
+    }
 
+    const { data: rxList } = await supabase
+      .from('prescriptions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const formatted = (records || []).map(p => {
+      const pRx = (rxList || []).filter(rx => rx.patient_id === p.uhid || rx.patient_name === p.full_name);
       return {
-        id: p.mrn,
-        name: p.name,
-        age: p.age || 0,
+        id: p.uhid,
+        name: p.full_name,
+        age: p.date_of_birth ? (new Date().getFullYear() - new Date(p.date_of_birth).getFullYear()) : 30,
         gender: p.gender || "Unknown",
-        type: "Walk-in", // Default type
-        date: p.createdAt.toISOString(),
+        type: "Registered",
+        date: p.created_at,
         status: "Completed",
-        diagnosis: latestRx?.diagnosis || "Not specified",
+        diagnosis: pRx[0]?.diagnosis || "Regular checkup",
         assistant: "System",
         paymentStatus: "Paid",
-        avatar: p.name.charAt(0).toUpperCase(),
-        // Extra payload for Drawer
+        avatar: p.full_name.charAt(0).toUpperCase(),
         dbId: p.id,
-        prescriptions: p.prescriptions.map(rx => ({
+        prescriptions: pRx.map(rx => ({
           id: rx.id,
-          date: rx.createdAt.toISOString(),
+          date: rx.created_at,
           diagnosis: rx.diagnosis,
-          medicines: rx.medicines ? JSON.parse(JSON.stringify(rx.medicines)) : []
+          medicines: rx.medicines || []
         }))
       };
     });
 
-    return NextResponse.json({ success: true, data: formattedPatients });
+    return NextResponse.json({ success: true, data: formatted });
   } catch (error) {
     console.error("Failed to fetch patients:", error);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

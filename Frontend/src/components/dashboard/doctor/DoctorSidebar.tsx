@@ -1,12 +1,12 @@
 "use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, Users, Calendar, Clock, CreditCard, 
   Settings, LogOut, FileText, Activity 
-} from 'lucide-react';
-import Image from 'next/image';
+} from "lucide-react";
+import Image from "next/image";
 
 const navItems = [
   { name: "Live Monitor", href: "/doctor", icon: Activity },
@@ -24,7 +24,7 @@ export default function DoctorSidebar() {
   return (
     <aside className="w-[280px] h-screen bg-slate-50 border-r border-slate-200 flex flex-col flex-shrink-0 sticky top-0 left-0 overflow-hidden z-50">
       <div className="h-[80px] flex items-center px-6 border-b border-slate-200 shrink-0">
-        <Link href="/">
+        <Link href="/?view=home">
           <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={180} height={60} className="h-10 w-auto object-contain brightness-0 invert" />
         </Link>
       </div>
@@ -46,7 +46,7 @@ export default function DoctorSidebar() {
                 <item.icon size={22} className={isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700"} />
                 <span className="text-[15px]">{item.name}</span>
               </Link>
-            )
+            );
           })}
         </div>
       </div>

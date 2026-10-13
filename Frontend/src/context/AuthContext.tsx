@@ -39,33 +39,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage and check 30-day session expiry
+  // Initialize from localStorage for instant hydration, then verify with server session
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("oxpecker_mock_user");
-      const lastActivity = localStorage.getItem("oxpecker_last_activity");
+    let mounted = true;
 
-      if (savedUser && lastActivity) {
-        const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
-        const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+    async function initAuth() {
+      try {
+        const savedUser = localStorage.getItem("oxpecker_user") || localStorage.getItem("oxpecker_mock_user");
+        if (savedUser && mounted) {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch {}
+        }
 
-        if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
-          // Session expired due to 30 days of inactivity
-          console.log("Session expired. Auto-logging out.");
+        // Verify active server session token from HTTP cookie
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user && mounted) {
+            setUser(data.user);
+            localStorage.setItem("oxpecker_user", JSON.stringify(data.user));
+            localStorage.setItem("oxpecker_mock_user", JSON.stringify(data.user));
+          }
+        } else if (res.status === 401 && mounted) {
+          // Server says cookie is missing or invalid
+          // Clear stale local storage
+          localStorage.removeItem("oxpecker_user");
           localStorage.removeItem("oxpecker_mock_user");
           localStorage.removeItem("oxpecker_last_activity");
           setUser(null);
-        } else {
-          // Session valid, refresh the activity timer
-          setUser(JSON.parse(savedUser));
-          localStorage.setItem("oxpecker_last_activity", Date.now().toString());
         }
+      } catch (e) {
+        console.error("Auth init error:", e);
+      } finally {
+        if (mounted) setIsLoading(false);
       }
-    } catch (e) {
-      console.error("Auth init error:", e);
-    } finally {
-      setIsLoading(false);
     }
+
+    initAuth();
+    return () => { mounted = false; };
   }, []);
   const router = useRouter();
 
@@ -95,7 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {}
     setUser(null);
     localStorage.removeItem("oxpecker_mock_user");
     localStorage.removeItem("oxpecker_user");
