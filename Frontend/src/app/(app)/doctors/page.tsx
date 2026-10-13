@@ -1,10 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Stethoscope, Heart, Activity, Pill, Syringe, ShieldCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { 
+  Search, 
+  SlidersHorizontal, 
+  Stethoscope, 
+  Heart, 
+  Activity, 
+  Pill, 
+  Syringe, 
+  ShieldCheck,
+  ChevronDown,
+  Sparkles,
+  Star,
+  Banknote,
+  Check
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { mockDoctors } from "@/lib/mockData";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
 import { DoctorFilterModal } from "@/components/doctors/DoctorFilterModal";
+import { Pagination } from "@/components/ui/Pagination";
+
+const SORT_OPTIONS: { id: "recommended" | "rating" | "fee"; label: string; icon: any; iconColor: string; description: string }[] = [
+  { 
+    id: "recommended", 
+    label: "Recommended", 
+    icon: Sparkles, 
+    iconColor: "text-sky-500",
+    description: "Best match for patient needs" 
+  },
+  { 
+    id: "rating", 
+    label: "Highest Rated", 
+    icon: Star, 
+    iconColor: "text-amber-500",
+    description: "Top patient reviews & satisfaction" 
+  },
+  { 
+    id: "fee", 
+    label: "Lowest Fee", 
+    icon: Banknote, 
+    iconColor: "text-emerald-500",
+    description: "Most affordable consultation fees" 
+  },
+];
 
 function DoctorCardSkeleton() {
   return (
@@ -45,6 +85,29 @@ export default function DoctorsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<"recommended" | "rating" | "fee">("recommended");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const resultsTopRef = useRef<HTMLDivElement>(null);
+
+  // Pagination State (21 items per page)
+  const ITEMS_PER_PAGE = 21;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to first page when search or sort criteria change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy]);
+
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Simulate loading
   useEffect(() => {
@@ -60,9 +123,20 @@ export default function DoctorsPage() {
 
   const sortedDoctors = [...filteredDoctors].sort((a, b) => {
     if (sortBy === "rating") return b.rating - a.rating;
-    if (sortBy === "fee") return a.consultationFee - b.consultationFee;
+    if (sortBy === "fee") return (Number(a.fee) || 0) - (Number(b.fee) || 0);
     return 0;
   });
+
+  const totalPages = Math.ceil(sortedDoctors.length / ITEMS_PER_PAGE);
+  const paginatedDoctors = sortedDoctors.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    resultsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const medicalIcons = [
     { Icon: Stethoscope, label: "Diagnostics" },
@@ -155,18 +229,104 @@ export default function DoctorsPage() {
       </div>
 
       {/* MAIN GRID LAYOUT */}
-      <div className="w-full max-w-[1280px] mx-auto px-[20px] md:px-[32px] lg:px-[48px] py-12">
+      <div ref={resultsTopRef} className="w-full max-w-[1280px] mx-auto px-[20px] md:px-[32px] lg:px-[48px] py-12 scroll-mt-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[20px] font-bold text-slate-900">Doctors ({isLoading ? "..." : sortedDoctors.length})</h2>
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[14px] font-medium text-slate-700 focus:outline-none focus:border-sky-500 cursor-pointer shadow-sm"
-          >
-            <option value="recommended">Recommended</option>
-            <option value="rating">Highest Rated</option>
-            <option value="fee">Lowest Fee</option>
-          </select>
+          <h2 className="text-[20px] font-bold text-slate-900 flex items-center gap-2">
+            Doctors
+            <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/60">
+              {isLoading ? "..." : sortedDoctors.length}
+            </span>
+          </h2>
+
+          {/* Custom Professional Sort Dropdown */}
+          <div className="relative" ref={sortDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className={`flex items-center gap-2.5 bg-white border ${
+                isSortOpen 
+                  ? "border-sky-500 ring-4 ring-sky-500/10 shadow-sm" 
+                  : "border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-sm"
+              } rounded-xl px-3.5 py-2 text-[13px] sm:text-[14px] font-semibold text-slate-800 transition-all duration-200 cursor-pointer select-none`}
+              aria-expanded={isSortOpen}
+              aria-haspopup="listbox"
+            >
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const current = SORT_OPTIONS.find(opt => opt.id === sortBy) || SORT_OPTIONS[0];
+                  const Icon = current.icon;
+                  return (
+                    <>
+                      <Icon size={16} className={current.iconColor} />
+                      <span className="text-slate-400 font-normal hidden sm:inline">Sort:</span>
+                      <span className="font-bold text-slate-800">{current.label}</span>
+                    </>
+                  );
+                })()}
+              </div>
+              <ChevronDown 
+                size={16} 
+                className={`text-slate-400 transition-transform duration-200 ${isSortOpen ? "rotate-180 text-sky-600" : ""}`} 
+              />
+            </button>
+
+            {/* Custom Pop-up Menu */}
+            <AnimatePresence>
+              {isSortOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-2xl p-1.5 shadow-[0_16px_40px_rgba(0,61,155,0.14)] z-50 overflow-hidden"
+                >
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Sort Doctors By
+                  </div>
+                  <div className="space-y-0.5">
+                    {SORT_OPTIONS.map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = sortBy === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            setSortBy(option.id);
+                            setIsSortOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer ${
+                            isSelected
+                              ? "bg-sky-50 text-sky-900 font-bold border border-sky-100"
+                              : "hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-medium"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                              isSelected ? "bg-white shadow-xs" : "bg-slate-100"
+                            }`}>
+                              <Icon size={15} className={option.iconColor} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className={`text-[13px] leading-tight ${isSelected ? "text-sky-900 font-bold" : "text-slate-800"}`}>
+                                {option.label}
+                              </p>
+                              <p className="text-[11px] text-slate-400 font-normal leading-tight mt-0.5 truncate">
+                                {option.description}
+                              </p>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <Check size={16} className="text-sky-600 shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {(() => {
@@ -202,14 +362,26 @@ export default function DoctorsPage() {
           }
 
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[24px]">
-              {sortedDoctors.map(doctor => (
-                <DoctorCard 
-                  key={doctor.id} 
-                  doctor={doctor} 
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[24px]">
+                {paginatedDoctors.map(doctor => (
+                  <DoctorCard 
+                    key={doctor.id} 
+                    doctor={doctor} 
+                  />
+                ))}
+              </div>
+
+              {/* Pagination (21 doctors per page) */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={sortedDoctors.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                itemName="Doctors"
+                onPageChange={handlePageChange}
+              />
+            </>
           );
         })()}
       </div>

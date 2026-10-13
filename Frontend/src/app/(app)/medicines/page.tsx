@@ -416,8 +416,8 @@ export default function MedicinesPage() {
                           <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
                           
                           <BgIcon 
-                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-700/50 -rotate-12 pointer-events-none group-hover:scale-110 group-hover:rotate-0 transition-transform duration-500" 
-                            strokeWidth={1}
+                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.14] group-hover:text-sky-500/[0.12] -rotate-12 pointer-events-none select-none group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 ease-out" 
+                            strokeWidth={0.75}
                           />
 
                           <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">

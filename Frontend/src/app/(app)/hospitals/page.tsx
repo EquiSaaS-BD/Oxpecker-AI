@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, MapPin, Star, Bed, Stethoscope, BadgeCheck, Filter, Building2 } from "lucide-react";
+import { Pagination } from "@/components/ui/Pagination";
 
 // No local mock data array needed
 
@@ -15,6 +16,16 @@ export default function HospitalsDirectory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const resultsTopRef = useRef<HTMLDivElement>(null);
+
+  // Pagination State (21 items per page)
+  const ITEMS_PER_PAGE = 21;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when search or category filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
 
   // Fetch real data
   useEffect(() => {
@@ -59,6 +70,17 @@ export default function HospitalsDirectory() {
     
     return matchesSearch && matchesCategory;
   });
+
+  const totalPages = Math.ceil(filteredHospitals.length / ITEMS_PER_PAGE);
+  const paginatedHospitals = filteredHospitals.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    resultsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50 font-sans pb-32">
@@ -126,12 +148,15 @@ export default function HospitalsDirectory() {
       </div>
 
       {/* Grid Content */}
-      <div className="max-w-[1280px] mx-auto px-6 py-8">
+      <div ref={resultsTopRef} className="max-w-[1280px] mx-auto px-6 py-8 scroll-mt-20">
         
         {/* Results Info */}
         <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-[16px] font-bold text-slate-700">
-            Showing {filteredHospitals.length} Hospitals
+          <h2 className="text-[18px] font-bold text-slate-900 flex items-center gap-2">
+            Hospitals & Centers
+            <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/60">
+              {isLoading ? "..." : filteredHospitals.length}
+            </span>
           </h2>
         </div>
         {/* Hospital Cards Grid */}
@@ -185,68 +210,80 @@ export default function HospitalsDirectory() {
           }
 
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredHospitals.map((hosp, idx) => (
-                <div key={`hosp-${hosp.id || idx}`} className="bg-white rounded-[20px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col group">
-                  
-                  {/* Cover Image */}
-                  <div className="relative w-full h-[180px] bg-slate-100 overflow-hidden">
-                    <div className="absolute inset-0 bg-slate-200/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                      <Image src="/images/Oxpecker_full_size.png" alt={hosp.name} width={120} height={40} className="opacity-20" />
-                    </div>
-                    <div className="absolute inset-0  from-black/60 " />
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {paginatedHospitals.map((hosp, idx) => (
+                  <div key={`hosp-${hosp.id || idx}`} className="bg-white rounded-[20px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                     
-                    <div className="absolute top-4 right-4 bg-sky-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[12px] font-bold flex items-center gap-1 shadow-sm">
-                      <BadgeCheck size={14} /> Verified
+                    {/* Cover Image */}
+                    <div className="relative w-full h-[180px] bg-slate-100 overflow-hidden">
+                      <div className="absolute inset-0 bg-slate-200/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                        <Image src="/images/Oxpecker_full_size.png" alt={hosp.name} width={120} height={40} className="opacity-20" />
+                      </div>
+                      <div className="absolute inset-0  from-black/60 " />
+                      
+                      <div className="absolute top-4 right-4 bg-sky-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[12px] font-bold flex items-center gap-1 shadow-sm">
+                        <BadgeCheck size={14} /> Verified
+                      </div>
+
+                      <div className="absolute bottom-4 left-4 flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-white p-2 border-2 border-white shadow-md relative overflow-hidden shrink-0 flex items-center justify-center">
+                          <Building2 size={24} className="text-emerald-600/50" />
+                        </div>
+                        <div>
+                          <div className="bg-black/30 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-semibold text-white mb-0.5 inline-block border border-white/20">
+                            {hosp.specialty || hosp.type || "Hospital"}
+                          </div>
+                          <div className="flex items-center gap-1 text-white text-[13px] font-medium drop-shadow-md">
+                            <MapPin size={14} className="shrink-0 text-sky-400" /> <span className="line-clamp-1">{hosp.address}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white p-2 border-2 border-white shadow-md relative overflow-hidden shrink-0 flex items-center justify-center">
-                        <Building2 size={24} className="text-emerald-600/50" />
+                    {/* Content */}
+                    <div className="p-5 flex flex-col flex-1">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="font-[800] text-[18px] text-slate-900 leading-tight pr-4 group-hover:text-sky-600 transition-colors line-clamp-1">
+                          {hosp.name}
+                        </h3>
+                        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg text-[13px] font-bold text-yellow-600 shrink-0">
+                          <Star size={14} className="fill-current" /> 4.5
+                        </div>
                       </div>
-                      <div>
-                        <div className="bg-black/30 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-semibold text-white mb-0.5 inline-block border border-white/20">
-                          {hosp.specialty || hosp.type || "Hospital"}
+
+                      {/* Category & Location */}
+                      <div className="flex flex-col gap-2.5 mb-6 text-slate-600">
+                        <div className="flex items-center gap-2 text-[14px] font-medium bg-slate-50 px-3 py-2 rounded-xl">
+                          <Building2 size={16} className="text-sky-600 shrink-0" /> 
+                          <span className="line-clamp-1">{hosp.specialty || hosp.type || "Hospital"}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-white text-[13px] font-medium drop-shadow-md">
-                          <MapPin size={14} className="shrink-0 text-sky-400" /> <span className="line-clamp-1">{hosp.address}</span>
+                        <div className="flex items-start gap-2 text-[14px] font-medium bg-slate-50 px-3 py-2 rounded-xl">
+                          <MapPin size={16} className="text-sky-600 shrink-0 mt-0.5" /> 
+                          <span className="line-clamp-2">{hosp.address || "Address not available"}</span>
                         </div>
+                      </div>
+
+                      <div className="mt-auto pt-4 border-t border-slate-100 flex gap-3">
+                        <Link href={`/hospitals/${hosp.id}`} className="flex-1 h-12 bg-sky-600 hover:bg-[#0052cc] text-white rounded-[14px] flex items-center justify-center font-bold text-[14px] transition-colors shadow-md shadow-primary/20">
+                          View Profile & Book
+                        </Link>
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  {/* Content */}
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-[800] text-[18px] text-slate-900 leading-tight pr-4 group-hover:text-sky-600 transition-colors line-clamp-1">
-                        {hosp.name}
-                      </h3>
-                      <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg text-[13px] font-bold text-yellow-600 shrink-0">
-                        <Star size={14} className="fill-current" /> 4.5
-                      </div>
-                    </div>
-
-                    {/* Category & Location */}
-                    <div className="flex flex-col gap-2.5 mb-6 text-slate-600">
-                      <div className="flex items-center gap-2 text-[14px] font-medium bg-slate-50 px-3 py-2 rounded-xl">
-                        <Building2 size={16} className="text-sky-600 shrink-0" /> 
-                        <span className="line-clamp-1">{hosp.specialty || hosp.type || "Hospital"}</span>
-                      </div>
-                      <div className="flex items-start gap-2 text-[14px] font-medium bg-slate-50 px-3 py-2 rounded-xl">
-                        <MapPin size={16} className="text-sky-600 shrink-0 mt-0.5" /> 
-                        <span className="line-clamp-2">{hosp.address || "Address not available"}</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-auto pt-4 border-t border-slate-100 flex gap-3">
-                      <Link href={`/hospitals/${hosp.id}`} className="flex-1 h-12 bg-sky-600 hover:bg-[#0052cc] text-white rounded-[14px] flex items-center justify-center font-bold text-[14px] transition-colors shadow-md shadow-primary/20">
-                        View Profile & Book
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+              {/* Pagination (21 hospitals per page) */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredHospitals.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                itemName="Hospitals"
+                onPageChange={handlePageChange}
+              />
+            </>
           );
         })()}
 

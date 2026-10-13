@@ -44,6 +44,9 @@ doc/
 # Temporary python scripts
 update_*.py
 fix_*.py
+replace_*.py
+check_*.py
+*.pptx
 scratch/
 
 .gemini/
