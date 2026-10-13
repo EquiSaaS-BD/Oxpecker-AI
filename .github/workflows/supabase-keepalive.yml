@@ -2,8 +2,8 @@ name: Supabase Keep-Alive Ping
 
 on:
   schedule:
-    # Runs at 00:00 UTC every 3 days
-    - cron: '0 0 */3 * *'
+    # Runs daily at 04:00 UTC to prevent Supabase 7-day inactivity pause
+    - cron: '0 4 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
@@ -11,18 +11,41 @@ jobs:
     name: Ping Supabase Database
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping Supabase Endpoints
         env:
-          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          DEFAULT_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pc2ppZ2d1bGV5Z2JqY3ZmbWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMTYzNDIsImV4cCI6MjEwMjg5MjM0Mn0.RffU4Cmu-yDt5BNAm49Kd_ZQjxpJ1NMwwOjGwokFa38"
+          SECRET_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
-          echo "Pinging Supabase database endpoint to keep project active..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            "https://nisjigguleygbjcvfmbb.supabase.co/rest/v1/profiles?select=count")
-          echo "Supabase Response HTTP Status: $STATUS"
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
-            echo "Supabase successfully pinged and is active."
+          KEY="${SECRET_KEY:-$DEFAULT_ANON_KEY}"
+          echo "Pinging Supabase database to keep project active..."
+
+          # Ping public read endpoints to generate active Postgres transactions
+          ENDPOINTS=(
+            "https://nisjigguleygbjcvfmbb.supabase.co/rest/v1/hospitals?select=id&limit=1"
+            "https://nisjigguleygbjcvfmbb.supabase.co/rest/v1/medicines?select=id&limit=1"
+            "https://nisjigguleygbjcvfmbb.supabase.co/rest/v1/"
+          )
+
+          SUCCESS=0
+          for URL in "${ENDPOINTS[@]}"; do
+            echo "Requesting: $URL"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 15 --max-time 30 \
+              -H "apikey: $KEY" \
+              -H "Authorization: Bearer $KEY" \
+              "$URL" || echo "000")
+
+            echo "Response status: $HTTP_CODE"
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+              SUCCESS=1
+              echo "Active connection established with $URL"
+              break
+            fi
+          done
+
+          if [ "$SUCCESS" -eq 1 ]; then
+            echo "Supabase successfully pinged and verified active."
+            exit 0
           else
-            echo "Warning: Received HTTP $STATUS, but endpoint was reached."
+            echo "Warning: All keep-alive endpoints returned unexpected status codes. Check Supabase project status."
+            exit 1
           fi
