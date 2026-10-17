@@ -103,7 +103,7 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
   }
 
   if (process.env.GOOGLE_API_KEY) {
-    const model = process.env.GOOGLE_MODEL || 'gemini-2.0-flash';
+    const model = process.env.GOOGLE_MODEL || 'gemini-2.5-flash';
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
@@ -151,16 +151,30 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File | null;
+    let base64 = '';
+    let mimeType = 'image/jpeg';
 
-    if (!file) {
-      return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      const file = formData.get('image') as File | null;
+
+      if (!file) {
+        return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
+      }
+
+      const bytes = await file.arrayBuffer();
+      base64 = Buffer.from(bytes).toString('base64');
+      mimeType = file.type || 'image/jpeg';
+    } else {
+      const body = await request.json();
+      base64 = body.imageBase64 || body.image || '';
+      mimeType = body.mimeType || 'image/jpeg';
+
+      if (!base64) {
+        return NextResponse.json({ error: 'No image provided in request' }, { status: 400 });
+      }
     }
-
-    const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString('base64');
-    const mimeType = file.type || 'image/jpeg';
 
     const result = await analyzeWithVision(base64, mimeType, IMAGE_PROMPT);
     return NextResponse.json({ analysis: result });
