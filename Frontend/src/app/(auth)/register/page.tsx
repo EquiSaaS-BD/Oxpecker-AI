@@ -524,6 +524,9 @@ export default function RegisterPage() {
       if (!res.ok) {
         toast.error(data.error || "Registration failed. Please try again.");
         setIsLoading(false);
+        return;
+      }
+
       toast.success("Account created successfully!");
       login(data.user);
     } catch (err: any) {
