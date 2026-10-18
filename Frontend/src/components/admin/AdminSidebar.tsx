@@ -15,7 +15,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -25,6 +26,7 @@ export function AdminSidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
+    { name: "HealthPass Cards", icon: CreditCard, href: "/admin/health-cards" },
     { name: "Users", icon: Users, href: "/admin/users" },
     { name: "Medicines", icon: Pill, href: "/admin/data/medicines" },
     { name: "Bookings", icon: CalendarCheck, href: "/admin/data/bookings" },

@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { detectEmergency } from "@/lib/ai/emergency-detector";
 import { useChatHistory, Message } from "@/context/ChatHistoryContext";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 type EmergencyAlert = {
   type: string;
@@ -325,8 +326,8 @@ function ChatContent() {
         )}
       </AnimatePresence>
 
-      {/* Background Watermark (Clean Logo Only) */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] select-none z-0">
+      {/* Background Watermark (Clean Subtle Logo) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.025] select-none z-0">
         <div className="relative w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] md:w-[460px] md:h-[460px] grayscale">
           <Image 
             src="/images/Oxpecker_icon.png" 
@@ -418,7 +419,7 @@ function ChatContent() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="h-full w-full bg-white flex items-center justify-center text-slate-500">Loading Chat...</div>}>
+    <Suspense fallback={<MedicalLoader fullScreen text="Loading Chat" />}>
       <ChatContent />
     </Suspense>
   );

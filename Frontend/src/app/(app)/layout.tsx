@@ -15,6 +15,7 @@ import { ChatHistoryProvider } from "@/context/ChatHistoryContext";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { HealthPassActivationBanner } from "@/components/health-card/HealthPassActivationBanner";
 
 export default function AppLayout({
   children,
@@ -122,6 +123,7 @@ export default function AppLayout({
 
             {/* Dynamic Page Content */}
             <main className={`flex-1 overflow-y-auto custom-scrollbar relative ${!isSpecialRoute ? 'pt-14 lg:pt-0 2xl:pt-0 pb-16 md:pb-0' : ''}`}>
+              {!isSpecialRoute && <HealthPassActivationBanner />}
               {children}
             </main>
           </div>

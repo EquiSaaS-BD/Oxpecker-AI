@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Receipt,
   Settings,
+  LogOut,
   X,
   ChevronRight,
   Store,
@@ -18,6 +19,7 @@ import {
   UserPlus,
   FileText,
   Package,
+  CreditCard,
 } from "lucide-react";
 
 interface HospitalSidebarProps {
@@ -27,6 +29,7 @@ interface HospitalSidebarProps {
 
 const navItems = [
   { label: "Overview", href: "/hospital/dashboard", icon: LayoutDashboard },
+  { label: "Emergency HealthPass", href: "/hospital/dashboard/health-pass", icon: CreditCard },
   { label: "Facility Profile & Packages", href: "/hospital/dashboard/profile", icon: Store },
   { label: "Bed Management", href: "/hospital/dashboard/beds", icon: BedDouble },
   { label: "Booking Management", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },
@@ -41,7 +44,7 @@ const navItems = [
 
 export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/hospital/dashboard") return pathname === href;
@@ -136,8 +139,19 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
           })}
         </div>
 
+        {/* Bottom Actions */}
+        <div className="p-3 border-t border-slate-100 shrink-0 space-y-1">
+          <button
+            onClick={() => { logout(); onClose(); }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors w-full"
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
+        </div>
+
         {/* Minimal Footer */}
-        <div className="p-4 border-t border-slate-100 shrink-0 text-center">
+        <div className="px-4 pb-4 shrink-0 text-center">
           <p className="text-[11px] font-medium text-slate-400">
             Oxpecker Health • Hospital Portal
           </p>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { toast, Toaster } from "sonner";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -65,9 +66,8 @@ function AuthCallbackContent() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
       <Toaster position="top-center" />
-      <div className="w-12 h-12 border-3 border-sky-600/20 border-t-sky-600 rounded-full animate-spin mb-4" />
-      <h2 className="text-lg font-bold text-slate-800">{status}</h2>
-      <p className="text-sm text-slate-500 mt-1">Please wait while we complete your authentication.</p>
+      <MedicalLoader text={status} />
+      <p className="text-xs text-slate-400 mt-3">Please wait while we complete your authentication.</p>
     </div>
   );
 }
@@ -77,8 +77,7 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-          <div className="w-12 h-12 border-3 border-sky-600/20 border-t-sky-600 rounded-full animate-spin mb-4" />
-          <h2 className="text-lg font-bold text-slate-800">Loading...</h2>
+          <MedicalLoader text="Loading..." />
         </div>
       }
     >

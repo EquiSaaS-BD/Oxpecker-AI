@@ -6,8 +6,9 @@
   --font-display: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
-  --color-primary: #020617; /* Slate 950 - Absolute strict dark */
-  --color-secondary: #334155; /* Slate 700 */
+  --color-primary: #0284c7; /* Clinical Sky Blue - Oxpecker Brand */
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #0f172a; /* Slate 900 */
   --color-tertiary: #f8fafc; /* Slate 50 */
   
   --color-glass-bg: rgba(255, 255, 255, 0.85);
@@ -44,6 +45,11 @@
     letter-spacing: -0.02em;
     line-height: 1.1;
     font-optical-sizing: auto;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0284c7;
+    outline-offset: 2px;
   }
 }
 

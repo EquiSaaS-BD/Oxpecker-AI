@@ -11,6 +11,7 @@ import { PrescriptionProvider } from "@/context/PrescriptionContext";
 import { PrescriptionFinalizeModal } from "@/components/prescription/PrescriptionFinalizeModal";
 import { PrescriptionPreviewModal } from "@/components/prescription/PrescriptionPreviewModal";
 import { TestReportViewer } from "@/components/prescription/TestReportViewer";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 function PrescriptionContent() {
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
@@ -63,7 +64,7 @@ function PrescriptionContent() {
 
 export default function NewPrescriptionPage() {
   return (
-    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-medium">Loading Prescription Editor...</div>}>
+    <Suspense fallback={<MedicalLoader fullScreen text="Loading Prescription Editor" />}>
       <PrescriptionContent />
     </Suspense>
   );

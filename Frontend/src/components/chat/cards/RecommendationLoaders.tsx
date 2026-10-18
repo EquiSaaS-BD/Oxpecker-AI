@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { DoctorCard } from "./DoctorCard";
 import { HospitalCard } from "./HospitalCard";
 import { MedicineCard } from "./MedicineCard";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 export function DoctorRecommendationLoader({ data }: { data: any }) {
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -21,7 +22,11 @@ export function DoctorRecommendationLoader({ data }: { data: any }) {
   }, [data.speciality]);
 
   if (loading) {
-    return <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-500 animate-pulse flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span> Finding best doctors...</div>;
+    return (
+      <div className="p-4 bg-slate-50/80 rounded-2xl flex items-center justify-center my-3">
+        <MedicalLoader text="Finding best doctors" iconSize={26} />
+      </div>
+    );
   }
 
   return (
@@ -55,7 +60,11 @@ export function HospitalRecommendationLoader({ data }: { data: any }) {
   }, [data.speciality]);
 
   if (loading) {
-    return <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-500 animate-pulse flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span> Finding best hospitals...</div>;
+    return (
+      <div className="p-4 bg-slate-50/80 rounded-2xl flex items-center justify-center my-3">
+        <MedicalLoader text="Finding best hospitals" iconSize={26} />
+      </div>
+    );
   }
 
   return (
@@ -90,7 +99,11 @@ export function MedicineRecommendationLoader({ data }: { data: any }) {
   }, [data.generic, data.condition, data.name]);
 
   if (loading) {
-    return <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-500 animate-pulse flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span> Looking up medicines...</div>;
+    return (
+      <div className="p-4 bg-slate-50/80 rounded-2xl flex items-center justify-center my-3">
+        <MedicalLoader text="Looking up medicines" iconSize={26} />
+      </div>
+    );
   }
 
   return (

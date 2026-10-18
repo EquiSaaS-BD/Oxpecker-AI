@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { useChatHistory } from "@/context/ChatHistoryContext";
+import { MessageMedicalIcon } from "@/components/icons/MessageMedicalIcon";
 
 export function PatientMegaMenuNavbar() {
   const pathname = usePathname();
@@ -44,7 +45,7 @@ export function PatientMegaMenuNavbar() {
 
   // Directly visible top links on Laptop bar
   const primaryLinks = [
-    { label: "Chat", href: "/chat", icon: MessageSquare },
+    { label: "Chat", href: "/chat", icon: MessageMedicalIcon },
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Appointments", href: "/appointments", icon: Calendar },
     { label: "Doctors", href: "/doctors", icon: Stethoscope },
