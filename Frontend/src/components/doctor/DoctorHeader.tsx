@@ -13,6 +13,7 @@ import {
   Maximize,
   Minimize,
   X,
+  LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -23,7 +24,7 @@ interface DoctorHeaderProps {
 }
 
 export function DoctorHeader({ onMenuClick }: DoctorHeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);

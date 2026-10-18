@@ -22,7 +22,7 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 export default function LoginPage() {
-  const { login, isAuthenticated, isLoading, role } = useAuth();
+  const { user, login, logout, isAuthenticated, isLoading, role } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -32,6 +32,9 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("switch=true")) {
+      return;
+    }
     if (!isLoading && isAuthenticated) {
       const redirectUrl = sessionStorage.getItem("redirect_after_login");
       if (redirectUrl) {
@@ -114,6 +117,54 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemoLogin = (demoRole: "hospital" | "doctor" | "patient" | "admin") => {
+    const demoConfigs = {
+      hospital: {
+        id: "demo-hospital-001",
+        name: "Dhaka Central Hospital",
+        email: "hospital@oxpecker.ai",
+        role: "hospital" as const,
+        status: "active" as const,
+        hospital_name: "Dhaka Central Hospital",
+        address: "Dhanmondi, Dhaka",
+      },
+      doctor: {
+        id: "demo-doctor-001",
+        name: "Dr. Ayesha Rahman",
+        email: "doctor@oxpecker.ai",
+        role: "doctor" as const,
+        status: "active" as const,
+        specialty: "Cardiology & Internal Medicine",
+        hospital_name: "Dhaka Central Hospital",
+      },
+      patient: {
+        id: "demo-patient-001",
+        name: "Rahim Ahmed",
+        email: "patient@oxpecker.ai",
+        role: "patient" as const,
+        status: "active" as const,
+        blood_group: "O+",
+        gender: "Male",
+      },
+      admin: {
+        id: "demo-admin-001",
+        name: "System Administrator",
+        email: "admin@oxpecker.ai",
+        role: "admin" as const,
+        status: "active" as const,
+      },
+    };
+
+    const targetUser = demoConfigs[demoRole];
+    login(targetUser as any);
+    toast.success(`Signed in as Demo ${demoRole.toUpperCase()}`);
+
+    if (demoRole === "hospital") router.replace("/hospital/dashboard");
+    else if (demoRole === "doctor") router.replace("/doctor/dashboard");
+    else if (demoRole === "admin") router.replace("/admin/dashboard");
+    else router.replace("/chat");
+  };
+
   return (
     <main className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
       <Login3DBackground />
@@ -126,13 +177,50 @@ export default function LoginPage() {
         </Link>
 
         <div className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-8 sm:p-10 relative z-20 ring-1 ring-black/5">
-          <div className="mb-8 text-center">
+          <div className="mb-6 text-center">
             <Link href="/" className="inline-flex mb-6">
               <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={160} height={45} className="h-10 w-auto object-contain" />
             </Link>
             <h1 className="text-2xl font-extrabold text-slate-900">Welcome back</h1>
             <p className="text-slate-500 text-sm mt-1">Sign in to your healthcare account</p>
           </div>
+
+          {isAuthenticated && user && (
+            <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-left">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Active Session</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 uppercase">
+                  {role || "User"}
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-slate-900">{user.name}</p>
+              <p className="text-xs text-slate-500 mb-3">{user.email}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (role === "hospital") router.push("/hospital/dashboard");
+                    else if (role === "doctor") router.push("/doctor/dashboard");
+                    else if (role === "admin") router.push("/admin/dashboard");
+                    else router.push("/chat");
+                  }}
+                  className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors text-center cursor-pointer"
+                >
+                  Enter Portal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    toast.info("Signed out. You can now log into another account.");
+                  }}
+                  className="py-2 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -220,7 +308,44 @@ export default function LoginPage() {
             )}
           </button>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          {/* Quick Demo Logins */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider text-center mb-3">
+              ⚡ 1-Click Demo Portals (Instant Access)
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("hospital")}
+                className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-xs active:scale-[0.98]"
+              >
+                🏥 Hospital Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("doctor")}
+                className="p-2.5 rounded-xl border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-xs active:scale-[0.98]"
+              >
+                👨‍⚕️ Doctor Portal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("patient")}
+                className="p-2.5 rounded-xl border border-purple-200 bg-purple-50/70 hover:bg-purple-100 text-purple-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-xs active:scale-[0.98]"
+              >
+                👤 Patient Portal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("admin")}
+                className="p-2.5 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-xs active:scale-[0.98]"
+              >
+                🛡️ System Admin
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-500 font-medium">
               Don't have an account?{" "}
               <Link href="/register" className="text-slate-900 font-bold hover:underline">
