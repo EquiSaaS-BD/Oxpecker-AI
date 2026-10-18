@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { toast, Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { Login3DBackground } from "@/components/shared/Login3DBackground";
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
@@ -157,8 +156,17 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${dbProfile.name}!`);
       login(dbProfile as any);
     } catch (err: any) {
-      console.error("Google login error:", err);
-      toast.error(err.message || "Google sign in cancelled.");
+      const isCancellation = 
+        err?.code === "popup_closed" || 
+        err?.message?.toLowerCase().includes("closed") || 
+        err?.message?.toLowerCase().includes("cancel");
+
+      if (isCancellation) {
+        toast.info("Google sign-in was cancelled.");
+      } else {
+        console.error("Google login error:", err);
+        toast.error(err.message || "Google sign in failed.");
+      }
     } finally {
       setIsGoogleLoading(false);
     }
@@ -166,7 +174,11 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
-      <Login3DBackground />
+      {/* Clean Ambient Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-b from-slate-50 via-white to-sky-50/25">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
+      </div>
       <Toaster position="top-center" richColors />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md relative z-10">
@@ -255,12 +267,12 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading}
-            className="w-full h-[52px] bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-2xl border border-slate-300 hover:border-slate-400 transition-all shadow-sm flex items-center justify-center gap-3 text-sm active:scale-[0.98] cursor-pointer"
+            className="w-full h-[50px] bg-white hover:bg-slate-50/90 text-slate-700 hover:text-slate-900 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[15px] active:scale-[0.99] cursor-pointer"
           >
             {isGoogleLoading ? (
               <>
-                <div className="w-5 h-5 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
-                <span className="text-slate-600">Connecting Google...</span>
+                <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
+                <span className="text-slate-600 font-medium">Connecting Google...</span>
               </>
             ) : (
               <>

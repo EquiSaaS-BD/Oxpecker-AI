@@ -97,12 +97,14 @@ export async function initiateGoogleSignIn(): Promise<GoogleUserProfile> {
           }
         },
         error_callback: (err: any) => {
-          reject(new Error(err.message || "Google OAuth window closed or failed to open."));
+          const customError: any = new Error(err?.message || "Google OAuth window closed or failed to open.");
+          customError.code = err?.type || "popup_closed";
+          reject(customError);
         },
       });
 
-      // Trigger the Google OAuth popup
-      client.requestAccessToken({ prompt: "consent" });
+      // Trigger the Google OAuth popup with account selection
+      client.requestAccessToken({ prompt: "select_account" });
     } catch (e: any) {
       reject(new Error(e.message || "Could not launch Google Sign-In."));
     }

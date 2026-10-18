@@ -19,6 +19,7 @@ import {
   UserPlus,
   FileText,
   Package,
+  CreditCard,
 } from "lucide-react";
 
 interface HospitalSidebarProps {
@@ -28,6 +29,7 @@ interface HospitalSidebarProps {
 
 const navItems = [
   { label: "Overview", href: "/hospital/dashboard", icon: LayoutDashboard },
+  { label: "Emergency HealthPass", href: "/hospital/dashboard/health-pass", icon: CreditCard },
   { label: "Profile & Gigs", href: "/hospital/dashboard/profile", icon: Store },
   { label: "Bed Management", href: "/hospital/dashboard/beds", icon: BedDouble },
   { label: "Booking Management", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },

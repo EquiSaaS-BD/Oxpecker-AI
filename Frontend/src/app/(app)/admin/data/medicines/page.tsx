@@ -6,6 +6,7 @@ import { DataTable } from "@/components/admin/DataTable";
 import { Pill, Plus, Edit2, Trash2, X as XIcon, Save, Search, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast, Toaster } from "sonner";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 export default function AdminMedicinesPage() {
   const [medicines, setMedicines] = useState<any[]>([]);
@@ -195,9 +196,8 @@ export default function AdminMedicinesPage() {
 
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <div className="w-8 h-8 border-3 border-slate-100 border-t-sky-600 rounded-full animate-spin"></div>
-            <p className="mt-3 text-slate-500 text-xs font-medium">Loading registered medicine records...</p>
+          <div className="py-16 flex items-center justify-center">
+            <MedicalLoader text="Loading medicines" iconSize={36} />
           </div>
         ) : (
           <DataTable

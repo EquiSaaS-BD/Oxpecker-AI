@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { LogOut, User, Camera, Save, Shield, Bell, ChevronDown, ChevronUp, Droplet, Pencil, X, Check } from "lucide-react";
+import { LogOut, User, Camera, Save, Shield, Bell, ChevronDown, ChevronUp, Droplet, Pencil, X, Check, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,9 @@ import { toast, Toaster } from "sonner";
 import Image from "next/image";
 import { ImageUploadCropper } from "@/components/shared/ImageUploadCropper";
 import { apiGetProfile, apiUpdateProfile, compressAndResizeImage } from "@/lib/api";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
+import { HealthPassSettingsSection } from "@/components/health-card/HealthPassSettingsSection";
+import { LocationAutocompleteInput } from "@/components/shared/LocationAutocompleteInput";
 
 export default function SettingsPage() {
   const { user, logout, updateUser } = useAuth();
@@ -22,6 +25,8 @@ export default function SettingsPage() {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
+  const [nid, setNid] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState("");
   
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +56,8 @@ export default function SettingsPage() {
       setGender(prof.gender || "");
       setBloodGroup(prof.blood_group || prof.bloodGroup || "");
       setAddress(prof.address || "");
+      setNid(prof.nid || "");
+      setEmergencyContact(prof.emergency_contact || prof.emergencyContact || "");
       if (prof.image) setProfileImage(prof.image);
     } catch (e) {
       toast.error("Failed to load profile data.");
@@ -101,7 +108,30 @@ export default function SettingsPage() {
       try {
         const compressedUrl = await compressAndResizeImage(file, 400, 400, 0.75);
         setProfileImage(compressedUrl);
-        toast.success("Profile photo uploaded & compressed. Click 'Save Changes'.");
+
+        // Instantly sync with HealthPass Card in localStorage so it appears on card immediately!
+        const targetUserId = user?.id || "current";
+        const savedCard = localStorage.getItem(`hp_card_${targetUserId}`);
+        let currentCard = savedCard ? JSON.parse(savedCard) : {};
+        currentCard.patient_image = compressedUrl;
+        localStorage.setItem(`hp_card_${targetUserId}`, JSON.stringify(currentCard));
+
+        // Also update AuthContext & mock user state
+        if (user) {
+          updateUser({ ...user, image: compressedUrl });
+        } else {
+          const stored = localStorage.getItem("oxpecker_mock_user");
+          if (stored) {
+            try {
+              const u = JSON.parse(stored);
+              u.image = compressedUrl;
+              localStorage.setItem("oxpecker_mock_user", JSON.stringify(u));
+              localStorage.setItem("oxpecker_user", JSON.stringify(u));
+            } catch {}
+          }
+        }
+
+        toast.success("Profile photo uploaded & synced with your HealthPass card!", { icon: "📸" });
       } catch (err) {
         toast.error("Failed to process image.");
       }
@@ -132,6 +162,19 @@ export default function SettingsPage() {
       setIsGenderOpen(false);
       setIsBloodGroupOpen(false);
 
+      const targetUserId = user?.id || "current";
+      const savedCard = localStorage.getItem(`hp_card_${targetUserId}`);
+      let currentCard = savedCard ? JSON.parse(savedCard) : {};
+      if (profileImage) currentCard.patient_image = profileImage;
+      currentCard.patient_name = name;
+      currentCard.english_name = name.toUpperCase();
+      currentCard.blood_group = bloodGroup;
+      currentCard.gender = gender;
+      currentCard.date_of_birth = dob;
+      currentCard.address = address;
+      if (phone) currentCard.personal_phone = phone;
+      localStorage.setItem(`hp_card_${targetUserId}`, JSON.stringify(currentCard));
+
       if (user) {
         const p = res?.data?.profile;
         updateUser({
@@ -156,6 +199,14 @@ export default function SettingsPage() {
   const toggleSection = (section: 'security' | 'notifications') => {
     setExpandedSection(prev => prev === section ? null : section);
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center p-12">
+        <MedicalLoader text="Loading Profile" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -283,18 +334,39 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Date of Birth</label>
-              <input
-                type="date"
-                disabled={!isEditing}
-                value={dob}
-                onChange={e => setDob(e.target.value)}
-                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
-                  !isEditing
-                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
-                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
-                }`}
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700">Date of Birth</label>
+                <span className="text-[10px] text-slate-400 font-normal">Type freely or pick</span>
+              </div>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  disabled={!isEditing}
+                  value={dob}
+                  onChange={e => setDob(e.target.value)}
+                  placeholder="e.g. 1995-03-15 or 15/03/1995"
+                  className={`w-full h-11 pl-4 pr-11 border rounded-xl text-sm transition-all duration-150 ${
+                    !isEditing
+                      ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
+                      : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 placeholder:text-slate-400 font-medium"
+                  }`}
+                />
+                {isEditing && (
+                  <label
+                    className="absolute right-2.5 p-1.5 text-slate-400 hover:text-sky-600 cursor-pointer rounded-lg hover:bg-slate-100 transition-colors"
+                    title="Open calendar picker"
+                  >
+                    <Calendar size={16} />
+                    <input
+                      type="date"
+                      className="sr-only"
+                      onChange={e => {
+                        if (e.target.value) setDob(e.target.value);
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             {/* Custom Gender Dropdown Pop-up */}
@@ -453,18 +525,38 @@ export default function SettingsPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Address</label>
-              <input
-                type="text"
-                disabled={!isEditing}
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700">
+                  Full Residential Address
+                </label>
+                <span className="text-[11px] text-sky-600 font-medium">
+                  Google Maps & Bangladesh Geo Autocomplete (EN / বাংলা)
+                </span>
+              </div>
+              <LocationAutocompleteInput
                 value={address}
-                onChange={e => setAddress(e.target.value)}
-                className={`w-full h-11 px-4 border rounded-xl text-sm transition-all duration-150 ${
-                  !isEditing
-                    ? "bg-slate-50/80 border-slate-200 text-slate-700 cursor-not-allowed select-none"
-                    : "bg-white border-slate-200 text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
-                }`}
-                placeholder="House/Road, Thana, District"
+                onChange={setAddress}
+                disabled={!isEditing}
+                onLocationSelect={(loc) => {
+                  setAddress(loc.address);
+                  if (user && loc.zila) {
+                    const nowStr = new Date().toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    });
+                    const updatedLoc = {
+                      address: loc.address,
+                      zila: loc.zila,
+                      post_code: loc.postcode || "1205",
+                      division: loc.division || "Dhaka",
+                      upazila: loc.upazila || "",
+                      last_location_sync: nowStr,
+                    };
+                    localStorage.setItem(`hp_location_${user.id}`, JSON.stringify(updatedLoc));
+                  }
+                }}
+                placeholder="Type house/road, area, upazila and district in English or বাংলা..."
               />
             </div>
           </div>
@@ -502,6 +594,24 @@ export default function SettingsPage() {
             </div>
           )}
         </form>
+
+        {/* HealthPass Medical ID Card Activation & Verification Section */}
+        <HealthPassSettingsSection
+          userData={{
+            id: user?.id,
+            name,
+            bloodGroup,
+            blood_group: bloodGroup,
+            dob,
+            gender,
+            phone,
+            image: profileImage || undefined,
+            nid,
+            emergency_contact: emergencyContact,
+            address,
+          }}
+          onProfileUpdated={loadProfileData}
+        />
 
         {/* EXPANDABLE SECTIONS (Security & Notifications) */}
         <div className="space-y-3">

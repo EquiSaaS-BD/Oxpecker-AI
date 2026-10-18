@@ -193,7 +193,7 @@ export default function MedicinesPage() {
               </div>
               <button 
                 onClick={() => setIsFilterOpen(true)}
-                className="bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-sky-600 rounded-[16px] w-[54px] h-[54px] shrink-0 flex items-center justify-center transition-all shadow-sm"
+                className="bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 rounded-[16px] w-[54px] h-[54px] shrink-0 flex items-center justify-center transition-all shadow-sm"
               >
                 <SlidersHorizontal size={20} />
               </button>
@@ -415,10 +415,19 @@ export default function MedicinesPage() {
                         >
                           <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
                           
-                          <BgIcon 
-                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.14] group-hover:text-sky-500/[0.12] -rotate-12 pointer-events-none select-none group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 ease-out" 
-                            strokeWidth={0.75}
-                          />
+                          <div 
+                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.05] group-hover:text-sky-500/[0.07] -rotate-12 pointer-events-none select-none group-hover:scale-105 transition-all duration-500 ease-out"
+                            style={{
+                              maskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)",
+                              WebkitMaskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)"
+                            }}
+                          >
+                            <BgIcon 
+                              className="w-full h-full"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                          </div>
 
                           <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
                             <div className={`w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${catDetails.color.replace('text-', 'bg-').replace('500', '500/10')} border-${catDetails.color.split('-')[1]}-200 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>

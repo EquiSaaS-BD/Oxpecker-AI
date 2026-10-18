@@ -66,10 +66,19 @@ export function MedicineMarqueeSection() {
       <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-transparent to-white/40 opacity-50 pointer-events-none z-0"></div>
       
       {/* Dynamic Faint Background Icon Based on Type (Syrup, Injection, Pill) */}
-      <med.bgIcon 
-        className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.14] group-hover:text-primary/[0.12] -rotate-12 pointer-events-none select-none group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 ease-out" 
-        strokeWidth={0.75}
-      />
+      <div 
+        className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.05] group-hover:text-sky-500/[0.07] -rotate-12 pointer-events-none select-none group-hover:scale-105 transition-all duration-500 ease-out"
+        style={{
+          maskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)",
+          WebkitMaskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)"
+        }}
+      >
+        <med.bgIcon 
+          className="w-full h-full"
+          fill="currentColor"
+          stroke="none"
+        />
+      </div>
 
       <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
         <div className={`w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${med.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, role } = useAuth();
   const router = useRouter();
@@ -82,31 +84,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated, role, pathname, router]);
 
   if (isLoading || !isAuthorized) {
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 overflow-hidden">
-        <div className="flex flex-col items-center justify-center gap-10">
-          
-          {/* Logo with Glowing Ping Effects */}
-          <div className="relative flex items-center justify-center">
-            <div className="absolute w-28 h-28 rounded-full border border-sky-500/20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-            <div className="absolute w-36 h-36 rounded-full border border-emerald-500/10 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" style={{ animationDelay: '1.5s' }}></div>
-            
-            <div className="relative w-24 h-24 flex items-center justify-center z-10">
-              <img src="/images/Oxpecker_icon.png" alt="Loading..." className="w-20 h-20 object-contain animate-breathing drop-shadow-lg" />
-            </div>
-          </div>
-          
-          {/* High-tech Progress Scanner */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-40 h-1 bg-slate-800/80 rounded-full overflow-hidden relative shadow-inner">
-              <div className="absolute top-0 bottom-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-sky-400 to-transparent animate-[shimmer_1.5s_infinite_ease-in-out]"></div>
-            </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] animate-pulse">Initializing Workspace</p>
-          </div>
-
-        </div>
-      </div>
-    );
+    return <MedicalLoader fullScreen text="Loading" />;
   }
 
   return <>{children}</>;

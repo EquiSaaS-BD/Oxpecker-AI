@@ -9,6 +9,7 @@ import { mockDoctors, DoctorProfile } from "@/lib/mockData";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 const consultationTypes = ["Hospital Visit", "Video Call"];
 
@@ -46,7 +47,11 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   }, [resolvedParams.id]);
 
   if (!doctor) {
-    return <div className="h-full flex items-center justify-center bg-white">Loading booking engine...</div>;
+    return (
+      <div className="h-full min-h-[60vh] flex items-center justify-center bg-white">
+        <MedicalLoader text="Loading Booking" />
+      </div>
+    );
   }
 
   // Generate next 7 days for the date picker

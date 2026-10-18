@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   ClipboardList,
+  CreditCard,
   FileText,
   ShoppingBag,
   Settings,
@@ -16,6 +17,7 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+import { MessageMedicalIcon } from "@/components/icons/MessageMedicalIcon";
 
 interface PatientSidebarProps {
   isOpen: boolean;
@@ -24,9 +26,11 @@ interface PatientSidebarProps {
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "AI Chat", href: "/chat", icon: MessageMedicalIcon },
   { label: "Appointments", href: "/appointments", icon: CalendarDays },
   { label: "Reports", href: "/reports", icon: FileText },
   { label: "Medicines", href: "/medicines", icon: ShoppingBag },
+  { label: "HealthPass", href: "/health-card", icon: CreditCard },
   { label: "Profile", href: "/profile", icon: ClipboardList },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

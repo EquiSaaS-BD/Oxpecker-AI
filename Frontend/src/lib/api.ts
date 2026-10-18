@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, isSupabaseConfigured } from "./supabase";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://oxpecker-backend.onrender.com/api/v1";
 
@@ -227,76 +227,82 @@ export const apiUpdateProfile = async (data: ProfileUpdateInput) => {
     if (data.specialty !== undefined) updatePayload.specialty = data.specialty;
     if (data.hospital_name !== undefined) updatePayload.hospital_name = data.hospital_name;
 
-    // Check if profile exists in database
-    let existingProfile: any = null;
-    if (isValidUuid(targetId) && targetEmail) {
-      const { data: ep } = await supabase.from("profiles").select("*").or(`id.eq.${targetId},email.ilike.${targetEmail}`).maybeSingle();
-      existingProfile = ep;
-    } else if (isValidUuid(targetId)) {
-      const { data: ep } = await supabase.from("profiles").select("*").eq("id", targetId).maybeSingle();
-      existingProfile = ep;
-    } else if (targetEmail) {
-      const { data: ep } = await supabase.from("profiles").select("*").ilike("email", targetEmail).maybeSingle();
-      existingProfile = ep;
-    }
-
     let updated: any = null;
-    if (existingProfile) {
-      const { data: u, error } = await supabase
-        .from("profiles")
-        .update(updatePayload)
-        .eq("id", existingProfile.id)
-        .select()
-        .maybeSingle();
 
-      if (error) {
-        console.error("Supabase profile update error:", error.message);
-        throw error;
-      }
-      updated = u;
-    } else {
-      // Insert new profile into Supabase
-      const insertPayload = {
-        name: updatePayload.name || targetEmail?.split("@")[0] || "User",
-        email: targetEmail?.toLowerCase(),
-        role: storedUser?.role || "patient",
-        status: "active",
-        ...updatePayload
-      };
-      const { data: created, error } = await supabase
-        .from("profiles")
-        .insert(insertPayload)
-        .select()
-        .maybeSingle();
+    // Persist to Supabase if a valid, non-dummy key is configured
+    if (isSupabaseConfigured) {
+      try {
+        let existingProfile: any = null;
+        if (isValidUuid(targetId) && targetEmail) {
+          const { data: ep } = await supabase.from("profiles").select("*").or(`id.eq.${targetId},email.ilike.${targetEmail}`).maybeSingle();
+          existingProfile = ep;
+        } else if (isValidUuid(targetId)) {
+          const { data: ep } = await supabase.from("profiles").select("*").eq("id", targetId).maybeSingle();
+          existingProfile = ep;
+        } else if (targetEmail) {
+          const { data: ep } = await supabase.from("profiles").select("*").ilike("email", targetEmail).maybeSingle();
+          existingProfile = ep;
+        }
 
-      if (error) {
-        console.error("Supabase profile insert error:", error.message);
-        throw error;
+        if (existingProfile) {
+          const { data: u, error } = await supabase
+            .from("profiles")
+            .update(updatePayload)
+            .eq("id", existingProfile.id)
+            .select()
+            .maybeSingle();
+
+          if (error) {
+            console.warn("Supabase profile update notice:", error.message);
+          } else {
+            updated = u;
+          }
+        } else {
+          const insertPayload = {
+            name: updatePayload.name || targetEmail?.split("@")[0] || "User",
+            email: targetEmail?.toLowerCase(),
+            role: storedUser?.role || "patient",
+            status: "active",
+            ...updatePayload
+          };
+          const { data: created, error } = await supabase
+            .from("profiles")
+            .insert(insertPayload)
+            .select()
+            .maybeSingle();
+
+          if (error) {
+            console.warn("Supabase profile insert notice:", error.message);
+          } else {
+            updated = created;
+          }
+        }
+      } catch (dbErr: any) {
+        console.warn("Database sync notice (resilient mode active):", dbErr?.message || dbErr);
       }
-      updated = created;
     }
 
-    // Sync localStorage session with Supabase updated profile
+    // Merge everything into a consistent, robust profile state
+    const effectiveProfile = {
+      ...(storedUser || {}),
+      ...(updated || {}),
+      ...updatePayload,
+      id: updated?.id || targetId || storedUser?.id || "user-current",
+      email: targetEmail || storedUser?.email,
+    };
+
+    // Always sync local storage sessions
     if (typeof localStorage !== "undefined") {
       try {
-        const currentMock = localStorage.getItem("oxpecker_mock_user");
-        if (currentMock) {
-          const u = JSON.parse(currentMock);
-          const synced = { ...u, ...(updated || updatePayload) };
-          if (updated?.id) synced.id = updated.id;
-          localStorage.setItem("oxpecker_mock_user", JSON.stringify(synced));
-        }
-        const currentStored = localStorage.getItem("oxpecker_user");
-        if (currentStored) {
-          const u = JSON.parse(currentStored);
-          const synced = { ...u, ...(updated || updatePayload) };
-          if (updated?.id) synced.id = updated.id;
-          localStorage.setItem("oxpecker_user", JSON.stringify(synced));
+        localStorage.setItem("oxpecker_mock_user", JSON.stringify(effectiveProfile));
+        localStorage.setItem("oxpecker_user", JSON.stringify(effectiveProfile));
+        if (targetId) {
+          localStorage.setItem(`hp_profile_${targetId}`, JSON.stringify(effectiveProfile));
         }
       } catch {}
     }
 
-    return { data: { profile: updated || updatePayload } };
+    return { data: { profile: effectiveProfile } };
   } catch (err: unknown) {
     console.error("apiUpdateProfile error:", err);
     throw err;

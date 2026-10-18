@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Save, User, UserCog, Stethoscope, Building2, Camera, Upload } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadCropper } from "@/components/shared/ImageUploadCropper";
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
 export default function ProfilePage() {
   const { user, isLoading: isAuthLoading, updateUser } = useAuth();
@@ -98,11 +99,7 @@ export default function ProfilePage() {
   };
 
   if (isAuthLoading || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-      </div>
-    );
+    return <MedicalLoader fullScreen text="Loading Profile" />;
   }
 
   const role = user?.role;

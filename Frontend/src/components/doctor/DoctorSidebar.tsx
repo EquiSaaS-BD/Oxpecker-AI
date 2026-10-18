@@ -21,6 +21,7 @@ import {
   ChevronRight,
   ChevronLeft,
   X,
+  CreditCard,
 } from "lucide-react";
 
 interface DoctorSidebarProps {
@@ -39,6 +40,7 @@ const navCategories = [
     title: "Clinical",
     items: [
       { label: "Appointments", href: "/doctor/dashboard/appointments", icon: CalendarDays },
+      { label: "HealthPass Emergency", href: "/doctor/dashboard/health-pass", icon: CreditCard },
       { label: "Prescriptions", href: "/doctor/dashboard/prescription", icon: ClipboardList },
       { label: "Patient List", href: "/doctor/dashboard/patients", icon: Users },
       { label: "Reports & Diagnostics", href: "/doctor/dashboard/reports", icon: FileBarChart },

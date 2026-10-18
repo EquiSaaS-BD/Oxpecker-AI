@@ -7,6 +7,9 @@ import { ChevronRight, Droplet, Flame, Activity, Check, AlertCircle, Calendar, C
 import { upcomingAppointment, nutritionData } from "@/data";
 import { fetchDashboardStats } from "@/lib/api";
 
+import { MedicalLoader } from "@/components/shared/MedicalLoader";
+import { MessageMedicalIcon } from "@/components/icons/MessageMedicalIcon";
+
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +24,11 @@ export default function DashboardPage() {
   }, []);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-slate-500">লোড হচ্ছে... (Loading...)</div>;
+    return (
+      <div className="py-28 flex items-center justify-center">
+        <MedicalLoader text="লোড হচ্ছে" />
+      </div>
+    );
   }
 
   if (!dashboardData) {
@@ -32,10 +39,25 @@ export default function DashboardPage() {
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900">আপনার স্বাস্থ্য ড্যাশবোর্ড</h1>
-        <p className="text-slate-500 mt-1">স্বাগতম, {userProfile.name.split(' ')[0]}। এখানে আপনার আজকের স্বাস্থ্যের সারসংক্ষেপ।</p>
+      {/* Header with Quick AI Chat Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">আপনার স্বাস্থ্য ড্যাশবোর্ড</h1>
+          <p className="text-slate-500 mt-1">স্বাগতম, {userProfile.name.split(' ')[0]}। এখানে আপনার আজকের স্বাস্থ্যের সারসংক্ষেপ।</p>
+        </div>
+        <Link
+          href="/chat"
+          className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-sky-300 shadow-xs hover:shadow-md transition-all group shrink-0"
+        >
+          <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 group-hover:scale-105 transition-transform">
+            <MessageMedicalIcon size={20} color="rgb(116, 192, 252)" strokeWidth={1.8} />
+          </div>
+          <div className="text-left">
+            <span className="block text-xs font-bold text-slate-800 leading-tight">AI ডায়াগনস্টিক চ্যাট</span>
+            <span className="text-[10px] text-sky-600 font-medium">লক্ষণ বলুন ও তাৎক্ষণিক পরামর্শ নিন</span>
+          </div>
+          <ChevronRight size={16} className="text-slate-400 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all ml-1" />
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">

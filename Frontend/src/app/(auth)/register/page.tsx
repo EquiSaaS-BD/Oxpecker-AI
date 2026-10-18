@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { Login3DBackground } from "@/components/shared/Login3DBackground";
+// Clean ambient background (3D Fiber removed for performance & aesthetics)
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
@@ -324,8 +324,17 @@ export default function RegisterPage() {
       setIsGoogleOnboarding(true);
       toast.success("Google account verified! Please complete required role profile details.");
     } catch (err: any) {
-      console.error("Google sign in error:", err);
-      toast.error(err.message || "Google authentication was cancelled.");
+      const isCancellation = 
+        err?.code === "popup_closed" || 
+        err?.message?.toLowerCase().includes("closed") || 
+        err?.message?.toLowerCase().includes("cancel");
+
+      if (isCancellation) {
+        toast.info("Google sign-in was cancelled.");
+      } else {
+        console.error("Google sign in error:", err);
+        toast.error(err.message || "Google authentication failed.");
+      }
     } finally {
       setIsGoogleLoading(false);
     }
@@ -596,7 +605,11 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-white flex flex-col items-center py-10 px-4 sm:px-6 relative overflow-hidden">
-      <Login3DBackground />
+      {/* Clean Ambient Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-b from-slate-50 via-white to-sky-50/25">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
+      </div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1138,53 +1151,31 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleGoogleSignUp}
                   disabled={isGoogleLoading}
-                  className={`w-full h-[54px] rounded-xl font-bold flex items-center justify-center gap-3 transition-all relative overflow-hidden active:scale-[0.99] ${
-                    formData.accountType
-                      ? "bg-white text-slate-800 border-2 border-slate-300 hover:border-sky-500 hover:bg-slate-50 shadow-sm hover:shadow-md cursor-pointer"
-                      : "bg-slate-50 text-slate-400 border-2 border-dashed border-slate-300 hover:border-amber-400 hover:bg-amber-50/40 cursor-pointer"
-                  }`}
+                  className="w-full h-[50px] bg-white hover:bg-slate-50/90 text-slate-700 hover:text-slate-900 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[15px] active:scale-[0.99] cursor-pointer"
                   title={!formData.accountType ? "Please select an account type above first" : "Sign up with Google"}
                 >
                   {isGoogleLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
-                      <span className="text-slate-600">Connecting Google...</span>
+                      <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
+                      <span className="text-slate-600 font-medium">Connecting Google...</span>
                     </>
                   ) : (
                     <>
-                      <div className={!formData.accountType ? "opacity-60 grayscale-[40%]" : ""}>
-                        <GoogleIcon size={22} />
-                      </div>
-                      <span className={formData.accountType ? "text-slate-800 font-bold" : "text-slate-500 font-semibold"}>
+                      <GoogleIcon size={20} />
+                      <span>
                         {formData.accountType
                           ? `Continue with Google as ${ACCOUNT_TYPES.find((t) => t.value === formData.accountType)?.label}`
                           : "Continue with Google"}
                       </span>
-                      {formData.accountType ? (
-                        <span className="ml-auto mr-3 hidden sm:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="ml-auto mr-3 hidden sm:inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-500">
-                          Select Role First
-                        </span>
-                      )}
                     </>
                   )}
                 </button>
 
-                {/* Helper / Clarity Message when inactive */}
+                {/* Subtle helper when role not selected */}
                 {!formData.accountType && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50/90 border border-amber-200/70 rounded-lg px-3.5 py-2 mt-3 w-full"
-                  >
-                    <AlertCircle size={15} className="shrink-0 text-amber-600" />
-                    <span>
-                      Select an account type above (<strong className="font-semibold">Patient, Doctor, Assistant, Hospital</strong>) to activate Google Sign-Up.
-                    </span>
-                  </motion.div>
+                  <p className="text-[12px] font-medium text-slate-400 mt-2.5 text-center">
+                    Select an account type above to continue with Google
+                  </p>
                 )}
               </div>
             </motion.div>
