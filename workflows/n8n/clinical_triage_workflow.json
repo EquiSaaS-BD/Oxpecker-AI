@@ -1,0 +1,87 @@
+{
+  "name": "Oxpecker AI - Clinical Emergency & Triage Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "oxpecker-triage-alert",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Clinical Triage Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.severity }}",
+              "value2": "critical"
+            }
+          ]
+        }
+      },
+      "id": "severity-check",
+      "name": "Is Severity Critical?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "message": "=🚨 Oxpecker AI Emergency Alert: Patient {{ $json.body.patient_name }} reports critical symptoms: {{ $json.body.symptoms }}. Immediate response recommended. Hotline: 999"
+      },
+      "id": "send-sms-alert",
+      "name": "Dispatch Emergency SMS",
+      "type": "n8n-nodes-base.sms",
+      "typeVersion": 1,
+      "position": [720, 200]
+    },
+    {
+      "parameters": {
+        "subject": "=Oxpecker AI - Appointment Follow-Up: {{ $json.body.patient_name }}",
+        "text": "=Routine triage report logged for {{ $json.body.disease_name }}. Recommended specialist: {{ $json.body.specialty }}."
+      },
+      "id": "send-routine-email",
+      "name": "Send Patient Care Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [720, 420]
+    }
+  ],
+  "connections": {
+    "Clinical Triage Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is Severity Critical?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Severity Critical?": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Emergency SMS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Patient Care Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

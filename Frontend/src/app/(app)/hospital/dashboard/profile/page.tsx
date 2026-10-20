@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Edit2, Plus, X, Trash2, MapPin, Phone, Mail, Building, Clock } from "lucide-react";
+import { Camera, Edit2, Plus, X, Trash2, MapPin, Phone, Mail, Building, Clock, LogOut } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
@@ -25,7 +25,7 @@ const initialGigs = [
 ];
 
 export default function HospitalProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [gigs, setGigs] = useState(initialGigs);
   const [isGigModalOpen, setIsGigModalOpen] = useState(false);
   const [newGig, setNewGig] = useState({ title: "", price: "", features: "" });
@@ -104,10 +104,16 @@ export default function HospitalProfilePage() {
               </div>
             </div>
             
-            <button className="h-[44px] px-5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-medium text-[14px] flex items-center gap-2 transition-colors">
-              <Edit2 size={16} />
-              Edit Profile Info
-            </button>
+            <div className="flex items-center gap-2.5">
+              <button className="h-[44px] px-5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-medium text-[14px] flex items-center gap-2 transition-colors cursor-pointer">
+                <Edit2 size={16} />
+                Edit Profile Info
+              </button>
+              <button type="button" onClick={logout} className="h-[44px] px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl font-semibold text-[14px] flex items-center gap-2 transition-colors cursor-pointer">
+                <LogOut size={16} />
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
