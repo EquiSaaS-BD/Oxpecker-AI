@@ -133,11 +133,11 @@ export function HealthPassSearchEngine({
 
   // Queue-aligned quick test pills
   const quickPills = [
-    { label: "Rahim Uddin (A+ • Queue S-01)", type: "name" as const, val: "Rahim" },
-    { label: "Fatema Begum (O+ • Queue S-02)", type: "name" as const, val: "Fatema" },
-    { label: "Kamal Hossain (B+ • K 10 23 45)", type: "name" as const, val: "Kamal" },
-    { label: "Abdul Karim (B+ • Pacemaker)", type: "name" as const, val: "Karim" },
-    { label: "Md. Jasim Uddin (O- • Donor)", type: "name" as const, val: "Jasim" },
+    { label: "S-01 Rahim Uddin (A+)", type: "name" as const, val: "Rahim" },
+    { label: "S-02 Fatema Begum (O+)", type: "name" as const, val: "Fatema" },
+    { label: "K-10 Kamal Hossain (B+)", type: "name" as const, val: "Kamal" },
+    { label: "Abdul Karim (Pacemaker)", type: "name" as const, val: "Karim" },
+    { label: "Jasim Uddin (O- Donor)", type: "name" as const, val: "Jasim" },
     { label: "NID: 1974 2698 4401...", type: "nid" as const, val: "1974 2698 4401 2390" },
   ];
 
@@ -155,137 +155,122 @@ export function HealthPassSearchEngine({
 
   return (
     <div className="w-full space-y-6">
-      {/* Pristine World-Class Medical Executive Header (Pure White & Subtle Sky Gradient, No Harsh Black) */}
-      <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-xs border border-slate-200/90 relative overflow-hidden">
-        {/* Soft atmospheric ambient glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col gap-5">
-          {/* Top Row: System Status Badges + 1-Click Language Switcher */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold tracking-wide">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
-                <span>{lang === "en" ? "National Emergency Trauma & Accident Protocol" : "জাতীয় জরুরি ট্রমা ও দুর্ঘটনা প্রটোকল"}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
-                <Shield size={13} className="text-sky-600" />
-                <span>{portalRole.toUpperCase()} CLINICAL ACCESS</span>
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-                <CheckCircle2 size={13} className="text-emerald-600" />
-                <span>{dataSource === "database" ? (lang === "en" ? "Live Database Sync" : "লাইভ ডাটাবেজ সক্রিয়") : (lang === "en" ? "Verified Registry" : "ভেরিফাইড রেজিস্ট্রি")}</span>
-              </span>
+      {/* Sleek Hospital Clinical Emergency Header & Command Search Bar (Neat, Clean, Professional, No Clutter) */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200/90 space-y-4">
+        {/* Top Header Row: Emblem + Title + Status + 1-Click Language Switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-xs shrink-0">
+              <HeartPulse size={22} />
             </div>
-
-            {/* 1-Click Language Switcher (EN / BN) */}
-            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 shrink-0">
-              <button
-                type="button"
-                onClick={() => setLang("en")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  lang === "en"
-                    ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Switch interface to English"
-              >
-                <span>🇬🇧 English</span>
-                {lang === "en" && <Check size={12} className="text-sky-600" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("bn")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  lang === "bn"
-                    ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="ইন্টারফেস বাংলায় রূপান্তর করুন"
-              >
-                <span>🇧🇩 বাংলা</span>
-                {lang === "bn" && <Check size={12} className="text-sky-600" />}
-              </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                  {lang === "en" ? "Emergency HealthPass Clinical Registry" : "জরুরি হেলথপাস ক্লিনিক্যাল রেজিস্ট্রি"}
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{lang === "en" ? "Live Hospital Network" : "লাইভ হসপিটাল নেটওয়ার্ক"}</span>
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {lang === "en"
+                  ? "Instant patient emergency dossier, biometric profile, severe allergy check & digital lab papers."
+                  : "রোগীর তাৎক্ষণিক ইমার্জেন্সি ডসিয়ার, বায়োমেট্রিক্স, ড্রাগ অ্যালার্জি ও ডিজিটাল ল্যাব রিপোর্ট অনুসন্ধান।"}
+              </p>
             </div>
           </div>
 
-          {/* Title & Subtitle */}
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <HeartPulse className="text-sky-600 shrink-0" size={24} />
-              <span>
-                {title || (lang === "en" ? "Emergency Clinical HealthPass Lookup Engine" : "হেলথপাস জরুরি দুর্ঘটনা ও ক্লিনিক্যাল অনুসন্ধান ইঞ্জিন")}
-              </span>
-            </h2>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1 leading-relaxed max-w-4xl">
-              {subtitle || (lang === "en"
-                ? "Instant electronic emergency dossier, biometric profile, severe drug allergy check, and digitalized diagnostic lab papers for immediate trauma admission and prescription safety."
-                : "এনআইডি, মোবাইল নম্বর, জন্ম তারিখ বা রোগীর নাম দিয়ে ১ সেকেন্ডের মধ্যে সম্পূর্ণ ইমার্জেন্সি হিস্ট্রি, অ্যালার্জি ও ডিজিটাল ল্যাব রিপোর্ট অনুসন্ধান করুন।")}
-            </p>
+          {/* Right: 1-Click Language Switcher (EN / BN) */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                lang === "en"
+                  ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>🇬🇧 English</span>
+              {lang === "en" && <Check size={12} className="text-sky-600" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("bn")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                lang === "bn"
+                  ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>🇧🇩 বাংলা</span>
+              {lang === "bn" && <Check size={12} className="text-sky-600" />}
+            </button>
           </div>
+        </div>
 
-          {/* Search Box & Filter Bar */}
-          <div className="flex flex-col sm:flex-row gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200">
-            <div className="relative flex-1 flex items-center">
-              <Search size={18} className="absolute left-3.5 text-slate-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={lang === "en"
-                  ? "Search by Patient Name, NID, Phone, DOB (YYYY-MM-DD), Card ID, or Blood Group..."
-                  : "NID নম্বর, মোবাইল নম্বর, রোগীর নাম, জন্ম তারিখ (YYYY-MM-DD) বা কার্ড নম্বর..."
-                }
-                className="w-full h-11 pl-10 pr-9 bg-white text-slate-900 rounded-xl text-xs sm:text-sm placeholder:text-slate-400 font-medium border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 shadow-2xs"
-              />
-              {isSearching ? (
-                <div className="absolute right-3">
-                  <RefreshCw size={16} className="text-sky-600 animate-spin" />
-                </div>
-              ) : query ? (
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  className="absolute right-3 text-slate-400 hover:text-slate-600 cursor-pointer"
-                >
-                  <X size={16} />
-                </button>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
-                className="h-11 px-3 bg-white text-slate-700 rounded-xl text-xs font-bold border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/30 cursor-pointer shadow-2xs"
-              >
-                <option value="all">{lang === "en" ? "All Universal Fields" : "সকল ফিল্ড (Universal)"}</option>
-                <option value="name">{lang === "en" ? "Patient Name" : "রোগীর নাম (Name)"}</option>
-                <option value="nid">{lang === "en" ? "National ID (NID)" : "জাতীয় পরিচয়পত্র (NID)"}</option>
-                <option value="phone">{lang === "en" ? "Phone Number" : "মোবাইল নম্বর (Phone)"}</option>
-                <option value="blood_group">{lang === "en" ? "Blood Group" : "রক্তের গ্রুপ (Blood Group)"}</option>
-                <option value="card_no">{lang === "en" ? "Card ID Number" : "কার্ড নম্বর (Card No)"}</option>
-                <option value="dob">{lang === "en" ? "Date of Birth (DOB)" : "জন্ম তারিখ (DOB)"}</option>
-              </select>
-
+        {/* Command Search Console */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 bg-slate-50/80 p-2 rounded-2xl border border-slate-200/90 focus-within:border-sky-400 focus-within:bg-white focus-within:ring-3 focus-within:ring-sky-500/10 transition-all">
+          <div className="relative flex-1 flex items-center">
+            <Search size={18} className="absolute left-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={lang === "en"
+                ? "Search by Patient Name, NID, Phone, Card ID, or Blood Group..."
+                : "রোগীর নাম, NID, ফোন নম্বর, কার্ড নম্বর বা রক্তের গ্রুপ দিয়ে খুঁজুন..."
+              }
+              className="w-full h-11 pl-10 pr-9 bg-transparent text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 font-medium focus:outline-none"
+            />
+            {isSearching ? (
+              <div className="absolute right-3">
+                <RefreshCw size={16} className="text-sky-600 animate-spin" />
+              </div>
+            ) : query ? (
               <button
                 type="button"
-                onClick={() => {}}
-                className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+                onClick={() => setQuery("")}
+                className="absolute right-3 text-slate-400 hover:text-slate-600 cursor-pointer p-1"
               >
-                <Search size={15} />
-                <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
+                <X size={15} />
               </button>
-            </div>
+            ) : null}
           </div>
 
-          {/* Quick Filter Test Pills (Matched directly to Doctor Queue & Registry) */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-slate-400 text-[11px] font-semibold mr-1 flex items-center gap-1">
-              <Clock size={12} />
-              <span>{lang === "en" ? "Doctor Queue & Benchmarks:" : "ডাক্তার কিউ ও বেঞ্চমার্ক:"}</span>
-            </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as any)}
+              className="h-11 px-3 bg-white text-slate-700 rounded-xl text-xs font-bold border border-slate-200 focus:outline-none cursor-pointer shadow-2xs"
+            >
+              <option value="all">{lang === "en" ? "All Fields" : "সকল ফিল্ড"}</option>
+              <option value="name">{lang === "en" ? "Patient Name" : "রোগীর নাম"}</option>
+              <option value="nid">{lang === "en" ? "National ID (NID)" : "জাতীয় পরিচয়পত্র"}</option>
+              <option value="phone">{lang === "en" ? "Phone Number" : "ফোন নম্বর"}</option>
+              <option value="blood_group">{lang === "en" ? "Blood Group" : "রক্তের গ্রুপ"}</option>
+              <option value="card_no">{lang === "en" ? "Card ID" : "কার্ড আইডি"}</option>
+              <option value="dob">{lang === "en" ? "Date of Birth" : "জন্ম তারিখ"}</option>
+            </select>
+
+            <button
+              type="button"
+              className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+            >
+              <Search size={15} />
+              <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Responsive Quick Queue Carousel (100% Non-Breaking, Horizontal Scrollable, No Hijibiji) */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pt-1">
+          <span className="text-slate-400 text-xs font-semibold shrink-0 flex items-center gap-1">
+            <Clock size={13} />
+            <span>{lang === "en" ? "Doctor Queue:" : "ডাক্তার কিউ:"}</span>
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
             {quickPills.map((pill) => (
               <button
                 key={pill.label}
@@ -294,7 +279,11 @@ export function HealthPassSearchEngine({
                   setFilterType(pill.type);
                   setQuery(pill.val);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200/80 text-[11px] font-medium transition-colors cursor-pointer active:scale-95 shadow-2xs"
+                className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                  query === pill.val || currentCard?.patient_name.includes(pill.val) || currentCard?.english_name?.includes(pill.val.toUpperCase())
+                    ? "bg-sky-50 border-sky-300 text-sky-800 shadow-2xs font-bold"
+                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-2xs"
+                }`}
               >
                 {pill.label}
               </button>

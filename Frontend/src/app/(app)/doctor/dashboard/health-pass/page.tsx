@@ -65,28 +65,8 @@ class HealthPassErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundar
 
 function DoctorHealthPassContent() {
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-            <HeartPulse size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Emergency HealthPass Clinical Portal
-            </h1>
-            <p className="text-xs sm:text-sm font-medium text-slate-500">
-              National electronic patient identification, bio-metric emergency dossier, allergy contraindications & digital lab reports.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <HealthPassSearchEngine
-        portalRole="doctor"
-        title="Doctor Clinical Emergency Lookup & Digital Health Dossier"
-        subtitle="Retrieve instant patient emergency records by NID, phone, name, or card ID before prescribing or admitting to trauma unit."
-      />
+    <div className="p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto space-y-6">
+      <HealthPassSearchEngine portalRole="doctor" />
     </div>
   );
 }
