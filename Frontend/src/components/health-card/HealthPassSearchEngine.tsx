@@ -9,7 +9,7 @@ import {
   Printer, MessageCircle, AlertOctagon, HeartPulse, User,
   RotateCcw, FileText, Download, Eye, Globe, Building,
   Thermometer, Droplet, Clock, Check, Copy, QrCode, Layers,
-  ChevronDown, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal
+  ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -81,6 +81,49 @@ export function HealthPassSearchEngine({
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
   const webcamVideoRef = useRef<HTMLVideoElement>(null);
 
+  // 10-per-page Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  // Soft & gentle Skeleton Loader transition state
+  const [isLoadingPatient, setIsLoadingPatient] = useState(false);
+
+  // Collapsible / Minimizable Sub-Cards State
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    vitals: false,
+    emergencyContact: false,
+    alerts: false,
+    medications: false,
+    conditions: false,
+    labReports: false,
+  });
+
+  const toggleSection = (key: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleAllSections = (collapse: boolean) => {
+    setCollapsedSections({
+      vitals: collapse,
+      emergencyContact: collapse,
+      alerts: collapse,
+      medications: collapse,
+      conditions: collapse,
+      labReports: collapse,
+    });
+  };
+
+  // Helper to switch patient with a gentle 200ms shimmer transition
+  const handleSelectPatientWithSkeleton = (patient: HealthPassCardType) => {
+    if (currentCard?.id === patient.id) return;
+    setIsLoadingPatient(true);
+    setSelectedCard(patient);
+    setIsDossierFlipped(false);
+    setTimeout(() => {
+      setIsLoadingPatient(false);
+    }, 220);
+  };
+
   // Click outside listener for custom filter dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -100,12 +143,20 @@ export function HealthPassSearchEngine({
     return Array.isArray(INITIAL_HEALTH_CARDS) && INITIAL_HEALTH_CARDS.length > 0 ? INITIAL_HEALTH_CARDS : [];
   }, [cardList]);
 
+  // Pagination calculations: 10 per page
+  const totalPages = Math.max(1, Math.ceil(safeResults.length / PAGE_SIZE));
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return safeResults.slice(start, start + PAGE_SIZE);
+  }, [safeResults, currentPage]);
+
   // Guaranteed active card (strictly attached to selection or initial queue patient)
   const currentCard = selectedCard || (safeResults.length > 0 ? safeResults[0] : (INITIAL_HEALTH_CARDS[0] || null));
 
   // Search debounce and live API query with offline fallback
   useEffect(() => {
     let isCurrent = true;
+    setCurrentPage(1);
 
     if (!query.trim()) {
       const defaultCards = searchHealthCards("", filterType);
@@ -680,9 +731,10 @@ export function HealthPassSearchEngine({
 
       {/* Main Content Area: Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Results List */}
-        <div className={`space-y-3.5 ${currentCard ? "lg:col-span-5" : "lg:col-span-12"}`}>
-          <div className="flex items-center justify-between px-1">
+        {/* Left Column: Results List with Sticky Split-Scroll & 10-per-Page Pagination */}
+        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"}`}>
+          {/* Queue Header & Status */}
+          <div className="flex items-center justify-between px-1 shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">
                 {lang === "en" ? "Matching Patients" : "রেজাল্ট তালিকা"} ({safeResults.length})
@@ -704,50 +756,65 @@ export function HealthPassSearchEngine({
             )}
           </div>
 
-          {safeResults.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-xs space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto text-rose-500">
-                <AlertOctagon size={26} />
+          {/* Scrollable Patient Cards Container with Independent Smooth Scroll */}
+          <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar min-h-0">
+            {isSearching ? (
+              /* Soft & Gentle Shimmer Skeleton Loader for Patient Queue */
+              <div className="space-y-2.5 animate-pulse">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <div key={n} className="p-4 rounded-2xl border border-slate-200/80 bg-white space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-slate-100 shrink-0" />
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="h-4 bg-slate-200 rounded w-2/3" />
+                        <div className="h-3 bg-slate-100 rounded w-1/2" />
+                      </div>
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 shrink-0" />
+                    </div>
+                    <div className="h-2.5 bg-slate-100 rounded w-4/5 pt-1" />
+                  </div>
+                ))}
               </div>
-              <div>
-                <h4 className="text-base font-bold text-slate-800">
-                  {lang === "en" ? "No Patient Record Found" : "কোনো রেকর্ড পাওয়া যায়নি"}
-                </h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  {lang === "en"
-                    ? "No emergency HealthPass matches the provided name, NID, or phone number."
-                    : "প্রদত্ত NID, নাম বা ফোন নম্বরের বিপরীতে কোনো হেলথ রেকর্ড নেই।"}
-                </p>
+            ) : safeResults.length === 0 ? (
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-xs space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto text-rose-500">
+                  <AlertOctagon size={26} />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-800">
+                    {lang === "en" ? "No Patient Record Found" : "কোনো রেকর্ড পাওয়া যায়নি"}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    {lang === "en"
+                      ? "No emergency HealthPass matches the provided name, NID, or phone number."
+                      : "প্রদত্ত NID, নাম বা ফোন নম্বরের বিপরীতে কোনো হেলথ রেকর্ড নেই।"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setFilterType("all");
+                    setCardList(INITIAL_HEALTH_CARDS);
+                    setSelectedCard(INITIAL_HEALTH_CARDS[0]);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <RotateCcw size={14} />
+                  <span>{lang === "en" ? "Reload Active Queue Registry" : "ডিফল্ট রেজিস্ট্রি রিলোড করুন"}</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setFilterType("all");
-                  setCardList(INITIAL_HEALTH_CARDS);
-                  setSelectedCard(INITIAL_HEALTH_CARDS[0]);
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-              >
-                <RotateCcw size={14} />
-                <span>{lang === "en" ? "Reload Active Queue Registry" : "ডিফল্ট রেজিস্ট্রি রিলোড করুন"}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {safeResults.map((patient) => {
+            ) : (
+              paginatedResults.map((patient) => {
                 const isSelected = currentCard?.id === patient.id;
                 const age = calculateAge(patient.date_of_birth);
                 const patientAllergies = Array.isArray(patient?.allergies) ? patient.allergies : [];
                 return (
                   <motion.div
                     key={patient.id}
-                    onClick={() => {
-                      setSelectedCard(patient);
-                      setIsDossierFlipped(false);
-                    }}
+                    onClick={() => handleSelectPatientWithSkeleton(patient)}
                     whileHover={{ scale: 1.01 }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                    className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
                         ? "bg-sky-50/70 border-sky-400 shadow-md ring-2 ring-sky-400/20"
                         : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
@@ -791,8 +858,8 @@ export function HealthPassSearchEngine({
                             {patient.patient_name} • NID: {patient.nid_number || "Unregistered"}
                           </p>
 
-                          <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] text-slate-600">
-                            <span className="font-mono font-bold bg-slate-100 px-2 py-0.5 rounded text-slate-700">
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px] text-slate-600">
+                            <span className="font-mono font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
                               {patient.card_number}
                             </span>
                             <span>{lang === "en" ? `Age: ${age} Yrs` : `বয়স: ${age} বছর`}</span>
@@ -855,7 +922,58 @@ export function HealthPassSearchEngine({
                     </div>
                   </motion.div>
                 );
-              })}
+              })
+            )}
+          </div>
+
+          {/* Sticky 10-per-Page Pagination Console at bottom */}
+          {safeResults.length > PAGE_SIZE && (
+            <div className="pt-2 pb-1 border-t border-slate-200/80 bg-slate-50/90 rounded-2xl px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+              <span className="text-[11px] font-bold text-slate-500">
+                {lang === "en"
+                  ? `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, safeResults.length)} of ${safeResults.length}`
+                  : `${safeResults.length} জনের মধ্যে ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, safeResults.length)}`}
+              </span>
+
+              <div className="flex items-center gap-1">
+                {/* Previous Button */}
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="p-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  title="Previous Page"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+
+                {/* Page Number Buttons: 1, 2, 3, 4 */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNo) => (
+                  <button
+                    key={pageNo}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNo)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      currentPage === pageNo
+                        ? "bg-sky-600 text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {pageNo}
+                  </button>
+                ))}
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="p-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  title="Next Page"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -921,6 +1039,29 @@ export function HealthPassSearchEngine({
                   </button>
                 </div>
 
+                {/* Global Collapse All / Expand All Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allCollapsed = Object.values(collapsedSections).every(Boolean);
+                    toggleAllSections(!allCollapsed);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90"
+                  title="Collapse or expand all dossier sections"
+                >
+                  {Object.values(collapsedSections).every(Boolean) ? (
+                    <>
+                      <Plus size={13} className="text-slate-600" />
+                      <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Minus size={13} className="text-slate-600" />
+                      <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                    </>
+                  )}
+                </button>
+
                 {/* 1-Click Download Dossier Document (Only Patient Info Document) */}
                 <button
                   type="button"
@@ -948,40 +1089,101 @@ export function HealthPassSearchEngine({
               </div>
             </div>
 
-            {/* Critical Anaphylaxis & Pacemaker Red Alert Banner */}
-            {safeAllergies.length > 0 && (
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 flex items-start gap-3 shadow-xs">
-                <div className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
-                  <AlertTriangle size={18} />
+            {/* Soft & Gentle Shimmer Skeleton Loader for Clinical Dossier */}
+            {isLoadingPatient ? (
+              <div className="space-y-6 animate-pulse py-2">
+                {/* Header Skeleton */}
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200 shrink-0" />
+                    <div className="space-y-2">
+                      <div className="h-5 bg-slate-200 rounded w-48" />
+                      <div className="h-3.5 bg-slate-100 rounded w-32" />
+                      <div className="flex gap-2 pt-1">
+                        <div className="h-4 bg-slate-100 rounded w-20" />
+                        <div className="h-4 bg-slate-100 rounded w-20" />
+                        <div className="h-4 bg-slate-100 rounded w-24" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-14 h-14 rounded-2xl bg-slate-200 shrink-0" />
                 </div>
-                <div className="text-xs leading-relaxed min-w-0">
-                  <strong className="font-extrabold uppercase tracking-wide block text-rose-800 text-xs sm:text-sm">
-                    {lang === "en" ? "CRITICAL DRUG ALLERGY WARNING (ANAPHYLAXIS RISK):" : "⚠️ জরুরি ড্রাগ এলার্জি সতর্কতা (Severe Anaphylaxis Risk):"}
-                  </strong>
-                  <p className="mt-0.5 text-rose-900 font-medium">
-                    {lang === "en"
-                      ? `Patient has documented severe adverse reactions to: `
-                      : `রোগীর শরীরে মারাত্মক অ্যালার্জিক রিঅ্যাকশন ঘটবে: `}
-                    <strong className="underline decoration-rose-400 font-bold">{safeAllergies.join(", ")}</strong>.
-                    {lang === "en"
-                      ? " Do NOT administer penicillin-class antibiotics or contraindicated NSAIDs before allergy review."
-                      : " যেকোনো অ্যান্টিবায়োটিক বা এনএসএআইডি দেওয়ার পূর্বে অবশ্যই সাবধান থাকুন।"}
-                  </p>
+
+                {/* Vitals Grid Skeleton */}
+                <div className="space-y-2">
+                  <div className="h-4 bg-slate-200 rounded w-44" />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div key={i} className="h-16 bg-slate-100 border border-slate-200/80 rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emergency Contact Skeleton */}
+                <div className="h-28 bg-slate-100 border border-slate-200 rounded-2xl" />
+
+                {/* Labs & History Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-40 bg-slate-100 border border-slate-200 rounded-2xl" />
+                  <div className="h-40 bg-slate-100 border border-slate-200 rounded-2xl" />
+                </div>
+              </div>
+            ) : (
+              <>
+            {/* Critical Anaphylaxis & Pacemaker Red Alert Banner (Collapsible) */}
+            {safeAllergies.length > 0 && (
+              <div className="rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 overflow-hidden shadow-xs">
+                <div
+                  className="p-4 flex items-start justify-between gap-3 cursor-pointer select-none"
+                  onClick={() => toggleSection("alerts")}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
+                      <AlertTriangle size={18} />
+                    </div>
+                    <div className="text-xs leading-relaxed min-w-0">
+                      <div className="flex items-center gap-2">
+                        <strong className="font-extrabold uppercase tracking-wide block text-rose-800 text-xs sm:text-sm">
+                          {lang === "en" ? "CRITICAL DRUG ALLERGY WARNING (ANAPHYLAXIS RISK)" : "⚠️ জরুরি ড্রাগ এলার্জি সতর্কতা (Severe Anaphylaxis Risk)"}
+                        </strong>
+                      </div>
+                      {!collapsedSections.alerts && (
+                        <p className="mt-1 text-rose-900 font-medium">
+                          {lang === "en"
+                            ? `Patient has documented severe adverse reactions to: `
+                            : `রোগীর শরীরে মারাত্মক অ্যালার্জিক রিঅ্যাকশন ঘটবে: `}
+                          <strong className="underline decoration-rose-400 font-bold">{safeAllergies.join(", ")}</strong>.
+                          {lang === "en"
+                            ? " Do NOT administer penicillin-class antibiotics or contraindicated NSAIDs before allergy review."
+                            : " যেকোনো অ্যান্টিবায়োটিক বা এনএসএআইডি দেওয়ার পূর্বে অবশ্যই সাবধান থাকুন।"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="p-1 rounded-lg text-rose-400 hover:text-rose-700 hover:bg-rose-100 transition-colors shrink-0"
+                    title={collapsedSections.alerts ? "Expand Alert Details" : "Minimize Alert Details"}
+                  >
+                    {collapsedSections.alerts ? <Plus size={15} /> : <Minus size={15} />}
+                  </button>
                 </div>
               </div>
             )}
 
             {/* Pacemaker Alert Banner */}
             {currentCard.has_pacemaker && (
-              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-center gap-3 shadow-xs">
-                <HeartPulse size={20} className="shrink-0 text-amber-600" />
-                <div className="text-xs font-medium">
-                  <strong className="font-bold text-amber-900 uppercase">
-                    {lang === "en" ? "Active Cardiac Pacemaker Implant:" : "সক্রিয় কার্ডিয়াক পেসমেকার সতর্কবার্তা:"}
-                  </strong>{" "}
-                  {lang === "en"
-                    ? "Patient has an implanted cardiac pacemaker. MRI scans are strictly contraindicated. Defibrillator pads must be placed >8cm from pulse generator."
-                    : "রোগীর শরীরে স্থায়ী পেসমেকার রয়েছে। MRI স্ক্যান সম্পূর্ণ নিষিদ্ধ।"}
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <HeartPulse size={20} className="shrink-0 text-amber-600" />
+                  <div className="text-xs font-medium">
+                    <strong className="font-bold text-amber-900 uppercase">
+                      {lang === "en" ? "Active Cardiac Pacemaker Implant:" : "সক্রিয় কার্ডিয়াক পেসমেকার সতর্কবার্তা:"}
+                    </strong>{" "}
+                    {lang === "en"
+                      ? "Patient has an implanted cardiac pacemaker. MRI scans are strictly contraindicated. Defibrillator pads must be placed >8cm from pulse generator."
+                      : "রোগীর শরীরে স্থায়ী পেসমেকার রয়েছে। MRI স্ক্যান সম্পূর্ণ নিষিদ্ধ।"}
+                  </div>
                 </div>
               </div>
             )}
@@ -1079,58 +1281,41 @@ export function HealthPassSearchEngine({
                         {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
                       </p>
 
-                      {/* Parent / Guardian Emergency Contact Line with Copy & QR Dial */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                        <span className="font-bold text-slate-700 flex items-center gap-1">
-                          <Shield size={12} className="text-rose-600" />
-                          <span>{lang === "en" ? "Parent / Guardian:" : "প্যারেন্ট / অভিভাবক:"}</span>
-                        </span>
-                        <span className="text-slate-900 font-semibold">
-                          {currentCard.emergency_contact_name} ({currentCard.emergency_contact_relation})
-                        </span>
-                        <span className="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
-                          {currentCard.emergency_contact_phone}
+                      {/* Demographics & National Registry Identifiers (Clean, No Duplicate Phone/QR) */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">NID:</span>
+                          <span>{currentCard.nid_number || "Unregistered"}</span>
                         </span>
 
-                        {/* 1-Click Copy Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleCopyText(currentCard.emergency_contact_phone, "parent_phone_top", "Parent Phone")}
-                          className="no-print inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold cursor-pointer transition-colors"
-                          title="Copy parent phone number"
-                        >
-                          {copiedField === "parent_phone_top" ? (
-                            <>
-                              <Check size={11} className="text-emerald-600" />
-                              <span className="text-emerald-700">{lang === "en" ? "Copied" : "কপি হয়েছে"}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy size={11} />
-                              <span>{lang === "en" ? "Copy" : "কপি"}</span>
-                            </>
-                          )}
-                        </button>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">DOB:</span>
+                          <span>{formatDate(currentCard.date_of_birth)}</span>
+                        </span>
 
-                        {/* QR Code Trigger Button */}
-                        <button
-                          type="button"
-                          onClick={() => setShowPhoneQrModal(true)}
-                          className="no-print inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-50 hover:bg-sky-100 text-sky-700 text-[11px] font-bold cursor-pointer transition-colors border border-sky-200/80"
-                          title="Scan QR Code with smartphone camera to call automatically"
-                        >
-                          <QrCode size={11} />
-                          <span>{lang === "en" ? "QR Dial" : "কিউআর"}</span>
-                        </button>
-                      </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Card UID:</span>
+                          <span className="text-sky-700">{currentCard.smart_card_uid}</span>
+                        </span>
 
-                      {/* Identifiers */}
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 font-mono pt-0.5">
-                        <span>DOB: {formatDate(currentCard.date_of_birth)}</span>
-                        <span>•</span>
-                        <span>NID: {currentCard.nid_number || "Unregistered"}</span>
-                        <span>•</span>
-                        <span>UID: {currentCard.smart_card_uid}</span>
+                        {currentCard.personal_phone && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-xs font-mono font-bold text-sky-800">
+                            <span className="text-[10px] uppercase tracking-wider text-sky-500 font-sans font-semibold">Cell:</span>
+                            <span>{currentCard.personal_phone}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
+                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer"
+                              title="Copy cell phone"
+                            >
+                              {copiedField === "patient_cell" ? (
+                                <Check size={11} className="text-emerald-600" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </button>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1153,238 +1338,312 @@ export function HealthPassSearchEngine({
                   </div>
                 </div>
 
-                {/* 2. Clinical Vitals & Bio-Metrics Dashboard (Clean, No Duplicate Units) */}
-                <div>
+                {/* 2. Clinical Vitals & Bio-Metrics Dashboard (Collapsible & Minimizable) */}
+                <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden p-3.5 sm:p-4">
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                      <Activity size={15} className="text-sky-600" />
-                      <span>{lang === "en" ? "Clinical Bio-Metrics & Triage Vitals" : "ক্লিনিক্যাল ভাইটাল ও বায়োমেট্রিক্স"}</span>
-                    </h4>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {lang === "en" ? "Recorded: Today" : "রেকর্ড: আজকের আপডেট"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Activity size={15} className="text-sky-600" />
+                        <span>{lang === "en" ? "Clinical Bio-Metrics & Triage Vitals" : "ক্লিনিক্যাল ভাইটাল ও বায়োমেট্রিক্স"}</span>
+                      </h4>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        • {lang === "en" ? "Recorded: Today" : "আজকের রেকর্ড"}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleSection("vitals")}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title={collapsedSections.vitals ? "Expand Vitals" : "Minimize Vitals"}
+                    >
+                      {collapsedSections.vitals ? <Plus size={15} /> : <Minus size={15} />}
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "Blood Pressure" : "রক্তচাপ"}
-                      </span>
-                      <span className="text-sm font-black text-slate-900 mt-0.5 block font-mono">
-                        {cleanVitalValue(safeVitals?.blood_pressure) || "130/85"}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">mmHg</span>
-                    </div>
+                  {!collapsedSections.vitals && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-1">
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "Blood Pressure" : "রক্তচাপ"}
+                        </span>
+                        <span className="text-sm font-black text-slate-900 mt-0.5 block font-mono">
+                          {cleanVitalValue(safeVitals?.blood_pressure) || "130/85"}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">mmHg</span>
+                      </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "Heart Rate" : "পালস রেট"}
-                      </span>
-                      <span className="text-sm font-black text-rose-600 mt-0.5 block font-mono">
-                        {cleanVitalValue(safeVitals?.heart_rate) || "76"}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">bpm (Sinus)</span>
-                    </div>
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "Heart Rate" : "পালস রেট"}
+                        </span>
+                        <span className="text-sm font-black text-rose-600 mt-0.5 block font-mono">
+                          {cleanVitalValue(safeVitals?.heart_rate) || "76"}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">bpm (Sinus)</span>
+                      </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "Oxygen (SpO2)" : "অক্সিজেন"}
-                      </span>
-                      <span className="text-sm font-black text-sky-600 mt-0.5 block font-mono">
-                        {safeVitals?.spo2?.includes("%") ? safeVitals.spo2 : `${cleanVitalValue(safeVitals?.spo2) || "98"}%`}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">Room Air</span>
-                    </div>
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "Oxygen (SpO2)" : "অক্সিজেন"}
+                        </span>
+                        <span className="text-sm font-black text-sky-600 mt-0.5 block font-mono">
+                          {safeVitals?.spo2?.includes("%") ? safeVitals.spo2 : `${cleanVitalValue(safeVitals?.spo2) || "98"}%`}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">Room Air</span>
+                      </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "Blood Glucose" : "রক্ত শর্করা"}
-                      </span>
-                      <span className="text-sm font-black text-amber-600 mt-0.5 block font-mono">
-                        {cleanVitalValue(safeVitals?.blood_glucose) || "115"}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">mg/dL (Fasting)</span>
-                    </div>
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "Blood Glucose" : "রক্ত শর্করা"}
+                        </span>
+                        <span className="text-sm font-black text-amber-600 mt-0.5 block font-mono">
+                          {cleanVitalValue(safeVitals?.blood_glucose) || "115"}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">mg/dL (Fasting)</span>
+                      </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "Temperature" : "তাপমাত্রা"}
-                      </span>
-                      <span className="text-sm font-black text-slate-900 mt-0.5 block font-mono">
-                        {cleanVitalValue(safeVitals?.temperature) || "98.6"}°F
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">Afebrile (Normal)</span>
-                    </div>
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "Temperature" : "তাপমাত্রা"}
+                        </span>
+                        <span className="text-sm font-black text-slate-900 mt-0.5 block font-mono">
+                          {cleanVitalValue(safeVitals?.temperature) || "98.6"}°F
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">Afebrile (Normal)</span>
+                      </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        {lang === "en" ? "BMI / Weight" : "বিএমআই"}
-                      </span>
-                      <span className="text-sm font-black text-emerald-700 mt-0.5 block font-mono">
-                        {cleanVitalValue(safeVitals?.bmi) || "24.2"}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">kg/m² (Normal)</span>
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          {lang === "en" ? "BMI / Weight" : "বিএমআই"}
+                        </span>
+                        <span className="text-sm font-black text-emerald-700 mt-0.5 block font-mono">
+                          {cleanVitalValue(safeVitals?.bmi) || "24.2"}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium">kg/m² (Normal)</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                {/* 3. Emergency ICE Guardian Contact Callout (Prominent Parent Number + 1-Click Copy + QR Auto-Dial) */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                        {lang === "en" ? "PRIMARY EMERGENCY GUARDIAN / PARENT NUMBER" : "জরুরি অভিভাবক ও প্যারেন্ট নাম্বার (ICE CONTACT)"}
-                      </span>
+                {/* 3. Emergency ICE Guardian Contact Callout (Prominent, Authoritative & Minimizable) */}
+                <div className="rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden">
+                  <div
+                    className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer select-none"
+                    onClick={() => toggleSection("emergencyContact")}
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          {lang === "en" ? "PRIMARY EMERGENCY GUARDIAN / PARENT NUMBER" : "জরুরি অভিভাবক ও প্যারেন্ট নাম্বার (ICE CONTACT)"}
+                        </span>
+                      </div>
+
+                      <p className="text-base font-black text-slate-900">
+                        {currentCard.emergency_contact_name}{" "}
+                        <span className="text-xs font-semibold text-slate-500">
+                          ({currentCard.emergency_contact_relation})
+                        </span>
+                      </p>
+
+                      <div className="flex items-center gap-3 pt-0.5">
+                        <span className="text-sm sm:text-base font-mono font-black text-sky-800 tracking-wide">
+                          {currentCard.emergency_contact_phone}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {lang === "en" ? "Verified Active" : "সক্রিয় নম্বর"}
+                        </span>
+                      </div>
                     </div>
 
-                    <p className="text-base font-black text-slate-900">
-                      {currentCard.emergency_contact_name}{" "}
-                      <span className="text-xs font-semibold text-slate-500">
-                        ({currentCard.emergency_contact_relation})
-                      </span>
-                    </p>
-
-                    <div className="flex items-center gap-3 pt-0.5">
-                      <span className="text-sm sm:text-base font-mono font-black text-sky-800 tracking-wide">
-                        {currentCard.emergency_contact_phone}
-                      </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {lang === "en" ? "Verified Active" : "সক্রিয় নম্বর"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions: Copy + QR + Call + WhatsApp */}
-                  <div className="no-print flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    {/* 1-Click Copy Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleCopyText(currentCard.emergency_contact_phone, "parent_phone_card", "Parent Phone")}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-all cursor-pointer"
-                    >
-                      {copiedField === "parent_phone_card" ? (
-                        <>
-                          <Check size={14} className="text-emerald-600" />
-                          <span className="text-emerald-700">{lang === "en" ? "Copied!" : "কপি হয়েছে!"}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={14} className="text-slate-500" />
-                          <span>{lang === "en" ? "Copy Number" : "নাম্বার কপি"}</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* QR Code Auto-Dial Modal Trigger Button */}
-                    <button
-                      type="button"
-                      onClick={() => setShowPhoneQrModal(true)}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-2xs transition-all cursor-pointer"
-                      title="Scan QR with phone to auto-dial"
-                    >
-                      <QrCode size={14} className="text-sky-600" />
-                      <span>{lang === "en" ? "Scan to Call" : "কিউআর কল"}</span>
-                    </button>
-
-                    {/* Direct Call Button */}
-                    <a
-                      href={`tel:${currentCard.emergency_contact_phone}`}
-                      className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-                    >
-                      <Phone size={14} />
-                      <span>{lang === "en" ? "Direct Call" : "সরাসরি কল"}</span>
-                    </a>
-
-                    {/* WhatsApp Alert Button */}
-                    {currentCard.emergency_has_whatsapp && currentCard.emergency_contact_phone && (
-                      <a
-                        href={`https://wa.me/${(currentCard.emergency_contact_phone || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                          `Official Medical Emergency Notice: Patient ${currentCard.patient_name} (${currentCard.english_name || ""}) is currently at the Hospital Emergency Department. Please contact the attending physician.`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-                        title="Send verified WhatsApp emergency alert"
+                    <div className="flex items-center gap-2 self-end md:self-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSection("emergencyContact");
+                        }}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                        title={collapsedSections.emergencyContact ? "Expand ICE Actions" : "Minimize ICE Actions"}
                       >
-                        <MessageCircle size={14} />
-                        <span>WhatsApp</span>
-                      </a>
-                    )}
+                        {collapsedSections.emergencyContact ? <Plus size={16} /> : <Minus size={16} />}
+                      </button>
+                    </div>
                   </div>
+
+                  {!collapsedSections.emergencyContact && (
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-3 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2 no-print">
+                      <span className="text-xs text-slate-500 font-medium">
+                        {lang === "en" ? "Instant ICE Emergency Response Actions:" : "জরুরি কল ও অ্যালার্ট অ্যাকশন সমূহ:"}
+                      </span>
+
+                      {/* Actions: Copy + QR + Call + WhatsApp */}
+                      <div className="no-print flex flex-wrap items-center gap-2">
+                        {/* 1-Click Copy Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(currentCard.emergency_contact_phone, "parent_phone_card", "Parent Phone")}
+                          className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                        >
+                          {copiedField === "parent_phone_card" ? (
+                            <>
+                              <Check size={14} className="text-emerald-600" />
+                              <span className="text-emerald-700">{lang === "en" ? "Copied!" : "কপি হয়েছে!"}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={14} className="text-slate-500" />
+                              <span>{lang === "en" ? "Copy Number" : "নাম্বার কপি"}</span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* QR Code Auto-Dial Modal Trigger Button */}
+                        <button
+                          type="button"
+                          onClick={() => setShowPhoneQrModal(true)}
+                          className="flex items-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-2xs transition-all cursor-pointer"
+                          title="Scan QR with phone to auto-dial"
+                        >
+                          <QrCode size={14} className="text-sky-600" />
+                          <span>{lang === "en" ? "Scan to Call" : "কিউআর কল"}</span>
+                        </button>
+
+                        {/* Direct Call Button */}
+                        <a
+                          href={`tel:${currentCard.emergency_contact_phone}`}
+                          className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                        >
+                          <Phone size={14} />
+                          <span>{lang === "en" ? "Direct Call" : "সরাসরি কল"}</span>
+                        </a>
+
+                        {/* WhatsApp Alert Button */}
+                        {currentCard.emergency_has_whatsapp && currentCard.emergency_contact_phone && (
+                          <a
+                            href={`https://wa.me/${(currentCard.emergency_contact_phone || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                              `Official Medical Emergency Notice: Patient ${currentCard.patient_name} (${currentCard.english_name || ""}) is currently at the Hospital Emergency Department. Please contact the attending physician.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            title="Send verified WhatsApp emergency alert"
+                          >
+                            <MessageCircle size={14} />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. Active Medications & Chronic Conditions Table */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Active Medications */}
-                  <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-3">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                      <Pill size={15} className="text-emerald-600" />
-                      <span>{lang === "en" ? "Active Ongoing Medications" : "চলমান প্রেসক্রিপশন ও ঔষধ"}</span>
-                    </h4>
-                    {safeMedications.length > 0 ? (
-                      <div className="space-y-2">
-                        {safeMedications.map((med, i) => (
-                          <div
-                            key={i}
-                            className="p-3 bg-white border border-slate-200/90 rounded-xl text-xs space-y-1 shadow-2xs"
-                          >
-                            <div className="flex items-center justify-between">
-                              <strong className="text-slate-900 font-bold">{med.name}</strong>
-                              <span className="font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                                {med.dosage}
-                              </span>
-                            </div>
-                            <p className="text-slate-600 font-medium">
-                              {med.frequency} • {med.duration || "Continuous"}
-                            </p>
-                            {med.instructions && (
-                              <p className="text-[11px] text-slate-400 italic">
-                                {med.instructions}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-400">{lang === "en" ? "No active medications recorded." : "কোনো চলমান ওষুধের রেকর্ড নেই।"}</p>
-                    )}
+                <div className="rounded-2xl bg-slate-50/80 border border-slate-200 overflow-hidden">
+                  <div
+                    className="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none border-b border-slate-200/80"
+                    onClick={() => toggleSection("medications")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Pill size={16} className="text-emerald-600" />
+                      <h4 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider">
+                        {lang === "en" ? "Active Medications & Chronic Conditions" : "চলমান প্রেসক্রিপশন ও দীর্ঘস্থায়ী রোগ"}
+                      </h4>
+                      <span className="text-[11px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                        {safeMedications.length} {lang === "en" ? "Meds" : "ঔষধ"} • {safeConditions.length} {lang === "en" ? "Conditions" : "রোগ"}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSection("medications");
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                      title={collapsedSections.medications ? "Expand Medications & Conditions" : "Minimize Medications & Conditions"}
+                    >
+                      {collapsedSections.medications ? <Plus size={16} /> : <Minus size={16} />}
+                    </button>
                   </div>
 
-                  {/* Chronic Conditions */}
-                  <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-3">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                      <Stethoscope size={15} className="text-sky-600" />
-                      <span>{lang === "en" ? "Chronic Conditions & History" : "দীর্ঘস্থায়ী রোগ ও হিস্ট্রি"}</span>
-                    </h4>
-                    {safeConditions.length > 0 ? (
-                      <div className="space-y-2">
-                        {safeConditions.map((item, i) => (
-                          <div
-                            key={i}
-                            className="p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between text-xs shadow-2xs"
-                          >
-                            <div>
-                              <strong className="font-bold text-slate-900 block">{item.name}</strong>
-                              <span className="text-[11px] text-slate-400">
-                                {lang === "en" ? `Diagnosed: ${item.since}` : `শনাক্ত: ${item.since}`}
-                              </span>
-                            </div>
-                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 uppercase">
-                              {item.status || "controlled"}
-                            </span>
+                  {!collapsedSections.medications && (
+                    <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Active Medications */}
+                      <div className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3">
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                          <Pill size={15} className="text-emerald-600" />
+                          <span>{lang === "en" ? "Active Ongoing Medications" : "চলমান প্রেসক্রিপশন ও ঔষধ"}</span>
+                        </h4>
+                        {safeMedications.length > 0 ? (
+                          <div className="space-y-2">
+                            {safeMedications.map((med, i) => (
+                              <div
+                                key={i}
+                                className="p-3 bg-slate-50/60 border border-slate-200/90 rounded-xl text-xs space-y-1 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <strong className="text-slate-900 font-bold">{med.name}</strong>
+                                  <span className="font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                                    {med.dosage}
+                                  </span>
+                                </div>
+                                <p className="text-slate-600 font-medium">
+                                  {med.frequency} • {med.duration || "Continuous"}
+                                </p>
+                                {med.instructions && (
+                                  <p className="text-[11px] text-slate-400 italic">
+                                    {med.instructions}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : (
+                          <p className="text-xs text-slate-400">{lang === "en" ? "No active medications recorded." : "কোনো চলমান ওষুধের রেকর্ড নেই।"}</p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-slate-400">{lang === "en" ? "No chronic conditions recorded." : "কোনো ক্রনিক রোগ নেই।"}</p>
-                    )}
-                  </div>
+
+                      {/* Chronic Conditions */}
+                      <div className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3">
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                          <Stethoscope size={15} className="text-sky-600" />
+                          <span>{lang === "en" ? "Chronic Conditions & History" : "দীর্ঘস্থায়ী রোগ ও হিস্ট্রি"}</span>
+                        </h4>
+                        {safeConditions.length > 0 ? (
+                          <div className="space-y-2">
+                            {safeConditions.map((item, i) => (
+                              <div
+                                key={i}
+                                className="p-3 bg-slate-50/60 border border-slate-200/90 rounded-xl flex items-center justify-between text-xs shadow-2xs"
+                              >
+                                <div>
+                                  <strong className="font-bold text-slate-900 block">{item.name}</strong>
+                                  <span className="text-[11px] text-slate-400">
+                                    {lang === "en" ? `Diagnosed: ${item.since}` : `শনাক্ত: ${item.since}`}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-sky-50 text-sky-800 border border-sky-200 uppercase">
+                                  {item.status || "controlled"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400">{lang === "en" ? "No chronic conditions recorded." : "কোনো ক্রনিক রোগ নেই।"}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 5. VERIFIED DIAGNOSTIC LAB REPORT PAPERS (User's specific core requirement!) */}
-                <div className="p-4 sm:p-5 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                <div className="rounded-2xl bg-slate-50/80 border border-slate-200 overflow-hidden">
+                  <div
+                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer select-none border-b border-slate-200/80"
+                    onClick={() => toggleSection("labReports")}
+                  >
                     <div>
                       <h4 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                         <FileText size={16} className="text-sky-600" />
@@ -1399,68 +1658,84 @@ export function HealthPassSearchEngine({
                           : "ল্যাব প্যারামিটার ও রেফারেন্স রেঞ্জ দেখুন এবং অফিশিয়াল পেপার ডাউনলোড করুন।"}
                       </p>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSection("labReports");
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer self-end sm:self-center"
+                      title={collapsedSections.labReports ? "Expand Lab Reports" : "Minimize Lab Reports"}
+                    >
+                      {collapsedSections.labReports ? <Plus size={16} /> : <Minus size={16} />}
+                    </button>
                   </div>
 
-                  {safeReports.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {safeReports.map((report) => (
-                        <div
-                          key={report.id}
-                          id={`lab-report-card-${report.id}`}
-                          className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3 shadow-2xs hover:border-sky-300 transition-all flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 uppercase font-mono">
-                                {report.category}
-                              </span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                report.status === "Normal"
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200"
-                              }`}>
-                                {report.status}
-                              </span>
+                  {!collapsedSections.labReports && (
+                    <div className="p-4 sm:p-5 space-y-4">
+                      {safeReports.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {safeReports.map((report) => (
+                            <div
+                              key={report.id}
+                              id={`lab-report-card-${report.id}`}
+                              className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3 shadow-2xs hover:border-sky-300 transition-all flex flex-col justify-between"
+                            >
+                              <div>
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 uppercase font-mono">
+                                    {report.category}
+                                  </span>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    report.status === "Normal"
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                                  }`}>
+                                    {report.status}
+                                  </span>
+                                </div>
+
+                                <h5 className="font-bold text-slate-900 text-sm mt-2 leading-snug">
+                                  {report.title}
+                                </h5>
+                                <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                  {report.hospital} • {report.date}
+                                </p>
+                                <p className="text-xs text-slate-600 mt-2 line-clamp-2 leading-relaxed">
+                                  {report.summary}
+                                </p>
+                              </div>
+
+                              {/* Action Buttons: View Full Lab Paper & Download Only Lab Slip */}
+                              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 no-print">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveReportModal(report)}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  <Eye size={13} />
+                                  <span>{lang === "en" ? "View Lab Paper" : "পেপার দেখুন"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadLabReport(report)}
+                                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                                  title="Download Report Sheet Image"
+                                >
+                                  <Download size={13} />
+                                  <span>{lang === "en" ? "Download" : "ডাউনলোড"}</span>
+                                </button>
+                              </div>
                             </div>
-
-                            <h5 className="font-bold text-slate-900 text-sm mt-2 leading-snug">
-                              {report.title}
-                            </h5>
-                            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                              {report.hospital} • {report.date}
-                            </p>
-                            <p className="text-xs text-slate-600 mt-2 line-clamp-2 leading-relaxed">
-                              {report.summary}
-                            </p>
-                          </div>
-
-                          {/* Action Buttons: View Full Lab Paper & Download Only Lab Slip */}
-                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 no-print">
-                            <button
-                              type="button"
-                              onClick={() => setActiveReportModal(report)}
-                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                            >
-                              <Eye size={13} />
-                              <span>{lang === "en" ? "View Lab Paper" : "পেপার দেখুন"}</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleDownloadLabReport(report)}
-                              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                              title="Download Report Sheet Image"
-                            >
-                              <Download size={13} />
-                              <span>{lang === "en" ? "Download" : "ডাউনলোড"}</span>
-                            </button>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center bg-white rounded-xl border border-slate-200 text-slate-400 text-xs">
-                      {lang === "en" ? "No digitized diagnostic reports currently attached to this patient." : "কোনো ডায়াগনস্টিক রিপোর্ট সংরক্ষিত নেই।"}
+                      ) : (
+                        <div className="p-6 text-center bg-white rounded-xl border border-slate-200 text-slate-400 text-xs">
+                          {lang === "en" ? "No digitized diagnostic reports currently attached to this patient." : "কোনো ডায়াগনস্টিক রিপোর্ট সংরক্ষিত নেই।"}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1501,8 +1776,10 @@ export function HealthPassSearchEngine({
                 </div>
               </div>
             )}
-          </motion.div>
+          </>
         )}
+      </motion.div>
+    )}
       </div>
 
       {/* MODAL 1: OFFICIAL DIAGNOSTIC LAB REPORT PAPER VIEWER & DOWNLOADER */}
