@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   Bell,
   Search,
@@ -19,27 +20,77 @@ import {
   PlusCircle,
   Menu,
   X,
-  ShieldAlert
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type MegaMenuType = "clinical" | "chambers" | "ai-tools" | null;
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  type: "alert" | "info" | "success";
+  unread: boolean;
+}
+
 export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [openMenu, setOpenMenu] = useState<MegaMenuType>(null);
-    const [isOnline, setIsOnline] = useState(true);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: "1",
+      title: "Critical Allergy Warning",
+      message: "Patient Abdul Karim has confirmed severe Penicillin & NSAID anaphylaxis risk.",
+      time: "2 mins ago",
+      type: "alert",
+      unread: true,
+    },
+    {
+      id: "2",
+      title: "Emergency HealthPass Scanned",
+      message: "Rahim Uddin (A+) pass verified at Trauma & OPD queue.",
+      time: "15 mins ago",
+      type: "info",
+      unread: true,
+    },
+    {
+      id: "3",
+      title: "Diagnostic Lab Upload",
+      message: "Digital Hematology Panel verified for Fatema Begum.",
+      time: "1 hour ago",
+      type: "success",
+      unread: false,
+    },
+  ]);
+  const [isOnline, setIsOnline] = useState(true);
   const navRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
       if (!navRef.current?.contains(e.target as Node)) {
         setOpenMenu(null);
       }
+      if (!notificationRef.current?.contains(e.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
 
   const toggleMenu = (menu: MegaMenuType) => {
     setOpenMenu((prev) => (prev === menu ? null : menu));
@@ -48,222 +99,211 @@ export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void
   return (
     <header
       ref={navRef}
-      className="h-[76px] bg-transparent border-none flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 sticky top-0 z-40"
+      className="h-16 px-4 sm:px-6 bg-white flex items-center justify-between shrink-0 relative z-30 border-b border-slate-100"
     >
-      {/* Left side: Brand Logo & Title */}
-      <div className="flex items-center gap-4 sm:gap-6">
+      {/* Mobile Menu Button */}
+      <div className="flex items-center gap-3 lg:hidden">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 transition-colors"
-          aria-label="Toggle Menu"
+          className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
         >
-          <Menu size={22} />
+          <Menu size={20} />
         </button>
-
-
-        {/* Desktop Mega Menu Navigation */}
-        <nav className="hidden lg:flex items-center gap-1 bg-white/50 p-1.5 rounded-full border border-slate-200">
-          
-          {/* 1. Clinical Workflows Mega Menu */}
-          <div className="relative">
-            <button
-              onClick={() => toggleMenu("clinical")}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all",
-                openMenu === "clinical" ? "bg-white text-slate-800 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
-              )}
-            >
-              <span>Clinical Workflows</span>
-              <ChevronDown size={14} className={cn("transition-transform duration-200", openMenu === "clinical" && "rotate-180")} />
-            </button>
-
-            {openMenu === "clinical" && (
-              <div className="absolute left-0 top-full mt-2 w-[420px] bg-white border border-slate-300 rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-1 gap-1">
-                  <Link
-                    href="/doctor/dashboard/prescription/new"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-sky-50/80 transition-colors group"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 border border-sky-200">
-                      <PlusCircle size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <span>New E-Prescription</span>
-                        <span className="text-[9px] font-extrabold bg-sky-600 text-white px-1.5 py-0.2 rounded-full">60s Rx</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">Create AI-guided prescription with smart dosage builder</div>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/doctor/dashboard/appointments"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
-                      <Calendar size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">Appointments & Chamber Queue</div>
-                      <div className="text-[11px] text-slate-500 font-medium">Manage today's booked patients and serial queue</div>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/doctor/dashboard/patients"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
-                      <Users size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">Patient Health Logs</div>
-                      <div className="text-[11px] text-slate-500 font-medium">Access past medical history, lab tests, and Rx logs</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2. Chambers & Schedule Mega Menu */}
-          <div className="relative">
-            <button
-              onClick={() => toggleMenu("chambers")}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all",
-                openMenu === "chambers" ? "bg-white text-slate-800 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
-              )}
-            >
-              <span>Chambers & Fees</span>
-              <ChevronDown size={14} className={cn("transition-transform duration-200", openMenu === "chambers" && "rotate-180")} />
-            </button>
-
-            {openMenu === "chambers" && (
-              <div className="absolute left-0 top-full mt-2 w-[380px] bg-white border border-slate-300 rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-1 gap-1">
-                  <Link
-                    href="/doctor/settings/locations"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
-                      <MapPin size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">Chamber Locations & Map</div>
-                      <div className="text-[11px] text-slate-500 font-medium">Update chamber addresses, maps, and visiting hours</div>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/doctor/settings/chambers"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 border border-blue-200">
-                      <Clock size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">Consultation Fees & Shifts</div>
-                      <div className="text-[11px] text-slate-500 font-medium">Set first visit fee, follow-up fee, and slot timings</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 3. AI Co-Pilot Mega Menu */}
-          <div className="relative">
-            <button
-              onClick={() => toggleMenu("ai-tools")}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-full transition-all text-[#0878C9]",
-                openMenu === "ai-tools" ? "bg-white shadow-xs ring-1 ring-sky-300 font-extrabold" : "hover:bg-sky-50/70"
-              )}
-            >
-              
-              <span>AI Doctor Tools</span>
-              <ChevronDown size={14} className={cn("transition-transform duration-200", openMenu === "ai-tools" && "rotate-180")} />
-            </button>
-
-            {openMenu === "ai-tools" && (
-              <div className="absolute left-0 top-full mt-2 w-[400px] bg-white border border-slate-300 rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-1 gap-1">
-                  <Link
-                    href="/chat"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-sky-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 border border-sky-200">
-                      
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <span>AI Clinical Co-Pilot</span>
-                        <span className="text-[9px] font-extrabold bg-sky-500 text-white px-1.5 py-0.2 rounded-full">AI 2026</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">Instant medical reference, drug interactions & diagnosis aid</div>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/doctor/dashboard/medicines"
-                    onClick={() => setOpenMenu(null)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 border border-indigo-200">
-                      <Pill size={18} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">DGDA Medicine Database</div>
-                      <div className="text-[11px] text-slate-500 font-medium">Quick search registered brand & generic medicines</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-        </nav>
+        <span className="text-sm font-bold text-slate-800">Doctor Portal</span>
       </div>
 
-      {/* Right side: Search, Notifications & Profile Avatar */}
-      <div className="flex items-center justify-end gap-3 sm:gap-4">
-        
+      {/* Desktop Mega Menus */}
+      <div className="hidden lg:flex items-center gap-1">
+        {/* Clinical Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => toggleMenu("clinical")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+              openMenu === "clinical"
+                ? "bg-sky-50 text-sky-700"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            )}
+          >
+            <Activity size={15} className="text-sky-600" />
+            <span>Clinical Workflows</span>
+            <ChevronDown size={13} className={cn("transition-transform", openMenu === "clinical" && "rotate-180")} />
+          </button>
 
+          {openMenu === "clinical" && (
+            <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <Link
+                href="/doctor/dashboard/prescription/new"
+                onClick={() => setOpenMenu(null)}
+                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-sky-50 text-xs font-semibold text-slate-700 hover:text-sky-700 transition-colors"
+              >
+                <PlusCircle size={16} className="text-sky-600" />
+                <span>New AI Prescription</span>
+              </Link>
+              <Link
+                href="/doctor/dashboard/health-pass"
+                onClick={() => setOpenMenu(null)}
+                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-rose-50 text-xs font-semibold text-slate-700 hover:text-rose-700 transition-colors"
+              >
+                <ShieldAlert size={16} className="text-rose-600" />
+                <span>HealthPass Emergency Search</span>
+              </Link>
+              <Link
+                href="/doctor/dashboard/patients"
+                onClick={() => setOpenMenu(null)}
+                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-sky-50 text-xs font-semibold text-slate-700 hover:text-sky-700 transition-colors"
+              >
+                <Users size={16} className="text-indigo-600" />
+                <span>Patient Registry</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Chambers Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => toggleMenu("chambers")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+              openMenu === "chambers"
+                ? "bg-sky-50 text-sky-700"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            )}
+          >
+            <MapPin size={15} className="text-emerald-600" />
+            <span>Chambers & OPD</span>
+            <ChevronDown size={13} className={cn("transition-transform", openMenu === "chambers" && "rotate-180")} />
+          </button>
+
+          {openMenu === "chambers" && (
+            <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <Link
+                href="/doctor/settings/chambers"
+                onClick={() => setOpenMenu(null)}
+                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+              >
+                <Clock size={16} className="text-emerald-600" />
+                <span>Manage Chamber Slots</span>
+              </Link>
+              <Link
+                href="/doctor/settings/locations"
+                onClick={() => setOpenMenu(null)}
+                className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+              >
+                <MapPin size={16} className="text-sky-600" />
+                <span>Practice Locations</span>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right side: Search, Notifications & Profile Avatar (Settings & Logout Removed per user request) */}
+      <div className="flex items-center justify-end gap-2.5 sm:gap-3">
         {/* Search Bar */}
         <div className="hidden lg:flex items-center relative w-48">
-          <Search size={15} className="absolute left-3 text-slate-500" />
+          <Search size={15} className="absolute left-3 text-slate-400" />
           <input
             type="text"
             placeholder="Search patient..."
-            className="w-full h-9 pl-9 pr-3 bg-white/50 border border-slate-300/80 rounded-xl text-xs text-slate-700 outline-none focus:bg-slate-800 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium transition-all placeholder:text-slate-500"
+            className="w-full h-9 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 outline-none focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 font-medium transition-all placeholder:text-slate-400"
           />
         </div>
 
-        {/* Notifications */}
-        <button
-          aria-label="Notifications"
-          className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
-        >
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-slate-950" />
-        </button>
+        {/* Notifications Popover */}
+        <div ref={notificationRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsNotificationsOpen((prev) => !prev)}
+            aria-label="Notifications"
+            className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                {unreadCount}
+              </span>
+            )}
+          </button>
 
-        {/* Doctor Profile */}
-        <Link href="/doctor/settings/profile" className="flex items-center gap-2.5 cursor-pointer">
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-300 relative bg-slate-800 shrink-0 transition-transform hover:scale-105 active:scale-95">
-            <Image src="/images/signup-doctor.png" alt="Doctor Profile" fill className="object-cover" />
+          {isNotificationsOpen && (
+            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                    Notifications
+                  </h4>
+                  {unreadCount > 0 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="text-[11px] font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Check size={12} />
+                    <span>Mark all read</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-72 overflow-y-auto space-y-2 py-2 candy-scrollbar">
+                {notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className={`p-2.5 rounded-xl border text-xs transition-colors flex items-start gap-2.5 ${
+                      notif.unread
+                        ? "bg-sky-50/60 border-sky-200/80 text-slate-900"
+                        : "bg-white border-slate-100 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                      notif.type === "alert"
+                        ? "bg-rose-100 text-rose-700"
+                        : notif.type === "success"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-sky-100 text-sky-700"
+                    }`}>
+                      {notif.type === "alert" ? (
+                        <AlertTriangle size={14} />
+                      ) : notif.type === "success" ? (
+                        <CheckCircle2 size={14} />
+                      ) : (
+                        <Activity size={14} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <strong className="text-xs font-bold text-slate-900 truncate">
+                          {notif.title}
+                        </strong>
+                        <span className="text-[10px] text-slate-400 shrink-0 font-medium">
+                          {notif.time}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
+                        {notif.message}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Doctor Profile Avatar (Settings & Logout removed per instruction) */}
+        <Link href="/doctor/settings" className="flex items-center gap-2 cursor-pointer" title="Doctor Profile">
+          <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 relative bg-slate-800 shrink-0 transition-transform hover:scale-105 active:scale-95 shadow-xs">
+            <Image src={user?.image || "/images/signup-doctor.png"} alt="Doctor Profile" fill className="object-cover" />
           </div>
         </Link>
       </div>
-
-      
     </header>
   );
 }
