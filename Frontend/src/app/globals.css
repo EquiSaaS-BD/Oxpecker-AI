@@ -1,9 +1,11 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-bengali: var(--font-bengali), "Hind Siliguri", sans-serif;
+  --font-sans: var(--font-sans), var(--font-bengali), "Hind Siliguri", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-display), var(--font-bengali), "Hind Siliguri", var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
   --color-primary: #0284c7; /* Clinical Sky Blue - Oxpecker Brand */
@@ -45,6 +47,11 @@
     letter-spacing: -0.02em;
     line-height: 1.1;
     font-optical-sizing: auto;
+  }
+
+  /* Bengali Typography: Hind Siliguri */
+  [lang="bn"], .font-bengali, :lang(bn) {
+    font-family: var(--font-bengali), "Hind Siliguri", -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   :focus-visible {

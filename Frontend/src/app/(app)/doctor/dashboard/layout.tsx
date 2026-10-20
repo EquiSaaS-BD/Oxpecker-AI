@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { DoctorSidebar } from "@/components/doctor/DoctorSidebar";
 import DoctorTopNav from "@/components/dashboard/doctor/DoctorTopNav";
@@ -61,9 +62,20 @@ export default function DoctorDashboardLayout({
           {/* Top Mega Menu Navbar (Desktop lg:flex) */}
           <DoctorTopNav onMenuClick={() => setSidebarOpen(true)} />
 
-          {/* Page Content */}
+          {/* Page Content with Smooth Transition */}
           <main className={`flex-1 overflow-y-auto rounded-none lg:rounded-tl-[32px] border-t border-slate-200/80 lg:border-l bg-slate-50/80 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] ${isFullScreenPage ? 'p-0 pb-0 overflow-hidden' : 'pb-20 md:pb-6 p-4 sm:p-6 lg:p-8'}`}>
-            {children}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </main>
           
           {/* Rx Floating Bottom Navigation Pill System (Mobile & Tablet) */}
