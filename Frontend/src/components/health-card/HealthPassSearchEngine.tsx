@@ -1018,7 +1018,7 @@ export function HealthPassSearchEngine({
                       {lang === "en" ? "ACTIVE EHR" : "সক্রিয় রেকর্ড"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5 truncate">
+                  <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
                     UID: <span className="font-bold text-sky-800">{currentCard.smart_card_uid}</span>
                     {currentCard.nid_number ? ` • NID: ${currentCard.nid_number}` : ""}
                   </p>
@@ -1316,27 +1316,27 @@ export function HealthPassSearchEngine({
                         {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
                       </p>
 
-                      {/* Demographics & National Registry Identifiers (Clean, No Duplicate Phone/QR) */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">NID:</span>
-                          <span>{currentCard.nid_number || "Unregistered"}</span>
+                      {/* Demographics & National Registry Identifiers */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">NID:</span>
+                          <span className="font-bold text-slate-900">{currentCard.nid_number || "Unregistered"}</span>
                         </span>
 
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">DOB:</span>
-                          <span>{formatDate(currentCard.date_of_birth)}</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">DOB:</span>
+                          <span className="font-bold text-slate-900">{formatDate(currentCard.date_of_birth)}</span>
                         </span>
 
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Card UID:</span>
-                          <span className="text-sky-700">{currentCard.smart_card_uid}</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">CARD UID:</span>
+                          <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span>
                         </span>
 
                         {currentCard.personal_phone && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-xs font-mono font-bold text-sky-800">
-                            <span className="text-[10px] uppercase tracking-wider text-sky-500 font-sans font-semibold">Cell:</span>
-                            <span>{currentCard.personal_phone}</span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-xs font-semibold text-sky-950 shadow-2xs">
+                            <span className="text-[10px] uppercase tracking-wider text-sky-600 font-bold">CELL:</span>
+                            <span className="font-bold text-sky-900">{currentCard.personal_phone}</span>
                             <button
                               type="button"
                               onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
