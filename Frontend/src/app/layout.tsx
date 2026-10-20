@@ -122,6 +122,11 @@ export default function RootLayout({
         {/* Auto-recover ChunkLoadError on new Vercel deployments */}
         <Script id="chunk-error-recovery" strategy="beforeInteractive">
           {`
+            if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var i = 0; i < regs.length; i++) regs[i].unregister();
+              });
+            }
             window.addEventListener('error', function(e) {
               if (e.message && (e.message.indexOf('Loading chunk') !== -1 || e.message.indexOf('ChunkLoadError') !== -1)) {
                 window.location.reload();

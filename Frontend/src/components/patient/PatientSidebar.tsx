@@ -138,17 +138,6 @@ export function PatientSidebar({ isOpen, onClose }: PatientSidebarProps) {
             );
           })}
         </div>
-        
-        {/* Bottom Actions */}
-        <div className="p-4 border-t border-slate-200 shrink-0 bg-white">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-rose-600 transition-colors w-full"  
-          >
-            <LogOut size={18} />
-            Sign Out
-          </button>
-        </div>
       </aside>
     </>
   );

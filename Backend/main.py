@@ -16,7 +16,7 @@ from app.core.redis import init_redis
 from app.core.database import engine
 
 # Import routers
-from app.api.v1 import auth, health, profile
+from app.api.v1 import auth, health, profile, healthpass
 
 setup_logging()
 logger = get_logger(__name__)
@@ -60,6 +60,7 @@ register_exception_handlers(app)
 app.include_router(health.router, prefix=settings.API_V1_STR)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(profile.router, prefix=settings.API_V1_STR)
+app.include_router(healthpass.router, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":
     import uvicorn

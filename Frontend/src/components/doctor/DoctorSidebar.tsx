@@ -85,8 +85,8 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
       <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
-          ${isCollapsed ? "lg:w-[80px]" : "lg:w-[240px]"} w-[240px] bg-transparent border-none
-          flex flex-col h-full
+          ${isCollapsed ? "lg:w-[80px]" : "lg:w-[240px]"} w-[240px] bg-white border-r border-slate-200/90
+          flex flex-col h-full shadow-xs
           transform transition-all duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
@@ -94,13 +94,13 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
         {/* Collapse Toggle Button (Desktop Only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute top-6 -right-3.5 w-7 h-7 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-sky-400 hover:border-sky-200 shadow-none z-50 transition-colors"
+          className="hidden lg:flex absolute top-6 -right-3.5 w-7 h-7 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-sky-600 hover:border-sky-200 shadow-sm z-50 transition-colors cursor-pointer"
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
         
         {/* Logo Section */}
-        <div className={`h-16 px-4 flex items-center ${isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'} border-none shrink-0 bg-transparent`}>
+        <div className={`h-16 px-4 flex items-center ${isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'} border-b border-slate-100 shrink-0 bg-white`}>
           <Link href="/?view=home" className={`flex items-center gap-2.5 ${isCollapsed ? 'lg:justify-center' : ''}`} title="Back to Home">
             {isCollapsed ? (
               <Image
@@ -133,17 +133,17 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
           </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 text-slate-500 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"  
+            className="lg:hidden p-1.5 text-slate-500 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"  
           >
             <X size={18} />
           </button>
         </div>
         
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-hide bg-transparent">
+        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-5 scrollbar-hide bg-white">
           {navCategories.map((category, idx) => (
             <div key={idx} className="space-y-1">
-              <div className={`px-2 text-xs font-bold text-slate-500 uppercase tracking-wider overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'lg:opacity-0 lg:h-0' : 'opacity-100 pb-2 h-auto'}`}>
+              <div className={`px-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'lg:opacity-0 lg:h-0' : 'opacity-100 pb-1 h-auto'}`}>
                 {category.title}
               </div>
               {category.items.map((item) => {
@@ -156,11 +156,11 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
                     className={`
                       relative flex items-center py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group
                       ${isCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0 px-3 gap-3' : 'px-3 gap-3'}
-                      ${active ? "bg-white text-sky-600 border border-slate-200/80 shadow-xs" : "text-slate-500 hover:text-slate-700 hover:bg-white/60"}
+                      ${active ? "bg-sky-50 text-sky-700 border border-sky-200 shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"}
                     `}
                     title={isCollapsed ? item.label : undefined}
                   >
-                    <item.icon size={18} strokeWidth={active ? 2.5 : 2} className={`shrink-0 ${active ? "text-sky-600" : "text-slate-500 group-hover:text-slate-600"}`} />
+                    <item.icon size={18} strokeWidth={active ? 2.5 : 2} className={`shrink-0 ${active ? "text-sky-600" : "text-slate-400 group-hover:text-slate-600"}`} />
                     <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'flex-1 opacity-100'}`}>{item.label}</span>
                     {active && <ChevronRight size={14} className={`text-sky-500 transition-all duration-300 ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:scale-0' : 'w-auto opacity-100 scale-100'}`} />}
                   </Link>
@@ -170,32 +170,36 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
           ))}
         </nav>
         
-        {/* Bottom Section: Fixed Settings & Logout */}
-        <div className="px-3 pb-4 space-y-1 shrink-0 border-transparent pt-4 bg-transparent">
+        {/* FIXED BOTTOM SECTION: Settings and Logout together */}
+        <div className="px-3 pb-4 pt-3 border-t border-slate-200/80 bg-white space-y-1 shrink-0">
           <Link
             href="/doctor/settings"
             onClick={onClose}
             title={isCollapsed ? "Settings" : undefined}
             className={`
-              relative flex items-center py-3 rounded-xl border border-transparent transition-all duration-200 group
-              ${isActive("/doctor/settings") ? "bg-white border-sky-500/30" : "hover:bg-white hover:border-slate-200/60"}
+              relative flex items-center py-2.5 rounded-xl border border-transparent transition-all duration-200 group
+              ${isActive("/doctor/settings") ? "bg-sky-50 border-sky-200 text-sky-700 shadow-xs" : "hover:bg-slate-100/70 text-slate-600"}
               ${isCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0 px-3 gap-3' : 'px-3 gap-3'}
             `}
           >
-            <Settings size={20} strokeWidth={isActive("/doctor/settings") ? 2.5 : 2} className={`shrink-0 ${isActive("/doctor/settings") ? "text-sky-400" : "text-slate-500 group-hover:text-slate-700"}`} />
-            <span className={`font-bold overflow-hidden whitespace-nowrap transition-all duration-300 ${isActive("/doctor/settings") ? "text-slate-800" : "text-slate-500 group-hover:text-slate-700"} ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'flex-1 opacity-100'}`}>Settings</span>
+            <Settings size={18} strokeWidth={isActive("/doctor/settings") ? 2.5 : 2} className={`shrink-0 ${isActive("/doctor/settings") ? "text-sky-600" : "text-slate-500 group-hover:text-slate-700"}`} />
+            <span className={`font-bold overflow-hidden whitespace-nowrap transition-all duration-300 ${isActive("/doctor/settings") ? "text-sky-800" : "text-slate-600 group-hover:text-slate-800"} ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'flex-1 opacity-100'}`}>Settings</span>
           </Link>
-          
+
           <button
-            onClick={() => { logout(); onClose(); }}
-            title={isCollapsed ? "Logout" : undefined}
+            type="button"
+            onClick={() => {
+              if (onClose) onClose();
+              logout();
+            }}
+            title={isCollapsed ? "লগআউট (Sign Out)" : undefined}
             className={`
-              w-full relative flex items-center py-3 rounded-xl border border-transparent transition-all duration-200 group hover:bg-rose-500/10 hover:border-rose-500/20
+              w-full flex items-center py-2.5 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all duration-200 group cursor-pointer
               ${isCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0 px-3 gap-3' : 'px-3 gap-3'}
             `}
           >
-            <LogOut size={20} className="shrink-0 text-slate-500 group-hover:text-rose-400" />
-            <span className={`font-bold overflow-hidden whitespace-nowrap text-slate-500 group-hover:text-rose-400 transition-all duration-300 ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'flex-1 text-left opacity-100'}`}>Logout</span>
+            <LogOut size={18} className="shrink-0 text-rose-500 group-hover:text-rose-700" />
+            <span className={`font-bold overflow-hidden whitespace-nowrap text-left transition-all duration-300 ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'flex-1 opacity-100'}`}>Sign Out</span>
           </button>
         </div>
       </aside>

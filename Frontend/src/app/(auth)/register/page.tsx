@@ -295,7 +295,20 @@ export default function RegisterPage() {
         .maybeSingle();
 
       if (existingUser && existingUser.phone) {
-        toast.success(`Welcome back, ${existingUser.name}! Logging you in...`);
+        const targetRole = formData.accountType || existingUser.role;
+        if (targetRole && existingUser.role !== targetRole) {
+          try {
+            await supabase
+              .from("profiles")
+              .update({ role: targetRole })
+              .eq("id", existingUser.id);
+            existingUser.role = targetRole;
+          } catch (updateErr) {
+            console.warn("Failed to update profile role:", updateErr);
+            existingUser.role = targetRole;
+          }
+        }
+        toast.success(`Welcome back, ${existingUser.name}! Logging you in as ${targetRole}...`);
         login(existingUser as any);
         return;
       }
@@ -1258,7 +1271,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={goNext}
-                  className="w-2/3 h-[52px] bg-white hover:bg-slate-50 text-slate-900 font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+                  className="w-2/3 h-[52px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
                 >
                   Continue
                 </button>

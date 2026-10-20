@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import { getRoleHomePath, getAuthorizedRedirectUrl } from "@/lib/rbac";
 
 export type UserRole = "patient" | "doctor" | "hospital" | "admin" | "assistant" | null;
 
@@ -67,6 +68,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }, []);
+
+  // ── Cross-Tab Session Synchronization ─────────────────────────
+  // If the user logs out or switches role in another tab, this tab
+  // immediately reflects the change — preventing cross-role confusion.
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "oxpecker_mock_user") {
+        if (e.newValue === null) {
+          // Logged out in another tab
+          setUser(null);
+        } else {
+          try {
+            const updated = JSON.parse(e.newValue) as AppUser;
+            // If the role changed, force a reload to reset all guards
+            if (user && updated.role !== user.role) {
+              window.location.href = getRoleHomePath(updated.role);
+              return;
+            }
+            setUser(updated);
+          } catch {
+            // Corrupted value — log out
+            setUser(null);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [user]);
+
   const router = useRouter();
 
   const login = (userData: AppUser) => {
@@ -75,32 +107,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("oxpecker_user", JSON.stringify(userData));
     localStorage.setItem("oxpecker_last_activity", Date.now().toString());
 
-    const redirectUrl = typeof window !== "undefined" ? sessionStorage.getItem("redirect_after_login") : null;
-    if (redirectUrl) {
+    // ── RBAC-Validated Redirect ─────────────────────────────────
+    // Instead of blindly trusting sessionStorage, sanitize the stored
+    // redirect URL against the user's actual role.
+    const storedRedirect = typeof window !== "undefined"
+      ? sessionStorage.getItem("redirect_after_login")
+      : null;
+
+    if (storedRedirect) {
       sessionStorage.removeItem("redirect_after_login");
-      router.push(redirectUrl);
-      return;
     }
 
-    if (userData.role === "doctor") {
-      router.push("/doctor/dashboard");
-    } else if (userData.role === "hospital") {
-      router.push("/hospital/dashboard");
-    } else if (userData.role === "assistant") {
-      router.push("/assistant");
-    } else if (userData.role === "admin") {
-      router.push("/admin/dashboard");
-    } else {
-      router.push("/chat");
-    }
+    const safeTarget = getAuthorizedRedirectUrl(storedRedirect, userData.role);
+    router.push(safeTarget);
   };
 
   const logout = () => {
+    try {
+      supabase.auth.signOut().catch(() => {});
+    } catch {}
     setUser(null);
-    localStorage.removeItem("oxpecker_mock_user");
-    localStorage.removeItem("oxpecker_user");
-    localStorage.removeItem("oxpecker_last_activity");
-    router.push("/login");
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem("oxpecker_mock_user");
+      localStorage.removeItem("oxpecker_user");
+      localStorage.removeItem("oxpecker_last_activity");
+      // Clean any other cached role tokens
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith("sb-") || key.includes("token") || key.includes("oxpecker_auth"))) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.clear();
+    }
+    // Hard refresh/redirect to /login to completely eradicate lingering client caches
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    } else {
+      router.push("/login");
+    }
   };
 
   const updateUser = (userData: AppUser) => {

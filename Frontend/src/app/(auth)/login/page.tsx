@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn } from "lucide-react";
+import { 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowLeft, 
+  LogIn 
+} from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { toast, Toaster } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, type UserRole } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
+import { getAuthorizedRedirectUrl } from "@/lib/rbac";
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -20,7 +28,7 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-export default function LoginPage() {
+function LoginForm() {
   const { login, isAuthenticated, isLoading, role } = useAuth();
   const router = useRouter();
 
@@ -32,18 +40,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const redirectUrl = sessionStorage.getItem("redirect_after_login");
-      if (redirectUrl) {
-        sessionStorage.removeItem("redirect_after_login");
-        router.replace(redirectUrl);
-        return;
-      }
-      if (role === "patient") router.replace("/chat");
-      else if (role === "doctor") router.replace("/doctor/dashboard");
-      else if (role === "hospital") router.replace("/hospital/dashboard");
-      else if (role === "admin") router.replace("/admin/dashboard");
-      else if (role === "assistant") router.replace("/assistant");
-      else router.replace("/");
+      // Sanitize any stored redirect against the user's actual role
+      const storedUrl = sessionStorage.getItem("redirect_after_login");
+      if (storedUrl) sessionStorage.removeItem("redirect_after_login");
+      
+      const safeTarget = getAuthorizedRedirectUrl(storedUrl, role);
+      router.replace(safeTarget);
     }
   }, [isLoading, isAuthenticated, role, router]);
 
@@ -53,18 +55,8 @@ export default function LoginPage() {
 
     try {
       const lowerEmail = email.toLowerCase().trim();
-      let determinedRole: "patient" | "doctor" | "hospital" | "admin" | "assistant" = "patient";
-      if (lowerEmail.includes("doctor") || lowerEmail.includes("dr")) {
-        determinedRole = "doctor";
-      } else if (lowerEmail.includes("hospital") || lowerEmail.includes("clinic")) {
-        determinedRole = "hospital";
-      } else if (lowerEmail.includes("admin")) {
-        determinedRole = "admin";
-      } else if (lowerEmail.includes("assistant")) {
-        determinedRole = "assistant";
-      }
 
-      // Check if profile exists in Supabase
+      // 1. Authoritative lookup from Supabase profiles table
       let dbProfile: any = null;
       try {
         const { data } = await supabase
@@ -77,36 +69,91 @@ export default function LoginPage() {
         console.error("Supabase profile lookup error:", err);
       }
 
+      // 2. Check hospitals table if not found in profiles
+      if (!dbProfile) {
+        try {
+          const { data: hosp } = await supabase
+            .from("hospitals")
+            .select("*")
+            .ilike("email", lowerEmail)
+            .maybeSingle();
+          if (hosp) {
+            dbProfile = {
+              id: hosp.profile_id || hosp.id,
+              name: hosp.name,
+              email: hosp.email,
+              role: "hospital",
+              phone: hosp.phone,
+              address: hosp.address,
+              status: "active",
+            };
+          }
+        } catch (hospErr) {
+          console.warn("Hospital table check error:", hospErr);
+        }
+      }
+
+      // 3. Check doctors table if not found in profiles
+      if (!dbProfile) {
+        try {
+          const { data: doc } = await supabase
+            .from("doctors")
+            .select("*")
+            .ilike("email", lowerEmail)
+            .maybeSingle();
+          if (doc) {
+            dbProfile = {
+              id: doc.profile_id || doc.id,
+              name: doc.name,
+              email: doc.email,
+              role: "doctor",
+              specialty: doc.specialty,
+              status: "active",
+            };
+          }
+        } catch (docErr) {
+          console.warn("Doctor table check error:", docErr);
+        }
+      }
+
       let userId = dbProfile?.id;
       let userName = dbProfile?.name || email.split("@")[0] || "User";
-      let userRole = (dbProfile?.role as any) || determinedRole;
+      let userRole: UserRole = (dbProfile?.role as UserRole) || "patient";
 
+      // 4. Auto-provision profile if completely new/unregistered (e.g. testing)
       if (!dbProfile) {
+        if (lowerEmail.includes("hospital")) userRole = "hospital";
+        else if (lowerEmail.includes("doctor") || lowerEmail.includes("dr.")) userRole = "doctor";
+        else if (lowerEmail.includes("assistant")) userRole = "assistant";
+        else if (lowerEmail.includes("admin")) userRole = "admin";
+        else userRole = "patient";
+
         try {
           const { data: inserted } = await supabase
             .from("profiles")
             .insert({
               name: userName,
               email: lowerEmail,
-              role: determinedRole,
-              status: "active"
+              role: userRole,
+              status: "active",
             })
             .select()
             .maybeSingle();
           if (inserted?.id) {
             userId = inserted.id;
+            userRole = (inserted.role as UserRole) || userRole;
           }
         } catch (insertErr) {
           console.error("Auto-provision profile error:", insertErr);
         }
       }
 
-      toast.success("Login successful!");
+      toast.success(`Welcome back, ${userName}!`);
       
       login({
-        id: userId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-0000-0000-000000000001"),
+        id: userId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "user-" + Date.now()),
         name: userName,
-        email: dbProfile?.email || lowerEmail || "user@oxpecker.ai",
+        email: dbProfile?.email || lowerEmail,
         role: userRole,
         phone: dbProfile?.phone || undefined,
         date_of_birth: dbProfile?.date_of_birth || undefined,
@@ -119,7 +166,7 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error("Login error:", err);
-      toast.error("Login failed.");
+      toast.error("Login failed. Please verify credentials.");
     } finally {
       setIsSubmitting(false);
     }
@@ -131,30 +178,79 @@ export default function LoginPage() {
       const gUser = await initiateGoogleSignIn();
       const lowerEmail = gUser.email.toLowerCase().trim();
 
-      const { data: dbProfile } = await supabase
+      // 1. Authoritative lookup from Supabase profiles table
+      let { data: dbProfile } = await supabase
         .from("profiles")
         .select("*")
         .ilike("email", lowerEmail)
         .maybeSingle();
 
+      // 2. Check hospitals table if profile is missing
       if (!dbProfile) {
-        toast.info("No existing account found with this Google email. Redirecting you to Create Account...");
-        sessionStorage.setItem(
-          "oxpecker_google_user",
-          JSON.stringify({
-            name: gUser.name,
-            email: gUser.email,
-            picture: gUser.picture,
-          })
-        );
-        setTimeout(() => {
-          router.push("/register");
-        }, 1200);
+        const { data: hosp } = await supabase
+          .from("hospitals")
+          .select("*")
+          .ilike("email", lowerEmail)
+          .maybeSingle();
+        if (hosp) {
+          dbProfile = {
+            id: hosp.profile_id || hosp.id,
+            name: hosp.name,
+            email: lowerEmail,
+            role: "hospital",
+            phone: hosp.phone,
+            address: hosp.address,
+            status: "active",
+          };
+        }
+      }
+
+      // 3. Check doctors table if profile is missing
+      if (!dbProfile) {
+        const { data: doc } = await supabase
+          .from("doctors")
+          .select("*")
+          .ilike("email", lowerEmail)
+          .maybeSingle();
+        if (doc) {
+          dbProfile = {
+            id: doc.profile_id || doc.id,
+            name: doc.name,
+            email: lowerEmail,
+            role: "doctor",
+            specialty: doc.specialty,
+            status: "active",
+          };
+        }
+      }
+
+      // 4. If account exists in database, login directly with their authoritative registered role!
+      if (dbProfile) {
+        const userRole: UserRole = (dbProfile.role as UserRole) || "patient";
+        toast.success(`Welcome back, ${dbProfile.name || gUser.name}!`);
+        login({
+          ...dbProfile,
+          id: dbProfile.id,
+          name: dbProfile.name || gUser.name,
+          email: lowerEmail,
+          role: userRole,
+          image: dbProfile.image || gUser.picture || null,
+          status: dbProfile.status || "active",
+        } as any);
         return;
       }
 
-      toast.success(`Welcome back, ${dbProfile.name}!`);
-      login(dbProfile as any);
+      // 5. If NO account exists in the database:
+      // Store Google credentials and redirect to registration so the user can select their role
+      sessionStorage.setItem("oxpecker_google_user", JSON.stringify({
+        name: gUser.name,
+        email: lowerEmail,
+        picture: gUser.picture,
+      }));
+
+      toast.info("No registered account found with this Google email. Please select your role to complete sign-up.");
+      router.push("/register");
+
     } catch (err: any) {
       const isCancellation = 
         err?.code === "popup_closed" || 
@@ -174,7 +270,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
-      {/* Clean Ambient Background */}
+      {/* Clean Ambient Background (Unified across all auth pages) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-b from-slate-50 via-white to-sky-50/25">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
@@ -182,32 +278,59 @@ export default function LoginPage() {
       <Toaster position="top-center" richColors />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md relative z-10">
-        <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-8 group w-fit">
+        <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-6 group w-fit">
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           <span className="text-sm font-medium">Back to home</span>
         </Link>
 
-        <div className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-8 sm:p-10 relative z-20 ring-1 ring-black/5">
-          <div className="mb-8 text-center">
-            <Link href="/" className="inline-flex mb-6">
-              <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={160} height={45} className="h-10 w-auto object-contain" />
+        <div className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-7 sm:p-9 relative z-20 ring-1 ring-black/5">
+          <div className="mb-6 text-center">
+            <Link href="/" className="inline-flex mb-5">
+              <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={160} height={45} className="h-9 sm:h-10 w-auto object-contain" priority />
             </Link>
-            <h1 className="text-2xl font-extrabold text-slate-900">Welcome back</h1>
-            <p className="text-slate-500 text-sm mt-1">Sign in to your healthcare account</p>
+            <h1 className="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">Sign in with your email to access your account</p>
+          </div>
+
+          {/* Continue with Google */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isGoogleLoading}
+            className="w-full h-[50px] bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold rounded-2xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[14px] active:scale-[0.99] cursor-pointer"
+          >
+            {isGoogleLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
+                <span className="text-slate-600 font-medium">Connecting Google...</span>
+              </>
+            ) : (
+              <>
+                <GoogleIcon size={18} />
+                <span>Continue with Google</span>
+              </>
+            )}
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center my-5 gap-3">
+            <div className="flex-1 h-px bg-slate-200"></div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Or email login</span>
+            <div className="flex-1 h-px bg-slate-200"></div>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[13px] font-semibold text-slate-500 mb-1.5 tracking-tight">Email Address</label>
               <div className="relative">
-                <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full h-[52px] pl-10 pr-4 rounded-2xl bg-black/[0.03] border border-transparent text-[15px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-500"
+                  className="w-full h-[50px] pl-10 pr-4 rounded-2xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -215,26 +338,26 @@ export default function LoginPage() {
             <div>
               <label className="block text-[13px] font-semibold text-slate-500 mb-1.5 tracking-tight">Password</label>
               <div className="relative">
-                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-[52px] pl-10 pr-12 rounded-2xl bg-black/[0.03] border border-transparent text-[15px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-500"
+                  className="w-full h-[50px] pl-10 pr-12 rounded-2xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs pt-1">
+            <div className="flex items-center justify-end text-xs pt-0.5">
               <Link href="/reset-password" className="text-slate-500 hover:text-slate-900 font-bold">
                 Forgot password?
               </Link>
@@ -243,7 +366,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-[52px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-2"
+              className="w-full h-[50px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-1"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -255,34 +378,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-5 gap-3">
-            <div className="flex-1 h-px bg-slate-200"></div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Or</span>
-            <div className="flex-1 h-px bg-slate-200"></div>
-          </div>
-
-          {/* Continue with Google */}
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isGoogleLoading}
-            className="w-full h-[50px] bg-white hover:bg-slate-50/90 text-slate-700 hover:text-slate-900 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[15px] active:scale-[0.99] cursor-pointer"
-          >
-            {isGoogleLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-600 rounded-full animate-spin" />
-                <span className="text-slate-600 font-medium">Connecting Google...</span>
-              </>
-            ) : (
-              <>
-                <GoogleIcon size={20} />
-                <span>Continue with Google</span>
-              </>
-            )}
-          </button>
-
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          <div className="mt-7 pt-5 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-500 font-medium">
               Don't have an account?{" "}
               <Link href="/register" className="text-slate-900 font-bold hover:underline">
@@ -293,5 +389,13 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

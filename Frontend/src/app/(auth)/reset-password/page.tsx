@@ -229,38 +229,46 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center py-10 px-4 sm:px-6">
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center py-10 px-4 sm:px-6 relative overflow-hidden">
+      {/* Clean Ambient Background (Unified across all auth pages) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-b from-slate-50 via-white to-sky-50/25">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
+      </div>
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-[460px] flex flex-col items-center relative"
+        className="w-full max-w-[480px] flex flex-col items-center relative z-10"
       >
         <Toaster position="top-center" richColors />
         
         {/* Back Button */}
         {step === 1 && (
-          <Link href="/login" className="absolute left-0 top-2 sm:top-4 text-slate-500 hover:text-slate-800 transition-colors">
-            <ArrowLeft size={24} />
+          <Link href="/login" className="self-start mb-6 text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-2 text-sm font-medium">
+            <ArrowLeft size={16} /> Back to login
           </Link>
         )}
         
-        {/* Logo */}
-        <Link href="/" className="mb-10">
-          <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={280} height={90} className="h-10 sm:h-12 w-auto object-contain" />
-        </Link>
-        
-        {/* Step Indicator */}
-        <div className="flex items-center gap-3 mb-8 w-full max-w-[280px]">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex-1 flex items-center">
-              <div className={`h-2 flex-1 rounded-full transition-all duration-500 ${step >= s ? "bg-sky-600" : "bg-slate-100"}`} />
-            </div>
-          ))}
-        </div>
+        {/* Card Container */}
+        <div className="w-full bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-7 sm:p-9 relative z-20 ring-1 ring-black/5 flex flex-col items-center">
+          {/* Logo */}
+          <Link href="/" className="mb-8">
+            <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={280} height={90} className="h-9 sm:h-10 w-auto object-contain" priority />
+          </Link>
+          
+          {/* Step Indicator */}
+          <div className="flex items-center gap-3 mb-8 w-full max-w-[280px]">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex-1 flex items-center">
+                <div className={`h-2 flex-1 rounded-full transition-all duration-500 ${step >= s ? "bg-sky-600" : "bg-slate-100"}`} />
+              </div>
+            ))}
+          </div>
 
-        <div className="w-full relative overflow-hidden" style={{ minHeight: "360px" }}>
-          <AnimatePresence mode="wait">
+          <div className="w-full relative overflow-hidden" style={{ minHeight: "360px" }}>
+            <AnimatePresence mode="wait">
             
             {/* STEP 1: Find Account */}
             {step === 1 && (
@@ -393,6 +401,7 @@ export default function ResetPasswordPage() {
             )}
             
           </AnimatePresence>
+        </div>
         </div>
       </motion.div>
     </main>

@@ -20,15 +20,20 @@ interface Props {
 
 export const HealthPassCard = forwardRef<HTMLDivElement, Props>(
   ({ card, profileImage, interactive = true, onFlip }, ref) => {
+    if (!card) return null;
+
+    const safeCardNumber = card.card_number || "HP-2026-94821";
+    const safeDob = card.date_of_birth || "1995-03-15";
+
     // Dual domain QR URL (production: https://oxpecker.equisaas-bd.com, dev: local origin)
     const scanUrl =
       typeof window !== "undefined" && window.location.hostname !== "localhost"
-        ? `https://oxpecker.equisaas-bd.com/scan/${card.card_number}`
+        ? `https://oxpecker.equisaas-bd.com/scan/${safeCardNumber}`
         : typeof window !== "undefined"
-        ? `${window.location.origin}/scan/${card.card_number}`
-        : `https://oxpecker.equisaas-bd.com/scan/${card.card_number}`;
+        ? `${window.location.origin}/scan/${safeCardNumber}`
+        : `https://oxpecker.equisaas-bd.com/scan/${safeCardNumber}`;
 
-    const age = calculateAge(card.date_of_birth);
+    const age = calculateAge(safeDob);
 
     // 3D Perspective Tilt Physics with Framer Motion
     const cardContainerRef = useRef<HTMLDivElement>(null);

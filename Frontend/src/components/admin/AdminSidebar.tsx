@@ -117,23 +117,6 @@ export function AdminSidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen
           );
         })}
       </div>
-
-      {/* Logout Area */}
-      <div className="p-4 border-t border-slate-200 bg-white">
-        <button 
-          onClick={() => logout()}
-          className={`
-            flex items-center w-full px-3 py-3 rounded-xl transition-all group text-slate-600 hover:bg-slate-50 hover:text-rose-600
-            ${isOpen ? "justify-start gap-3" : "justify-center"}
-          `}
-          title={!isOpen ? "Logout" : undefined}
-        >
-          <LogOut size={20} strokeWidth={2} className="shrink-0 group-hover:-translate-x-1 transition-transform" />
-          {isOpen && (
-            <span className="font-bold text-sm">Sign Out</span>
-          )}
-        </button>
-      </div>
     </aside>
   );
 }

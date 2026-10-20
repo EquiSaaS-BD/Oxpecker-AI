@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import {
   Search,
@@ -11,6 +12,9 @@ import {
   ShieldCheck,
   ChevronDown,
   ShieldAlert,
+  LogOut,
+  Building2,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmergencyPatientLookupModal } from "@/components/doctor/EmergencyPatientLookupModal";
@@ -20,10 +24,11 @@ interface HospitalHeaderProps {
 }
 
 export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const notifications = [
     { id: 1, text: "New bed allocation request from Dr. Anisur", time: "5 min ago", unread: true },
@@ -64,14 +69,14 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
         <div className="hidden md:flex items-center gap-2 mr-2 border-r border-slate-200 pr-4">
           <button
             onClick={() => setShowEmergencyModal(true)}
-            className="flex items-center gap-2 text-[13px] font-bold text-white bg-rose-600 hover:bg-rose-700 px-4 py-2 rounded-xl transition-all shadow-sm"
+            className="flex items-center gap-2 text-[13px] font-bold text-white bg-rose-600 hover:bg-rose-700 px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
           >
             <ShieldAlert size={16} />
             Emergency Lookup
           </button>
           <button
             onClick={() => toast.info("Add Doctor Feature Coming Soon")}
-            className="flex items-center gap-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg transition-colors shadow-sm"
+            className="flex items-center gap-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
           >
             <UserPlus size={14} />
             Add Doctor
@@ -83,7 +88,7 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
           <button
             aria-label="Notifications"
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative"
+            className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative cursor-pointer"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
@@ -131,22 +136,95 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
         </div>
 
         {/* Profile Dropdown */}
-        <div className="flex items-center gap-2 pl-2">
-          <div className="hidden sm:block text-right">
-            <p className="text-sm font-semibold text-slate-800 line-clamp-1 max-w-[120px]">
-              {user?.name || "Hospital Admin"}
-            </p>
-            <p className="text-xs text-emerald-600 font-medium flex items-center justify-end gap-1">
-              <ShieldCheck size={12} />
-              Verified
-            </p>
-          </div>
-          <button aria-label="Profile menu" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold text-sm">
-              {user?.name?.charAt(0) || "H"}
+        <div className="relative flex items-center gap-2 pl-2">
+          <button 
+            type="button"
+            aria-label="Profile menu" 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer select-none"
+          >
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-semibold text-slate-800 line-clamp-1 max-w-[130px]">
+                {user?.hospital_name || user?.name || "Hospital Admin"}
+              </p>
+              <p className="text-xs text-emerald-600 font-medium flex items-center justify-end gap-1">
+                <ShieldCheck size={12} />
+                Verified
+              </p>
             </div>
-            <ChevronDown size={14} className="text-slate-500 hidden sm:block" />
+            <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold text-sm">
+              {user?.name?.charAt(0) || user?.hospital_name?.charAt(0) || "H"}
+            </div>
+            <ChevronDown size={14} className={`text-slate-500 hidden sm:block transition-transform duration-200 ${showProfileMenu ? "rotate-180" : ""}`} />
           </button>
+
+          {/* Profile Dropdown Menu */}
+          {showProfileMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowProfileMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/80 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* User info banner */}
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-sm font-bold text-slate-800 truncate">
+                    {user?.hospital_name || user?.name || "Hospital Admin"}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate mt-0.5">
+                    {user?.email || "hospital@oxpecker.ai"}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-2">
+                    <ShieldCheck size={12} /> Verified Hospital
+                  </span>
+                </div>
+
+                {/* Menu items */}
+                <div className="py-1">
+                  <Link
+                    href="/hospital/dashboard/profile"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                  >
+                    <Building2 size={15} className="text-slate-400" />
+                    <span>Hospital Profile & Packages</span>
+                  </Link>
+                  <Link
+                    href="/hospital/dashboard/beds"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                  >
+                    <BedDouble size={15} className="text-slate-400" />
+                    <span>Bed & ICU Allocation</span>
+                  </Link>
+                  <Link
+                    href="/hospital/dashboard/settings"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                  >
+                    <Settings size={15} className="text-slate-400" />
+                    <span>Hospital Settings</span>
+                  </Link>
+                </div>
+
+                {/* Sign Out Action */}
+                <div className="pt-1 border-t border-slate-100 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      toast.success("Logged out successfully");
+                      logout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                  >
+                    <LogOut size={15} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
       <EmergencyPatientLookupModal

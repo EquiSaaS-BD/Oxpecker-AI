@@ -173,6 +173,98 @@ export const INITIAL_HEALTH_CARDS: HealthPassCard[] = [
     issued_at: "2026-08-01T11:00:00Z",
     expires_at: "2031-08-01T11:00:00Z",
     is_active: true,
+  },
+  {
+    id: "hp-004",
+    patient_id: "user-004",
+    card_number: "HP-2026-55901",
+    smart_card_uid: "2001-5590-1234-9876",
+    patient_name: "ফারহানা চৌধুরী",
+    english_name: "FARHANA CHOWDHURY",
+    patient_image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300",
+    date_of_birth: "2001-09-18",
+    gender: "Female",
+    blood_group: "AB+",
+    nid_number: "2001 5590 1234 9876",
+    birth_cert_number: "20015590123498760",
+    verification_status: "verified",
+    verified_at: "2026-07-15T10:00:00Z",
+    is_activated: true,
+    activated_at: "2026-07-15T10:00:00Z",
+    division: "Dhaka",
+    zila: "Dhaka",
+    upazila: "Uttara",
+    post_code: "1230",
+    address: "Sector 4, Road 7, Uttara, Dhaka",
+    last_location_sync: "19 Oct 2026, 11:00 AM",
+    personal_phone: "+880 1912-987654",
+    personal_has_whatsapp: true,
+    emergency_contact_name: "Dr. Nazmul Chowdhury",
+    emergency_contact_phone: "+880 1912-112233",
+    emergency_contact_relation: "Father",
+    emergency_has_whatsapp: true,
+    marital_status: "Single",
+    last_doctor_visit: "10 Oct 2026",
+    organ_donor: true,
+    diabetic_status: "None",
+    has_pacemaker: false,
+    hypertension: false,
+    allergies: ["Ciprofloxacin", "Peanuts"],
+    chronic_conditions: [],
+    current_medications: [],
+    face_verified: true,
+    fingerprint_registered: true,
+    issued_at: "2026-07-15T10:00:00Z",
+    expires_at: "2031-07-15T10:00:00Z",
+    is_active: true,
+  },
+  {
+    id: "hp-005",
+    patient_id: "user-005",
+    card_number: "HP-2026-33027",
+    smart_card_uid: "1985-3302-7711-4455",
+    patient_name: "মো. জসিম উদ্দিন",
+    english_name: "MD. JASIM UDDIN",
+    patient_image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300",
+    date_of_birth: "1985-05-12",
+    gender: "Male",
+    blood_group: "O-",
+    nid_number: "1985 3302 7711 4455",
+    birth_cert_number: null,
+    verification_status: "verified",
+    verified_at: "2026-06-20T08:30:00Z",
+    is_activated: true,
+    activated_at: "2026-06-20T08:30:00Z",
+    division: "Rajshahi",
+    zila: "Rajshahi",
+    upazila: "Boalia",
+    post_code: "6000",
+    address: "Shaheb Bazar, Boalia, Rajshahi",
+    last_location_sync: "18 Oct 2026, 05:40 PM",
+    personal_phone: "+880 1611-554433",
+    personal_has_whatsapp: true,
+    emergency_contact_name: "Nasima Jasim",
+    emergency_contact_phone: "+880 1611-998877",
+    emergency_contact_relation: "Wife",
+    emergency_has_whatsapp: true,
+    marital_status: "Married",
+    last_doctor_visit: "02 Oct 2026",
+    organ_donor: true,
+    diabetic_status: "None",
+    has_pacemaker: false,
+    hypertension: false,
+    allergies: [],
+    chronic_conditions: [
+      { name: "Mild Gastritis", since: "2024", status: "controlled", severity: "mild" }
+    ],
+    current_medications: [
+      { name: "Esomeprazole", dosage: "20mg", frequency: "1x daily (Morning)", duration: "14 days", instructions: "Take before breakfast", prescribed_by: "Dr. Mahmud" }
+    ],
+    face_verified: true,
+    fingerprint_registered: true,
+    issued_at: "2026-06-20T08:30:00Z",
+    expires_at: "2031-06-20T08:30:00Z",
+    is_active: true,
   }
 ];
 
@@ -358,49 +450,87 @@ export async function getHealthCardByNumber(cardNumber: string): Promise<HealthP
  * Universal Multi-Criteria Search Engine for Doctors, Hospitals, and Admins
  * Searches by NID, DOB, Phone, Card Number, or Patient Name
  */
-export async function searchHealthCards(query: string, searchType?: "all" | "nid" | "dob" | "phone" | "card"): Promise<HealthPassScanData[]> {
-  await new Promise((r) => setTimeout(r, 400));
-  const q = query.trim().toLowerCase().replace(/[- ]/g, "");
+export function searchHealthCards(
+  query: string, 
+  searchType?: "all" | "nid" | "dob" | "phone" | "card" | "card_no" | "name"
+): HealthPassCard[] {
+  try {
+    const q = (query || "").trim().toLowerCase().replace(/[- ]/g, "");
 
-  if (!q) {
-    return INITIAL_HEALTH_CARDS.map((c) => ({ card: c, visits: MOCK_MEDICAL_VISITS }));
+    // Load any dynamically created cards from localStorage if in browser
+    let allCards = INITIAL_HEALTH_CARDS;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("oxpecker_healthpass_cards");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            allCards = [...parsed, ...INITIAL_HEALTH_CARDS.filter(c => !parsed.some((p: any) => p && p.id === c.id))];
+          }
+        }
+      } catch {}
+    }
+
+    if (!Array.isArray(allCards) || allCards.length === 0) {
+      allCards = INITIAL_HEALTH_CARDS;
+    }
+
+    if (!q) {
+      return allCards;
+    }
+
+    const filtered = allCards.filter((card) => {
+      if (!card) return false;
+      const cleanNid = (card.nid_number || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanBirthCert = (card.birth_cert_number || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanPhone = (card.personal_phone || card.emergency_contact_phone || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanCardNo = (card.card_number || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanDob = (card.date_of_birth || "").toLowerCase();
+      const cleanName = (card.patient_name || "").toLowerCase();
+      const cleanEngName = (card.english_name || "").toLowerCase();
+
+      if (searchType === "nid") {
+        return cleanNid.includes(q) || cleanBirthCert.includes(q);
+      }
+      if (searchType === "phone") {
+        return cleanPhone.includes(q);
+      }
+      if (searchType === "dob") {
+        return cleanDob.includes(q);
+      }
+      if (searchType === "card" || searchType === "card_no") {
+        return cleanCardNo.includes(q);
+      }
+      if (searchType === "name") {
+        return cleanName.includes(q) || cleanEngName.includes(q);
+      }
+
+      // Default "all" search:
+      return (
+        cleanNid.includes(q) ||
+        cleanBirthCert.includes(q) ||
+        cleanPhone.includes(q) ||
+        cleanCardNo.includes(q) ||
+        cleanDob.includes(q) ||
+        cleanName.includes(q) ||
+        cleanEngName.includes(q)
+      );
+    });
+
+    return Array.isArray(filtered) ? filtered : allCards;
+  } catch (err) {
+    console.warn("searchHealthCards error:", err);
+    return INITIAL_HEALTH_CARDS;
   }
+}
 
-  const matchedCards = INITIAL_HEALTH_CARDS.filter((card) => {
-    const cleanNid = (card.nid_number || "").replace(/[- ]/g, "").toLowerCase();
-    const cleanBirthCert = (card.birth_cert_number || "").replace(/[- ]/g, "").toLowerCase();
-    const cleanPhone = (card.emergency_contact_phone || "").replace(/[- ]/g, "").toLowerCase();
-    const cleanCardNo = card.card_number.replace(/[- ]/g, "").toLowerCase();
-    const cleanDob = (card.date_of_birth || "").toLowerCase();
-    const cleanName = (card.patient_name || "").toLowerCase();
-    const cleanEngName = (card.english_name || "").toLowerCase();
-
-    if (searchType === "nid") {
-      return cleanNid.includes(q) || cleanBirthCert.includes(q);
-    }
-    if (searchType === "phone") {
-      return cleanPhone.includes(q);
-    }
-    if (searchType === "dob") {
-      return cleanDob.includes(q);
-    }
-    if (searchType === "card") {
-      return cleanCardNo.includes(q);
-    }
-
-    // Default "all" search:
-    return (
-      cleanNid.includes(q) ||
-      cleanBirthCert.includes(q) ||
-      cleanPhone.includes(q) ||
-      cleanCardNo.includes(q) ||
-      cleanDob.includes(q) ||
-      cleanName.includes(q) ||
-      cleanEngName.includes(q)
-    );
-  });
-
-  return matchedCards.map((c) => ({ card: c, visits: MOCK_MEDICAL_VISITS }));
+export async function searchHealthCardsAsync(
+  query: string, 
+  searchType?: "all" | "nid" | "dob" | "phone" | "card" | "card_no" | "name"
+): Promise<HealthPassScanData[]> {
+  await new Promise((r) => setTimeout(r, 200));
+  const cards = searchHealthCards(query, searchType);
+  return cards.map((c) => ({ card: c, visits: MOCK_MEDICAL_VISITS }));
 }
 
 export async function createHealthCard(data: {

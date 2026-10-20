@@ -107,6 +107,8 @@ const BarcodeSvg = ({ value }: { value: string }) => (
 
 export const HealthPassBack = forwardRef<HTMLDivElement, Props>(
   ({ card, onFlip }, ref) => {
+    if (!card) return null;
+
     // Format allergies cleanly
     const allergyList =
       Array.isArray(card.allergies) && card.allergies.length > 0

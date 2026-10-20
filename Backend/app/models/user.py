@@ -36,6 +36,8 @@ class User(Base):
     patient_profile = relationship("PatientProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     doctor_profile = relationship("DoctorProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     hospital_profile = relationship("HospitalProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    health_pass_card = relationship("HealthPassCard", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    biometric = relationship("PatientBiometric", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email}, role={self.role})>"

@@ -194,16 +194,6 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                 <Link href="/settings" onClick={onClose} className="flex items-center gap-3 w-full h-11 px-3 rounded-[12px] hover:bg-slate-100 text-slate-600 text-[14px] font-medium transition-colors">
                   <Settings size={18} className="text-slate-500" /> Settings
                 </Link>
-                
-                <button 
-                  onClick={() => {
-                    logout();
-                    onClose();
-                  }}
-                  className="flex items-center gap-3 w-full h-11 px-3 rounded-[12px] hover:bg-rose-50 text-rose-600 text-[14px] font-medium transition-colors text-left"
-                >
-                  <LogOut size={18} className="text-rose-500" /> Sign Out
-                </button>
               </>
             ) : (
               <Link href="/login" onClick={onClose} className="flex items-center justify-center gap-2 w-full h-11 px-3 rounded-[12px] bg-sky-600/10 hover:bg-sky-600/20 text-sky-600 text-[14px] font-bold transition-colors">

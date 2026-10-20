@@ -3,8 +3,33 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { isRouteAuthorizedForRole, getRoleHomePath } from "@/lib/rbac";
 
 import { MedicalLoader } from "@/components/shared/MedicalLoader";
+
+/**
+ * Public pages that do NOT require authentication at all.
+ * (Unauthenticated visitors can freely browse these.)
+ */
+const UNAUTHENTICATED_PUBLIC_PAGES = [
+  "/doctors",
+  "/hospitals",
+  "/medicines",
+  "/nutrition",
+  "/about",
+  "/contact",
+  "/terms",
+  "/privacy",
+  "/refund",
+  "/disclaimer",
+  "/careers",
+  "/press",
+  "/docs",
+  "/faq",
+  "/scan",
+  "/tv-monitor",
+  "/profile",
+];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, role } = useAuth();
@@ -15,26 +40,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // Public informational and discovery routes (no authentication required)
-    const publicPages = [
-      "/doctors",
-      "/hospitals",
-      "/medicines",
-      "/nutrition",
-      "/about",
-      "/contact",
-      "/terms",
-      "/privacy",
-      "/refund",
-      "/disclaimer",
-      "/careers",
-      "/press",
-      "/docs"
-    ];
+    // Normalize path: strip trailing slashes
+    const normalizedPath = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
 
-    const isPublicPage = publicPages.some(p => pathname === p || pathname.startsWith(p + "/"));
+    const isPublicPage = UNAUTHENTICATED_PUBLIC_PAGES.some(
+      (p) => normalizedPath === p || normalizedPath.startsWith(p + "/")
+    );
 
-    // 1. Unauthenticated users:
+    // ── 1. Unauthenticated users ────────────────────────────────
     if (!isAuthenticated) {
       if (isPublicPage) {
         setIsAuthorized(true);
@@ -42,13 +55,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
 
       // Store intended destination so user returns here after login
+      // (the redirect will be sanitized against their role in AuthContext.login)
       if (
-        pathname !== "/login" &&
-        pathname !== "/" &&
-        !pathname.startsWith("/register") &&
-        pathname !== "/reset-password"
+        normalizedPath !== "/login" &&
+        normalizedPath !== "/" &&
+        !normalizedPath.startsWith("/register") &&
+        normalizedPath !== "/reset-password"
       ) {
-        const fullUrl = typeof window !== "undefined" ? window.location.pathname + window.location.search : pathname;
+        const fullUrl = typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : pathname;
         sessionStorage.setItem("redirect_after_login", fullUrl);
       }
 
@@ -56,27 +72,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 2. Role-Based Access Control (RBAC) for Authenticated Users:
-    let hasAccess = true;
-
-    if (pathname.startsWith("/admin")) {
-      hasAccess = role === "admin";
-    } else if (pathname.startsWith("/hospital/")) {
-      hasAccess = role === "hospital" || role === "admin";
-    } else if (pathname.startsWith("/assistant")) {
-      hasAccess = role === "assistant" || role === "admin";
-    } else if (pathname.startsWith("/doctor/")) {
-      hasAccess = role === "doctor" || role === "admin";
-    }
-
-    if (!hasAccess) {
-      // If user tries to access a restricted panel they don't own, redirect to their role home
-      if (role === "patient") router.replace("/chat");
-      else if (role === "doctor") router.replace("/doctor/dashboard");
-      else if (role === "hospital") router.replace("/hospital/dashboard");
-      else if (role === "admin") router.replace("/admin/dashboard");
-      else if (role === "assistant") router.replace("/assistant");
-      else router.replace("/login");
+    // ── 2. Authenticated: Full RBAC Boundary Enforcement ────────
+    // Use the centralized RBAC engine to check authorization.
+    // This handles BOTH directions:
+    //   - Patient trying to access /doctor/* or /hospital/* → BLOCKED
+    //   - Doctor trying to access /chat or /health-card → BLOCKED
+    //   - Assistant trying to access /admin/* → BLOCKED
+    //   - Etc.
+    if (!isRouteAuthorizedForRole(normalizedPath, role)) {
+      const home = getRoleHomePath(role);
+      console.warn(
+        `[RBAC] Access denied: role="${role}" attempted to access "${normalizedPath}". Redirecting to "${home}".`
+      );
+      router.replace(home);
       return;
     }
 
