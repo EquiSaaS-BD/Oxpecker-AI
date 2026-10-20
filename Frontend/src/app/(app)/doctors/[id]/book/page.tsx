@@ -71,19 +71,19 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       const bookingDateStr = selectedDateIso || new Date().toISOString().split("T")[0];
 
       const { data, error } = await supabase.from("bookings").insert({
-        patient_id: isValidUuid(user?.id) ? user.id : null,
-        doctor_id: isValidUuid(doctor?.id) ? doctor.id : null,
+        patient_id: isValidUuid(user?.id) ? user?.id : null,
+        doctor_id: isValidUuid(doctor?.id) ? doctor?.id : null,
         patient_name: patientName.trim() || user?.name || "Patient",
         patient_email: user?.email || null,
         patient_phone: patientPhone.trim() || user?.phone || "N/A",
-        doctor_name: doctor.name,
-        doctor_specialty: doctor.specialty,
+        doctor_name: doctor?.name || "Doctor",
+        doctor_specialty: doctor?.specialty || "Specialist",
         booking_date: bookingDateStr,
         booking_time: selectedTime || "10:00 AM",
         status: "confirmed",
-        consultation_fee: Number(doctor.fee) || 1000,
+        consultation_fee: Number(doctor?.fee) || 1000,
         platform_fee: 50,
-        total_fee: (Number(doctor.fee) || 1000) + 50,
+        total_fee: (Number(doctor?.fee) || 1000) + 50,
         notes: `${consultType} - ${selectedChamber || "Chamber"}${patientReason ? ` - Reason: ${patientReason}` : ""}${patientAge ? ` (Age: ${patientAge})` : ""}`,
       }).select().maybeSingle();
 

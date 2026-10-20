@@ -58,3 +58,8 @@ scratch/
 AGENT_HANDOVER.md
 *_HANDOVER*.md
 *handover*.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/

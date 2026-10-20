@@ -38,8 +38,8 @@ export default function DoctorDashboardLayout({
   }
 
   // Access control
-  if (!isAuthenticated || role !== "doctor") {
-    return <AccessDeniedModal />;
+  if (!isAuthenticated || (role !== "doctor" && role !== "admin")) {
+    return <AccessDeniedModal requiredRole="doctor" portalName="Doctor Dashboard" />;
   }
   
   if (user && user.status === "pending") {

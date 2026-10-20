@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -10,7 +11,9 @@ import {
   ChevronRight,
   TrendingUp,
   Stethoscope,
-  CalendarDays
+  CalendarDays,
+  Plus,
+  ClipboardCheck,
 } from "lucide-react";
 
 const containerVariants = {
@@ -118,27 +121,47 @@ export default function HospitalDashboardPage() {
           <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-slate-800">Recent Doctor Registrations</h2>
-                <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
-                  View All <ChevronRight size={16} />
-                </button>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">Hospital Doctors Roster</h2>
+                  <p className="text-xs text-slate-500">6 Registered Specialists • 4 On Duty</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/hospital/dashboard/doctors?add=true"
+                    className="text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-xs"
+                  >
+                    <Plus size={14} /> Add Doctor
+                  </Link>
+                  <Link
+                    href="/hospital/dashboard/doctors"
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    View All <ChevronRight size={14} />
+                  </Link>
+                </div>
               </div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">
-                        Dr
+              <div className="space-y-3">
+                {[
+                  { name: "Dr. Ayesha Rahman", dept: "Cardiology Dept. (Room 304)", status: "On Duty", badge: "bg-emerald-50 text-emerald-700" },
+                  { name: "Dr. Tariqul Islam", dept: "Orthopedics Dept. (OT-2)", status: "In Surgery", badge: "bg-amber-50 text-amber-700" },
+                  { name: "Dr. Nusrat Jahan", dept: "Pediatrics Dept. (Room 108)", status: "On Duty", badge: "bg-emerald-50 text-emerald-700" },
+                ].map((doc, i) => (
+                  <Link href="/hospital/dashboard/doctors" key={i} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/40 transition-all cursor-pointer group">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+                        {doc.name.replace("Dr. ", "").charAt(0)}
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">Dr. New Doctor {i}</h4>
-                        <p className="text-xs text-slate-500">Cardiology Dept.</p>
+                        <h4 className="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">{doc.name}</h4>
+                        <p className="text-xs text-slate-500">{doc.dept}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider">Active</span>
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border uppercase tracking-wider ${doc.badge}`}>
+                        {doc.status}
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -151,12 +174,12 @@ export default function HospitalDashboardPage() {
               <div className="relative z-10">
                 <h2 className="text-lg font-bold mb-2">Hospital Capacity</h2>
                 <p className="text-emerald-100 text-sm mb-6 leading-relaxed font-medium">
-                  ICU and Emergency wards are nearing capacity. Please review bed allocations.
+                  ICU and Emergency wards are nearing capacity. Please review bed allocations and admissions.
                 </p>
-                <a href="/hospital/dashboard/beds" className="w-full bg-white text-emerald-800 font-bold py-2.5 rounded-xl text-sm hover:bg-emerald-50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                <Link href="/hospital/dashboard/beds" className="w-full bg-white text-emerald-800 font-bold py-2.5 rounded-xl text-sm hover:bg-emerald-50 transition-colors shadow-sm flex items-center justify-center gap-2">
                   <BedDouble size={16} />
-                  Manage Beds
-                </a>
+                  Manage Beds & Wards
+                </Link>
               </div>
             </div>
 
@@ -164,17 +187,23 @@ export default function HospitalDashboardPage() {
               <h2 className="text-base font-bold text-slate-800 mb-4">Quick Links</h2>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "Departments", icon: Users },
-                  { label: "Schedules", icon: CalendarDays },
-                  { label: "Invoices", icon: CreditCard },
-                  { label: "Settings", icon: Activity },
+                  { label: "Doctors Roster", href: "/hospital/dashboard/doctors", icon: Users },
+                  { label: "Manage Beds", href: "/hospital/dashboard/beds", icon: BedDouble },
+                  { label: "Bookings", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },
+                  { label: "Appointments", href: "/hospital/dashboard/appointments", icon: CalendarDays },
+                  { label: "Billing & Finances", href: "/hospital/dashboard/billing", icon: CreditCard },
+                  { label: "Hospital Settings", href: "/hospital/dashboard/settings", icon: Activity },
                 ].map((item, idx) => {
                   const Icon = item.icon;
                   return (
-                    <button key={idx} className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all group">
-                      <Icon className="text-slate-500 group-hover:text-emerald-600 transition-colors" size={24} />
-                      <span className="text-xs font-medium text-slate-600 group-hover:text-emerald-700">{item.label}</span>
-                    </button>
+                    <Link
+                      key={idx}
+                      href={item.href}
+                      className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all group"
+                    >
+                      <Icon className="text-slate-500 group-hover:text-emerald-600 transition-colors" size={22} />
+                      <span className="text-xs font-semibold text-slate-600 group-hover:text-emerald-700 text-center">{item.label}</span>
+                    </Link>
                   );
                 })}
               </div>
