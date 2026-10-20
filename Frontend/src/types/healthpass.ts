@@ -48,6 +48,16 @@ export interface HealthPassCard {
   allergies: string[];
   chronic_conditions: ChronicCondition[];
   current_medications: Medication[];
+  vitals?: {
+    blood_pressure: string;
+    heart_rate: string;
+    spo2: string;
+    blood_glucose: string;
+    temperature: string;
+    bmi: string;
+    respiratory_rate?: string;
+  };
+  diagnostic_reports?: DiagnosticReport[];
 
   // Biometric
   face_verified: boolean;
@@ -73,6 +83,28 @@ export interface Medication {
   duration?: string;
   instructions?: string;
   prescribed_by?: string;
+}
+
+export interface DiagnosticParameter {
+  name: string;
+  value: string;
+  unit: string;
+  reference_range: string;
+  flag?: "NORMAL" | "HIGH" | "LOW" | "CRITICAL";
+}
+
+export interface DiagnosticReport {
+  id: string;
+  title: string;
+  category: "Pathology" | "Radiology" | "Cardiology" | "Biochemistry";
+  date: string;
+  hospital: string;
+  lab_ref: string;
+  status: "Normal" | "Elevated" | "Critical";
+  summary: string;
+  parameters?: DiagnosticParameter[];
+  doctor_notes?: string;
+  verified_by?: string;
 }
 
 export interface MedicalVisit {

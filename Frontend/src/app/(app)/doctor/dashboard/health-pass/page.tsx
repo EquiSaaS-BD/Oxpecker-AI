@@ -73,10 +73,10 @@ function DoctorHealthPassContent() {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Emergency HealthPass Portal
+              Emergency HealthPass Clinical Portal
             </h1>
             <p className="text-xs sm:text-sm font-medium text-slate-500">
-              রোগীর NID, ফোন নম্বর, জন্ম তারিখ বা কার্ড আইডি দিয়ে জরুরি ক্লিনিক্যাল হিস্ট্রি ও এলার্জি চেক করুন
+              National electronic patient identification, bio-metric emergency dossier, allergy contraindications & digital lab reports.
             </p>
           </div>
         </div>
@@ -84,8 +84,8 @@ function DoctorHealthPassContent() {
 
       <HealthPassSearchEngine
         portalRole="doctor"
-        title="Doctor Clinical Emergency Lookup"
-        subtitle="প্রেসক্রিপশন লেখার পূর্বে অথবা জরুরি বিভাগে রোগীর এনআইডি, ফোন বা জন্মতারিখ দিয়ে তাৎক্ষণিক কার্ড ডসিয়ার চেক করুন"
+        title="Doctor Clinical Emergency Lookup & Digital Health Dossier"
+        subtitle="Retrieve instant patient emergency records by NID, phone, name, or card ID before prescribing or admitting to trauma unit."
       />
     </div>
   );
