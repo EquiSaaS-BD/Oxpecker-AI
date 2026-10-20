@@ -569,145 +569,148 @@ export function HealthPassSearchEngine({
         </div>
 
         {/* Command Search Console with Custom Filter Dropdown */}
-        <div className="flex flex-col sm:flex-row items-stretch gap-2 bg-slate-50/80 p-2 rounded-2xl border border-slate-200/90 focus-within:border-sky-400 focus-within:bg-white focus-within:ring-3 focus-within:ring-sky-500/10 transition-all">
-          <div className="relative flex-1 flex items-center">
-            <Search size={18} className="absolute left-3.5 text-slate-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={lang === "en"
-                ? "Search by Patient Name, NID, Phone, Card ID, or Blood Group..."
-                : "রোগীর নাম, NID, ফোন নম্বর, কার্ড নম্বর বা রক্তের গ্রুপ দিয়ে খুঁজুন..."
-              }
-              className="w-full h-11 pl-10 pr-9 bg-transparent text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 font-medium focus:outline-none"
-            />
-            {isSearching ? (
-              <div className="absolute right-3">
-                <RefreshCw size={16} className="text-sky-600 animate-spin" />
-              </div>
-            ) : query ? (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="absolute right-3 text-slate-400 hover:text-slate-600 cursor-pointer p-1"
-              >
-                <X size={15} />
-              </button>
-            ) : null}
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Custom Production-Grade Filter Dropdown Popover */}
-            <div ref={filterRef} className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="h-11 px-3.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition-all cursor-pointer flex items-center gap-2"
-                title="Select search criterion"
-              >
-                {(() => {
-                  const Icon = currentFilterOption.icon;
-                  return <Icon size={14} className="text-sky-600 shrink-0" />;
-                })()}
-                <span>{lang === "en" ? currentFilterOption.labelEn : currentFilterOption.labelBn}</span>
-                <ChevronDown
-                  size={14}
-                  className={`text-slate-400 transition-transform duration-200 ${isFilterOpen ? "rotate-180 text-sky-600" : ""}`}
-                />
-              </button>
-
-              <AnimatePresence>
-                {isFilterOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-72 sm:w-80 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-2 z-50 space-y-1"
-                  >
-                    <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        {lang === "en" ? "Filter By Parameter" : "সার্চ ফিল্টার নির্বাচন"}
-                      </span>
-                      <span className="text-[10px] text-sky-600 font-bold">
-                        {filterOptions.length} {lang === "en" ? "Criteria" : "পদ্ধতি"}
-                      </span>
-                    </div>
-
-                    <div className="max-h-64 overflow-y-auto space-y-1 candy-scrollbar p-0.5">
-                      {filterOptions.map((opt) => {
-                        const IconComp = opt.icon;
-                        const isSelected = filterType === opt.id;
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => {
-                              setFilterType(opt.id);
-                              setIsFilterOpen(false);
-                            }}
-                            className={`w-full text-left p-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2.5 ${
-                              isSelected
-                                ? "bg-sky-50 text-sky-900 font-bold border border-sky-200/80"
-                                : "hover:bg-slate-50 text-slate-700"
-                            }`}
-                          >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                              isSelected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-600"
-                            }`}>
-                              <IconComp size={15} />
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold truncate">
-                                  {lang === "en" ? opt.labelEn : opt.labelBn}
-                                </span>
-                                {isSelected && <Check size={14} className="text-sky-600 shrink-0" />}
-                              </div>
-                              <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                                {lang === "en" ? opt.descEn : opt.descBn}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+        <div className="bg-slate-50/80 p-2 sm:p-2.5 rounded-2xl border border-slate-200/90 focus-within:border-sky-400 focus-within:bg-white focus-within:ring-3 focus-within:ring-sky-500/10 transition-all flex flex-col gap-2">
+          {/* Main Search Input & Actions Row */}
+          <div className="flex flex-col sm:flex-row items-stretch gap-2">
+            <div className="relative flex-1 min-w-0 flex items-center">
+              <Search size={18} className="absolute left-3.5 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={lang === "en"
+                  ? "Search by Patient Name, NID, Phone, Card ID, or Blood Group..."
+                  : "রোগীর নাম, NID, ফোন নম্বর, কার্ড নম্বর বা রক্তের গ্রুপ দিয়ে খুঁজুন..."
+                }
+                className="w-full h-11 pl-10 pr-9 bg-transparent text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 font-medium focus:outline-none"
+              />
+              {isSearching ? (
+                <div className="absolute right-3">
+                  <RefreshCw size={16} className="text-sky-600 animate-spin" />
+                </div>
+              ) : query ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="absolute right-3 text-slate-400 hover:text-slate-600 cursor-pointer p-1"
+                >
+                  <X size={15} />
+                </button>
+              ) : null}
             </div>
 
-            {/* Visual AI Biometric Face Recognition Button */}
-            <button
-              type="button"
-              onClick={handleOpenVisualModal}
-              title={lang === "en" ? "Visual AI Biometric Search (Photo/Webcam)" : "ভিজ্যুয়াল এআই বায়োমেট্রিক ফেস সার্চ (ছবি/ক্যামেরা)"}
-              className="h-11 px-3.5 sm:px-4 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md shrink-0 cursor-pointer flex items-center gap-1.5 group relative"
-            >
-              <ScanFace size={16} className="text-sky-200 group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline">{lang === "en" ? "Visual Search" : "ছবি সার্চ"}</span>
-              <span className="flex sm:hidden"><Camera size={15} /></span>
-              <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-900 font-black text-[9px] px-1 rounded-full uppercase tracking-wider shadow-xs">
-                AI
-              </span>
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Custom Production-Grade Filter Dropdown Popover */}
+              <div ref={filterRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="h-11 px-3.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                  title="Select search criterion"
+                >
+                  {(() => {
+                    const Icon = currentFilterOption.icon;
+                    return <Icon size={14} className="text-sky-600 shrink-0" />;
+                  })()}
+                  <span>{lang === "en" ? currentFilterOption.labelEn : currentFilterOption.labelBn}</span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-slate-400 transition-transform duration-200 ${isFilterOpen ? "rotate-180 text-sky-600" : ""}`}
+                  />
+                </button>
 
-            <button
-              type="button"
-              className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
-            >
-              <Search size={15} />
-              <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
-            </button>
+                <AnimatePresence>
+                  {isFilterOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-72 sm:w-80 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-2 z-50 space-y-1"
+                    >
+                      <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          {lang === "en" ? "Filter By Parameter" : "সার্চ ফিল্টার নির্বাচন"}
+                        </span>
+                        <span className="text-[10px] text-sky-600 font-bold">
+                          {filterOptions.length} {lang === "en" ? "Criteria" : "পদ্ধতি"}
+                        </span>
+                      </div>
+
+                      <div className="max-h-64 overflow-y-auto space-y-1 candy-scrollbar p-0.5">
+                        {filterOptions.map((opt) => {
+                          const IconComp = opt.icon;
+                          const isSelected = filterType === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                setFilterType(opt.id);
+                                setIsFilterOpen(false);
+                              }}
+                              className={`w-full text-left p-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2.5 ${
+                                isSelected
+                                  ? "bg-sky-50 text-sky-900 font-bold border border-sky-200/80"
+                                  : "hover:bg-slate-50 text-slate-700"
+                              }`}
+                            >
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                isSelected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-600"
+                              }`}>
+                                <IconComp size={15} />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold truncate">
+                                    {lang === "en" ? opt.labelEn : opt.labelBn}
+                                  </span>
+                                  {isSelected && <Check size={14} className="text-sky-600 shrink-0" />}
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                  {lang === "en" ? opt.descEn : opt.descBn}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Visual AI Biometric Face Recognition Button */}
+              <button
+                type="button"
+                onClick={handleOpenVisualModal}
+                title={lang === "en" ? "Visual AI Biometric Search (Photo/Webcam)" : "ভিজ্যুয়াল এআই বায়োমেট্রিক ফেস সার্চ (ছবি/ক্যামেরা)"}
+                className="h-11 px-3.5 sm:px-4 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md shrink-0 cursor-pointer flex items-center gap-1.5 group relative"
+              >
+                <ScanFace size={16} className="text-sky-200 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">{lang === "en" ? "Visual Search" : "ছবি সার্চ"}</span>
+                <span className="flex sm:hidden"><Camera size={15} /></span>
+                <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-900 font-black text-[9px] px-1 rounded-full uppercase tracking-wider shadow-xs">
+                  AI
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+              >
+                <Search size={15} />
+                <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
+              </button>
+            </div>
           </div>
 
-          {/* Google-Style Telemetry & Relevance Bar */}
+          {/* Google-Style Telemetry & Relevance Bar (Clean full-width bottom row) */}
           {query.trim().length > 0 && (
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="pt-2 border-t border-slate-200/70 flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-slate-700">
+                <span className="font-bold text-sky-900">
                   {lang === "en"
                     ? `Found ${safeResults.length} matching patients for "${query}"`
                     : `"${query}" এর জন্য ${safeResults.length} জন রোগী পাওয়া গেছে`}
@@ -719,7 +722,7 @@ export function HealthPassSearchEngine({
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="text-[11px] font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-bold text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200/80 transition-colors"
               >
                 <RotateCcw size={11} />
                 <span>{lang === "en" ? "Clear Search" : "ক্লিয়ার করুন"}</span>
@@ -805,8 +808,17 @@ export function HealthPassSearchEngine({
                 </button>
               </div>
             ) : (
-              paginatedResults.map((patient) => {
-                const isSelected = currentCard?.id === patient.id;
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`page-${currentPage}-${filterType}`}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-2.5"
+                >
+                  {paginatedResults.map((patient) => {
+                    const isSelected = currentCard?.id === patient.id;
                 const age = calculateAge(patient.date_of_birth);
                 const patientAllergies = Array.isArray(patient?.allergies) ? patient.allergies : [];
                 return (
@@ -922,9 +934,11 @@ export function HealthPassSearchEngine({
                     </div>
                   </motion.div>
                 );
-              })
-            )}
-          </div>
+              })}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
 
           {/* Sticky 10-per-Page Pagination Console at bottom */}
           {safeResults.length > PAGE_SIZE && (
@@ -986,89 +1000,102 @@ export function HealthPassSearchEngine({
             exit={{ opacity: 0, x: 20 }}
             className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs space-y-6"
           >
-            {/* Dossier Header: Controls, Dual View Switcher, 1-Click Download & 1-Click Print */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
-                  <CreditCard size={20} />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight whitespace-nowrap">
-                      {lang === "en" ? "Clinical Emergency Dossier" : "জরুরি ক্লিনিক্যাল ডসিয়ার"}
-                    </h3>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                      {lang === "en" ? "ACTIVE EHR" : "সক্রিয় রেকর্ড"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 font-mono truncate mt-0.5">
-                    ID: {currentCard.smart_card_uid || currentCard.card_number} • NID: {currentCard.nid_number || "Unregistered"}
-                  </p>
-                </div>
-              </div>
-
-              {/* View Mode Toggle, 1-Click Download & Print Buttons */}
-              <div className="no-print flex flex-wrap items-center gap-2 shrink-0">
-                {/* Segmented View Mode Switcher */}
-                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("paper")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === "paper"
-                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                    title="View Comprehensive Hospital Paper EHR Sheet"
-                  >
-                    <FileText size={13} />
-                    <span>{lang === "en" ? "Dossier" : "ডসিয়ার"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("card")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === "card"
-                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                    title="View Compact Interactive Smart ID Card"
-                  >
-                    <CreditCard size={13} />
-                    <span>{lang === "en" ? "Card" : "কার্ড"}</span>
-                  </button>
-                </div>
-
-                {/* Global Collapse All / Expand All Toggle */}
+            {/* Executive Dual Viewport Mode Selector (Dossier vs Card) */}
+            <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto flex-1 max-w-md">
+                {/* Option 1: Clinical Dossier Paper */}
                 <button
                   type="button"
-                  onClick={() => {
-                    const allCollapsed = Object.values(collapsedSections).every(Boolean);
-                    toggleAllSections(!allCollapsed);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90"
-                  title="Collapse or expand all dossier sections"
+                  onClick={() => setViewMode("paper")}
+                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                    viewMode === "paper"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
                 >
-                  {Object.values(collapsedSections).every(Boolean) ? (
-                    <>
-                      <Plus size={13} className="text-slate-600" />
-                      <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Minus size={13} className="text-slate-600" />
-                      <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
-                    </>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    viewMode === "paper" ? "bg-sky-50 text-sky-600" : "bg-transparent text-slate-400"
+                  }`}>
+                    <FileText size={15} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block leading-tight font-black">
+                      {lang === "en" ? "Clinical Paper Dossier" : "ক্লিনিক্যাল ডসিয়ার পেপার"}
+                    </span>
+                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
+                      {lang === "en" ? "Standard Hospital EHR • 6 Sections" : "হাসপাতাল ভর্তি ও সামারি শিট"}
+                    </span>
+                  </div>
+                  {viewMode === "paper" && (
+                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[9px] font-bold">
+                      Active
+                    </span>
                   )}
                 </button>
 
-                {/* 1-Click Download Dossier Document (Only Patient Info Document) */}
+                {/* Option 2: Smart Emergency ID Card */}
+                <button
+                  type="button"
+                  onClick={() => setViewMode("card")}
+                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                    viewMode === "card"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    viewMode === "card" ? "bg-indigo-50 text-indigo-600" : "bg-transparent text-slate-400"
+                  }`}>
+                    <CreditCard size={15} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block leading-tight font-black">
+                      {lang === "en" ? "Smart Emergency Card" : "স্মার্ট হেলথ কার্ড (3D Pass)"}
+                    </span>
+                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
+                      {lang === "en" ? "Pocket Pass • Tap to Flip" : "পকেট কার্ড • সামনে ও পেছনে"}
+                    </span>
+                  </div>
+                  {viewMode === "card" && (
+                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[9px] font-bold">
+                      Active
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Utility Action Buttons: Collapse All + Download + Print */}
+              <div className="no-print flex items-center justify-end gap-1.5 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+                {viewMode === "paper" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const allCollapsed = Object.values(collapsedSections).every(Boolean);
+                      toggleAllSections(!allCollapsed);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                    title="Collapse or expand all dossier sections"
+                  >
+                    {Object.values(collapsedSections).every(Boolean) ? (
+                      <>
+                        <Plus size={13} className="text-slate-600" />
+                        <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Minus size={13} className="text-slate-600" />
+                        <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={handleDownloadDossier}
                   disabled={isDownloadingDossier}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90"
-                  title="Download clean patient dossier document"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                  title="Download patient document"
                 >
                   <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
                   <span className="hidden sm:inline">
@@ -1076,7 +1103,6 @@ export function HealthPassSearchEngine({
                   </span>
                 </button>
 
-                {/* 1-Click Print Dossier Button */}
                 <button
                   type="button"
                   onClick={handlePrintDossier}
@@ -1087,6 +1113,22 @@ export function HealthPassSearchEngine({
                   <span className="hidden sm:inline">{lang === "en" ? "Print" : "প্রিন্ট"}</span>
                 </button>
               </div>
+            </div>
+
+            {/* Dossier Patient Identity Banner */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                  {lang === "en" ? "Emergency Clinical Records" : "জরুরি ক্লিনিক্যাল রেকর্ডস"}
+                </h3>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {lang === "en" ? "VERIFIED REGISTRY" : "ভেরিফায়েড রেকর্ড"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-mono">
+                UID: <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span> • NID: {currentCard.nid_number || "Unregistered"}
+              </p>
             </div>
 
             {/* Soft & Gentle Shimmer Skeleton Loader for Clinical Dossier */}
@@ -1188,67 +1230,77 @@ export function HealthPassSearchEngine({
               </div>
             )}
 
-            {/* VIEW MODE 1: COMPACT SMART ID CARD (Interactive 3D Front & Back Flip) */}
-            {viewMode === "card" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-1 text-xs">
-                  <span className="text-slate-500 font-medium">
-                    {lang === "en" ? "Click card or button below to flip:" : "কার্ডে বা নিচের বাটনে ক্লিক করে উল্টান:"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsDossierFlipped(!isDossierFlipped)}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    <FlipHorizontal size={14} />
-                    <span>{isDossierFlipped ? (lang === "en" ? "Show Front" : "সামনে দেখুন") : (lang === "en" ? "Show Back" : "পেছন দেখুন")}</span>
-                  </button>
-                </div>
+            {/* VIEW MODES WITH SMOOTH 60FPS MORPHING TRANSITION */}
+            <AnimatePresence mode="wait">
+              {viewMode === "card" ? (
+                <motion.div
+                  key={`card-mode-${currentCard.id}`}
+                  initial={{ opacity: 0, scale: 0.98, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -8 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center justify-between px-1 text-xs">
+                    <span className="text-slate-500 font-medium">
+                      {lang === "en" ? "Click card or button below to flip:" : "কার্ডে বা নিচের বাটনে ক্লিক করে উল্টান:"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsDossierFlipped(!isDossierFlipped)}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      <FlipHorizontal size={14} />
+                      <span>{isDossierFlipped ? (lang === "en" ? "Show Front" : "সামনে দেখুন") : (lang === "en" ? "Show Back" : "পেছন দেখুন")}</span>
+                    </button>
+                  </div>
 
-                <div className="flex justify-center my-2">
-                  <AnimatePresence mode="wait">
-                    {!isDossierFlipped ? (
-                      <motion.div
-                        key="dossier-front"
-                        initial={{ rotateY: -90, opacity: 0 }}
-                        animate={{ rotateY: 0, opacity: 1 }}
-                        exit={{ rotateY: 90, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full max-w-[500px]"
-                      >
-                        <HealthPassCard
-                          card={currentCard}
-                          profileImage={currentCard.patient_image}
-                          onFlip={() => setIsDossierFlipped(true)}
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="dossier-back"
-                        initial={{ rotateY: 90, opacity: 0 }}
-                        animate={{ rotateY: 0, opacity: 1 }}
-                        exit={{ rotateY: -90, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full max-w-[500px]"
-                      >
-                        <HealthPassBack
-                          card={currentCard}
-                          onFlip={() => setIsDossierFlipped(false)}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            )}
-
-            {/* VIEW MODE 2: COMPREHENSIVE CLINICAL PAPER DOSSIER (Organized Hospital EHR View) */}
-            {viewMode === "paper" && (
-              <div
-                ref={dossierPrintRef}
-                id="printable-patient-dossier"
-                className="space-y-6 bg-white"
-              >
+                  <div className="flex justify-center my-2">
+                    <AnimatePresence mode="wait">
+                      {!isDossierFlipped ? (
+                        <motion.div
+                          key="dossier-front"
+                          initial={{ rotateY: -90, opacity: 0 }}
+                          animate={{ rotateY: 0, opacity: 1 }}
+                          exit={{ rotateY: 90, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="w-full max-w-[500px]"
+                        >
+                          <HealthPassCard
+                            card={currentCard}
+                            profileImage={currentCard.patient_image}
+                            onFlip={() => setIsDossierFlipped(true)}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="dossier-back"
+                          initial={{ rotateY: 90, opacity: 0 }}
+                          animate={{ rotateY: 0, opacity: 1 }}
+                          exit={{ rotateY: -90, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="w-full max-w-[500px]"
+                        >
+                          <HealthPassBack
+                            card={currentCard}
+                            onFlip={() => setIsDossierFlipped(false)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`paper-mode-${currentCard.id}`}
+                  initial={{ opacity: 0, scale: 0.98, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -8 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  ref={dossierPrintRef}
+                  id="printable-patient-dossier"
+                  className="space-y-6 bg-white"
+                >
                 {/* 1. Patient Demographics & Profile Summary */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex items-start sm:items-center gap-4 min-w-0">
@@ -1774,12 +1826,13 @@ export function HealthPassSearchEngine({
                     <span>{lang === "en" ? "Print Full Clinical Dossier & Summary Sheet" : "সম্পূর্ণ ক্লিনিক্যাল ডসিয়ার ও সামারি প্রিন্ট করুন"}</span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
-          </>
-        )}
-      </motion.div>
-    )}
+          </AnimatePresence>
+        </>
+      )}
+    </motion.div>
+  )}
       </div>
 
       {/* MODAL 1: OFFICIAL DIAGNOSTIC LAB REPORT PAPER VIEWER & DOWNLOADER */}
