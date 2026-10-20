@@ -67,13 +67,14 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
       <div className="flex items-center gap-2">
         {/* Quick Actions */}
         <div className="hidden md:flex items-center gap-2 mr-2 border-r border-slate-200 pr-4">
-          <button
-            onClick={() => setShowEmergencyModal(true)}
+          <Link
+            href="/hospital/dashboard/health-pass"
             className="flex items-center gap-2 text-[13px] font-bold text-white bg-rose-600 hover:bg-rose-700 px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+            title="Hospital Emergency HealthPass & Triage Desk"
           >
             <ShieldAlert size={16} />
-            Emergency Lookup
-          </button>
+            Emergency HealthPass
+          </Link>
           <button
             onClick={() => toast.info("Add Doctor Feature Coming Soon")}
             className="flex items-center gap-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
