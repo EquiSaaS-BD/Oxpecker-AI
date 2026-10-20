@@ -2,6 +2,8 @@ import type {
   HealthPassCard,
   MedicalVisit,
   HealthPassScanData,
+  ScoredHealthPassCard,
+  SearchMatchReason,
 } from "@/types/healthpass";
 
 // ====== Bangladesh Geo Districts (Zilas) & Post Codes ======
@@ -872,18 +874,65 @@ export async function getHealthCardByNumber(cardNumber: string): Promise<HealthP
   };
 }
 
-/**
- * Universal Multi-Criteria Search Engine for Doctors, Hospitals, and Admins
- * Searches by NID, DOB, Phone, Card Number, or Patient Name
- */
-export function searchHealthCards(
-  query: string, 
-  searchType?: "all" | "nid" | "dob" | "phone" | "card" | "card_no" | "name"
-): HealthPassCard[] {
-  try {
-    const q = (query || "").trim().toLowerCase().replace(/[- ]/g, "");
+// ====== Google-Style Bengali-English Transliteration & Synonym Lexicon ======
+export const BENGALI_ENGLISH_SYNONYMS: Record<string, string[]> = {
+  // Common patient names
+  "রহিম": ["rahim", "rohim"],
+  "ফাতেমা": ["fatema", "fatima"],
+  "করিম": ["karim", "korim", "abdul karim"],
+  "কামাল": ["kamal", "kamal hossain"],
+  "জসিম": ["jasim", "jashim", "jasim uddin"],
+  "ফারহানা": ["farhana", "farhana chowdhury"],
+  "নুসরাত": ["nusrat", "nousrat"],
+  "চৌধুরী": ["chowdhury", "choudhury"],
+  "উদ্দিন": ["uddin", "uddin"],
+  "আহমেদ": ["ahmed", "ahmad"],
+  "হোসেন": ["hossain", "hussain", "hasan"],
+  "খান": ["khan"],
+  "বেগম": ["begum"],
 
-    // Load any dynamically created cards from localStorage if in browser
+  // Critical Medical Implants & Chronic Conditions
+  "পেসমেকার": ["pacemaker", "cardiac pacemaker"],
+  "ডায়াবেটিস": ["diabetes", "diabetic", "type-2", "type-1"],
+  "প্রেসার": ["pressure", "hypertension", "high bp", "bp"],
+  "উচ্চ রক্তচাপ": ["hypertension", "high blood pressure"],
+  "অ্যাজমা": ["asthma", "respiratory"],
+  "হাঁপানি": ["asthma"],
+  "গ্যাস্ট্রিক": ["gastritis", "mild gastritis", "gerd"],
+  "হার্ট": ["heart", "cardio", "pacemaker", "cardiac"],
+  "অঙ্গদাতা": ["organ donor", "donor"],
+
+  // Severe Drug Allergies (Anaphylaxis Risk)
+  "এলার্জি": ["allergy", "allergies", "anaphylaxis"],
+  "পেনিসিলিন": ["penicillin"],
+  "সালফা": ["sulfa", "sulfonamides"],
+  "এসপিরিন": ["aspirin", "nsaid"],
+  "বাদাম": ["peanuts", "peanut"],
+  "চিংড়ি": ["shrimp", "shellfish"],
+
+  // Geographic Locations
+  "ঢাকা": ["dhaka"],
+  "ধানমন্ডি": ["dhanmondi"],
+  "সিলেট": ["sylhet"],
+  "চট্টগ্রাম": ["chattogram", "chittagong"],
+  "রাজশাহী": ["rajshahi"],
+  "মিরপুর": ["mirpur"],
+  "গুলশান": ["gulshan"],
+  "উত্তরা": ["uttara"],
+};
+
+/**
+ * Intelligent Google-Style Multi-Entity Elastic Search Engine
+ * Evaluates records across 12 clinical and personal dimensions with relevance scoring.
+ */
+export function searchHealthCardsGoogleStyle(
+  query: string,
+  searchType?: string
+): ScoredHealthPassCard[] {
+  try {
+    const rawQ = (query || "").trim().toLowerCase();
+    
+    // Load dynamically stored cards from localStorage
     let allCards = INITIAL_HEALTH_CARDS;
     if (typeof window !== "undefined") {
       try {
@@ -891,7 +940,10 @@ export function searchHealthCards(
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            allCards = [...parsed, ...INITIAL_HEALTH_CARDS.filter(c => !parsed.some((p: any) => p && p.id === c.id))];
+            allCards = [
+              ...parsed,
+              ...INITIAL_HEALTH_CARDS.filter((c) => !parsed.some((p: any) => p && p.id === c.id)),
+            ];
           }
         }
       } catch {}
@@ -901,60 +953,245 @@ export function searchHealthCards(
       allCards = INITIAL_HEALTH_CARDS;
     }
 
-    if (!q) {
-      return allCards;
+    // If query is empty, return initial order with baseline score
+    if (!rawQ) {
+      return allCards.map((card, idx) => ({
+        card,
+        score: 100 - idx,
+        matchReasons: [],
+      }));
     }
 
-    const filtered = allCards.filter((card) => {
-      if (!card) return false;
+    // Tokenize query into search terms
+    const tokens = rawQ
+      .split(/[\s,+/]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    // Expand tokens with transliterations & synonyms
+    const expandedTokens = new Set<string>();
+    for (const t of tokens) {
+      expandedTokens.add(t);
+      const cleanT = t.replace(/[- ]/g, "");
+      if (cleanT) expandedTokens.add(cleanT);
+
+      // Check Bengali -> English synonyms
+      if (BENGALI_ENGLISH_SYNONYMS[t]) {
+        for (const syn of BENGALI_ENGLISH_SYNONYMS[t]) {
+          expandedTokens.add(syn);
+        }
+      }
+
+      // Check reverse English -> Bengali synonyms
+      for (const [bnKey, enList] of Object.entries(BENGALI_ENGLISH_SYNONYMS)) {
+        if (enList.some((en) => en.includes(t) || t.includes(en))) {
+          expandedTokens.add(bnKey);
+        }
+      }
+    }
+
+    const tokenList = Array.from(expandedTokens);
+
+    const scoredResults: ScoredHealthPassCard[] = [];
+
+    for (const card of allCards) {
+      if (!card) continue;
+
+      let score = 0;
+      const reasons: SearchMatchReason[] = [];
+
       const cleanNid = (card.nid_number || "").replace(/[- ]/g, "").toLowerCase();
       const cleanBirthCert = (card.birth_cert_number || "").replace(/[- ]/g, "").toLowerCase();
-      const cleanPhone = (card.personal_phone || card.emergency_contact_phone || "").replace(/[- ]/g, "").toLowerCase();
       const cleanCardNo = (card.card_number || "").replace(/[- ]/g, "").toLowerCase();
-      const cleanDob = (card.date_of_birth || "").toLowerCase();
-      const cleanName = (card.patient_name || "").toLowerCase();
-      const cleanEngName = (card.english_name || "").toLowerCase();
+      const cleanUid = (card.smart_card_uid || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanPersonalPhone = (card.personal_phone || "").replace(/[- ]/g, "").toLowerCase();
+      const cleanEmergencyPhone = (card.emergency_contact_phone || "").replace(/[- ]/g, "").toLowerCase();
 
-      const cleanBlood = (card.blood_group || "").toLowerCase();
+      const nameBn = (card.patient_name || "").toLowerCase();
+      const nameEn = (card.english_name || "").toLowerCase();
+      const blood = (card.blood_group || "").toLowerCase();
+      const zila = (card.zila || "").toLowerCase();
+      const upazila = (card.upazila || "").toLowerCase();
+      const address = (card.address || "").toLowerCase();
+      const guardianName = (card.emergency_contact_name || "").toLowerCase();
+      const guardianRel = (card.emergency_contact_relation || "").toLowerCase();
 
-      if (searchType === "nid") {
-        return cleanNid.includes(q) || cleanBirthCert.includes(q);
-      }
-      if (searchType === "phone") {
-        return cleanPhone.includes(q);
-      }
-      if (searchType === "dob") {
-        return cleanDob.includes(q);
-      }
-      if (searchType === "card" || searchType === "card_no") {
-        return cleanCardNo.includes(q);
-      }
-      if (searchType === "name") {
-        return cleanName.includes(q) || cleanEngName.includes(q);
-      }
-      if (searchType === "blood_group") {
-        return cleanBlood === q || cleanBlood.includes(q);
+      const cleanRawQ = rawQ.replace(/[- ]/g, "");
+
+      // 1. Exact Unique Identifier Matches (Top Priority: 1000 pts)
+      if (cleanNid && (cleanNid === cleanRawQ || cleanNid.includes(cleanRawQ))) {
+        score += 1000;
+        reasons.push({ field: "nid", label: `NID: ${card.nid_number}`, score: 1000 });
+      } else if (cleanCardNo && (cleanCardNo === cleanRawQ || cleanCardNo.includes(cleanRawQ))) {
+        score += 900;
+        reasons.push({ field: "card_no", label: `Card: ${card.card_number}`, score: 900 });
+      } else if (cleanUid && (cleanUid === cleanRawQ || cleanUid.includes(cleanRawQ))) {
+        score += 900;
+        reasons.push({ field: "card_no", label: `EMV UID: ${card.smart_card_uid}`, score: 900 });
       }
 
-      // Default "all" search:
-      return (
-        cleanNid.includes(q) ||
-        cleanBirthCert.includes(q) ||
-        cleanPhone.includes(q) ||
-        cleanCardNo.includes(q) ||
-        cleanDob.includes(q) ||
-        cleanName.includes(q) ||
-        cleanEngName.includes(q) ||
-        cleanBlood === q ||
-        cleanBlood.includes(q)
-      );
-    });
+      // 2. Exact Phone / Parent Number Match (800 pts)
+      if (cleanPersonalPhone && cleanPersonalPhone.includes(cleanRawQ)) {
+        score += 800;
+        reasons.push({ field: "phone", label: `Phone: ${card.personal_phone}`, score: 800 });
+      }
+      if (cleanEmergencyPhone && cleanEmergencyPhone.includes(cleanRawQ)) {
+        score += 850;
+        reasons.push({
+          field: "guardian",
+          label: `Parent: ${card.emergency_contact_phone} (${card.emergency_contact_name})`,
+          score: 850,
+        });
+      }
 
-    return Array.isArray(filtered) ? filtered : allCards;
+      // 3. Name Match (Exact: 500 pts, Substring/Token: 250 pts)
+      if (nameEn === rawQ || nameBn === rawQ) {
+        score += 500;
+        reasons.push({ field: "name", label: `Exact Name Match: ${card.english_name || card.patient_name}`, score: 500 });
+      } else if (nameEn.includes(rawQ) || nameBn.includes(rawQ)) {
+        score += 260;
+        reasons.push({ field: "name", label: `Name: ${card.english_name || card.patient_name}`, score: 260 });
+      } else {
+        // Multi-token name check
+        for (const t of tokenList) {
+          if (t.length >= 2 && (nameEn.includes(t) || nameBn.includes(t))) {
+            score += 180;
+            reasons.push({ field: "name", label: `Name match: ${t}`, score: 180 });
+            break;
+          }
+        }
+      }
+
+      // 4. Critical Medical Device: Pacemaker / Organ Donor (220 pts)
+      if (card.has_pacemaker) {
+        const pacemakerTerms = ["pacemaker", "cardiac", "heart", "মেশিন", "পেসমেকার"];
+        if (pacemakerTerms.some((term) => rawQ.includes(term) || tokenList.includes(term))) {
+          score += 280;
+          reasons.push({ field: "condition", label: "Pacemaker Active (No MRI)", score: 280 });
+        }
+      }
+      if (card.organ_donor) {
+        if (rawQ.includes("donor") || rawQ.includes("organ") || rawQ.includes("অঙ্গ")) {
+          score += 200;
+          reasons.push({ field: "condition", label: "Registered Organ Donor", score: 200 });
+        }
+      }
+
+      // 5. Severe Allergies Match (240 pts)
+      if (Array.isArray(card.allergies)) {
+        for (const allergy of card.allergies) {
+          const lowerAllergy = allergy.toLowerCase();
+          if (
+            rawQ.includes(lowerAllergy) ||
+            tokenList.some((t) => t.length >= 3 && lowerAllergy.includes(t)) ||
+            (lowerAllergy.includes("penicillin") && (rawQ.includes("penicillin") || rawQ.includes("পেনিসিলিন")))
+          ) {
+            score += 240;
+            reasons.push({ field: "allergy", label: `Severe Allergy: ${allergy}`, score: 240 });
+            break;
+          }
+        }
+      }
+
+      // 6. Blood Group Match (Exact match: 180 pts)
+      const cleanBloodQ = rawQ.replace(/\s+/g, "").toLowerCase();
+      if (blood && (blood === cleanBloodQ || tokenList.includes(blood))) {
+        score += 180;
+        const donorStatus = blood === "o-" ? "Universal Donor" : blood === "ab+" ? "Universal Recipient" : "Rh Positive";
+        reasons.push({ field: "blood_group", label: `Blood Group ${card.blood_group} (${donorStatus})`, score: 180 });
+      }
+
+      // 7. Chronic Conditions & Diseases (150 pts)
+      if (Array.isArray(card.chronic_conditions)) {
+        for (const cond of card.chronic_conditions) {
+          const condLower = cond.name.toLowerCase();
+          if (tokenList.some((t) => t.length >= 3 && (condLower.includes(t) || t.includes(condLower)))) {
+            score += 150;
+            reasons.push({ field: "condition", label: `Condition: ${cond.name}`, score: 150 });
+            break;
+          }
+        }
+      }
+
+      // 8. Ongoing Medications (130 pts)
+      if (Array.isArray(card.current_medications)) {
+        for (const med of card.current_medications) {
+          const medLower = med.name.toLowerCase();
+          if (tokenList.some((t) => t.length >= 3 && medLower.includes(t))) {
+            score += 130;
+            reasons.push({ field: "medication", label: `Medication: ${med.name} (${med.dosage})`, score: 130 });
+            break;
+          }
+        }
+      }
+
+      // 9. Location & Address Match (100 pts)
+      for (const t of tokenList) {
+        if (t.length >= 3 && (zila.includes(t) || upazila.includes(t) || address.includes(t))) {
+          score += 100;
+          reasons.push({ field: "location", label: `Location: ${card.zila || card.address}`, score: 100 });
+          break;
+        }
+      }
+
+      // 10. Guardian Contact Name & Relation (95 pts)
+      for (const t of tokenList) {
+        if (t.length >= 3 && (guardianName.includes(t) || guardianRel.includes(t))) {
+          score += 95;
+          reasons.push({
+            field: "guardian",
+            label: `Parent: ${card.emergency_contact_name} (${card.emergency_contact_relation})`,
+            score: 95,
+          });
+          break;
+        }
+      }
+
+      // Specific filter type constraint check if user chose a specific filter
+      if (searchType && searchType !== "all") {
+        if (searchType === "nid" && !cleanNid.includes(cleanRawQ)) score = 0;
+        if (searchType === "phone" && !cleanPersonalPhone.includes(cleanRawQ) && !cleanEmergencyPhone.includes(cleanRawQ)) score = 0;
+        if (searchType === "name" && !nameEn.includes(rawQ) && !nameBn.includes(rawQ)) score = 0;
+        if (searchType === "blood_group" && blood !== cleanBloodQ) score = 0;
+        if ((searchType === "card" || searchType === "card_no") && !cleanCardNo.includes(cleanRawQ) && !cleanUid.includes(cleanRawQ)) score = 0;
+        if (searchType === "dob" && !(card.date_of_birth || "").includes(rawQ)) score = 0;
+      }
+
+      if (score > 0) {
+        scoredResults.push({
+          card,
+          score,
+          matchReasons: reasons,
+        });
+      }
+    }
+
+    // Sort descending by score (Highest relevance at the top)
+    scoredResults.sort((a, b) => b.score - a.score);
+
+    // If query was non-empty but produced 0 matches, return empty array so UI can show no results
+    return scoredResults;
   } catch (err) {
-    console.warn("searchHealthCards error:", err);
-    return INITIAL_HEALTH_CARDS;
+    console.warn("searchHealthCardsGoogleStyle error:", err);
+    return INITIAL_HEALTH_CARDS.map((card) => ({ card, score: 50, matchReasons: [] }));
   }
+}
+
+/**
+ * Standard search wrapper: returns HealthPassCard[] with attached matchReasons
+ */
+export function searchHealthCards(
+  query: string,
+  searchType?: string
+): (HealthPassCard & { _matchReasons?: SearchMatchReason[]; _searchScore?: number })[] {
+  const scored = searchHealthCardsGoogleStyle(query, searchType);
+  return scored.map((item) => {
+    return {
+      ...item.card,
+      _matchReasons: item.matchReasons,
+      _searchScore: item.score,
+    };
+  });
 }
 
 export async function searchHealthCardsAsync(

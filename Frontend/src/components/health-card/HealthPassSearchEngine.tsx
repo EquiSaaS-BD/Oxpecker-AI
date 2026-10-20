@@ -9,14 +9,15 @@ import {
   Printer, MessageCircle, AlertOctagon, HeartPulse, User,
   RotateCcw, FileText, Download, Eye, Globe, Building,
   Thermometer, Droplet, Clock, Check, Copy, QrCode, Layers,
-  ChevronDown
+  ChevronDown, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
-import type { HealthPassCard as HealthPassCardType, DiagnosticReport } from "@/types/healthpass";
-import { searchHealthCards, calculateAge, formatDate, INITIAL_HEALTH_CARDS } from "@/lib/healthpass";
+import type { HealthPassCard as HealthPassCardType, DiagnosticReport, VisualSearchResult, SearchMatchReason } from "@/types/healthpass";
+import { searchHealthCards, searchHealthCardsGoogleStyle, calculateAge, formatDate, INITIAL_HEALTH_CARDS } from "@/lib/healthpass";
+import { matchPatientPhoto } from "@/lib/biometrics";
 import HealthPassCard from "@/components/health-card/HealthPassCard";
 import { HealthPassBack } from "@/components/health-card/HealthPassBack";
 
@@ -70,6 +71,15 @@ export function HealthPassSearchEngine({
   // Printable dossier ref & downloading state
   const dossierPrintRef = useRef<HTMLDivElement>(null);
   const [isDownloadingDossier, setIsDownloadingDossier] = useState(false);
+
+  // Visual AI Biometric Face Recognition states
+  const [showVisualModal, setShowVisualModal] = useState(false);
+  const [visualTab, setVisualTab] = useState<"presets" | "upload" | "webcam">("presets");
+  const [visualProbeImage, setVisualProbeImage] = useState<string | null>(null);
+  const [visualCandidates, setVisualCandidates] = useState<VisualSearchResult[]>([]);
+  const [isAnalyzingBiometrics, setIsAnalyzingBiometrics] = useState(false);
+  const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
+  const webcamVideoRef = useRef<HTMLVideoElement>(null);
 
   // Click outside listener for custom filter dropdown
   useEffect(() => {
@@ -334,6 +344,113 @@ export function HealthPassSearchEngine({
     window.print();
   };
 
+  // 4. Visual AI Biometric Face Recognition Handlers
+  const handleOpenVisualModal = () => {
+    setShowVisualModal(true);
+    setVisualTab("presets");
+    setVisualProbeImage(null);
+    setVisualCandidates([]);
+  };
+
+  const handleCloseVisualModal = () => {
+    setShowVisualModal(false);
+    handleStopWebcam();
+  };
+
+  const handleStartWebcam = async () => {
+    try {
+      setVisualTab("webcam");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
+      });
+      setWebcamStream(stream);
+      if (webcamVideoRef.current) {
+        webcamVideoRef.current.srcObject = stream;
+        webcamVideoRef.current.play();
+      }
+    } catch (err) {
+      console.warn("Webcam access error:", err);
+      toast.error(
+        lang === "en"
+          ? "Camera access denied or unavailable. Please use photo upload or preset demo faces."
+          : "ক্যামেরা এক্সেস পাওয়া যায়নি। দয়া করে ছবি আপলোড বা ডেমো ফেস ব্যবহার করুন।"
+      );
+      setVisualTab("upload");
+    }
+  };
+
+  const handleStopWebcam = () => {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach((track) => track.stop());
+      setWebcamStream(null);
+    }
+  };
+
+  const handleCaptureWebcam = async () => {
+    if (!webcamVideoRef.current) return;
+    const video = webcamVideoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    setVisualProbeImage(dataUrl);
+    handleStopWebcam();
+    await runBiometricAnalysis(dataUrl);
+  };
+
+  const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setVisualProbeImage(dataUrl);
+      await runBiometricAnalysis(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSelectPreset = async (targetId: string, imageSrc: string) => {
+    setVisualProbeImage(imageSrc);
+    await runBiometricAnalysis(imageSrc, targetId);
+  };
+
+  const runBiometricAnalysis = async (probeImage: string, targetPatientId?: string) => {
+    setIsAnalyzingBiometrics(true);
+    try {
+      const candidates = await matchPatientPhoto(probeImage, INITIAL_HEALTH_CARDS, targetPatientId);
+      setVisualCandidates(candidates);
+      if (candidates.length > 0 && candidates[0].similarity >= 80) {
+        toast.success(
+          lang === "en"
+            ? `Biometric Match Found: ${candidates[0].card.patient_name} (${candidates[0].similarity}% Confidence)`
+            : `বায়োমেট্রিক ফেস ম্যাচ পাওয়া গেছে: ${candidates[0].card.patient_name} (${candidates[0].similarity}% মিল)`,
+          { icon: "👤" }
+        );
+      }
+    } catch (err) {
+      console.warn("Biometric analysis error:", err);
+    } finally {
+      setIsAnalyzingBiometrics(false);
+    }
+  };
+
+  const handleConfirmBiometricPatient = (candidate: VisualSearchResult) => {
+    setSelectedCard(candidate.card);
+    setQuery(candidate.card.patient_name);
+    setShowVisualModal(false);
+    handleStopWebcam();
+    toast.success(
+      lang === "en"
+        ? `Patient Identity Confirmed: ${candidate.card.english_name || candidate.card.patient_name}`
+        : `রোগীর পরিচয় নিশ্চিত হয়েছে: ${candidate.card.patient_name}`,
+      { icon: "✅" }
+    );
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Sleek Hospital Clinical Emergency Header & Command Search Bar (Neat, Clean, Professional, No Clutter) */}
@@ -511,6 +628,21 @@ export function HealthPassSearchEngine({
               </AnimatePresence>
             </div>
 
+            {/* Visual AI Biometric Face Recognition Button */}
+            <button
+              type="button"
+              onClick={handleOpenVisualModal}
+              title={lang === "en" ? "Visual AI Biometric Search (Photo/Webcam)" : "ভিজ্যুয়াল এআই বায়োমেট্রিক ফেস সার্চ (ছবি/ক্যামেরা)"}
+              className="h-11 px-3.5 sm:px-4 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md shrink-0 cursor-pointer flex items-center gap-1.5 group relative"
+            >
+              <ScanFace size={16} className="text-sky-200 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">{lang === "en" ? "Visual Search" : "ছবি সার্চ"}</span>
+              <span className="flex sm:hidden"><Camera size={15} /></span>
+              <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-900 font-black text-[9px] px-1 rounded-full uppercase tracking-wider shadow-xs">
+                AI
+              </span>
+            </button>
+
             <button
               type="button"
               className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
@@ -519,6 +651,30 @@ export function HealthPassSearchEngine({
               <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
             </button>
           </div>
+
+          {/* Google-Style Telemetry & Relevance Bar */}
+          {query.trim().length > 0 && (
+            <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-700">
+                  {lang === "en"
+                    ? `Found ${safeResults.length} matching patients for "${query}"`
+                    : `"${query}" এর জন্য ${safeResults.length} জন রোগী পাওয়া গেছে`}
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium hidden md:inline">
+                  • {lang === "en" ? "Ranked by Google-style relevance algorithm across 12 medical dimensions" : "১২টি মেডিকেল ফিল্ড মিলিয়ে প্রাসঙ্গিকতা অনুযায়ী সাজানো"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="text-[11px] font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw size={11} />
+                <span>{lang === "en" ? "Clear Search" : "ক্লিয়ার করুন"}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -656,6 +812,25 @@ export function HealthPassSearchEngine({
                         </span>
                       </div>
                     </div>
+
+                    {/* Google-Style Relevance Match Badges */}
+                    {(patient as any)._matchReasons && (patient as any)._matchReasons.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1">
+                          <Sparkles size={11} className="text-sky-500" />
+                          {lang === "en" ? "Match:" : "ম্যাচ:"}
+                        </span>
+                        {((patient as any)._matchReasons as SearchMatchReason[]).slice(0, 3).map((r, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 text-[10px] font-medium bg-sky-50 text-sky-800 px-2 py-0.5 rounded-md border border-sky-100"
+                          >
+                            <span className="font-bold text-sky-900">{r.field}:</span>
+                            <span className="truncate max-w-[130px]">{r.matchedText}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Quick alerts bar inside list item */}
                     <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2 text-[11px]">
@@ -1665,6 +1840,364 @@ export function HealthPassSearchEngine({
               >
                 <Printer size={15} />
                 <span>{lang === "en" ? "Print Admission Slip" : "মুদ্রণ করুন (Print Slip)"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Visual AI Biometric Face Recognition Modal */}
+      {showVisualModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto space-y-6">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-600 flex items-center justify-center text-white shadow-md">
+                  <ScanFace size={24} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900">
+                      {lang === "en" ? "Visual AI Biometric Patient Matcher" : "জরুরি এআই বায়োমেট্রিক ফেস আইডেন্টিফিকেশন"}
+                    </h3>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                      Neural Scan
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {lang === "en"
+                      ? "Designed for unconscious or unidentified trauma patients. Matches facial features against the national registry."
+                      : "অচেতন বা অজ্ঞাতনামা জরুরি রোগীদের তাৎক্ষণিক ফেস রিকগনিশন ও ডাটাবেজ ম্যাচিং।"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseVisualModal}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Mode Tabs */}
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setVisualTab("presets")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  visualTab === "presets" ? "bg-white text-indigo-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Sparkles size={14} />
+                <span>{lang === "en" ? "Emergency Presets (1-Click Test)" : "ডেমো পেশেন্ট প্রিসেট"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisualTab("upload")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  visualTab === "upload" ? "bg-white text-indigo-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Upload size={14} />
+                <span>{lang === "en" ? "Upload Photo" : "ছবি আপলোড"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleStartWebcam}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  visualTab === "webcam" ? "bg-white text-indigo-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Camera size={14} />
+                <span>{lang === "en" ? "Live ER Camera" : "লাইভ ক্যামেরা"}</span>
+              </button>
+            </div>
+
+            {/* Tab 1: Emergency Presets */}
+            {visualTab === "presets" && (
+              <div className="space-y-3">
+                <p className="text-xs text-slate-600 font-medium">
+                  {lang === "en"
+                    ? "Select an emergency patient portrait to simulate camera biometric capture from trauma triage:"
+                    : "ট্রমা ট্রায়াজ ক্যামেরা টেস্ট করার জন্য নিচের যেকোনো একটি ছবি সিলেক্ট করুন:"}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {INITIAL_HEALTH_CARDS.map((card) => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(card.id, card.photo_url || "")}
+                      className={`p-3 rounded-2xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col items-center text-center ${
+                        visualProbeImage === card.photo_url
+                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm"
+                          : "border-slate-200 hover:border-indigo-300 bg-white"
+                      }`}
+                    >
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={card.photo_url}
+                          alt={card.patient_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-900 truncate w-full">
+                        {card.english_name || card.patient_name}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {card.blood_group} • {card.gender}
+                      </span>
+                      {card.has_pacemaker && (
+                        <span className="mt-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                          Pacemaker
+                        </span>
+                      )}
+                      {card.organ_donor && !card.has_pacemaker && (
+                        <span className="mt-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
+                          O- Donor
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Upload Photo */}
+            {visualTab === "upload" && (
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-indigo-500 transition-colors bg-slate-50/50">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="biometric-upload"
+                    className="hidden"
+                    onChange={handleUploadPhoto}
+                  />
+                  <label htmlFor="biometric-upload" className="cursor-pointer block">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3">
+                      <Upload size={24} />
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 block">
+                      {lang === "en" ? "Click to upload or drag & drop patient photo" : "ছবি আপলোড করতে ক্লিক করুন বা টেনে আনুন"}
+                    </span>
+                    <span className="text-xs text-slate-400 mt-1 block">
+                      PNG, JPG, WebP up to 10MB (ER intake photo / unconscious patient scan)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: Live ER Camera */}
+            {visualTab === "webcam" && (
+              <div className="space-y-3">
+                <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-4/3 flex items-center justify-center">
+                  <video
+                    ref={webcamVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Face Reticle HUD */}
+                  <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+                    <div className="w-48 h-56 sm:w-56 sm:h-64 border-2 border-dashed border-indigo-400/80 rounded-3xl relative flex items-center justify-center">
+                      <div className="absolute -top-3 px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-black rounded uppercase tracking-wider">
+                        Align Face in Reticle
+                      </div>
+                      <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent absolute top-1/2 -translate-y-1/2 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCaptureWebcam}
+                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer flex items-center gap-2"
+                  >
+                    <Camera size={16} />
+                    <span>{lang === "en" ? "Capture & Match" : "ছবি তুলে সার্চ করুন"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStopWebcam}
+                    className="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  >
+                    {lang === "en" ? "Stop Camera" : "ক্যামেরা বন্ধ"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Analysis State Loading */}
+            {isAnalyzingBiometrics && (
+              <div className="p-6 rounded-2xl bg-indigo-50 border border-indigo-100 text-center space-y-2">
+                <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs font-bold text-indigo-950">
+                  {lang === "en"
+                    ? "Running Biometric Neural Analysis: Extracting 16-zone luminance vectors & RGB profile..."
+                    : "বায়োমেট্রিক বিশ্লেষণ চলছে: ফেসিয়াল ফিচার ও লুমিন্যান্স ভেক্টর তুলনা করা হচ্ছে..."}
+                </p>
+              </div>
+            )}
+
+            {/* Biometric Match Candidate Console */}
+            {!isAnalyzingBiometrics && visualCandidates.length > 0 && (
+              <div className="space-y-4 pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                    <span>{lang === "en" ? "Top Biometric Registry Match" : "সেরা বায়োমেট্রিক ম্যাচ ফলাফল"}</span>
+                  </h4>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    {visualCandidates.length} candidate(s) evaluated
+                  </span>
+                </div>
+
+                {/* Top Match Hero Card */}
+                {(() => {
+                  const top = visualCandidates[0];
+                  return (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white shadow-xl relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10">
+                        {/* Probe vs Target comparison */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          {visualProbeImage && (
+                            <div className="text-center">
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-indigo-400/60 shadow-md bg-slate-800">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={visualProbeImage}
+                                  alt="Probe"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="text-[10px] text-indigo-200 mt-1 block font-mono">
+                                {lang === "en" ? "Probe Shot" : "সংগৃহীত ছবি"}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col items-center">
+                            <ArrowRight size={18} className="text-indigo-400" />
+                            <div className="mt-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-slate-950">
+                              {top.similarity}%
+                            </div>
+                          </div>
+
+                          <div className="text-center">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-md bg-slate-800">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={top.card.photo_url}
+                                alt="Registry"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="text-[10px] text-emerald-300 mt-1 block font-mono">
+                              {lang === "en" ? "Registry Photo" : "ডাটাবেজ ছবি"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Top Match Info */}
+                        <div className="flex-1 min-w-0 text-center sm:text-left space-y-1">
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <span className="text-base sm:text-lg font-black text-white">
+                              {top.card.english_name || top.card.patient_name}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white font-black text-xs">
+                              {top.card.blood_group}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-indigo-500/40 text-indigo-200 text-xs font-mono">
+                              NID: {top.card.nid_number}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-indigo-200">
+                            {calculateAge(top.card.date_of_birth)} {lang === "en" ? "years" : "বছর"} • {top.card.gender} • {top.card.zila || "Dhaka"}
+                          </p>
+
+                          <p className="text-xs text-slate-300 truncate">
+                            ICE Parent/Contact: <span className="text-white font-semibold">{top.card.emergency_contact_name} ({top.card.emergency_contact_phone})</span>
+                          </p>
+
+                          {top.card.has_pacemaker && (
+                            <span className="inline-block mt-1 text-[10px] font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">
+                              ⚠️ Pacemaker Active (No MRI)
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action: 1-Click Confirm & Open Dossier */}
+                        <div className="shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleConfirmBiometricPatient(top)}
+                            className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black rounded-xl text-xs sm:text-sm shadow-lg hover:shadow-xl cursor-pointer flex items-center gap-2 transition-all transform hover:scale-[1.03]"
+                          >
+                            <CheckCircle2 size={16} />
+                            <span>{lang === "en" ? "Confirm & Open Dossier" : "পরিচয় নিশ্চিত করুন ও ফাইল খুলুন"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Other candidates if any */}
+                {visualCandidates.length > 1 && (
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                      {lang === "en" ? "Other Potential Candidates:" : "অন্যান্য সম্ভাব্য ফলাফল:"}
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {visualCandidates.slice(1, 4).map((c) => (
+                        <div
+                          key={c.card.id}
+                          className="p-2.5 rounded-xl border border-slate-200 flex items-center justify-between hover:bg-slate-50"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={c.card.photo_url} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 truncate">
+                                {c.card.english_name || c.card.patient_name}
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                {c.card.blood_group} • {c.similarity}% Match
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleConfirmBiometricPatient(c)}
+                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 cursor-pointer shrink-0"
+                          >
+                            Select
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end pt-3 border-t">
+              <button
+                type="button"
+                onClick={handleCloseVisualModal}
+                className="px-4 py-2 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                {lang === "en" ? "Close Visual Matcher" : "বন্ধ করুন"}
               </button>
             </div>
           </div>

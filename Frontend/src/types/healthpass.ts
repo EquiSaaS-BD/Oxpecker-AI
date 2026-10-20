@@ -143,3 +143,39 @@ export interface HealthPassScanData {
 
 // Verification flow step type
 export type VerificationStep = "identity" | "photo" | "face" | "review";
+
+// ====== Google-Style Intelligent Elastic & Visual Search Types ======
+
+export interface SearchMatchReason {
+  field:
+    | "name"
+    | "english_name"
+    | "nid"
+    | "phone"
+    | "condition"
+    | "allergy"
+    | "blood_group"
+    | "location"
+    | "guardian"
+    | "medication"
+    | "card_no"
+    | "face_match";
+  label: string;
+  matchedText?: string;
+  score: number;
+}
+
+export interface ScoredHealthPassCard {
+  card: HealthPassCard;
+  score: number;
+  matchReasons: SearchMatchReason[];
+  faceMatchScore?: number;
+}
+
+export interface VisualSearchResult {
+  card: HealthPassCard;
+  similarity: number; // 0 to 100%
+  confidenceGrade: "High" | "Moderate" | "Low";
+  matchKey: string;
+}
+

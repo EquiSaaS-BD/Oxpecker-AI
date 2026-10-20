@@ -31,9 +31,9 @@ export async function GET(request: Request) {
         } else if (filterType === "blood_group") {
           dbQuery = dbQuery.eq("blood_group", query.toUpperCase());
         } else {
-          // Universal search across NID, Phone, Name, UHID, Blood Group
+          // Universal Google-style multi-column search across NID, Phone, Guardian, Name, UHID, Blood Group, Location
           dbQuery = dbQuery.or(
-            `nid.ilike.%${cleanQ}%,phone.ilike.%${cleanQ}%,full_name.ilike.%${query}%,english_name.ilike.%${query}%,uhid.ilike.%${cleanQ}%,blood_group.ilike.%${query}%`
+            `nid.ilike.%${cleanQ}%,phone.ilike.%${cleanQ}%,emergency_contact_phone.ilike.%${cleanQ}%,full_name.ilike.%${query}%,english_name.ilike.%${query}%,uhid.ilike.%${cleanQ}%,blood_group.ilike.%${query}%,emergency_contact_name.ilike.%${query}%,zila.ilike.%${query}%,address.ilike.%${query}%`
           );
         }
 
