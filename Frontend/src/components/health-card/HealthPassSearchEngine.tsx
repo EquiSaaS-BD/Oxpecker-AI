@@ -9,7 +9,8 @@ import {
   Printer, MessageCircle, AlertOctagon, HeartPulse, User,
   RotateCcw, FileText, Download, Eye, Globe, Building,
   Thermometer, Droplet, Clock, Check, Copy, QrCode, Layers,
-  ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal
+  ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal,
+  Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
