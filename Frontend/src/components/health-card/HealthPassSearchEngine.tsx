@@ -1316,49 +1316,49 @@ export function HealthPassSearchEngine({
                         {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
                       </p>
 
-                      {/* Demographics & National Registry Identifiers (12px Curved Badges + Clean Number Font) */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1.5">
+                      {/* Demographics & National Registry Identifiers (8px Curved Badges + Compact Sizing) */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
                         {/* NID */}
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
                           <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">NID:</span>
-                          <span className="font-sans font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                          <span className="font-sans font-bold text-slate-900 text-xs tracking-wide tabular-nums">
                             {currentCard.nid_number || "Unregistered"}
                           </span>
                         </div>
 
                         {/* DOB */}
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
                           <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">DOB:</span>
-                          <span className="font-sans font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide">
+                          <span className="font-sans font-bold text-slate-900 text-xs tracking-wide">
                             {formatDate(currentCard.date_of_birth)}
                           </span>
                         </div>
 
                         {/* CARD UID */}
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
                           <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">CARD UID:</span>
-                          <span className="font-sans font-bold text-sky-700 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                          <span className="font-sans font-bold text-sky-700 text-xs tracking-wide tabular-nums">
                             {currentCard.smart_card_uid}
                           </span>
                         </div>
 
                         {/* CELL */}
                         {currentCard.personal_phone && (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-sky-50/70 border border-sky-200 shadow-2xs">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-sky-50/70 border border-sky-200 shadow-2xs">
                             <span className="text-[10px] uppercase tracking-wider text-sky-600 font-bold font-sans">CELL:</span>
-                            <span className="font-sans font-bold text-sky-950 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                            <span className="font-sans font-bold text-sky-950 text-xs tracking-wide tabular-nums">
                               {currentCard.personal_phone}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
-                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer p-0.5 rounded hover:bg-sky-100 transition-colors"
+                              className="ml-0.5 text-sky-600 hover:text-sky-900 cursor-pointer p-0.5 rounded hover:bg-sky-100 transition-colors"
                               title="Copy cell phone"
                             >
                               {copiedField === "patient_cell" ? (
-                                <Check size={12} className="text-emerald-600" />
+                                <Check size={11} className="text-emerald-600" />
                               ) : (
-                                <Copy size={12} />
+                                <Copy size={11} />
                               )}
                             </button>
                           </div>
