@@ -1316,40 +1316,52 @@ export function HealthPassSearchEngine({
                         {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
                       </p>
 
-                      {/* Demographics & National Registry Identifiers */}
+                      {/* Demographics & National Registry Identifiers (12px Curved Badges + Clean Number Font) */}
                       <div className="flex flex-wrap items-center gap-2 pt-1.5">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">NID:</span>
-                          <span className="font-bold text-slate-900">{currentCard.nid_number || "Unregistered"}</span>
-                        </span>
+                        {/* NID */}
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">NID:</span>
+                          <span className="font-sans font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                            {currentCard.nid_number || "Unregistered"}
+                          </span>
+                        </div>
 
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">DOB:</span>
-                          <span className="font-bold text-slate-900">{formatDate(currentCard.date_of_birth)}</span>
-                        </span>
+                        {/* DOB */}
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">DOB:</span>
+                          <span className="font-sans font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide">
+                            {formatDate(currentCard.date_of_birth)}
+                          </span>
+                        </div>
 
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200/90 text-xs font-semibold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">CARD UID:</span>
-                          <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span>
-                        </span>
+                        {/* CARD UID */}
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-white border border-slate-200/90 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">CARD UID:</span>
+                          <span className="font-sans font-bold text-sky-700 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                            {currentCard.smart_card_uid}
+                          </span>
+                        </div>
 
+                        {/* CELL */}
                         {currentCard.personal_phone && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-xs font-semibold text-sky-950 shadow-2xs">
-                            <span className="text-[10px] uppercase tracking-wider text-sky-600 font-bold">CELL:</span>
-                            <span className="font-bold text-sky-900">{currentCard.personal_phone}</span>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-sky-50/70 border border-sky-200 shadow-2xs">
+                            <span className="text-[10px] uppercase tracking-wider text-sky-600 font-bold font-sans">CELL:</span>
+                            <span className="font-sans font-bold text-sky-950 text-xs sm:text-[13px] tracking-wide tabular-nums">
+                              {currentCard.personal_phone}
+                            </span>
                             <button
                               type="button"
                               onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
-                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer"
+                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer p-0.5 rounded hover:bg-sky-100 transition-colors"
                               title="Copy cell phone"
                             >
                               {copiedField === "patient_cell" ? (
-                                <Check size={11} className="text-emerald-600" />
+                                <Check size={12} className="text-emerald-600" />
                               ) : (
-                                <Copy size={11} />
+                                <Copy size={12} />
                               )}
                             </button>
-                          </span>
+                          </div>
                         )}
                       </div>
                     </div>

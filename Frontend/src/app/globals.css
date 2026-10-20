@@ -4,8 +4,8 @@
 
 @theme {
   --font-bengali: var(--font-bengali), "Hind Siliguri", sans-serif;
-  --font-sans: var(--font-sans), var(--font-bengali), "Hind Siliguri", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-display), var(--font-bengali), "Hind Siliguri", var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, var(--font-bengali);
+  --font-display: var(--font-display), "Plus Jakarta Sans", var(--font-sans), ui-sans-serif, system-ui, sans-serif, var(--font-bengali);
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
   --color-primary: #0284c7; /* Clinical Sky Blue - Oxpecker Brand */
