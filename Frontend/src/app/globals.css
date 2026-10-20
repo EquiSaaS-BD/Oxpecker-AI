@@ -235,3 +235,69 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
 }
+
+
+/* =========================================
+   HOSPITAL EHR PRINTING SYSTEM
+   ========================================= */
+@media print {
+  /* Hide all application shells, navigation, sidebars, search bars, and floating controls */
+  nav,
+  header,
+  footer,
+  aside,
+  [role="navigation"],
+  .no-print,
+  input,
+  select,
+  button {
+    display: none !important;
+  }
+
+  /* Reset document layout for pristine hospital A4 paper output */
+  html,
+  body {
+    overflow: visible !important;
+    height: auto !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* When printing the dedicated clinical patient dossier */
+  #printable-patient-dossier {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* When printing active report modal */
+  #lab-report-modal-content {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ensure colors and borders are preserved when printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
