@@ -88,6 +88,9 @@ export function HealthPassSearchEngine({
   // Soft & gentle Skeleton Loader transition state
   const [isLoadingPatient, setIsLoadingPatient] = useState(false);
 
+  // Mobile Master-Detail view tab: "list" (patient queue) vs "dossier" (active medical chart)
+  const [mobileTab, setMobileTab] = useState<"list" | "dossier">("dossier");
+
   // Collapsible / Minimizable Sub-Cards State
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     vitals: false,
@@ -115,6 +118,7 @@ export function HealthPassSearchEngine({
 
   // Helper to switch patient with a gentle 200ms shimmer transition
   const handleSelectPatientWithSkeleton = (patient: HealthPassCardType) => {
+    setMobileTab("dossier");
     if (currentCard?.id === patient.id) return;
     setIsLoadingPatient(true);
     setSelectedCard(patient);
@@ -732,10 +736,44 @@ export function HealthPassSearchEngine({
         </div>
       </div>
 
+      {/* Mobile Master-Detail View Switcher (Visible only on screens < lg) */}
+      <div className="lg:hidden flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setMobileTab("list")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            mobileTab === "list"
+              ? "bg-white text-sky-700 shadow-xs border border-slate-200/80 font-black"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Users size={14} />
+          <span>{lang === "en" ? `Queue (${safeResults.length})` : `রোগী তালিকা (${safeResults.length})`}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab("dossier")}
+          disabled={!currentCard}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            mobileTab === "dossier"
+              ? "bg-white text-sky-700 shadow-xs border border-slate-200/80 font-black"
+              : "text-slate-600 hover:text-slate-900 disabled:opacity-40"
+          }`}
+        >
+          <FileText size={14} />
+          <span className="truncate max-w-[140px]">
+            {currentCard ? (currentCard.english_name || currentCard.patient_name) : (lang === "en" ? "Patient Dossier" : "রোগীর রেকর্ড")}
+          </span>
+        </button>
+      </div>
+
       {/* Main Content Area: Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Results List with Sticky Split-Scroll & 10-per-Page Pagination */}
-        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"}`}>
+        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"} ${
+          mobileTab === "list" ? "block" : "hidden lg:flex"
+        }`}>
           {/* Queue Header & Status */}
           <div className="flex items-center justify-between px-1 shrink-0">
             <div className="flex items-center gap-2">
@@ -825,8 +863,7 @@ export function HealthPassSearchEngine({
                   <motion.div
                     key={patient.id}
                     onClick={() => handleSelectPatientWithSkeleton(patient)}
-                    whileHover={{ scale: 1.01 }}
-                    className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                    className={`p-3.5 sm:p-4 rounded-2xl border transition-colors cursor-pointer relative overflow-hidden ${
                       isSelected
                         ? "bg-sky-50/70 border-sky-400 shadow-md ring-2 ring-sky-400/20"
                         : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
@@ -845,15 +882,19 @@ export function HealthPassSearchEngine({
 
                     <div className="flex items-start justify-between gap-3 pl-1">
                       <div className="flex items-start gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                        <div className="w-11 h-11 rounded-[4px] bg-slate-100 border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden">
                           {patient.patient_image ? (
                             <img
                               src={patient.patient_image}
                               alt={patient.patient_name}
-                              className="w-full h-full object-cover"
+                              width={44}
+                              height={44}
+                              className="w-full h-full object-cover block rounded-[4px]"
                             />
                           ) : (
-                            <User size={22} className="text-sky-300" />
+                            <div className="w-full h-full flex items-center justify-center bg-slate-100 text-sky-600">
+                              <User size={20} />
+                            </div>
                           )}
                         </div>
 
@@ -998,8 +1039,25 @@ export function HealthPassSearchEngine({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs space-y-6"
+            className={`lg:col-span-7 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-7 shadow-xs space-y-6 ${
+              mobileTab === "dossier" ? "block" : "hidden lg:block"
+            }`}
           >
+            {/* Mobile Back-to-Queue Navigation Bar (Visible only on screens < lg) */}
+            <div className="lg:hidden flex items-center justify-between pb-3 border-b border-slate-100">
+              <button
+                type="button"
+                onClick={() => setMobileTab("list")}
+                className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-xl border border-sky-200/60 transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={14} />
+                <span>{lang === "en" ? `Back to Queue (${safeResults.length})` : `রোগী তালিকায় ফিরুন (${safeResults.length})`}</span>
+              </button>
+              <span className="text-[11px] font-bold text-slate-400 font-sans">
+                UID: {currentCard.smart_card_uid}
+              </span>
+            </div>
+
             {/* Clean, Unified Header: Patient Identity + Minimal View Switcher & Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
               {/* Left: Patient Identity */}
@@ -1287,15 +1345,17 @@ export function HealthPassSearchEngine({
                 {/* 1. Patient Demographics & Profile Summary */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex items-start sm:items-center gap-4 min-w-0">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200 border-2 border-white shadow-xs overflow-hidden shrink-0 relative">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[4px] bg-slate-100 border border-slate-200/60 overflow-hidden shrink-0 relative">
                       {currentCard.patient_image ? (
                         <img
                           src={currentCard.patient_image}
                           alt={currentCard.patient_name}
-                          className="w-full h-full object-cover"
+                          width={80}
+                          height={80}
+                          className="w-full h-full object-cover block rounded-[4px]"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-300">
+                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-sky-600">
                           <User size={32} />
                         </div>
                       )}
