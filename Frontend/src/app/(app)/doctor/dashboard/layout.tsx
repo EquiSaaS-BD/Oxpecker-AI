@@ -24,11 +24,13 @@ export default function DoctorDashboardLayout({
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-slate-50">
-        <div className="w-[240px] bg-white border-r border-slate-200 hidden lg:block" />
-        <div className="flex-1">
-          <div className="h-16 bg-white border-b border-slate-200" />
-          <DoctorDashboardSkeleton />
+      <div className="flex h-screen bg-white">
+        <div className="w-[240px] bg-white hidden lg:block" />
+        <div className="flex-1 flex flex-col h-full bg-white">
+          <div className="h-16 bg-white" />
+          <div className="flex-1 bg-slate-50/80 rounded-none lg:rounded-tl-[32px] border-t border-slate-200/80 lg:border-l p-6">
+            <DoctorDashboardSkeleton />
+          </div>
         </div>
       </div>
     );
@@ -47,20 +49,20 @@ export default function DoctorDashboardLayout({
 
   return (
     <DoctorProvider>
-      <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <div className="flex h-screen bg-white overflow-hidden">
         <Toaster position="top-right" richColors closeButton />
 
         {/* Sidebar (Desktop lg:block) */}
         <DoctorSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-white">
           
           {/* Top Mega Menu Navbar (Desktop lg:flex) */}
           <DoctorTopNav onMenuClick={() => setSidebarOpen(true)} />
 
           {/* Page Content */}
-          <main className={`flex-1 overflow-y-auto rounded-t-[32px] border-t border-x border-slate-200 bg-slate-50 shadow-none relative ${isFullScreenPage ? 'p-0 pb-0 overflow-hidden' : 'pb-20 md:pb-6 p-4 sm:p-6 lg:p-8'}`}>
+          <main className={`flex-1 overflow-y-auto rounded-none lg:rounded-tl-[32px] border-t border-slate-200/80 lg:border-l bg-slate-50/80 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] ${isFullScreenPage ? 'p-0 pb-0 overflow-hidden' : 'pb-20 md:pb-6 p-4 sm:p-6 lg:p-8'}`}>
             {children}
           </main>
           

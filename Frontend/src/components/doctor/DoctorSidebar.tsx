@@ -85,8 +85,8 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
       <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
-          ${isCollapsed ? "lg:w-[80px]" : "lg:w-[240px]"} w-[240px] bg-white border-r border-slate-200/90
-          flex flex-col h-full shadow-xs
+          ${isCollapsed ? "lg:w-[80px]" : "lg:w-[240px]"} w-[240px] bg-white border-r border-slate-200/80 lg:border-r-0
+          flex flex-col h-full shadow-xl lg:shadow-none
           transform transition-all duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
@@ -94,13 +94,13 @@ export function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
         {/* Collapse Toggle Button (Desktop Only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute top-6 -right-3.5 w-7 h-7 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-sky-600 hover:border-sky-200 shadow-sm z-50 transition-colors cursor-pointer"
+          className="hidden lg:flex absolute top-[18px] -right-3.5 w-7 h-7 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-500 hover:text-sky-600 hover:border-sky-200 shadow-sm z-50 transition-colors cursor-pointer"
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
         
         {/* Logo Section */}
-        <div className={`h-16 px-4 flex items-center ${isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'} border-b border-slate-100 shrink-0 bg-white`}>
+        <div className={`h-16 px-4 flex items-center ${isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'} shrink-0 bg-white`}>
           <Link href="/?view=home" className={`flex items-center gap-2.5 ${isCollapsed ? 'lg:justify-center' : ''}`} title="Back to Home">
             {isCollapsed ? (
               <Image

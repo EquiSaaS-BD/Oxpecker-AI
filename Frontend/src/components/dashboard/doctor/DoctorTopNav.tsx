@@ -52,7 +52,7 @@ export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void
   return (
     <header
       ref={navRef}
-      className="h-16 px-4 sm:px-6 bg-white border-b border-slate-200/90 flex items-center justify-between shrink-0 relative z-30"
+      className="h-16 px-4 sm:px-6 bg-white flex items-center justify-between shrink-0 relative z-30"
     >
       {/* Mobile Menu Button */}
       <div className="flex items-center gap-3 lg:hidden">
