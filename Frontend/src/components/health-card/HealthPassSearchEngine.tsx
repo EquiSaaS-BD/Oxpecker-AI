@@ -1025,14 +1025,13 @@ export function HealthPassSearchEngine({
                 </div>
               </div>
 
-              {/* Right: The 2 Simple View Toggle Buttons + Actions */}
-              <div className="no-print flex items-center flex-wrap sm:flex-nowrap gap-2 shrink-0">
-                {/* 2 Clean Toggle Buttons */}
+              {/* Right Corner: The 2 Simple View Toggle Buttons */}
+              <div className="no-print shrink-0 self-end sm:self-auto">
                 <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/80">
                   <button
                     type="button"
                     onClick={() => setViewMode("paper")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       viewMode === "paper"
                         ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
                         : "text-slate-600 hover:text-slate-900"
@@ -1044,7 +1043,7 @@ export function HealthPassSearchEngine({
                   <button
                     type="button"
                     onClick={() => setViewMode("card")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       viewMode === "card"
                         ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
                         : "text-slate-600 hover:text-slate-900"
@@ -1054,54 +1053,6 @@ export function HealthPassSearchEngine({
                     <span>{lang === "en" ? "Card" : "কার্ড"}</span>
                   </button>
                 </div>
-
-                {/* Actions: Collapse / Download / Print */}
-                {viewMode === "paper" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const allCollapsed = Object.values(collapsedSections).every(Boolean);
-                      toggleAllSections(!allCollapsed);
-                    }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
-                    title={lang === "en" ? "Collapse or expand all sections" : "সব সেকশন সংক্ষেপ বা বিস্তারিত করুন"}
-                  >
-                    {Object.values(collapsedSections).every(Boolean) ? (
-                      <>
-                        <Plus size={13} />
-                        <span className="hidden md:inline">{lang === "en" ? "Expand" : "সব খুলুন"}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Minus size={13} />
-                        <span className="hidden md:inline">{lang === "en" ? "Collapse" : "সব সংক্ষেপ"}</span>
-                      </>
-                    )}
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleDownloadDossier}
-                  disabled={isDownloadingDossier}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
-                  title={lang === "en" ? "Download patient document" : "রোগীর তথ্য ডাউনলোড করুন"}
-                >
-                  <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
-                  <span className="hidden sm:inline">
-                    {isDownloadingDossier ? (lang === "en" ? "..." : "...") : (lang === "en" ? "Download" : "ডাউনলোড")}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handlePrintDossier}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
-                  title={lang === "en" ? "Print hospital sheet" : "প্রিন্ট করুন"}
-                >
-                  <Printer size={13} />
-                  <span className="hidden sm:inline">{lang === "en" ? "Print" : "প্রিন্ট"}</span>
-                </button>
               </div>
             </div>
 
@@ -1275,6 +1226,64 @@ export function HealthPassSearchEngine({
                   id="printable-patient-dossier"
                   className="space-y-6 bg-white"
                 >
+                {/* Secondary Action Toolbar: Brought down below the header */}
+                <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="text-xs font-bold text-slate-700">
+                      {lang === "en" ? "Standard Hospital EHR • 6 Clinical Sections" : "হাসপাতাল ভর্তি ও সামারি রেকর্ড • ৬টি সেকশন"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Collapse / Expand Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allCollapsed = Object.values(collapsedSections).every(Boolean);
+                        toggleAllSections(!allCollapsed);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
+                      title={lang === "en" ? "Collapse or expand all sections" : "সব সেকশন সংক্ষেপ বা বিস্তারিত করুন"}
+                    >
+                      {Object.values(collapsedSections).every(Boolean) ? (
+                        <>
+                          <Plus size={13} />
+                          <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Minus size={13} />
+                          <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Download Button */}
+                    <button
+                      type="button"
+                      onClick={handleDownloadDossier}
+                      disabled={isDownloadingDossier}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
+                      title={lang === "en" ? "Download patient document" : "রোগীর তথ্য ডাউনলোড করুন"}
+                    >
+                      <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
+                      <span>{isDownloadingDossier ? (lang === "en" ? "Saving..." : "ডাউনলোড...") : (lang === "en" ? "Download" : "ডাউনলোড")}</span>
+                    </button>
+
+                    {/* Print Button */}
+                    <button
+                      type="button"
+                      onClick={handlePrintDossier}
+                      className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      title={lang === "en" ? "Print hospital sheet" : "প্রিন্ট করুন"}
+                    >
+                      <Printer size={13} />
+                      <span>{lang === "en" ? "Print" : "প্রিন্ট"}</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* 1. Patient Demographics & Profile Summary */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex items-start sm:items-center gap-4 min-w-0">
