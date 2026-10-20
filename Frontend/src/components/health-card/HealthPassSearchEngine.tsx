@@ -1000,72 +1000,62 @@ export function HealthPassSearchEngine({
             exit={{ opacity: 0, x: 20 }}
             className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs space-y-6"
           >
-            {/* Executive Dual Viewport Mode Selector (Dossier vs Card) */}
-            <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-              <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto flex-1 max-w-md">
-                {/* Option 1: Clinical Dossier Paper */}
-                <button
-                  type="button"
-                  onClick={() => setViewMode("paper")}
-                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
-                    viewMode === "paper"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
-                  }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    viewMode === "paper" ? "bg-sky-50 text-sky-600" : "bg-transparent text-slate-400"
-                  }`}>
-                    <FileText size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="block leading-tight font-black">
-                      {lang === "en" ? "Clinical Paper Dossier" : "ক্লিনিক্যাল ডসিয়ার পেপার"}
-                    </span>
-                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
-                      {lang === "en" ? "Standard Hospital EHR • 6 Sections" : "হাসপাতাল ভর্তি ও সামারি শিট"}
+            {/* Clean, Unified Header: Patient Identity + Minimal View Switcher & Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+              {/* Left: Patient Identity */}
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                  {viewMode === "paper" ? <FileText size={18} /> : <CreditCard size={18} />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">
+                      {viewMode === "paper"
+                        ? (lang === "en" ? "Clinical Dossier" : "ক্লিনিক্যাল ডসিয়ার")
+                        : (lang === "en" ? "Emergency Health Card" : "জরুরি হেলথ কার্ড")}
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {lang === "en" ? "ACTIVE EHR" : "সক্রিয় রেকর্ড"}
                     </span>
                   </div>
-                  {viewMode === "paper" && (
-                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[9px] font-bold">
-                      Active
-                    </span>
-                  )}
-                </button>
-
-                {/* Option 2: Smart Emergency ID Card */}
-                <button
-                  type="button"
-                  onClick={() => setViewMode("card")}
-                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
-                    viewMode === "card"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
-                  }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    viewMode === "card" ? "bg-indigo-50 text-indigo-600" : "bg-transparent text-slate-400"
-                  }`}>
-                    <CreditCard size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="block leading-tight font-black">
-                      {lang === "en" ? "Smart Emergency Card" : "স্মার্ট হেলথ কার্ড (3D Pass)"}
-                    </span>
-                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
-                      {lang === "en" ? "Pocket Pass • Tap to Flip" : "পকেট কার্ড • সামনে ও পেছনে"}
-                    </span>
-                  </div>
-                  {viewMode === "card" && (
-                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[9px] font-bold">
-                      Active
-                    </span>
-                  )}
-                </button>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5 truncate">
+                    UID: <span className="font-bold text-sky-800">{currentCard.smart_card_uid}</span>
+                    {currentCard.nid_number ? ` • NID: ${currentCard.nid_number}` : ""}
+                  </p>
+                </div>
               </div>
 
-              {/* Utility Action Buttons: Collapse All + Download + Print */}
-              <div className="no-print flex items-center justify-end gap-1.5 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+              {/* Right: The 2 Simple View Toggle Buttons + Actions */}
+              <div className="no-print flex items-center flex-wrap sm:flex-nowrap gap-2 shrink-0">
+                {/* 2 Clean Toggle Buttons */}
+                <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("paper")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      viewMode === "paper"
+                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <FileText size={14} />
+                    <span>{lang === "en" ? "Dossier" : "ডসিয়ার"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("card")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      viewMode === "card"
+                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <CreditCard size={14} />
+                    <span>{lang === "en" ? "Card" : "কার্ড"}</span>
+                  </button>
+                </div>
+
+                {/* Actions: Collapse / Download / Print */}
                 {viewMode === "paper" && (
                   <button
                     type="button"
@@ -1073,18 +1063,18 @@ export function HealthPassSearchEngine({
                       const allCollapsed = Object.values(collapsedSections).every(Boolean);
                       toggleAllSections(!allCollapsed);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
-                    title="Collapse or expand all dossier sections"
+                    className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
+                    title={lang === "en" ? "Collapse or expand all sections" : "সব সেকশন সংক্ষেপ বা বিস্তারিত করুন"}
                   >
                     {Object.values(collapsedSections).every(Boolean) ? (
                       <>
-                        <Plus size={13} className="text-slate-600" />
-                        <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                        <Plus size={13} />
+                        <span className="hidden md:inline">{lang === "en" ? "Expand" : "সব খুলুন"}</span>
                       </>
                     ) : (
                       <>
-                        <Minus size={13} className="text-slate-600" />
-                        <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                        <Minus size={13} />
+                        <span className="hidden md:inline">{lang === "en" ? "Collapse" : "সব সংক্ষেপ"}</span>
                       </>
                     )}
                   </button>
@@ -1094,41 +1084,25 @@ export function HealthPassSearchEngine({
                   type="button"
                   onClick={handleDownloadDossier}
                   disabled={isDownloadingDossier}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
-                  title="Download patient document"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
+                  title={lang === "en" ? "Download patient document" : "রোগীর তথ্য ডাউনলোড করুন"}
                 >
                   <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
                   <span className="hidden sm:inline">
-                    {isDownloadingDossier ? (lang === "en" ? "Saving..." : "ডাউনলোড...") : (lang === "en" ? "Download" : "ডাউনলোড")}
+                    {isDownloadingDossier ? (lang === "en" ? "..." : "...") : (lang === "en" ? "Download" : "ডাউনলোড")}
                   </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handlePrintDossier}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
-                  title="Print standardized hospital emergency admission paper"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  title={lang === "en" ? "Print hospital sheet" : "প্রিন্ট করুন"}
                 >
                   <Printer size={13} />
                   <span className="hidden sm:inline">{lang === "en" ? "Print" : "প্রিন্ট"}</span>
                 </button>
               </div>
-            </div>
-
-            {/* Dossier Patient Identity Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                  {lang === "en" ? "Emergency Clinical Records" : "জরুরি ক্লিনিক্যাল রেকর্ডস"}
-                </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {lang === "en" ? "VERIFIED REGISTRY" : "ভেরিফায়েড রেকর্ড"}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-mono">
-                UID: <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span> • NID: {currentCard.nid_number || "Unregistered"}
-              </p>
             </div>
 
             {/* Soft & Gentle Shimmer Skeleton Loader for Clinical Dossier */}
