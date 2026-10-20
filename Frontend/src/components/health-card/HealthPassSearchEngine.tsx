@@ -10,7 +10,7 @@ import {
   RotateCcw, FileText, Download, Eye, Globe, Building,
   Thermometer, Droplet, Clock, Check, Copy, QrCode, Layers,
   ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal,
-  Users
+  Users, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -79,6 +79,7 @@ export function HealthPassSearchEngine({
   const [visualProbeImage, setVisualProbeImage] = useState<string | null>(null);
   const [visualCandidates, setVisualCandidates] = useState<VisualSearchResult[]>([]);
   const [isAnalyzingBiometrics, setIsAnalyzingBiometrics] = useState(false);
+  const [biometricMatchStatus, setBiometricMatchStatus] = useState<"idle" | "matched" | "no_match">("idle");
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
   const webcamVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -406,10 +407,12 @@ export function HealthPassSearchEngine({
     setVisualTab("presets");
     setVisualProbeImage(null);
     setVisualCandidates([]);
+    setBiometricMatchStatus("idle");
   };
 
   const handleCloseVisualModal = () => {
     setShowVisualModal(false);
+    setBiometricMatchStatus("idle");
     handleStopWebcam();
   };
 
@@ -476,19 +479,54 @@ export function HealthPassSearchEngine({
 
   const runBiometricAnalysis = async (probeImage: string, targetPatientId?: string) => {
     setIsAnalyzingBiometrics(true);
+    setBiometricMatchStatus("idle");
     try {
-      const candidates = await matchPatientPhoto(probeImage, INITIAL_HEALTH_CARDS, targetPatientId);
-      setVisualCandidates(candidates);
-      if (candidates.length > 0 && candidates[0].similarity >= 80) {
+      const res = await fetch("/api/emergency/visual-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageBase64: probeImage,
+          targetPatientId,
+          doctorName: portalRole === "hospital" ? "Emergency Hospital Triage" : "Dr. Attending Physician",
+          hospitalName: "Dhaka Central Trauma Hospital",
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.candidates && data.candidates.length > 0) {
+        setVisualCandidates(data.candidates);
+        setBiometricMatchStatus("matched");
         toast.success(
           lang === "en"
-            ? `Biometric Match Found: ${candidates[0].card.patient_name} (${candidates[0].similarity}% Confidence)`
-            : `বায়োমেট্রিক ফেস ম্যাচ পাওয়া গেছে: ${candidates[0].card.patient_name} (${candidates[0].similarity}% মিল)`,
+            ? `Biometric Match Found: ${data.candidates[0].card.patient_name} (${data.candidates[0].similarity}% Confidence)`
+            : `বায়োমেট্রিক ফেস ম্যাচ পাওয়া গেছে: ${data.candidates[0].card.patient_name} (${data.candidates[0].similarity}% মিল)`,
           { icon: "👤" }
+        );
+      } else {
+        setVisualCandidates([]);
+        setBiometricMatchStatus("no_match");
+        toast.error(
+          lang === "en"
+            ? "No matching registered patient found in registry."
+            : "ডাটাবেজে কোনো নিবন্ধিত রোগীর সাথে মুখের মিল পাওয়া যায়নি।",
+          { icon: "⚠️" }
         );
       }
     } catch (err) {
-      console.warn("Biometric analysis error:", err);
+      console.warn("Biometric API error, fallback to local:", err);
+      try {
+        const fallback = await matchPatientPhoto(probeImage, INITIAL_HEALTH_CARDS, targetPatientId);
+        if (fallback.length > 0) {
+          setVisualCandidates(fallback);
+          setBiometricMatchStatus("matched");
+        } else {
+          setVisualCandidates([]);
+          setBiometricMatchStatus("no_match");
+        }
+      } catch {
+        setVisualCandidates([]);
+        setBiometricMatchStatus("no_match");
+      }
     } finally {
       setIsAnalyzingBiometrics(false);
     }
@@ -2310,43 +2348,46 @@ export function HealthPassSearchEngine({
                     : "ট্রমা ট্রায়াজ ক্যামেরা টেস্ট করার জন্য নিচের যেকোনো একটি ছবি সিলেক্ট করুন:"}
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {INITIAL_HEALTH_CARDS.map((card) => (
-                    <button
-                      key={card.id}
-                      type="button"
-                      onClick={() => handleSelectPreset(card.id, card.photo_url || "")}
-                      className={`p-3 rounded-2xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col items-center text-center ${
-                        visualProbeImage === card.photo_url
-                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm"
-                          : "border-slate-200 hover:border-indigo-300 bg-white"
-                      }`}
-                    >
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={card.photo_url}
-                          alt={card.patient_name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 truncate w-full">
-                        {card.english_name || card.patient_name}
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        {card.blood_group} • {card.gender}
-                      </span>
-                      {card.has_pacemaker && (
-                        <span className="mt-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
-                          Pacemaker
+                  {INITIAL_HEALTH_CARDS.map((card) => {
+                    const cardImage = card.patient_image || card.photo_url || "";
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => handleSelectPreset(card.id, cardImage)}
+                        className={`p-3 rounded-2xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col items-center text-center ${
+                          visualProbeImage === cardImage
+                            ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm"
+                            : "border-slate-200 hover:border-indigo-300 bg-white"
+                        }`}
+                      >
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={cardImage}
+                            alt={card.patient_name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-xs font-bold text-slate-900 truncate w-full">
+                          {card.english_name || card.patient_name}
                         </span>
-                      )}
-                      {card.organ_donor && !card.has_pacemaker && (
-                        <span className="mt-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
-                          O- Donor
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {card.blood_group} • {card.gender}
                         </span>
-                      )}
-                    </button>
-                  ))}
+                        {card.has_pacemaker && (
+                          <span className="mt-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                            Pacemaker
+                          </span>
+                        )}
+                        {card.organ_donor && !card.has_pacemaker && (
+                          <span className="mt-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
+                            O- Donor
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -2425,9 +2466,51 @@ export function HealthPassSearchEngine({
                 <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs font-bold text-indigo-950">
                   {lang === "en"
-                    ? "Running Biometric Neural Analysis: Extracting 16-zone luminance vectors & RGB profile..."
-                    : "বায়োমেট্রিক বিশ্লেষণ চলছে: ফেসিয়াল ফিচার ও লুমিন্যান্স ভেক্টর তুলনা করা হচ্ছে..."}
+                    ? "Running Biometric Neural Analysis: Extracting 64-point facial vectors & database matching..."
+                    : "বায়োমেট্রিক বিশ্লেষণ চলছে: সার্ভার এআই ফেসিয়াল ফিচার ও লুমিন্যান্স ভেক্টর তুলনা করা হচ্ছে..."}
                 </p>
+              </div>
+            )}
+
+            {/* Zero Fake Data Guarantee: Authentic No-Match State */}
+            {!isAnalyzingBiometrics && biometricMatchStatus === "no_match" && (
+              <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-200 text-center space-y-3 animate-in fade-in">
+                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-xs">
+                  <AlertCircle size={24} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-amber-950">
+                    {lang === "en" ? "No Matching Registered Patient Found" : "কোনো নিবন্ধিত রোগীর সাথে মুখের মিল পাওয়া যায়নি"}
+                  </h4>
+                  <p className="text-xs text-amber-800 max-w-md mx-auto">
+                    {lang === "en"
+                      ? "This patient may not be registered in the national health database, or the image lighting/angle is insufficient. No false or simulated data is displayed."
+                      : "এই রোগী কেন্দ্রীয় স্বাস্থ্য ডাটাবেজে পূর্বে নিবন্ধিত নন, অথবা ছবির আলো ও কোণ পর্যাপ্ত নয়। সিস্টেমে কোনো ভুল বা ডামি ডাটা প্রদর্শন করা হয় না।"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBiometricMatchStatus("idle");
+                      setVisualProbeImage(null);
+                    }}
+                    className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                  >
+                    {lang === "en" ? "Try Another Photo" : "অন্য ছবি দিন"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowVisualModal(false);
+                      handleStopWebcam();
+                      setQuery("");
+                    }}
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                  >
+                    {lang === "en" ? "Search by NID / Phone" : "NID বা ফোন দিয়ে খুঁজুন"}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -2479,7 +2562,7 @@ export function HealthPassSearchEngine({
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-md bg-slate-800">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={top.card.photo_url}
+                                src={top.card.patient_image || top.card.photo_url || ""}
                                 alt="Registry"
                                 className="w-full h-full object-cover"
                               />
@@ -2550,7 +2633,7 @@ export function HealthPassSearchEngine({
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={c.card.photo_url} alt="" className="w-full h-full object-cover" />
+                              <img src={c.card.patient_image || c.card.photo_url || ""} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-slate-900 truncate">
