@@ -78,8 +78,21 @@ jobs:
 
       - name: Prepare Standalone Package
         run: |
-          cp -r Frontend/public Frontend/.next/standalone/public
-          cp -r Frontend/.next/static Frontend/.next/standalone/.next/static
+          mkdir -p Frontend/.next/standalone/public
+          mkdir -p Frontend/.next/standalone/.next
+          # Copy contents of public directly into standalone/public
+          cp -a Frontend/public/. Frontend/.next/standalone/public/
+          # Also duplicate into Frontend/public in case Next.js standalone runs with subfolder context
+          mkdir -p Frontend/.next/standalone/Frontend/public
+          cp -a Frontend/public/. Frontend/.next/standalone/Frontend/public/
+          # Copy static build chunks to both paths
+          cp -a Frontend/.next/static/. Frontend/.next/standalone/.next/static/
+          mkdir -p Frontend/.next/standalone/Frontend/.next
+          cp -a Frontend/.next/static/. Frontend/.next/standalone/Frontend/.next/static/
+          # Ensure server.js is at root of standalone
+          if [ -f Frontend/.next/standalone/Frontend/server.js ] && [ ! -f Frontend/.next/standalone/server.js ]; then
+            cp Frontend/.next/standalone/Frontend/server.js Frontend/.next/standalone/server.js
+          fi
           cd Frontend/.next/standalone
           zip -r ../../../frontend-deploy.zip .
 

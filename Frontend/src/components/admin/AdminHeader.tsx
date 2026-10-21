@@ -19,13 +19,19 @@ export function AdminHeader({ toggleSidebar }: { toggleSidebar: () => void }) {
     <>
       <header className="h-[72px] shrink-0 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-40 sticky top-0">
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button 
             onClick={toggleSidebar}
-            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
           >
             <Menu size={24} />
           </button>
+
+          {/* Mobile Official Logo */}
+          <Link href="/?view=home" className="flex items-center gap-2 lg:hidden" title="Back to Home">
+            <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={28} height={28} className="object-contain" priority />
+            <span className="text-sm font-black text-slate-800 tracking-tight">Admin</span>
+          </Link>
 
           <div className="hidden sm:flex items-center gap-2 text-sm font-medium">
             <Link href="/admin/dashboard" className="text-slate-500 hover:text-emerald-600 transition-colors">

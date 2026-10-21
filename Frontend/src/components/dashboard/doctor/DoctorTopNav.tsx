@@ -101,7 +101,7 @@ export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void
       ref={navRef}
       className="h-16 px-4 sm:px-6 bg-white flex items-center justify-between shrink-0 relative z-30 border-b border-slate-100"
     >
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button + Official Logo */}
       <div className="flex items-center gap-3 lg:hidden">
         <button
           onClick={onMenuClick}
@@ -109,11 +109,19 @@ export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void
         >
           <Menu size={20} />
         </button>
-        <span className="text-sm font-bold text-slate-800">Doctor Portal</span>
+        <Link href="/?view=home" className="flex items-center gap-2" title="Return to Home">
+          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={28} height={28} className="object-contain" priority />
+          <span className="text-sm font-bold text-slate-800">Doctor Portal</span>
+        </Link>
       </div>
 
       {/* Desktop Mega Menus */}
       <div className="hidden lg:flex items-center gap-1">
+        {/* Desktop Brand Link */}
+        <Link href="/?view=home" className="flex items-center gap-2 mr-3 group px-2 py-1 rounded-xl hover:bg-slate-50 transition-colors" title="Return to Home">
+          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={26} height={26} className="object-contain group-hover:scale-105 transition-transform" priority />
+          <span className="text-xs font-black text-slate-900 tracking-tight">Oxpecker <span className="text-sky-600">AI</span></span>
+        </Link>
         {/* Clinical Dropdown */}
         <div className="relative">
           <button

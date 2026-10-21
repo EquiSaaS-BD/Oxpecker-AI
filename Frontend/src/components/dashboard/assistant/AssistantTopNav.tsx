@@ -149,7 +149,7 @@ export default function AssistantTopNav() {
       <Toaster position="top-center" />
 
       {/* Left side: Doctor Profile & Desktop Mega Menu Navbar */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 lg:gap-6">
         <button
           onClick={() => setShowMobileMenu(true)}
           aria-label="Toggle menu"
@@ -158,7 +158,19 @@ export default function AssistantTopNav() {
           <Menu size={24} />
         </button>
 
-        <div className="hidden lg:flex flex-col">
+        {/* Mobile Official Logo */}
+        <Link href="/?view=home" className="flex items-center gap-2 lg:hidden" title="Back to Home">
+          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={28} height={28} className="object-contain" priority />
+          <span className="text-sm font-black text-slate-800 tracking-tight">Assistant</span>
+        </Link>
+
+        {/* Desktop Brand Logo */}
+        <Link href="/?view=home" className="hidden lg:flex items-center gap-2 group mr-2" title="Back to Home">
+          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={28} height={28} className="object-contain group-hover:scale-105 transition-transform" priority />
+          <span className="text-xs font-black text-slate-900 tracking-tight">Oxpecker <span className="text-sky-600">AI</span></span>
+        </Link>
+
+        <div className="hidden lg:flex flex-col border-l border-slate-200 pl-3">
           <h2 className="text-xs font-extrabold text-slate-900">
             {assignedDoctor ? assignedDoctor.name : "Chamber Assistant"}
           </h2>

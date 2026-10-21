@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import {
   Search,
@@ -40,15 +41,21 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 lg:px-6 shrink-0 z-30">
-      {/* Left: Mobile menu + Search */}
+      {/* Left: Mobile menu + Official Brand Logo + Search */}
       <div className="flex items-center gap-3 flex-1">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-1 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+          className="lg:hidden p-2 -ml-1 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
           aria-label="Toggle menu"
         >
           <Menu size={22} />
         </button>
+
+        {/* Mobile Official Logo */}
+        <Link href="/?view=home" className="flex items-center gap-2 lg:hidden" title="Back to Home">
+          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={28} height={28} className="object-contain" priority />
+          <span className="text-sm font-black text-slate-800 tracking-tight">Hospital Portal</span>
+        </Link>
 
         {/* Search */}
         <div className="relative max-w-md flex-1 hidden sm:block">
