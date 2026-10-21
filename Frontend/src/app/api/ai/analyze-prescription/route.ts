@@ -92,14 +92,14 @@ async function inspectWithAzureVision(imageBuffer: Buffer): Promise<VisionOcrRes
         };
       }
 
-      // If OCR text is completely empty or very short without clinical terms
-      if (lines.length === 0 || (lines.length < 2 && matchedMedKeywords.length === 0)) {
+      // If OCR text is completely empty or has NO medical/clinical keywords
+      if (lines.length === 0 || matchedMedKeywords.length === 0) {
         return {
           ocrText,
           caption,
           tags,
           isPrescription: false,
-          rejectionReason: 'ছবিটিতে কোনো স্পষ্ট প্রেসক্রিপশনের লেখা বা ওষুধের নির্দেশনা খুঁজে পাওয়া যায়নি।'
+          rejectionReason: 'ছবিটিতে কোনো চিকিৎসকের নাম, আরএক্স (Rx), বা অনুমোদিত ওষুধের নির্দেশনা পাওয়া যায়নি।'
         };
       }
 
@@ -122,7 +122,7 @@ async function inspectWithAzureVision(imageBuffer: Buffer): Promise<VisionOcrRes
     caption: "",
     tags: [],
     isPrescription: false,
-    rejectionReason: "ছবিটি প্রসেস করতে সাময়িক সমস্যা হয়েছে। অনুগ্রহ করে একটি পরিষ্কার প্রেসক্রিপশনের ছবি আপলোড করুন।"
+    rejectionReason: "ছবিটি প্রসেস করতে সাময়িক সমস্যা হয়েছে অথবা এটি কোনো প্রেসক্রিপশন নয়। অনুগ্রহ করে একটি পরিষ্কার প্রেসক্রিপশনের ছবি আপলোড করুন।"
   };
 }
 
@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('image') as File | null;
+    const userPrompt = ((formData.get('prompt') as string) || '').trim();
 
     if (!file) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
@@ -145,11 +146,13 @@ export async function POST(request: NextRequest) {
     // 2. Reject non-prescriptions or random images immediately (Anti-Hallucination)
     if (!visionResult.isPrescription) {
       const reason = visionResult.rejectionReason || 'ছবিতে প্রেসক্রিপশন চিহ্নিত হয়নি।';
+      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন:** "${userPrompt}"\n\n` : '';
       const rejectionMarkdown = `### ❌ প্রেসক্রিপশন সনাক্ত করা যায়নি (No Prescription Detected)\n\n` +
+        promptSnippet +
         `${reason}\n\n` +
         `**সঠিক প্রেসক্রিপশন পরীক্ষার জন্য অনুরোধ:**\n` +
         `1. একজন রেজিস্টার্ড এমবিবিএস বা বিশেষজ্ঞ চিকিৎসকের দেওয়া প্রেসক্রিপশনের স্পষ্ট ছবি তুলুন।\n` +
-        `2. ক্যামেরা সোজা ও পর্যাপ্ত আলোতে রেখে ছবি তুলুন যাতে ওষুধের নাম ও খাওয়ার নিয়ম পড়া যায়।\n` +
+        `2. ক্যামেরা সোজা ও পর্যাপ্ত আলোতে রেখে ছবি তুলুন যাতে ডাক্তারের নাম, আরএক্স (Rx) ও ওষুধের নাম স্পষ্টভাবে পড়া যায়।\n` +
         `3. কোনো খাবার, প্রাণী, অপ্রাসঙ্গিক বস্তু বা ঝাপসা ছবি আপলোড করবেন না।`;
 
       return NextResponse.json({ analysis: rejectionMarkdown });

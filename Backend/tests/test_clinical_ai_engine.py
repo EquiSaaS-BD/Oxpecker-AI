@@ -50,10 +50,31 @@ def test_category_grounding():
     # Test medicine category
     diag_med = clinical_engine.diagnose("প্যারাসিটামল সেবনবিধি", category="medicines")
     assert diag_med is not None
+    assert "Medicines" in diag_med["category"]
 
     # Test prescription category
     diag_rx = clinical_engine.diagnose("প্রেসক্রিপশনের অ্যান্টিবায়োটিক ডোজ", category="prescriptions")
     assert diag_rx is not None
+    assert "Prescription" in diag_rx["category"]
+
+    # Test nutrition category
+    diag_nut = clinical_engine.diagnose("ডায়াবেটিসের পুষ্টিকর খাবার", category="nutrition")
+    assert diag_nut is not None
+    assert "Nutrition" in diag_nut["category"]
+
+    # Test hospitals category
+    diag_hosp = clinical_engine.diagnose("নিকটস্থ আইসিইউ হাসপাতাল", category="hospitals")
+    assert diag_hosp is not None
+    assert "Hospital" in diag_hosp["category"] or "Facilities" in diag_hosp["category"]
+
+
+def test_9600_cases_dataset():
+    """Verify that all 9,600 verified patient cases are loaded and aggregate symptoms mapped."""
+    assert len(clinical_engine.diseases_data) == 9600
+    assert len(clinical_engine.disease_symptoms_aggregate) == 150
+    # Every disease should have aggregated symptom tokens from its verified cases
+    for disease_name, tokens in clinical_engine.disease_symptoms_aggregate.items():
+        assert len(tokens) > 0, f"Disease {disease_name} has no symptom tokens"
 
 
 def test_empty_symptoms_fallback():
@@ -63,9 +84,14 @@ def test_empty_symptoms_fallback():
     assert diag["condition"].startswith("General Symptoms Assessment")
     assert diag["triage_urgency"] == "ROUTINE"
 
+    # With category fallback
+    diag_cat = clinical_engine.diagnose("", category="hospitals")
+    assert "Healthcare Facilities" in diag_cat["category"]
+
 
 if __name__ == "__main__":
     test_dataset_loaded()
+    test_9600_cases_dataset()
     test_symptom_mapping_bengali()
     test_symptom_mapping_english()
     test_rule_based_diagnosis()

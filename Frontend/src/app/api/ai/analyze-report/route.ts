@@ -68,15 +68,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const userPrompt = ((formData.get('prompt') as string) || '').trim();
+
     const fullTextLower = ocrLines.join(' ').toLowerCase();
     const matchedMarkers = LAB_MARKERS.filter(m => fullTextLower.includes(m));
     const isNonReportTag = tags.some(t => NON_REPORT_TAGS.has(t));
 
-    // Reject non-reports
-    if ((isNonReportTag && matchedMarkers.length === 0) || (ocrLines.length < 2 && matchedMarkers.length === 0)) {
+    // Strictly reject if no lab markers found or if non-report tags detected (Anti-Hallucination)
+    if (matchedMarkers.length === 0 || isNonReportTag || ocrLines.length < 2) {
+      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন/সমস্যা:** "${userPrompt}"\n\n` : '';
       return NextResponse.json({
         analysis: `### ❌ ল্যাব রিপোর্ট সনাক্ত করা যায়নি (No Lab Report Detected)\n\n` +
-          `আপলোডকৃত ছবিতে কোনো রক্ত পরীক্ষা, প্যাথলজি বা ডায়াগনস্টিক ল্যাব টেস্টের প্যারামিটার খুঁজে পাওয়া যায়নি${caption ? ` (চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
+          promptSnippet +
+          `আপলোডকৃত ছবিতে কোনো রক্ত পরীক্ষা, প্যাথলজি বা ডায়াগনস্টিক ল্যাব টেস্টের নির্ভরযোগ্য প্যারামিটার খুঁজে পাওয়া যায়নি${caption ? ` (চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
           `**সঠিক ল্যাব রিপোর্ট পরীক্ষার জন্য:**\n` +
           `- অনুগ্রহ করে সিবিসি (CBC), ব্লাড সুগার, লিপিড প্রোফাইল বা ইউরিন টেস্টের রিপোর্টের সম্পূর্ণ পাতার পরিষ্কার ছবি আপলোড করুন।\n` +
           `- নিশ্চিত করুন যে টেস্টের নাম, ফলাফল এবং রেফারেন্স রেঞ্জ স্পষ্টভাবে দৃশ্যমান রয়েছে।`

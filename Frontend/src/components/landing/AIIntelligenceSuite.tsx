@@ -169,7 +169,7 @@ export function AIIntelligenceSuite() {
               )}
             </p>
             <div className="pt-2">
-              <Link href="/chat" className="inline-flex items-center gap-2 text-sky-700 font-extrabold hover:underline text-sm">
+              <Link href="/chat?category=symptoms" className="inline-flex items-center gap-2 text-sky-700 font-extrabold hover:underline text-sm">
                 {t("Start AI Health Chat", "এআই স্বাস্থ্য চ্যাট শুরু করুন")} <ArrowRight size={16} />
               </Link>
             </div>
@@ -199,7 +199,7 @@ export function AIIntelligenceSuite() {
               )}
             </p>
             <div className="pt-2">
-              <Link href="/chat" className="inline-flex items-center gap-2 text-indigo-700 font-extrabold hover:underline text-sm">
+              <Link href="/chat?category=prescriptions" className="inline-flex items-center gap-2 text-indigo-700 font-extrabold hover:underline text-sm">
                 {t("Upload Prescription Now", "প্রেসক্রিপশন স্ক্যান করুন")} <ArrowRight size={16} />
               </Link>
             </div>

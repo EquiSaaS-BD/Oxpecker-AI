@@ -20,10 +20,9 @@ const WEEKLY_DATA = [
 ];
 
 const PROVIDER_USAGE = [
-  { name: "OpenAI", percentage: 65, requests: 1247, color: "bg-emerald-500" },
-  { name: "Google Gemini", percentage: 25, requests: 478, color: "bg-blue-500" },
-  { name: "DeepSeek", percentage: 8, requests: 153, color: "bg-violet-500" },
-  { name: "Anthropic", percentage: 2, requests: 38, color: "bg-amber-500" },
+  { name: "Azure OpenAI", percentage: 55, requests: 2450, color: "bg-sky-500" },
+  { name: "Oxpecker Clinical AI (9,600+)", percentage: 35, requests: 1560, color: "bg-emerald-500" },
+  { name: "Azure Vision OCR", percentage: 10, requests: 445, color: "bg-indigo-500" },
 ];
 
 const POPULAR_TOPICS = [

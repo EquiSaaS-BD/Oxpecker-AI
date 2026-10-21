@@ -164,10 +164,16 @@ class ClinicalAIEngine:
             try:
                 with open(json_path, "r", encoding="utf-8") as f:
                     self.diseases_data = json.load(f)
+                    self.disease_symptoms_aggregate: Dict[str, set] = {}
                     for item in self.diseases_data:
                         d_name = item.get("disease_name", "")
-                        if d_name and d_name not in self.unique_diseases:
-                            self.unique_diseases[d_name] = item
+                        if d_name:
+                            if d_name not in self.unique_diseases:
+                                self.unique_diseases[d_name] = item
+                            if d_name not in self.disease_symptoms_aggregate:
+                                self.disease_symptoms_aggregate[d_name] = set()
+                            for s in item.get("active_symptoms", []):
+                                self.disease_symptoms_aggregate[d_name].add(s.lower())
             except Exception as e:
                 print(f"[ClinicalAI] Warning loading diseases dataset: {e}")
 
@@ -260,9 +266,13 @@ class ClinicalAIEngine:
                 score += 60
                 curr_matched.append("Direct disease mention")
 
-            # Check symptom overlaps
+            # Check symptom overlaps against both 9,600 verified case aggregate and summary
+            agg_symptoms = self.disease_symptoms_aggregate.get(disease_name, set())
             d_symptoms = [s.strip().lower() for s in entry.get("active_symptoms_summary", "").split(";")]
             for token in extracted_tokens:
+                if token in agg_symptoms:
+                    score += 25
+                    curr_matched.append(token)
                 for ds in d_symptoms:
                     if token in ds or ds in token:
                         score += 20
@@ -297,6 +307,69 @@ class ClinicalAIEngine:
                     "চামড়ার নিচে রক্তক্ষরণ বা কালশিটে দাগ",
                     "বিভ্রান্তি, চরম দুর্বলতা বা অজ্ঞান হয়ে পড়া"
                 ] if triage_std in ["EMERGENCY", "URGENT"] else ["লক্ষণ ৪ দিনের বেশি স্থায়ী হলে চিকিৎসকের পরামর্শ নিন"]
+            }
+
+        # Category-grounded fallback responses
+        cat_lower = (category or "").lower()
+        if cat_lower in ["medicines", "medicine"]:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "condition": "Medicines & Pharmacology Information (ওষুধের তথ্য ও নির্দেশিকা)",
+                "category": "Medicines & Pharmacology",
+                "triage_urgency": "ROUTINE",
+                "confidence_score": 0.85,
+                "clinical_protocol": "DGDA & DGHS Essential Drugs List Bangladesh",
+                "primary_symptoms_matched": [query] if query else ["Medicines Guidance"],
+                "advice": "ওষুধ সেবনের পূর্বে রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন ও নির্দেশনা যাচাই করুন। অ্যান্টিবায়োটিক পূর্ণ কোর্স সম্পন্ন করুন এবং রেজিস্টার্ড ফার্মাসিস্টের পরামর্শ গ্রহণ করুন।",
+                "red_flags": ["ওষুধের অ্যালার্জি বা তীব্র পার্শ্বপ্রতিক্রিয়া", "অতিরিক্ত মাত্রা (Overdose)"]
+            }
+        elif cat_lower in ["prescriptions", "prescription"]:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "condition": "Prescription Interpretation & Schedule (প্রেসক্রিপশন ও সেবনবিধি)",
+                "category": "Prescription Guidance",
+                "triage_urgency": "ROUTINE",
+                "confidence_score": 0.85,
+                "clinical_protocol": "DGHS Bangladesh Standard Prescription Protocol",
+                "primary_symptoms_matched": [query] if query else ["Prescription Analysis"],
+                "advice": "প্রেসক্রিপশন অনুযায়ী সঠিক সময়ে সঠিক মাত্রায় ওষুধ সেবন করুন। ১+০+১ অর্থ সকালে ও রাতে, ১+১+১ অর্থ তিন বেলা। খাবারের আগে বা পরে খাওয়ার নিয়ম সতর্কতার সাথে মেনে চলুন।",
+                "red_flags": ["প্রেসক্রিপশন ছাড়া অ্যান্টিবায়োটিক গ্রহণ", "ডোজের অনিয়ম"]
+            }
+        elif cat_lower in ["nutrition", "food"]:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "condition": "Clinical Nutrition & Balanced Diet (পুষ্টি ও খাদ্যতালিকা গাইড)",
+                "category": "Clinical Nutrition",
+                "triage_urgency": "ROUTINE",
+                "confidence_score": 0.85,
+                "clinical_protocol": "National Nutrition Services (NNS) Bangladesh & WHO",
+                "primary_symptoms_matched": [query] if query else ["Nutrition Guidance"],
+                "advice": "সুষম দেশীয় খাবার (লাল চালের ভাত, দেশি মাছ, ডাল, তাজা মৌসুমি শাকসবজি) গ্রহণ করুন। পর্যাপ্ত বিশুদ্ধ পানি (প্রতিদিন ৮-১০ গ্লাস) পান করুন। অতিরিক্ত তেল, চিনি ও লবণ পরিহার করুন।",
+                "red_flags": ["তীব্র পানিশূন্যতা", "দীর্ঘস্থায়ী অপুষ্টি"]
+            }
+        elif cat_lower in ["hospitals", "hospital"]:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "condition": "Healthcare Facilities & Hospital Guidance (হাসপাতাল ও স্বাস্থ্যসেবা)",
+                "category": "Healthcare Facilities",
+                "triage_urgency": "ROUTINE",
+                "confidence_score": 0.85,
+                "clinical_protocol": "DGHS Hospital Services Management & Emergency Network",
+                "primary_symptoms_matched": [query] if query else ["Hospital Navigation"],
+                "advice": "জরুরি চিকিৎসার প্রয়োজনে জাতীয় জরুরি সেবা ৯৯৯ এ কল করুন। সাধারণ পরামর্শের জন্য স্বাস্থ্য অধিদপ্তরের ১৬২৬৩ নম্বরে ২৪ ঘণ্টা বিনামূল্যে ডাক্তারের সেবা পাওয়া যায়।",
+                "red_flags": ["জরুরি কার্ডিয়াক উপসর্গ", "তীব্র শ্বাসকষ্ট", "অতিরিক্ত রক্তপাত"]
+            }
+        elif cat_lower in ["emergency"]:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "condition": "Medical Emergency Assessment (জরুরি স্বাস্থ্য মূল্যায়ন)",
+                "category": "Emergency & Critical Care",
+                "triage_urgency": "EMERGENCY",
+                "confidence_score": 0.95,
+                "clinical_protocol": "DGHS Emergency Medical Services (EMS) Protocol",
+                "primary_symptoms_matched": [query] if query else ["Emergency Care"],
+                "advice": "অবিলম্বে নিকটস্থ জরুরি বিভাগে রোগীকে নিয়ে যান অথবা জরুরি সেবা ৯৯৯ এ অ্যাম্বুলেন্সের জন্য কল করুন। রোগীকে শান্ত রাখুন এবং প্রাথমিক ফার্স্ট এইড দিন।",
+                "red_flags": ["বুকে তীব্র ব্যথা", "জ্ঞান হারানো", "তীব্র শ্বাসকষ্ট", "অনিয়ন্ত্রিত রক্তপাত"]
             }
 
         return {

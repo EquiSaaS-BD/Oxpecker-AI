@@ -10,60 +10,86 @@ interface VoiceInputProps {
   onToggle: () => void;
 }
 
-import { AssemblyAISpeechClient } from "@/lib/ai/assemblyai-client";
 import { toast } from "sonner";
 
 /**
- * Hook for Speech-to-Text using AssemblyAI Universal-3.5 Pro streaming
- * with automatic fallback to Web Speech API when quota/limits are reached.
+ * Hook for Speech-to-Text using native Web Speech API with Bengali & English support.
  */
-export function useSpeechToText(options?: { domain?: string; prompt?: string }) {
+export function useSpeechToText(options?: { domain?: string; prompt?: string; lang?: string }) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(true);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
-  const clientRef = useRef<AssemblyAISpeechClient | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const startListening = useCallback(() => {
-    if (clientRef.current) {
-      clientRef.current.stop();
+    if (typeof window === "undefined") return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      toast.error("ব্রাউজারে ভয়েস রিকগনিশন সাপোর্ট নেই। অনুগ্রহ করে গুগল ক্রোম বা মাইক্রোসফট এজ ব্যবহার করুন।");
+      setIsSupported(false);
+      return;
     }
-    setTranscript("");
-    setIsListening(true);
 
-    const client = new AssemblyAISpeechClient({
-      domain: options?.domain,
-      prompt: options?.prompt || "Medical consultation and symptoms description in English and Bengali.",
-      onTranscript: (text: string, isFinal: boolean) => {
-        if (isFinal && text.trim()) {
-          setTranscript(text.trim() + " ");
+    try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = options?.lang || "bn-BD";
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let finalT = "";
+        let interimT = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalT += t;
+          } else {
+            interimT += t;
+          }
         }
-      },
-      onStateChange: (state) => {
-        if (state === "listening") {
-          setIsListening(true);
-        } else if (state === "fallback") {
-          setIsUsingFallback(true);
-          setIsListening(true);
-        } else if (state === "idle") {
-          setIsListening(false);
+        if (finalT.trim()) {
+          setTranscript(prev => (prev ? prev + " " + finalT.trim() : finalT.trim()));
+        } else if (interimT.trim()) {
+          setTranscript(prev => (prev ? prev + " " + interimT.trim() : interimT.trim()));
         }
-      },
-      onError: (err) => {
-        console.error("[useSpeechToText] Error:", err);
+      };
+
+      recognition.onerror = (err: any) => {
+        console.warn("[VoiceInput] Speech recognition error:", err);
+        if (err.error === "not-allowed") {
+          toast.error("মাইক্রোফোনের অনুমতি প্রদান করুন।");
+        }
         setIsListening(false);
-        toast.error(err.message || "Microphone access error");
-      },
-    });
+      };
 
-    clientRef.current = client;
-    client.start();
-  }, [options?.domain, options?.prompt]);
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (e: any) {
+      console.error("[VoiceInput] Failed to start recognition:", e);
+      setIsListening(false);
+    }
+  }, [options?.lang]);
 
   const stopListening = useCallback(() => {
-    if (clientRef.current) {
-      clientRef.current.stop();
-      clientRef.current = null;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+      recognitionRef.current = null;
     }
     setIsListening(false);
   }, []);
@@ -78,13 +104,12 @@ export function useSpeechToText(options?: { domain?: string; prompt?: string }) 
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const hasMedia = !!(navigator?.mediaDevices?.getUserMedia);
       const hasSpeech = !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-      setIsSupported(hasMedia || hasSpeech);
+      setIsSupported(hasSpeech);
     }
     return () => {
-      if (clientRef.current) {
-        clientRef.current.stop();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
       }
     };
   }, []);

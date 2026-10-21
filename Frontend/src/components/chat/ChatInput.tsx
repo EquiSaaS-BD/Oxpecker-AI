@@ -41,7 +41,7 @@ export function ChatInput({
   onSelectMode 
 }: { 
   onSend: (text: string) => void;
-  onFileUpload?: (file: File, analysisType: string) => void;
+  onFileUpload?: (file: File, analysisType: string, userText?: string) => void;
   selectedMode?: ChatMode | null;
   onSelectMode?: (mode: ChatMode | null) => void;
 }) {
@@ -257,11 +257,22 @@ export function ChatInput({
           className="hidden" 
           onChange={(e) => {
             const file = e.target.files?.[0];
+            const currentText = text.trim();
+            let effectiveType = pendingAnalysisType;
+            if (!effectiveType) {
+              const cat = selectedMode?.category || selectedMode?.id;
+              if (cat === 'prescriptions') effectiveType = 'prescription';
+              else if (cat === 'nutrition') effectiveType = 'food';
+              else if (cat === 'symptoms') effectiveType = 'report';
+              else effectiveType = 'image';
+            }
             if (file && onFileUpload) {
-              onFileUpload(file, pendingAnalysisType || 'image');
+              onFileUpload(file, effectiveType, currentText || undefined);
               setPendingAnalysisType(null);
+              setText("");
             } else if (file) {
-              onSend(`[Uploaded File: ${file.name}]`);
+              onSend(currentText ? `[Uploaded File: ${file.name}]\n\n${currentText}` : `[Uploaded File: ${file.name}]`);
+              setText("");
             }
             // Reset input
             e.target.value = '';

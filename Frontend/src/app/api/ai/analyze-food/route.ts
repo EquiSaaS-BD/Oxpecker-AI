@@ -61,15 +61,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const userPrompt = ((formData.get('prompt') as string) || '').trim();
+
     const isFood = tags.some(t => FOOD_TAGS.has(t)) || caption.toLowerCase().includes('food') || caption.toLowerCase().includes('meal');
     const isNonFood = tags.some(t => NON_FOOD_TAGS.has(t));
 
-    // Reject non-food images
-    if (isNonFood && !isFood) {
+    // Strictly reject non-food images (Anti-Hallucination)
+    if (!isFood || isNonFood) {
+      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন/বিবরণ:** "${userPrompt}"\n\n` : '';
       return NextResponse.json({
         analysis: `### ❌ খাবারের ছবি সনাক্ত করা যায়নি (No Food Detected)\n\n` +
-          `আপলোডকৃত ছবিতে কোনো খাবার বা নিউট্রিশন আইটেম চিহ্নিত করা যায়নি${caption ? ` (চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
-          `Oxpecker AI ফুড স্ক্যানার শুধুমাত্র খাবার ও পানীয় বিশ্লেষণ করতে পারে। অনুগ্রহ করে আপনার প্রস্তুতকৃত বা পরিবেশিত খাবারের স্পষ্ট ছবি আপলোড করুন।`
+          promptSnippet +
+          `আপলোডকৃত ছবিতে কোনো খাবার বা খাদ্য উপাদান চিহ্নিত করা যায়নি${caption ? ` (চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
+          `ভুল পুষ্টিমান গণনা এড়াতে অপ্রাসঙ্গিক ছবিতে ক্যালোরি হিসাব করা হয় না। Oxpecker AI ফুড স্ক্যানার শুধুমাত্র খাবার ও পানীয় বিশ্লেষণ করতে পারে। অনুগ্রহ করে আপনার প্রস্তুতকৃত বা পরিবেশিত খাবারের স্পষ্ট ছবি আপলোড করুন।`
       });
     }
 

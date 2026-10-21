@@ -165,7 +165,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
 
           <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs font-bold">
             <span className="text-slate-500">{t("Medicine and Doctor Information", "ওষুধ ও ডাক্তারের তথ্য")}</span>
-            <Link href="/chat" className="text-sky-600 hover:text-sky-700 font-extrabold flex items-center gap-1">
+            <Link href="/chat?category=symptoms" className="text-sky-600 hover:text-sky-700 font-extrabold flex items-center gap-1">
               {t("Start AI Health Chat", "এআই স্বাস্থ্য চ্যাট শুরু করুন")} <ArrowRight size={14} />
             </Link>
           </div>

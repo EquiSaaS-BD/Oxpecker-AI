@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
           symptoms: queryText,
           category: activeCategory 
         }),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (diagRes.ok) {

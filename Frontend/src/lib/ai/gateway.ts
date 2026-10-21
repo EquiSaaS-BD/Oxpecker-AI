@@ -300,3 +300,23 @@ export class AIGateway {
     this.usageCounts.set(name, (this.usageCounts.get(name) ?? 0) + 1);
   }
 }
+
+/**
+ * Factory creating an AIGateway standardized on Azure OpenAI.
+ */
+export function createDefaultGateway(): AIGateway {
+  const { AzureOpenAIProvider } = require('./providers/azure');
+  return new AIGateway([
+    {
+      name: 'azure',
+      provider: new AzureOpenAIProvider({
+        apiKey: process.env.AZURE_OPENAI_API_KEY || '',
+        endpoint: process.env.AZURE_OPENAI_ENDPOINT || '',
+        deployment: process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-mini',
+      }),
+      priority: 1,
+      isEnabled: true,
+    },
+  ]);
+}
+

@@ -25,26 +25,26 @@ interface AiProvider {
 
 const DEMO_PROVIDERS: AiProvider[] = [
   {
-    id: "1", name: "google", model: "gemini-2.0-flash", priority: 1,
-    isEnabled: true, isDefault: true, usageCount: 2450, totalCost: 0.00,
+    id: "1", name: "azure", model: "Azure OpenAI (gpt-4o-mini)", priority: 1,
+    isEnabled: true, isDefault: true, usageCount: 4250, totalCost: 0.00,
     healthOk: true, lastUsed: new Date().toISOString(),
   },
   {
-    id: "2", name: "openai", model: "gpt-4o-mini", priority: 2,
-    isEnabled: true, isDefault: false, usageCount: 1247, totalCost: 12.45,
-    healthOk: true, lastUsed: new Date(Date.now() - 3600000).toISOString(),
+    id: "2", name: "clinical", model: "Oxpecker Clinical AI (9,600+ Cases)", priority: 2,
+    isEnabled: true, isDefault: false, usageCount: 8912, totalCost: 0.00,
+    healthOk: true, lastUsed: new Date(Date.now() - 1800000).toISOString(),
   },
   {
-    id: "3", name: "deepseek", model: "deepseek-chat", priority: 3,
-    isEnabled: true, isDefault: false, usageCount: 389, totalCost: 1.20,
-    healthOk: true, lastUsed: new Date(Date.now() - 86400000).toISOString(),
+    id: "3", name: "vision", model: "Azure Computer Vision 4.0 Read OCR", priority: 3,
+    isEnabled: true, isDefault: false, usageCount: 1640, totalCost: 0.00,
+    healthOk: true, lastUsed: new Date(Date.now() - 3600000).toISOString(),
   },
 ];
 
 const PROVIDER_BADGES: Record<string, { bg: string; text: string; border: string }> = {
-  google: { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
-  openai: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  deepseek: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
+  azure: { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
+  clinical: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+  vision: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200" },
 };
 
 export default function AiProvidersPage() {

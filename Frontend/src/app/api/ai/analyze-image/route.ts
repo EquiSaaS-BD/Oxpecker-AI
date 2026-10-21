@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const mimeType = file.type || 'image/jpeg';
 
+    const userPrompt = ((formData.get('prompt') as string) || '').trim();
+
     const apiKey = process.env.AZURE_VISION_KEY;
     const endpoint = process.env.AZURE_VISION_ENDPOINT || "https://eastasia.api.cognitive.microsoft.com/";
 
@@ -72,15 +74,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check whether the image is non-medical
+    // Check whether the image is medical
     const isNonMedical = tags.some(t => NON_MEDICAL_TAGS.has(t));
-    const isMedical = tags.some(t => MEDICAL_IMAGE_TAGS.has(t)) || ocrLines.length > 3;
+    const isMedical = tags.some(t => MEDICAL_IMAGE_TAGS.has(t)) || (ocrLines.length > 2 && ocrLines.some(l => /dr\.|rx|hospital|patient|clinic|test|report/i.test(l)));
 
-    if (isNonMedical && !isMedical) {
+    // Strict rejection of non-medical or unverified images (Anti-Hallucination)
+    if (!isMedical || isNonMedical) {
+      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন/সমস্যা:** "${userPrompt}"\n\n` : '';
       return NextResponse.json({
         analysis: `### ❌ মেডিকেল ছবি সনাক্ত করা যায়নি (Non-Medical Image)\n\n` +
+          promptSnippet +
           `আপলোডকৃত ছবিটি কোনো স্বাস্থ্য, চিকিৎসা বা ক্লিনিক্যাল ছবি হিসেবে চিহ্নিত করা যায়নি${caption ? ` (ছবিতে চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
-          `Oxpecker AI শুধুমাত্র মেডিকেল সম্পর্কিত ছবি বিশ্লেষণ করতে পারে (যেমন: এক্স-রে, এমআরআই, ত্বকের সমস্যা, জখম, ইসিজি ইত্যাদি)।\n\n` +
+          `ভুল রোগ নির্ণয়ের ঝুঁকি এড়াতে অপ্রাসঙ্গিক বা সাধারণ ছবিতে কোনো চিকিৎসা ডায়াগনসিস দেওয়া হয় না। Oxpecker AI শুধুমাত্র মেডিকেল সম্পর্কিত ছবি বিশ্লেষণ করতে পারে (যেমন: এক্স-রে, এমআরআই, ত্বকের সমস্যা, জখম, ইসিজি ইত্যাদি)।\n\n` +
           `অনুগ্রহ করে একটি সঠিক ও প্রাসঙ্গিক মেডিকেল ছবি আপলোড করুন।`
       });
     }

@@ -19,6 +19,11 @@ const MODE_ICONS: Record<string, any> = {
   "Find nearby hospitals": Building2,
   "Find a specialist doctor": User,
   "Check health risks": HeartPulse,
+  "লক্ষণ (Symptoms)": Stethoscope,
+  "প্রেসক্রিপশন (Prescription)": FileText,
+  "ওষুধ (Medicines)": Pill,
+  "পুষ্টি (Nutrition)": Apple,
+  "হাসপাতাল (Hospitals)": Building2,
 };
 
 interface MessageBubbleProps {

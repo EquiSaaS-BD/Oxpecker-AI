@@ -247,13 +247,15 @@ function ChatContent() {
       promptText: modeItem.promptText 
     };
     setSelectedMode(modeObj);
+    // Directly send with promptText so that it immediately answers scoped to this category!
+    handleSend(modeItem.promptText || modeItem.title, modeObj);
   };
 
   const followUpChips = [
     "Explain More", "Find Doctors", "Compare Medicines", "Book Appointment"
   ];
 
-  const handleFileUpload = async (file: File, analysisType: string) => {
+  const handleFileUpload = async (file: File, analysisType: string, userPrompt?: string) => {
     const analysisEndpoints: Record<string, string> = {
       prescription: '/api/ai/analyze-prescription',
       report: '/api/ai/analyze-report',
@@ -271,10 +273,14 @@ function ChatContent() {
     const endpoint = analysisEndpoints[analysisType] || analysisEndpoints.image;
     const label = analysisLabels[analysisType] || 'Analyzing Image';
 
+    const userMsgContent = userPrompt && userPrompt.trim()
+      ? `Uploaded: **${file.name}** (${label})\n\n"${userPrompt.trim()}"`
+      : `Uploaded: **${file.name}** (${label})`;
+
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: `Uploaded: **${file.name}** (${label})`,
+      content: userMsgContent,
     };
     if (activeThreadId) addMessageToThread(activeThreadId, userMsg);
     setIsTyping(true);
@@ -287,6 +293,13 @@ function ChatContent() {
     try {
       const formData = new FormData();
       formData.append('image', file);
+      if (userPrompt && userPrompt.trim()) {
+        formData.append('prompt', userPrompt.trim());
+      }
+      const activeCat = selectedMode?.category || selectedMode?.id || rawCategoryParam;
+      if (activeCat) {
+        formData.append('category', activeCat);
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
