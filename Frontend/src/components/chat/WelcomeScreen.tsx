@@ -34,14 +34,14 @@ export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { prom
   }, []);
 
   const suggestions = [
-    { icon: Stethoscope, title: "Analyze my symptoms", promptText: "I would like to analyze my current symptoms. Please help me assess them.", color: "text-blue-500", bg: "bg-blue-50" },
-    { icon: Pill, title: "Compare medicines", promptText: "I want to compare medicines and understand their uses and dosages.", color: "text-purple-500", bg: "bg-purple-50" },
-    { icon: FileText, title: "Scan prescription", promptText: "Can you help me understand a doctor prescription?", color: "text-green-500", bg: "bg-green-50" },
-    { icon: Activity, title: "Analyze blood report", promptText: "I want to analyze a blood test or medical lab report.", color: "text-rose-500", bg: "bg-rose-50" },
-    { icon: Apple, title: "Calculate food calories", promptText: "I want to calculate food calories and get dietary recommendations.", color: "text-orange-500", bg: "bg-orange-50" },
-    { icon: Building2, title: "Find nearby hospitals", promptText: "Can you help me locate nearby hospitals with specialized facilities?", color: "text-indigo-500", bg: "bg-indigo-50" },
-    { icon: User, title: "Find a specialist doctor", promptText: "I need to find a specialist doctor for my health concern.", color: "text-teal-500", bg: "bg-teal-50" },
-    { icon: HeartPulse, title: "Check health risks", promptText: "I want to check potential health risk factors.", color: "text-pink-500", bg: "bg-pink-50" },
+    { icon: Stethoscope, title: "Analyze my symptoms", category: "symptoms", promptText: "I would like to analyze my current symptoms. Please help me assess them.", color: "text-blue-500", bg: "bg-blue-50" },
+    { icon: Pill, title: "Compare medicines", category: "medicines", promptText: "I want to compare medicines and understand their uses and dosages.", color: "text-purple-500", bg: "bg-purple-50" },
+    { icon: FileText, title: "Scan prescription", category: "prescriptions", promptText: "Can you help me understand a doctor prescription?", color: "text-green-500", bg: "bg-green-50" },
+    { icon: Activity, title: "Analyze blood report", category: "symptoms", promptText: "I want to analyze a blood test or medical lab report.", color: "text-rose-500", bg: "bg-rose-50" },
+    { icon: Apple, title: "Calculate food calories", category: "nutrition", promptText: "I want to calculate food calories and get dietary recommendations.", color: "text-orange-500", bg: "bg-orange-50" },
+    { icon: Building2, title: "Find nearby hospitals", category: "hospitals", promptText: "Can you help me locate nearby hospitals with specialized facilities?", color: "text-indigo-500", bg: "bg-indigo-50" },
+    { icon: User, title: "Find a specialist doctor", category: "hospitals", promptText: "I need to find a specialist doctor for my health concern.", color: "text-teal-500", bg: "bg-teal-50" },
+    { icon: HeartPulse, title: "Check health risks", category: "emergency", promptText: "I want to check potential health risk factors.", color: "text-pink-500", bg: "bg-pink-50" },
   ];
 
   return (

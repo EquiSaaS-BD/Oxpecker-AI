@@ -17,6 +17,7 @@ from app.core.database import engine
 
 # Import routers
 from app.api.v1 import auth, health, profile, healthpass, clinical_ai
+from app.api import chat
 
 setup_logging()
 logger = get_logger(__name__)
@@ -92,6 +93,7 @@ app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(profile.router, prefix=settings.API_V1_STR)
 app.include_router(healthpass.router, prefix=settings.API_V1_STR)
 app.include_router(clinical_ai.router, prefix=settings.API_V1_STR)
+app.include_router(chat.router, prefix=f"{settings.API_V1_STR}/chat", tags=["Chat & Clinical AI"])
 
 if __name__ == "__main__":
     import uvicorn

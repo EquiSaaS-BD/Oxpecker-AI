@@ -17,12 +17,22 @@ export const chatModeSuggestions = [
 ];
 
 export type ChatMode = {
+  id?: string;
+  category?: string;
   title: string;
   icon?: any;
   color?: string;
   bg?: string;
   promptText?: string;
 };
+
+export const COMPOSER_CATEGORIES: ChatMode[] = [
+  { id: 'symptoms', category: 'symptoms', title: 'লক্ষণ (Symptoms)', promptText: 'আমার শারীরিক লক্ষণ ও রোগ সম্পর্কে পরামর্শ দিন।', icon: Stethoscope, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
+  { id: 'prescriptions', category: 'prescriptions', title: 'প্রেসক্রিপশন (Prescription)', promptText: 'আমার প্রেসক্রিপশনের ওষুধ ও সেবনবিধি বুঝিয়ে দিন।', icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
+  { id: 'medicines', category: 'medicines', title: 'ওষুধ (Medicines)', promptText: 'ওষুধের সঠিক ব্যবহার, ডোজ ও বিকল্প ব্র্যান্ডের তথ্য দিন।', icon: Pill, color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200' },
+  { id: 'nutrition', category: 'nutrition', title: 'পুষ্টি (Nutrition)', promptText: 'সুষম খাদ্য, ক্যালোরি ও পুষ্টি নির্দেশিকা দিন।', icon: Apple, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
+  { id: 'hospitals', category: 'hospitals', title: 'হাসপাতাল (Hospitals)', promptText: 'নিকটস্থ হাসপাতাল, আইসিইউ ও জরুরি চিকিৎসা তথ্য দিন।', icon: Building2, color: 'text-rose-600', bg: 'bg-rose-50 border-rose-200' },
+];
 
 export function ChatInput({ 
   onSend, 
@@ -136,6 +146,29 @@ export function ChatInput({
     { icon: Paperclip, title: "Upload from Device", desc: "Select photo, report or document", color: "text-slate-700", bg: "bg-slate-100", isAction: true },
   ];
 
+  const getDynamicPlaceholder = () => {
+    const catId = selectedMode?.id || selectedMode?.category;
+    if (catId === 'symptoms') {
+      return 'আপনার শারীরিক লক্ষণ বা রোগ সম্পর্কে বিস্তারিত লিখুন...';
+    }
+    if (catId === 'prescriptions') {
+      return 'প্রেসক্রিপশন বুঝতে চান বা সেবনবিধি জানতে চান?...';
+    }
+    if (catId === 'medicines') {
+      return 'ওষুধের নাম, সঠিক ডোজ বা বিকল্প ব্র্যান্ড খুঁজুন...';
+    }
+    if (catId === 'nutrition') {
+      return 'খাবারের পুষ্টিমান, ক্যালোরি বা পথ্য সম্পর্কে লিখুন...';
+    }
+    if (catId === 'hospitals') {
+      return 'হাসপাতাল, আইসিইউ বেড বা বিশেষজ্ঞ ডাক্তার খুঁজুন...';
+    }
+    if (selectedMode) {
+      return `Add a message about ${selectedMode.title.toLowerCase()}...`;
+    }
+    return 'Ask Oxpecker AI a health question...';
+  };
+
   return (
     <div className="sticky bottom-0 w-full pb-4 sm:pb-6 pt-2 px-3 sm:px-4 md:px-8 bg-gradient-to-t from-white via-white/80 to-transparent z-40">
       <div className="max-w-[900px] mx-auto relative flex flex-col items-center">
@@ -236,6 +269,35 @@ export function ChatInput({
           accept="image/*,.pdf,.doc,.docx"
         />
 
+        {/* 5 Quick Category Buttons */}
+        <div className="w-full flex items-center gap-1.5 sm:gap-2 mb-2 overflow-x-auto [&::-webkit-scrollbar]:hidden py-0.5">
+          {COMPOSER_CATEGORIES.map((cat) => {
+            const isSelected = selectedMode?.id === cat.id || selectedMode?.category === cat.id;
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  if (isSelected) {
+                    onSelectMode?.(null);
+                  } else {
+                    onSelectMode?.(cat);
+                  }
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 border shadow-2xs ${
+                  isSelected
+                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                    : "bg-white text-slate-700 border-slate-200/90 hover:border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                <Icon size={14} className={isSelected ? "text-sky-400" : cat.color} />
+                <span>{cat.title}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Input Container */}
         <div className="w-full flex items-end gap-1.5 sm:gap-2 bg-white/60 backdrop-blur-xl rounded-xl p-1 sm:p-1.5 min-h-[48px] sm:min-h-[52px] border border-slate-200/80 shadow-sm focus-within:spatial-shadow-hover focus-within:border-primary/20 focus-within:bg-white transition-all duration-300">
           
@@ -312,7 +374,7 @@ export function ChatInput({
                   handleSend();
                 }
               }}
-              placeholder={selectedMode ? `Add a message about ${selectedMode.title.toLowerCase()}...` : "Ask Oxpecker AI a health question..."}
+              placeholder={getDynamicPlaceholder()}
               className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-500 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-tight"
               rows={1}
             />

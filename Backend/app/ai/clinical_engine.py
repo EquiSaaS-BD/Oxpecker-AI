@@ -11,41 +11,136 @@ DEFAULT_MODEL_PATH = MODELS_DIR / "oxpecker_qwen_350mb.gguf"
 
 # Bilingual Clinical Symptoms Mapping (Bangla <-> Clinical Symptom Tokens)
 SYMPTOM_MAP = {
+    # Fever & Pyrexia
     "জ্বর": "high_fever",
     "তীব্র জ্বর": "high_fever",
+    "উচ্চ জ্বর": "high_fever",
+    "গা গরম": "high_fever",
     "fever": "high_fever",
+    "high fever": "high_fever",
+    "কাঁপুনি": "chills_rigors",
+    "শীত শীত ভাব": "chills_rigors",
+    "chills": "chills_rigors",
+    "রাত ঘাম": "night_sweats",
+
+    # Pain & Head
     "মাথা ব্যথা": "severe_headache",
     "মাথাব্যথা": "severe_headache",
+    "তীব্র মাথাব্যথা": "severe_headache",
+    "মাইগ্রেন": "severe_headache",
     "headache": "severe_headache",
     "চোখের পেছনে ব্যথা": "retro_orbital_pain",
     "চোখে ব্যথা": "retro_orbital_pain",
+    "চোখের নিচে ব্যথা": "retro_orbital_pain",
     "retro-orbital": "retro_orbital_pain",
+    "চোখ লাল": "red_watery_eyes",
+    "ঝাপসা দৃষ্টি": "cloudy_blurred_vision",
+
+    # Joints & Musculoskeletal
     "জয়েন্টে ব্যথা": "severe_joint_pain_arthralgia",
     "জয়েন্টে ব্যথা": "severe_joint_pain_arthralgia",
     "গাঁটে ব্যথা": "severe_joint_pain_arthralgia",
+    "গিটে গিটে ব্যথা": "severe_joint_pain_arthralgia",
+    "হাড়ের জোড়ায় ব্যথা": "severe_joint_pain_arthralgia",
+    "হাঁটু ব্যথা": "severe_joint_pain_arthralgia",
+    "হাঁটুতে ব্যথা": "severe_joint_pain_arthralgia",
+    "পা ব্যথা": "severe_joint_pain_arthralgia",
+    "কোমর ব্যথা": "lower_back_pain",
+    "কোমরে ব্যথা": "lower_back_pain",
+    "পেশীতে ব্যথা": "muscle_pain_myalgia",
     "joint pain": "severe_joint_pain_arthralgia",
+    "জয়েন্ট ফোলা": "joint_swelling_redness",
+    "জয়েন্টে ফোলা": "joint_swelling_redness",
+
+    # Gastrointestinal
     "বমি": "vomiting",
-    "বমি বমি ভাব": "nausea",
+    "বমি হওয়া": "vomiting",
     "vomiting": "vomiting",
+    "বমি বমি ভাব": "nausea",
+    "বমি ভাব": "nausea",
     "nausea": "nausea",
-    "র‌্যাশ": "skin_rash_maculopapular",
-    "র‍্যাশ": "skin_rash_maculopapular",
-    "চামড়ায় লাল দাগ": "petechiae_bleeding_spots",
-    "রক্তক্ষরণ": "bleeding",
+    "পেটে ব্যথা": "abdominal_pain_cramps",
+    "পেট কামড়ানো": "abdominal_pain_cramps",
+    "পেট ফাঁপা": "bloating_gas",
+    "গ্যাস": "bloating_gas",
+    "ডায়রিয়া": "watery_diarrhea",
+    "ডায়রিয়া": "watery_diarrhea",
+    "পাতলা পায়খানা": "watery_diarrhea",
+    "পাতলা পায়খানা": "watery_diarrhea",
+    "diarrhea": "watery_diarrhea",
+    "আমাশয়": "bloody_mucoid_diarrhea",
+    "আমাশয়": "bloody_mucoid_diarrhea",
+    "রক্ত আমাশয়": "bloody_mucoid_diarrhea",
+    "কোষ্ঠকাঠিন্য": "constipation",
+    "মল কষা": "constipation",
+    "গ্যাস্ট্রিক": "epigastric_burning_pain",
+    "এসিডিটি": "epigastric_burning_pain",
+    "বুক জ্বালা": "epigastric_burning_pain",
+    "বুক জ্বালাপোড়া": "epigastric_burning_pain",
+    "অরুচি": "loss_of_appetite",
+    "খাবারে অরুচি": "loss_of_appetite",
+
+    # Respiratory & Chest
     "কাশি": "cough",
     "শুকনো কাশি": "dry_cough",
+    "কফ": "productive_cough",
+    "রক্ত মিশ্রিত কাশি": "coughing_blood_hemoptysis",
     "cough": "cough",
     "শ্বাসকষ্ট": "shortness_of_breath",
     "দম বন্ধ": "shortness_of_breath",
-    "chest pain": "chest_pain",
-    "বুকে ব্যথা": "chest_pain",
-    "পেটে ব্যথা": "abdominal_pain",
-    "ডায়রিয়া": "diarrhea",
-    "পাতলা পায়খানা": "watery_diarrhea",
-    "পাতলা পায়খানা": "watery_diarrhea",
+    "শ্বাস নিতে কষ্ট": "shortness_of_breath",
+    "হাঁপানি": "shortness_of_breath",
+    "shortness of breath": "shortness_of_breath",
+    "বুকে ঘড়ঘড় শব্দ": "wheezing_sound",
+    "বুকে চাপ": "chest_tightness",
+    "chest tightness": "chest_tightness",
+    "chest pain": "retrosternal_chest_pain",
+    "বুকে ব্যথা": "retrosternal_chest_pain",
+    "বুকে তীব্র ব্যথা": "retrosternal_chest_pain",
+    "হার্ট অ্যাটাক": "retrosternal_chest_pain",
+    "বাম হাতে ব্যথা": "radiating_left_arm_pain",
+    "বুক ধড়ফড়": "palpitations_rapid_heart",
+    "গলা ব্যথা": "sore_throat",
+    "গলা ভাঙা": "hoarse_voice",
+    "খাবার গিলতে কষ্ট": "difficulty_swallowing",
+    "সর্দি": "runny_nose",
+    "হাঁচি": "sneezing",
+    "নাক বন্ধ": "nasal_congestion",
+
+    # Skin & Bleeding
+    "র‌্যাশ": "skin_rash_maculopapular",
+    "র‍্যাশ": "skin_rash_maculopapular",
+    "লাল দাগ": "skin_rash_maculopapular",
+    "চামড়ায় লাল দাগ": "petechiae_bleeding_spots",
+    "চামড়ায় লাল দাগ": "petechiae_bleeding_spots",
+    "রক্তক্ষরণ": "petechiae_bleeding_spots",
+    "চুলকানি": "itchy_skin",
+    "ত্বকে চুলকানি": "itchy_skin",
+    "ফোড়া": "boils_furuncles",
+
+    # Urinary & Renal
+    "প্রস্রাবে জ্বালাপোড়া": "burning_pain_urination_dysuria",
+    "প্রস্রাবে জ্বালা": "burning_pain_urination_dysuria",
+    "ঘন ঘন প্রস্রাব": "frequent_urination",
+    "লাল প্রস্রাব": "blood_in_urine_hematuria",
+    "রক্ত প্রস্রাব": "blood_in_urine_hematuria",
+    "হলুদ প্রস্রাব": "dark_yellow_urine",
+    "প্রস্রাব কমে যাওয়া": "decreased_urine_output_oliguria",
+
+    # General & Endocrine
     "দুর্বলতা": "fatigue",
     "ক্লান্তি": "fatigue",
-    "গলা ব্যথা": "sore_throat",
+    "অতিরিক্ত ক্লান্তি": "fatigue",
+    "fatigue": "fatigue",
+    "মাথা ঘুরানো": "dizziness_vertigo",
+    "মাথা ঘোরা": "dizziness_vertigo",
+    "জন্ডিস": "jaundice_yellow_eyes_skin",
+    "চোখ হলুদ": "jaundice_yellow_eyes_skin",
+    "চামড়া হলুদ": "jaundice_yellow_eyes_skin",
+    "ওজন কমে যাওয়া": "unexplained_weight_loss",
+    "ঘন ঘন পানি পিপাসা": "excessive_thirst_polydipsia",
+    "উচ্চ রক্তচাপ": "high_blood_pressure",
+    "ডায়াবেটিস": "diabetes_mellitus",
 }
 
 class ClinicalAIEngine:
@@ -114,7 +209,7 @@ class ClinicalAIEngine:
             for idx, d in enumerate(self.unique_diseases.values())
         ]
 
-    def diagnose(self, symptoms_query: str, age: Optional[int] = None, vitals: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def diagnose(self, symptoms_query: str, age: Optional[int] = None, vitals: Optional[Dict[str, Any]] = None, category: Optional[str] = None) -> Dict[str, Any]:
         # Neural inference if GGUF is mounted
         if self.model_loaded and self.llama_model:
             try:
@@ -132,9 +227,9 @@ class ClinicalAIEngine:
                 print(f"[ClinicalAI] Neural error: {e}")
 
         # Deterministic DGHS 150 Disease Matcher
-        return self._rule_based_diagnosis(symptoms_query)
+        return self._rule_based_diagnosis(symptoms_query, category=category)
 
-    def _rule_based_diagnosis(self, query: str) -> Dict[str, Any]:
+    def _rule_based_diagnosis(self, query: str, category: Optional[str] = None) -> Dict[str, Any]:
         query_norm = query.lower()
         extracted_tokens = set()
 
@@ -154,6 +249,11 @@ class ClinicalAIEngine:
         for disease_name, entry in self.unique_diseases.items():
             score = 0
             curr_matched = []
+
+            # Category boost if user scoped
+            d_category = entry.get("category", "")
+            if category and (category.lower() in d_category.lower() or d_category.lower() in category.lower()):
+                score += 15
 
             # Check direct name mentions
             if disease_name.lower() in query_norm or entry.get("bengali_name", "") in query:

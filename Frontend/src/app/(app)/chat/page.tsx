@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
-import { ChatInput, ChatMode } from "@/components/chat/ChatInput";
+import { ChatInput, ChatMode, COMPOSER_CATEGORIES } from "@/components/chat/ChatInput";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { ArrowRight, AlertTriangle, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +23,7 @@ type EmergencyAlert = {
 function ChatContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get("q");
+  const rawCategoryParam = searchParams?.get("category") || searchParams?.get("mode");
   const autoSentRef = useRef(false);
 
   const { activeThreadId, getActiveThread, addMessageToThread, createNewThread, updateMessageInThread, updateThreadTitle, isLoaded } = useChatHistory();
@@ -145,6 +146,7 @@ function ChatContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           messages: apiMessages,
+          category: activeMode?.category || activeMode?.id || rawCategoryParam || undefined,
           patientContext: pContext
         }),
         signal: abortControllerRef.current.signal 
@@ -206,16 +208,38 @@ function ChatContent() {
   const handleSendRef = useRef(handleSend);
   handleSendRef.current = handleSend;
 
-  // Auto-send query passed via URL parameter e.g. /chat?q=হ্যালো
+  const resolveCategoryMode = useCallback((param: string | null | undefined): ChatMode | null => {
+    if (!param) return null;
+    const clean = param.toLowerCase().trim();
+    return COMPOSER_CATEGORIES.find(c => {
+      const cat = (c.category || c.id || "").toLowerCase();
+      return cat === clean || cat.startsWith(clean) || clean.startsWith(cat) || (clean === "report" && cat === "symptoms");
+    }) || null;
+  }, []);
+
+  // Auto-activate mode/category from URL search parameter e.g. /chat?category=symptoms or /chat?mode=prescription
+  useEffect(() => {
+    if (rawCategoryParam) {
+      const matched = resolveCategoryMode(rawCategoryParam);
+      if (matched) {
+        setSelectedMode(matched);
+      }
+    }
+  }, [rawCategoryParam, resolveCategoryMode]);
+
+  // Auto-send query passed via URL parameter e.g. /chat?q=হ্যালো or /chat?category=symptoms&q=মাথা ব্যথা
   useEffect(() => {
     if (initialQuery && initialQuery.trim() && !autoSentRef.current) {
       autoSentRef.current = true;
-      handleSendRef.current(initialQuery.trim());
+      const matchedMode = resolveCategoryMode(rawCategoryParam);
+      handleSendRef.current(initialQuery.trim(), matchedMode);
     }
-  }, [initialQuery]);
+  }, [initialQuery, rawCategoryParam, resolveCategoryMode]);
 
   const handleWelcomeSelect = (modeItem: any) => {
     const modeObj: ChatMode = { 
+      id: modeItem.id || modeItem.category,
+      category: modeItem.category || modeItem.id,
       icon: modeItem.icon, 
       title: modeItem.title, 
       color: modeItem.color, 

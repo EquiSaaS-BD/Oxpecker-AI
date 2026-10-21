@@ -468,12 +468,18 @@ export function detectOTCCondition(text: string): OTCCondition | undefined {
   return undefined;
 }
 
-export function analyzeClinicalCase(userMessage: string, language: string = 'bn'): ClinicalAnalysis {
+export function analyzeClinicalCase(userMessage: string, language: string = 'bn', category?: string): ClinicalAnalysis {
   const detectedSymptoms = detectSymptomsFromText(userMessage);
-  const otcGuidance = detectOTCCondition(userMessage);
+  let otcGuidance = detectOTCCondition(userMessage);
+
+  // If user selected 'medicines' category but no specific keyword matched, default to general OTC guidance
+  if (!otcGuidance && (category === 'medicines' || category === 'medicine')) {
+    otcGuidance = VERIFIED_OTC_CONDITIONS[0];
+  }
 
   // Check emergency keywords
   const isEmergency = detectedSymptoms.includes('retrosternal_chest_pain') ||
+    category === 'emergency' ||
     userMessage.includes('বুকে ব্যথা') ||
     userMessage.includes('হার্ট অ্যাটাক') ||
     userMessage.includes('chest pain') ||
@@ -492,13 +498,17 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
     const allDiseaseSymptoms = [...disease.cardinal, ...disease.associated];
     const matched = detectedSymptoms.filter(s => allDiseaseSymptoms.includes(s));
     
-    if (matched.length > 0) {
+    // Category match bonus
+    const isCategoryMatch = category && disease.category.toLowerCase().includes(category.toLowerCase());
+
+    if (matched.length > 0 || isCategoryMatch) {
       // Calculate clinical relevance score
       const cardinalMatches = matched.filter(s => disease.cardinal.includes(s));
-      const score = Math.round(
+      let score = Math.round(
         (cardinalMatches.length * 2.5 + matched.length * 1.5) / 
         (disease.cardinal.length * 2.5) * 100
       );
+      if (isCategoryMatch) score = Math.max(score, 40) + 15;
 
       let triage: 'Low' | 'Moderate' | 'High' | 'Emergency' = 'Low';
       if (disease.category === 'Cardiovascular' || isEmergency) {
@@ -523,7 +533,7 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
 
   const primaryMatches = matches.slice(0, 3);
   const hasSymptomMatch = primaryMatches.length > 0;
-  const isHealthQuery = hasSymptomMatch || !!otcGuidance || isEmergency;
+  const isHealthQuery = hasSymptomMatch || !!otcGuidance || isEmergency || !!category;
 
   const recommendedSpeciality = primaryMatches[0]?.disease.speciality || 
     (isEmergency ? 'Emergency Medicine / Cardiology' : 'General Physician');
@@ -531,6 +541,7 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
   // Generate clean Markdown Report
   const formattedMarkdownReport = generateMarkdownReport({
     language,
+    category,
     detectedSymptoms,
     primaryMatches,
     otcGuidance,
@@ -557,6 +568,7 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
 // ============================================================================
 function generateMarkdownReport(data: {
   language: string;
+  category?: string;
   detectedSymptoms: string[];
   primaryMatches: ClinicalMatchResult[];
   otcGuidance?: OTCCondition;
@@ -564,8 +576,6 @@ function generateMarkdownReport(data: {
   emergencyReason?: string;
   recommendedSpeciality: string;
 }): string {
-  const isBn = data.language === 'bn' || true; // Default to Bangla as requested
-
   let output = '';
 
   // 1. Emergency Banner if critical
@@ -575,7 +585,22 @@ function generateMarkdownReport(data: {
     output += `আপনার উল্লেখিত লক্ষণগুলো জরুরি চিকিৎসাব্যবস্থা নির্দেশ করে। অবিলম্বে রোগীকে নিকটস্থ হাসপাতালের জরুরি বিভাগে নিয়ে যান অথবা জাতীয় জরুরি সেবা **৯৯৯** এ কল করুন।\n\n`;
   }
 
-  // 2. Clinical Evaluation Table
+  // Category Scope Header if selected
+  if (data.category) {
+    const catLabels: Record<string, string> = {
+      symptoms: '🩺 লক্ষণ ও ক্লিনিক্যাল মূল্যায়ন (Symptoms Evaluation)',
+      medicines: '💊 ওষুধ ও ফার্মাকোলজি গাইড (Medicines Guide)',
+      prescriptions: '📄 প্রেসক্রিপশন ও সেবনবিধি নির্দেশনা (Prescription Guidance)',
+      nutrition: '🥗 পুষ্টি, খাদ্যতালিকা ও ডায়েট (Nutrition & Dietetics)',
+      hospitals: '🏥 হাসপাতাল ও বিশেষজ্ঞ সেবা (Hospitals & Facilities)',
+      emergency: '🚨 জরুরি চিকিৎসা ও ফার্স্ট এইড (Emergency Care)',
+    };
+    if (catLabels[data.category]) {
+      output += `> **ক্যাটাগরি ফোকাস:** ${catLabels[data.category]}\n\n`;
+    }
+  }
+
+  // 2. Clinical Evaluation Table (Primary when Symptoms, Emergency, or General)
   if (data.primaryMatches.length > 0) {
     const topMatch = data.primaryMatches[0];
     output += `### 🩺 ক্লিনিক্যাল লক্ষণ বিশ্লেষণ (Clinical Evaluation)\n`;
@@ -594,7 +619,7 @@ function generateMarkdownReport(data: {
     output += `- **প্রয়োজনীয় ল্যাব টেস্ট:** ${topMatch.disease.diagnostic_tests.join(', ')}\n\n`;
   }
 
-  // 3. Verified OTC & First-Aid Medicine Guidance (with clickable Google search links)
+  // 3. Verified OTC & First-Aid Medicine Guidance (Prominent for Medicines & Prescriptions)
   if (data.otcGuidance) {
     output += `### 💊 সাময়িক ফার্স্ট-এইড ও ওটিসি (OTC) ওষুধের তথ্য\n`;
     output += `*প্রাথমিক আরামের জন্য প্রচলিত ফার্স্ট-এইড পরামর্শ:* **${data.otcGuidance.recommended_action}**\n\n`;
@@ -606,11 +631,30 @@ function generateMarkdownReport(data: {
     output += `\n`;
   }
 
-  // 4. Specialist Recommendation Card block
+  // 4. Dedicated Category Content for Nutrition
+  if (data.category === 'nutrition') {
+    output += `### 🥗 পুষ্টি ও সুষম খাদ্যের নির্দেশনা (Bangladeshi Diet Protocol)\n`;
+    output += `| খাদ্যের ধরন | সুপারিশকৃত উপাদান | স্বাস্থ্য উপকারিতা |\n`;
+    output += `| :--- | :--- | :--- |\n`;
+    output += `| **শর্করা (কার্ব)** | লাল চালের ভাত, লাল আটার রুটি, ওটস | দীর্ঘস্থায়ী শক্তি ও রক্তের সুগার নিয়ন্ত্রণ |\n`;
+    output += `| **আমিষ (প্রোটিন)** | দেশি মাছ, ডাল, ডিম, মুরগির মাংস | টিস্যু পুনর্গঠন ও রোগ প্রতিরোধ ক্ষমতা বৃদ্ধি |\n`;
+    output += `| **শাকসবজি** | লাল শাক, পালং শাক, পটল, পেঁপে, লাউ | প্রচুর ফাইবার ও ভিটামিন যা হজম ভালো রাখে |\n`;
+    output += `| **তরল ও পানীয়** | প্রতিদিন ২.৫ - ৩ লিটার বিশুদ্ধ পানি, ডাবের পানি | আর্দ্রতা বজায় রাখা ও টক্সিন দূর করা |\n\n`;
+  }
+
+  // 5. Dedicated Category Content for Hospitals
+  if (data.category === 'hospitals') {
+    output += `### 🏥 হাসপাতাল ও জরুরি স্বাস্থ্যকেন্দ্র তথ্য\n`;
+    output += `- **জাতীয় জরুরি কল সেন্টার:** **৯৯৯** (অ্যাম্বুলেন্স ও পুলিশ সহায়তা)\n`;
+    output += `- **স্বাস্থ্য বাতায়ন (স্বাস্থ্য অধিদপ্তর):** **১৬২৬৩** (২৪ ঘণ্টা ডাক্তারের পরামর্শ)\n`;
+    output += `- **নিকটস্থ স্বাস্থ্য প্রতিষ্ঠান:** প্রয়োজনে নিকটস্থ উপজেলা স্বাস্থ্য কমপ্লেক্স, জেলা সদর হাসপাতাল বা সরকারি মেডিকেল কলেজ হাসপাতালের জরুরি বিভাগে যোগাযোগ করুন।\n\n`;
+  }
+
+  // 6. Specialist Recommendation Card block
   output += `\`\`\`json:doctor_recommendation\n{\n  "speciality": "${data.recommendedSpeciality}",\n  "reason": "রোগের সঠিক ডায়াগনসিস ও প্রেসক্রিপশনের জন্য বিশেষজ্ঞ চিকিৎসকের পরামর্শ প্রয়োজন।",\n  "urgency": "${data.isEmergency ? 'emergency' : 'normal'}"\n}\n\`\`\`\n\n`;
 
-  // 5. Strict Clinical Disclaimer
-  output += `> ⚠️ **গুরুত্বপূর্ণ সতর্কতা:** এই তথ্যটি শুধুমাত্র প্রাথমিক স্বাস্থ্য সচেতনতা ও সাময়িক ফার্স্ট-এইড নির্দেশনার জন্য। এটি কোনোভাবেই একজন রেজিস্টার্ড এমবিবিএস ডাক্তারের সরাসরি প্রেসক্রিপশন বা চিকিৎসার বিকল্প নয়। লক্ষণ স্থায়ী হলে বা তীব্র হলে দ্রুত নিকটস্থ চিকিৎসকের পরামর্শ নিন।\n`;
+  // 7. Strict Clinical Disclaimer
+  output += `> ⚠️ **গুরুত্বপূর্ণ সতর্কতা:** এই তথ্যটি শুধুমাত্র প্রাথমিক স্বাস্থ্য সচেতনতা ও সাময়িক নির্দেশনার জন্য। এটি কোনোভাবেই একজন রেজিস্টার্ড এমবিবিএস ডাক্তারের সরাসরি প্রেসক্রিপশন বা চিকিৎসার বিকল্প নয়। লক্ষণ স্থায়ী হলে বা তীব্র হলে দ্রুত নিকটস্থ চিকিৎসকের পরামর্শ নিন।\n`;
 
   return output;
 }

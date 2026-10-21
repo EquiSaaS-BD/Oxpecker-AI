@@ -13,6 +13,7 @@ class DiagnosisRequest(BaseModel):
     age: Optional[int] = Field(None, ge=0, le=120)
     gender: Optional[str] = None
     vitals: Optional[Dict[str, Any]] = None
+    category: Optional[str] = None
 
 class DiagnosisResponse(BaseModel):
     status: str
@@ -30,7 +31,8 @@ async def diagnose_symptoms(payload: DiagnosisRequest):
     result = clinical_engine.diagnose(
         symptoms_query=payload.symptoms,
         age=payload.age,
-        vitals=payload.vitals
+        vitals=payload.vitals,
+        category=payload.category
     )
 
     return DiagnosisResponse(

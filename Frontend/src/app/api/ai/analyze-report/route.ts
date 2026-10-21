@@ -2,177 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // ============================================
 // Medical Report Analysis API
-// Analyzes blood reports, lab results, etc.
+// Azure Computer Vision (Read OCR + Lab Parameters)
+// Strict Non-Report Rejection & Anti-Hallucination
 // ============================================
 
-const REPORT_PROMPT = `You are Oxpecker AI's Medical Report Analyzer. Analyze this medical/lab report image carefully.
+const LAB_MARKERS = [
+  'cbc', 'hemoglobin', 'hb', 'wbc', 'rbc', 'platelet', 'esr', 'sugar', 'glucose',
+  'creatinine', 'urea', 'bilirubin', 'sgpt', 'alt', 'sgot', 'ast', 'lipid', 'cholesterol',
+  'triglycerides', 'hdl', 'ldl', 'urine', 'serum', 'test', 'result', 'reference', 'unit',
+  'range', 'normal', 'pathology', 'laboratory', 'specimen', 'patient', 'investigation',
+  'blood', 'thyroid', 'tsh', 'ft4', 'hba1c', 'calcium', 'vitamin', 'biochemistry'
+];
 
-Extract ALL values and respond with this EXACT JSON format first:
-
-\`\`\`json:report_analysis
-{
-  "reportType": "CBC / Blood Chemistry / Lipid Profile / Thyroid / etc.",
-  "patientName": "extracted or N/A",
-  "date": "extracted or N/A",
-  "lab": "lab name or N/A",
-  "parameters": [
-    {
-      "name": "Parameter Name (e.g., Hemoglobin)",
-      "value": "extracted value",
-      "unit": "g/dL, mg/dL, etc.",
-      "normalRange": "normal range",
-      "status": "normal | low | high | critical",
-      "riskLevel": "green | yellow | red"
-    }
-  ],
-  "summary": "Brief overall summary",
-  "abnormalCount": 0,
-  "criticalCount": 0,
-  "recommendedSpecialist": "if needed",
-  "urgency": "routine | soon | urgent"
-}
-\`\`\`
-
-After the JSON block, provide a detailed markdown explanation:
-
-### Report Summary
-- Overall health assessment
-
-### Abnormal Values
-- List each abnormal parameter with explanation in simple language
-- What it means for the patient
-- Possible causes
-
-### Normal Values
-- Brief confirmation of normal parameters
-
-### Recommendations
-- Specialist to visit if needed
-- Lifestyle changes
-- Follow-up tests recommended
-- Dietary suggestions
-
-### Risk Assessment
-- Low Risk / Moderate Risk / High Risk
-
-Use simple, patient-friendly language. Explain medical terms.
-Always include: "This analysis is informational. Please consult your doctor for proper diagnosis."`;
-
-async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: string) {
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        signal: AbortSignal.timeout(15000),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
-            ],
-          }],
-          max_tokens: 4096,
-          temperature: 0.2,
-        }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || '';
-      }
-    } catch (e) {
-      console.warn('[Oxpecker AI] OpenAI Report Vision failed, falling back...');
-    }
-  }
-
-  if (process.env.GOOGLE_API_KEY) {
-    try {
-      const model = process.env.GOOGLE_MODEL || 'gemini-2.0-flash';
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
-        {
-          method: 'POST',
-          signal: AbortSignal.timeout(15000),
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [
-              { text: prompt },
-              { inline_data: { mime_type: mimeType, data: imageBase64 } },
-            ]}],
-            generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
-          }),
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      }
-    } catch (e) {
-      console.warn('[Oxpecker AI] Google Report Vision failed, falling back to mock...');
-    }
-  }
-
-  // MOCK FALLBACK (If no vision API key is configured or offline)
-  return `\`\`\`json:report_analysis
-{
-  "reportType": "Complete Blood Count (CBC)",
-  "patientName": "Patient Profile",
-  "date": "Lab Report Analysis (Demo)",
-  "lab": "Verified Pathology Lab",
-  "parameters": [
-    {
-      "name": "Hemoglobin (Hb)",
-      "value": "13.8",
-      "unit": "g/dL",
-      "normalRange": "13.0 - 17.0",
-      "status": "normal",
-      "riskLevel": "green"
-    },
-    {
-      "name": "WBC Count",
-      "value": "7,400",
-      "unit": "/cu.mm",
-      "normalRange": "4,000 - 11,000",
-      "status": "normal",
-      "riskLevel": "green"
-    },
-    {
-      "name": "Platelet Count",
-      "value": "240,000",
-      "unit": "/cu.mm",
-      "normalRange": "150,000 - 450,000",
-      "status": "normal",
-      "riskLevel": "green"
-    },
-    {
-      "name": "ESR (1st hr)",
-      "value": "12",
-      "unit": "mm",
-      "normalRange": "0 - 15",
-      "status": "normal",
-      "riskLevel": "green"
-    }
-  ],
-  "summary": "All key hematological markers are within the normal physiological range.",
-  "abnormalCount": 0,
-  "criticalCount": 0,
-  "recommendedSpecialist": "General Physician",
-  "urgency": "routine"
-}
-\`\`\`
-
-### Report Summary
-- All primary parameters (Hemoglobin, Platelets, Total WBC) are healthy and within standard adult reference intervals.
-
-### Clinical Assessment
-- Low Risk. No signs of infection, anemia, or acute inflammatory response in this sample.
-- **Notice:** This is an AI-assisted report analysis. Please consult your physician for clinical diagnosis.`;
-}
+const NON_REPORT_TAGS = new Set([
+  'animal', 'cat', 'dog', 'pet', 'food', 'meal', 'car', 'vehicle', 'tree', 'flower', 'couch'
+]);
 
 export async function POST(request: NextRequest) {
   try {
@@ -184,13 +28,122 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString('base64');
+    const buffer = Buffer.from(bytes);
     const mimeType = file.type || 'image/jpeg';
 
-    const result = await analyzeWithVision(base64, mimeType, REPORT_PROMPT);
-    return NextResponse.json({ analysis: result });
+    const apiKey = process.env.AZURE_VISION_KEY;
+    const endpoint = process.env.AZURE_VISION_ENDPOINT || "https://eastasia.api.cognitive.microsoft.com/";
+
+    let ocrLines: string[] = [];
+    let caption = '';
+    let tags: string[] = [];
+
+    if (apiKey) {
+      try {
+        const rawEndpoint = endpoint.replace(/\/+$/, "");
+        const visionUrl = `${rawEndpoint}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=read,caption,tags`;
+
+        const res = await fetch(visionUrl, {
+          method: 'POST',
+          headers: {
+            'Ocp-Apim-Subscription-Key': apiKey,
+            'Content-Type': 'application/octet-stream',
+          },
+          body: buffer,
+          signal: AbortSignal.timeout(15000),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          caption = data.captionResult?.text || '';
+          tags = (data.tagsResult?.values || []).map((t: any) => (t.name || '').toLowerCase());
+          data.readResult?.blocks?.forEach((b: any) => {
+            b.lines?.forEach((l: any) => {
+              if (l.text) ocrLines.push(l.text);
+            });
+          });
+        }
+      } catch (err: any) {
+        console.warn('[Oxpecker AI] Azure Vision analyze-report error:', err.message || err);
+      }
+    }
+
+    const fullTextLower = ocrLines.join(' ').toLowerCase();
+    const matchedMarkers = LAB_MARKERS.filter(m => fullTextLower.includes(m));
+    const isNonReportTag = tags.some(t => NON_REPORT_TAGS.has(t));
+
+    // Reject non-reports
+    if ((isNonReportTag && matchedMarkers.length === 0) || (ocrLines.length < 2 && matchedMarkers.length === 0)) {
+      return NextResponse.json({
+        analysis: `### ❌ ল্যাব রিপোর্ট সনাক্ত করা যায়নি (No Lab Report Detected)\n\n` +
+          `আপলোডকৃত ছবিতে কোনো রক্ত পরীক্ষা, প্যাথলজি বা ডায়াগনস্টিক ল্যাব টেস্টের প্যারামিটার খুঁজে পাওয়া যায়নি${caption ? ` (চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
+          `**সঠিক ল্যাব রিপোর্ট পরীক্ষার জন্য:**\n` +
+          `- অনুগ্রহ করে সিবিসি (CBC), ব্লাড সুগার, লিপিড প্রোফাইল বা ইউরিন টেস্টের রিপোর্টের সম্পূর্ণ পাতার পরিষ্কার ছবি আপলোড করুন।\n` +
+          `- নিশ্চিত করুন যে টেস্টের নাম, ফলাফল এবং রেফারেন্স রেঞ্জ স্পষ্টভাবে দৃশ্যমান রয়েছে।`
+      });
+    }
+
+    // If Azure OpenAI is configured
+    if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
+      try {
+        const rawEndpoint = process.env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
+        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-mini';
+        const url = `${rawEndpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-15-preview`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': process.env.AZURE_OPENAI_API_KEY,
+          },
+          body: JSON.stringify({
+            messages: [{
+              role: 'system',
+              content: 'You are Oxpecker AI Medical Report Analyzer. Extract and analyze laboratory test parameters accurately from the image. Do not invent false parameters.'
+            }, {
+              role: 'user',
+              content: [
+                { type: 'text', text: `Azure Computer Vision OCR:\n${ocrLines.join('\n')}\n\nAnalyze this medical laboratory test report in Bengali and English.` },
+                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${buffer.toString('base64')}` } },
+              ]
+            }],
+            max_tokens: 4096,
+            temperature: 0.1,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) return NextResponse.json({ analysis: content });
+        }
+      } catch (err) {
+        console.warn('[Oxpecker AI] Azure OpenAI report vision call error:', err);
+      }
+    }
+
+    // Clean, verified markdown report from Azure OCR
+    const reportMarkdown = `### 📊 মেডিকেল ল্যাব রিপোর্ট বিশ্লেষণ (Microsoft Azure Computer Vision Read OCR)
+- **চিহ্নিত প্যারামিটারসমূহ:** ${matchedMarkers.join(', ') || 'ল্যাব টেস্ট মান'}
+- **মোট স্ক্যানকৃত লাইন:** ${ocrLines.length} টি
+
+#### 🔍 রিপোর্ট থেকে অপটিক্যাল পাঠ (Transcript):
+\`\`\`text
+${ocrLines.join('\n')}
+\`\`\`
+
+### ক্লিনিক্যাল পরামর্শ
+- আপনার ল্যাব টেস্টের ফলাফলগুলো সংশ্লিষ্ট বিশেষজ্ঞ চিকিৎসকের কাছে প্রদর্শন করে সঠিক চিকিৎসা ও ডোজ নিশ্চিত করুন।
+- যেকোনো অস্বাভাবিক মান দেখা দিলে নিজে নিজে কোনো ওষুধ শুরু করবেন না।
+
+> ⚠️ **সতর্কতা:** এই ল্যাব রিপোর্ট বিশ্লেষণটি Microsoft Azure Computer Vision OCR দ্বারা প্রস্তুতকৃত। চূড়ান্ত স্বাস্থ্য সিদ্ধান্তের পূর্বে নিবন্ধিত চিকিৎসকের পরামর্শ নেওয়া আবশ্যক।`;
+
+    return NextResponse.json({ analysis: reportMarkdown });
+
   } catch (error: any) {
-    console.error('[Oxpecker AI] Report analysis error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[Oxpecker AI] Medical Report analysis error:', error);
+    return NextResponse.json({ 
+      analysis: `❌ **ল্যাব রিপোর্ট বিশ্লেষণে ত্রুটি:** ${error.message || 'অনুগ্রহ করে ফাইলটি পুনরায় আপলোড করুন।'}` 
+    }, { status: 500 });
   }
 }

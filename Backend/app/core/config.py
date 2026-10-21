@@ -15,7 +15,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    CORS_ORIGINS: Any = ["http://localhost:3000", "http://127.0.0.1:3000", "https://oxpecker-web.azurewebsites.net"]
+    CORS_ORIGINS: Any = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://oxpecker-web.azurewebsites.net",
+        "https://oxpecker.equisaas-bd.com",
+        "https://oxpecker-api.azurewebsites.net"
+    ]
     REDIS_URL: str = "redis://localhost:6379/0"
 
     DATABASE_URL: str = "sqlite:///./oxpecker.db"

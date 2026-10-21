@@ -1,16 +1,28 @@
-[ Shostota ai User Interface ]
-                               |
-            +------------------+------------------+
-            |                                     |
-    (Chat & Booking)                     (Report Analysis)
-            v                                     v
-      [ Groq API ]                        [ Gemini 2.5 API ]
-  (Fast, Real-time Agent)               (Heavy Vision & Logic)
+================================================================================
+  Oxpecker AI - Microsoft Azure Native Cloud & AI Architecture
+================================================================================
 
+[ Oxpecker AI Web & Mobile Client ]
+                   |
+     +-------------+-------------+
+     |                           |
+(Frontend UI)              (Backend API)
+     v                           v
+[ oxpecker-web ]           [ oxpecker-api ]
+Azure App Service          Azure App Service
+Region: indiasouthcentral  Region: indiasouthcentral
 
+Clinical Intelligence & Native Azure Services:
+1. Azure Computer Vision (Read OCR & Vision Analysis):
+   - Resource: ai-oxpecker-vision
+   - Endpoint: https://eastasia.api.cognitive.microsoft.com/
+   - API Version: 2024-02-01 (features: read, caption, tags)
 
+2. Azure Storage (Blob Storage):
+   - Account: stoxpeckerhealth
+   - Container: medical-records
 
-
-Groq Api: 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
-
-Gemini Api: AIzaSyBzMLxU5OTUJy0SPTtU4ZyQB73N3vlwccU
+3. Oxpecker Clinical AI Engine:
+   - 150 Common Diseases in Bangladesh (DGHS & WHO Protocols)
+   - 9,600+ Verified Clinical Patient Dataset
+   - Endpoint: https://oxpecker-api.azurewebsites.net/api/v1/clinical-ai/diagnose
