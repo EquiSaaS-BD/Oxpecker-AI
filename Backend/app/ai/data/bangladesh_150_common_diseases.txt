@@ -1,0 +1,175 @@
+================================================================================
+  150 Common Diseases in Bangladesh and South Asia (Oxpecker AI Dataset Guide)
+================================================================================
+
+--- 1. সংক্রামক, মসকিটো-বোর্ন ও ট্রপিক্যাল রোগ (Infectious & Tropical Diseases) ---
+1. Dengue Fever - ডেঙ্গু জ্বর
+2. Chikungunya - চিকুনগুনিয়া
+3. Malaria - ম্যালেরিয়া
+4. Typhoid Fever - টাইফয়েড জ্বর
+5. Paratyphoid - প্যারাটাইফয়েড
+6. Cholera - কলেরা
+7. Nipah Virus Infection - নিপাহ ভাইরাস
+8. Kala-azar / Leishmaniasis - কালাজ্বর
+9. Filariasis / Elephantiasis - ফাইলেরিয়া / গোদ রোগ
+10. Tuberculosis (TB) - যক্ষ্মা
+11. Rabies - জলাতঙ্ক
+12. Tetanus - ধনুষ্টঙ্কার
+13. Leptospirosis - লেপ্টোস্পাইরোসিস
+14. Scrub Typhus - স্ক্রাব টাইফাস
+15. Japanese Encephalitis - জাপানিজ এনসেফালাইটিস
+16. Anthrax - তড়কা / অ্যানথ্রাক্স
+17. Leprosy - কুষ্ঠ রোগ
+18. Chickenpox - জলবসন্ত
+19. Measles - হাম
+20. Rubella / German Measles - রুবেলা
+21. Mumps - মাম্পস / গালফুলা
+22. Shingles / Herpes Zoster - অগ্নিবাণ / হার্পিস জোস্টার
+23. Herpes Simplex - হার্পিস সিমপ্লেক্স
+24. COVID-19 - করোনাভাইরাস ইনফেকশন
+25. Seasonal Influenza / Flu - মৌসুমি ইনফ্লুয়েঞ্জা
+
+--- 2. পরিপাকতন্ত্র ও লিভারের রোগ (Gastrointestinal & Liver Diseases) ---
+26. Acute Watery Diarrhea - তীব্র ডায়রিয়া
+27. Amoebic Dysentery - আমাশয়
+28. Bacillary Dysentery / Shigellosis - রক্ত আমাশয়
+29. Gastroenteritis / Food Poisoning - ফুড পয়জনিং
+30. Gastritis / GERD - গ্যাস্ট্রিক / এসিডিটি
+31. Peptic Ulcer Disease - পেপটিক আলসার
+32. Hepatitis A - হেপাটাইটিস এ
+33. Hepatitis B - হেপাটাইটিস বি
+34. Hepatitis C - হেপাটাইটিস সি
+35. Hepatitis E - হেপাটাইটিস ই
+36. Jaundice - জন্ডিস
+37. Fatty Liver Disease (NAFLD) - ফ্যাটি লিভার
+38. Liver Cirrhosis - লিভার সিরোসিস
+39. Cholecystitis - পিত্তথলির প্রদাহ
+40. Gallstones / Cholelithiasis - পিত্তথলিতে পাথর
+41. Appendicitis - অ্যাপেন্ডিসাইটিস
+42. Irritable Bowel Syndrome (IBS) - আইবিএস
+43. Inflammatory Bowel Disease (IBD) - অন্ত্রের প্রদাহ
+44. Intestinal Worms / Helminthiasis - পেটের কৃমি
+45. Hemorrhoids / Piles - পাইলস বা অর্শ
+46. Anal Fissure - এনাল ফিশার / মলদ্বারে চিড়
+47. Anal Fistula - ভগন্দর বা ফিস্টুলা
+48. Pancreatitis - অগ্ন্যাশয়ের প্রদাহ
+49. Constipation - কোষ্ঠকাঠিন্য
+50. Celiac Disease - গ্লুটেন অ্যালার্জি
+
+--- 3. শ্বাসতন্ত্র ও ফুসফুসের রোগ (Respiratory Diseases) ---
+51. Common Cold - সাধারণ সর্দি-কাশি
+52. Pneumonia - নিউমোনিয়া
+53. Bronchial Asthma - হাঁপানি বা অ্যাজমা
+54. Acute Bronchitis - তীব্র ব্রঙ্কাইটিস
+55. Chronic Obstructive Pulmonary Disease (COPD) - সিওপিডি
+56. Sinusitis - সাইনোসাইটিস
+57. Tonsillitis - টনসিলের প্রদাহ
+58. Pharyngitis / Sore Throat - গলাব্যথা / ফ্যারিঞ্জাইটিস
+59. Laryngitis - স্বরযন্ত্রের প্রদাহ
+60. Allergic Rhinitis - অ্যালার্জিক রাইনাইটিস
+61. Pleural Effusion - ফুসফুসে পানি জমা
+62. Bronchiectasis - ব্রঙ্কিয়েক্টেসিস
+63. Interstitial Lung Disease (ILD) - আইএলডি
+64. Occupational Lung Disease / Silicosis - সিলিকোসিস
+65. Sleep Apnea - ঘুমের মধ্যে শ্বাসকষ্ট
+
+--- 4. হৃদরোগ ও রক্তনালীর রোগ (Cardiovascular Diseases) ---
+66. Hypertension - উচ্চ রক্তচাপ
+67. Hypotension - নিম্ন রক্তচাপ
+68. Coronary Artery Disease (CAD) - করোনারি হৃদরোগ
+69. Angina Pectoris - বুকে ব্যথা / অ্যানজাইনা
+70. Myocardial Infarction / Heart Attack - হার্ট অ্যাটাক
+71. Congestive Heart Failure - হার্ট ফেইলিউর
+72. Rheumatic Heart Disease (RHD) - বাতজ্বর জনিত হৃদরোগ
+73. Rheumatic Fever - বাতজ্বর
+74. Arrhythmia - অনিয়মিত হৃদস্পন্দন
+75. Atherosclerosis - রক্তনালীতে চর্বি জমা
+76. Deep Vein Thrombosis (DVT) - পায়ে রক্ত জমাট বাঁধা
+77. Varicose Veins - স্ফীত রক্তনালী
+78. Peripheral Arterial Disease - পেরিফেরাল আর্টারিয়াল ডিজিজ
+
+--- 5. এন্ডোক্রাইন, হরমোন ও মেটাবলিক রোগ (Endocrine & Metabolic) ---
+79. Type 2 Diabetes Mellitus - টাইপ-২ ডায়াবেটিস
+80. Type 1 Diabetes Mellitus - টাইপ-১ ডায়াবেটিস
+81. Gestational Diabetes - গর্ভকালীন ডায়াবেটিস
+82. Hypothyroidism - হাইপোথাইরয়েডিজম
+83. Hyperthyroidism - হাইপারথাইরয়েডিজম
+84. Goiter - গলগণ্ড রোগ
+85. Gout - গাউট বা ইউরিক অ্যাসিডের বাত
+86. Hyperlipidemia / High Cholesterol - রক্তে অতিরিক্ত চর্বি
+87. Obesity - স্থূলতা বা অতিরিক্ত ওজন
+88. Metabolic Syndrome - মেটাবলিক সিন্ড্রোম
+89. Cushing's Syndrome - কুশিং সিন্ড্রোম
+90. Polycystic Ovary Syndrome (PCOS) - পিসিওএস
+
+--- 6. কিডনি ও মূত্রনালীর রোগ (Kidney & Urological Diseases) ---
+91. Urinary Tract Infection (UTI) - মূত্রনালীর ইনফেকশন
+92. Kidney Stones / Nephrolithiasis - কিডনিতে পাথর
+93. Chronic Kidney Disease (CKD) - দীর্ঘস্থায়ী কিডনি রোগ
+94. Acute Kidney Injury (AKI) - আকস্মিক কিডনি ফেইলিউর
+95. Glomerulonephritis - গ্লোমেরুলোনেফ্রাইটিস
+96. Nephrotic Syndrome - নেফ্রোটিক সিন্ড্রোম
+97. Benign Prostatic Hyperplasia (BPH) - প্রোস্টেট বৃদ্ধি
+98. Prostatitis - প্রোস্টেটের প্রদাহ
+99. Hydronephrosis - কিডনি ফুলে যাওয়া
+100. Bladder Infection / Cystitis - মূত্রথলির ইনফেকশন
+
+--- 7. চর্মরোগ ও অ্যালার্জি (Dermatological Diseases & Allergies) ---
+101. Scabies - খোসপাঁচড়া
+102. Ringworm / Tinea / Fungal Infection - দাদ বা ছত্রাক সংক্রমণ
+103. Eczema / Atopic Dermatitis - একজিমা
+104. Psoriasis - সোরিয়াসিস
+105. Acne Vulgaris - ব্রণ
+106. Urticaria / Hives - আমবাত বা অ্যালার্জি
+107. Contact Dermatitis - কন্টাক্ট ডার্মাটাইটিস
+108. Vitiligo - শ্বেতী রোগ
+109. Pityriasis Versicolor / Chhobi - ছুলি রোগ
+110. Boils / Furuncles - ফোড়া
+111. Alopecia Areata - চুল পড়া / টাক
+112. Melasma - মেছতা
+113. Impetigo - ইমপেটিগো
+114. Heat Rash / Prickly Heat - ঘামাচি
+
+--- 8. হাড়, জয়েন্ট ও বাত রোগ (Musculoskeletal Diseases) ---
+115. Osteoarthritis - অস্টিওআর্থ্রাইটিস
+116. Rheumatoid Arthritis - রিউমাটয়েড বাত
+117. Osteoporosis - হাড়ের ক্ষয় রোগ
+118. Cervical Spondylosis - ঘাড়ে ব্যথা বা স্পন্ডিলাইটিস
+119. Lumbar Spondylosis - কোমরে স্পন্ডিলাইটিস
+120. Frozen Shoulder - ফ্রোজেন শোল্ডার
+121. Sciatica - সায়াটিকা
+122. Ankylosing Spondylitis - অ্যানকাইলোজিং স্পন্ডিলাইটিস
+123. Rickets - রিকেটস
+124. Carpal Tunnel Syndrome - কার্পাল টানেল সিন্ড্রোম
+
+--- 9. স্নায়ুতন্ত্র ও মানসিক স্বাস্থ্য (Neurological & Mental Health) ---
+125. Ischemic Stroke - ইস্কেমিক স্ট্রোক
+126. Hemorrhagic Stroke - মস্তিষ্কে রক্তক্ষরণ
+127. Migraine - মাইগ্রেন
+128. Tension Headache - টেনশন হেডেক
+129. Epilepsy / Seizures - মৃগীরোগ / খিঁচুনি
+130. Bell's Palsy - বেলস পলসি
+131. Parkinson's Disease - পারকিনসন্স ডিজিজ
+132. Peripheral Neuropathy - পেরিফেরাল নিউরোপ্যাথি
+133. Major Depressive Disorder (Depression) - বিষণ্ণতা
+134. Generalized Anxiety Disorder (GAD) - উদ্বেগ বা দুশ্চিন্তা
+135. Insomnia - অনিদ্রা
+
+--- 10. রক্ত, পুষ্টিহীনতা ও চোখের রোগ (Hematology, Eye & Nutrition) ---
+136. Iron Deficiency Anemia - রক্তস্বল্পতা
+137. Thalassemia - থ্যালাসেমিয়া
+138. Vitamin D Deficiency - ভিটামিন ডি-এর ঘাটতি
+139. Vitamin B12 Deficiency - ভিটামিন বি১২-এর ঘাটতি
+140. Malnutrition - অপুষ্টি
+141. Conjunctivitis / Pink Eye - চোখ ওঠা
+142. Cataract - চোখের ছানি
+143. Glaucoma - গ্লুকোমা
+144. Dry Eye Syndrome - ড্রাই আই সিন্ড্রোম
+145. Stye / Hordeolum - চোখের অঞ্জনি
+
+--- 11. নাক, কান, গলা ও মুখ গহ্বর (ENT & Dental) ---
+146. Otitis Media - মধ্যকর্ণের ইনফেকশন
+147. Hearing Loss - শ্রবণশক্তি হ্রাস
+148. Dental Caries / Tooth Decay - দাঁতের ক্ষয়
+149. Gingivitis / Periodontitis - মাড়ির প্রদাহ
+150. Aphthous Ulcer / Mouth Ulcers - মুখে ঘা

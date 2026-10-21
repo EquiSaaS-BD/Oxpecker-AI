@@ -1,0 +1,89 @@
+name: Oxpecker AI - Deploy Fullstack to Microsoft Azure
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'feature/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-backend:
+    name: 🐍 Deploy FastAPI Backend to Azure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'Backend/requirements.txt'
+
+      - name: Install Dependencies
+        working-directory: Backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create Backend Deployment Package
+        run: |
+          cd Backend
+          zip -r ../backend-deploy.zip . -x "__pycache__/*" "tests/*" "*.git*"
+
+      - name: Deploy to Azure Web App (Backend)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'oxpecker-api'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_BACKEND }}
+          package: './backend-deploy.zip'
+
+  deploy-frontend:
+    name: ⚡ Deploy Next.js 15 Frontend to Azure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'Frontend/package.json'
+
+      - name: Install Frontend Dependencies
+        working-directory: Frontend
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        working-directory: Frontend
+        run: npx prisma generate
+
+      - name: Build Next.js Production App
+        working-directory: Frontend
+        env:
+          NEXT_PUBLIC_API_URL: 'https://oxpecker-api.azurewebsites.net'
+          NEXT_PUBLIC_SUPABASE_URL: 'https://nisjigguleygbjcvfmbb.supabase.co'
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: '17336209293-o2nb2ujc7m36cu851qraclb3shrt2g1n.apps.googleusercontent.com'
+          NODE_ENV: 'production'
+        run: npm run build
+
+      - name: Create Frontend Deployment Package
+        run: |
+          cd Frontend
+          zip -r ../frontend-deploy.zip . -x "node_modules/.cache/*" ".git*"
+
+      - name: Deploy to Azure Web App (Frontend)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'oxpecker-web'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND }}
+          package: './frontend-deploy.zip'

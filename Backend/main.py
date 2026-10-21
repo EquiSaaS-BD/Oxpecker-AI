@@ -16,7 +16,7 @@ from app.core.redis import init_redis
 from app.core.database import engine
 
 # Import routers
-from app.api.v1 import auth, health, profile, healthpass
+from app.api.v1 import auth, health, profile, healthpass, clinical_ai
 
 setup_logging()
 logger = get_logger(__name__)
@@ -27,14 +27,25 @@ async def lifespan(app: FastAPI):
     """Application lifecycle events."""
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     
-    # Initialize Redis
+    # Initialize Redis (with graceful fallback if not present)
     await init_redis()
     
+    # Auto-create database tables if not existing
+    try:
+        from app.models.base import Base
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database schemas initialized.")
+    except Exception as e:
+        logger.warning(f"Database schema auto-init warning: {e}")
+
     yield
     
     # Cleanup
     logger.info("Shutting down application...")
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -56,11 +67,31 @@ app.add_middleware(
 # Exception Handlers
 register_exception_handlers(app)
 
-# Routers
+# Root probes for Azure App Service & Health Monitors
+@app.get("/")
+async def root():
+    return {
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "online",
+        "docs": "/docs",
+        "api_v1": settings.API_V1_STR,
+    }
+
+@app.get("/health")
+async def root_health():
+    return {
+        "status": "healthy",
+        "service": "oxpecker-api",
+        "version": settings.VERSION,
+    }
+
+# API v1 Routers
 app.include_router(health.router, prefix=settings.API_V1_STR)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(profile.router, prefix=settings.API_V1_STR)
 app.include_router(healthpass.router, prefix=settings.API_V1_STR)
+app.include_router(clinical_ai.router, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":
     import uvicorn

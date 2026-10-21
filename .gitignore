@@ -58,3 +58,14 @@ scratch/
 AGENT_HANDOVER.md
 *_HANDOVER*.md
 *handover*.md
+
+# Python and Deployment Artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.zip
+Backend/app/ai/models/*.gguf
+Backend/app/ai/models/*.bin

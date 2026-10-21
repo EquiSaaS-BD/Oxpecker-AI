@@ -2,9 +2,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
-# Added check_same_thread=False for SQLite
+db_uri = settings.SQLALCHEMY_DATABASE_URI
+connect_args = {"check_same_thread": False} if "sqlite" in db_uri.lower() else {}
+
 engine = create_engine(
-    settings.SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False}
+    db_uri,
+    connect_args=connect_args
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

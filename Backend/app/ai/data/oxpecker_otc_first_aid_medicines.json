@@ -1,0 +1,211 @@
+{
+  "system_title": "Oxpecker AI - Primary OTC & First-Aid Clinical Advisory System",
+  "disclaimer_bengali": "⚠️ গুরুত্বপূর্ণ সতর্কতা: এটি শুধুমাত্র প্রাথমিক ফার্স্ট-এইড ও সাময়িক উপশমের সাধারণ তথ্য। কোনো অবস্থাতেই চিকিৎসকের পরামর্শ ছাড়া দীর্ঘমেয়াদে ওষুধ সেবন করবেন না। লক্ষণ তীব্র হলে বা ২ দিনের বেশি স্থায়ী হলে অবিলম্বে নিবন্ধিত চিকিৎসকের শরণাপন্ন হোন।",
+  "disclaimer_english": "⚠️ Clinical Disclaimer: This information is strictly for temporary first-aid and mild symptom relief. Do not take medications long-term without professional medical advice. If symptoms persist beyond 48 hours or worsen, consult a registered physician immediately.",
+  "conditions": [
+    {
+      "condition_id": "fever_mild_headache",
+      "condition_name": "Fever & General Body Ache",
+      "bengali_name": "জ্বর ও সাধারণ মাথা বা শরীর ব্যথা",
+      "category": "General Pain & Pyrexia",
+      "recommended_action": "পর্যাপ্ত বিশ্রাম নিন, স্বাভাবিক তাপমাত্রার পানি দিয়ে শরীর স্পঞ্জ করুন এবং প্রচুর পানি পান করুন।",
+      "medicines": [
+        {
+          "brand_name": "Ace Plus (500mg + 65mg)",
+          "generic_name": "Paracetamol + Caffeine",
+          "form": "Tablet",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "খাবারের পর দিনে ১-২ বার (প্রয়োজনে)। জ্বর ও ব্যথায় দ্রুত উপশম দেয়।",
+          "max_daily_dose": "২৪ ঘণ্টায় ৪টির বেশি ট্যাবলেট সেবন করবেন না।",
+          "google_search_url": "https://www.google.com/search?q=Ace+Plus+tablet+Square+Pharma+uses+dosage",
+          "app_link": "/medicines/ace-plus"
+        },
+        {
+          "brand_name": "Napa Extra",
+          "generic_name": "Paracetamol + Caffeine",
+          "form": "Tablet",
+          "manufacturer": "Beximco Pharmaceuticals Ltd.",
+          "instruction": "খাবারের পর ১টি করে ট্যাবলেট। তীব্র মাথা ব্যথা ও জ্বরে ব্যবহৃত হয়।",
+          "max_daily_dose": "২৪ ঘণ্টায় ৪টির বেশি ট্যাবলেট সেবন করবেন না।",
+          "google_search_url": "https://www.google.com/search?q=Napa+Extra+tablet+Beximco+uses+dosage",
+          "app_link": "/medicines/napa-extra"
+        },
+        {
+          "brand_name": "Napa (500mg)",
+          "generic_name": "Paracetamol",
+          "form": "Tablet / Syrup",
+          "manufacturer": "Beximco Pharmaceuticals Ltd.",
+          "instruction": "খাবারের পর ১টি ট্যাবলেট। সাধারণ জ্বর ও শরীর ব্যথায় সবচেয়ে নিরাপদ।",
+          "max_daily_dose": "দিনে সর্বোচ্চ ৮টি ট্যাবলেট (৪ গ্রাম)।",
+          "google_search_url": "https://www.google.com/search?q=Napa+500mg+tablet+Beximco",
+          "app_link": "/medicines/napa"
+        }
+      ]
+    },
+    {
+      "condition_id": "severe_headache_migraine",
+      "condition_name": "Severe Headache & Migraine",
+      "bengali_name": "তীব্র মাথাব্যথা ও মাইগ্রেনের ব্যথা",
+      "category": "Neurological / Headache",
+      "recommended_action": "অন্ধকার ও শান্ত ঘরে বিশ্রাম নিন। পর্যাপ্ত পানি পান করুন এবং চোখের ওপর ঠান্ডা বা বরফের সেঁক দিতে পারেন।",
+      "medicines": [
+        {
+          "brand_name": "Tufnil (200mg)",
+          "generic_name": "Tolfenamic Acid",
+          "form": "Tablet",
+          "manufacturer": "Eskayef Pharmaceuticals Ltd.",
+          "instruction": "তীব্র মাথাব্যথা বা মাইগ্রেন শুরু হওয়ার সাথে সাথে খাবারের পর ১টি ট্যাবলেট সেবন করতে পারেন।",
+          "max_daily_dose": "একটানা ২ দিনের বেশি চিকিৎসকের পরামর্শ ছাড়া খাবেন না।",
+          "google_search_url": "https://www.google.com/search?q=Tufnil+200mg+tablet+Eskayef+uses+side+effects",
+          "app_link": "/medicines/tufnil"
+        },
+        {
+          "brand_name": "Tofen (200mg)",
+          "generic_name": "Tolfenamic Acid",
+          "form": "Tablet",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "মাইগ্রেন ও তীব্র মাথাব্যথায় চিকিৎসকের গাইডলাইনে সেবনযোগ্য।",
+          "max_daily_dose": "প্রয়োজনে ১-২ দিন সেব্য।",
+          "google_search_url": "https://www.google.com/search?q=Tofen+200mg+tablet+Square+Pharma",
+          "app_link": "/medicines/tofen"
+        }
+      ]
+    },
+    {
+      "condition_id": "joint_knee_leg_pain",
+      "condition_name": "Knee, Leg & Joint Pain",
+      "bengali_name": "হাঁটু, পা বা জয়েন্টে মচকানো ও ব্যথা",
+      "category": "Musculoskeletal Pain",
+      "recommended_action": "ব্যথার স্থানে অপ্রয়োজনীয় চাপ দেবেন না। ফোলা থাকলে বরফ দিন (Ice Pack)। ব্যথানাশক বড়ি খাওয়ার চেয়ে বাহ্যিক মলম/জেল ব্যবহার করা কিডনির জন্য নিরাপদ।",
+      "medicines": [
+        {
+          "brand_name": "Volmac Gel (1%)",
+          "generic_name": "Diclofenac Diethylamine",
+          "form": "Topical Gel / Ointment",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "আক্রান্ত স্থানে দিনে ২-৩ বার আলতো করে মালিশ করুন। ক্ষতস্থানে লাগাবেন না।",
+          "max_daily_dose": "বাহ্যিক ব্যবহারের জন্য। মুখে খাওয়া নিষেধ।",
+          "google_search_url": "https://www.google.com/search?q=Volmac+gel+Square+Pharma+uses",
+          "app_link": "/medicines/volmac-gel"
+        },
+        {
+          "brand_name": "Fastum Gel",
+          "generic_name": "Ketoprofen (2.5%)",
+          "form": "Topical Gel",
+          "manufacturer": "A. Menarini / Square",
+          "instruction": "জয়েন্ট ও মাংসপেশির ব্যথায় আক্রান্ত স্থানে পাতলা করে লাগিয়ে দিন।",
+          "max_daily_dose": "দিনে ২ বার।",
+          "google_search_url": "https://www.google.com/search?q=Fastum+gel+uses+joint+pain",
+          "app_link": "/medicines/fastum-gel"
+        },
+        {
+          "brand_name": "Moov Pain Relief Cream",
+          "generic_name": "Wintergreen Oil + Menthol + Turpentine Oil",
+          "form": "Topical Ointment",
+          "manufacturer": "Reckitt Benckiser",
+          "instruction": "কোমর ও পায়ের মাংশপেশির টানে বা ব্যথায় হালকা করে মেখে দিন।",
+          "max_daily_dose": "বাহ্যিক ব্যবহারের জন্য।",
+          "google_search_url": "https://www.google.com/search?q=Moov+pain+relief+cream+uses",
+          "app_link": "/medicines/moov"
+        }
+      ]
+    },
+    {
+      "condition_id": "cut_wound_first_aid",
+      "condition_name": "Cuts, Wounds & Abrasions",
+      "bengali_name": "হাত কেটে যাওয়া, ক্ষত বা ছড়ে যাওয়া",
+      "category": "First-Aid & Wound Care",
+      "recommended_action": "প্রথমে পরিষ্কার পানি দিয়ে রক্ত ও ময়লা ধুয়ে ফেলুন। অ্যান্টিসেপটিক দিয়ে জীবানুমুক্ত করে ব্যান্ডেজ করুন। মরিচা ধরা জিনিসে কাটলে ২৪ ঘণ্টার মধ্যে টিটেনাস (Tetanus Toxoid) ইনজেকশন নিন।",
+      "medicines": [
+        {
+          "brand_name": "Savlon Liquid Antiseptic",
+          "generic_name": "Chlorhexidine Gluconate + Cetrimide",
+          "form": "Antiseptic Solution",
+          "manufacturer": "ACI Limited",
+          "instruction": "তুলায় করে হালকা পানিতে গুলিয়ে বা সরাসরি ক্ষতস্থানের চারপাশ পরিষ্কার করুন।",
+          "max_daily_dose": "বাহ্যিক ব্যবহারের জন্য।",
+          "google_search_url": "https://www.google.com/search?q=Savlon+antiseptic+liquid+ACI+uses",
+          "app_link": "/medicines/savlon"
+        },
+        {
+          "brand_name": "Viodin 10% Ointment",
+          "generic_name": "Povidone Iodine (10%)",
+          "form": "Topical Ointment",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "কাটা ও পোড়া স্থানে পাতলা করে লাগিয়ে স্টেরাইল গজ বা ব্যান্ড-এইড দিয়ে ঢেকে দিন। ইনফেকশন রোধ করে।",
+          "max_daily_dose": "দিনে ১-২ বার ড্রেসিং করার সময়।",
+          "google_search_url": "https://www.google.com/search?q=Viodin+10+ointment+Square+uses",
+          "app_link": "/medicines/viodin-ointment"
+        },
+        {
+          "brand_name": "Nebanol Ointment",
+          "generic_name": "Neomycin Sulfate + Bacitracin Zinc",
+          "form": "Antibacterial Ointment",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "ছোটখাটো কাটা-ছেড়া ও ক্ষতের জীবাণু সংক্রমণ রোধে ব্যবহৃত হয়।",
+          "max_daily_dose": "দিনে ১-৩ বার।",
+          "google_search_url": "https://www.google.com/search?q=Nebanol+ointment+Square+uses",
+          "app_link": "/medicines/nebanol"
+        }
+      ]
+    },
+    {
+      "condition_id": "acidity_gastric_heartburn",
+      "condition_name": "Gastric, Acidity & Heartburn",
+      "bengali_name": "গ্যাস্ট্রিক, এসিডিটি ও বুক জ্বালাপোড়া",
+      "category": "Gastrointestinal",
+      "recommended_action": "তেল-মশলাযুক্ত ও ভাজাপোড়া খাবার পরিহার করুন। একবারে বেশি না খেয়ে অল্প অল্প করে খান। পর্যাপ্ত পানি পান করুন।",
+      "medicines": [
+        {
+          "brand_name": "Seclo (20mg)",
+          "generic_name": "Omeprazole",
+          "form": "Capsule",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "সকালে এবং রাতে খাবারের ২০-৩০ মিনিট আগে ১টি ক্যাপসুল।",
+          "max_daily_dose": "দিনে সর্বোচ্চ ২টি ক্যাপসুল।",
+          "google_search_url": "https://www.google.com/search?q=Seclo+20mg+capsule+Square+uses",
+          "app_link": "/medicines/seclo"
+        },
+        {
+          "brand_name": "Antacid Plus / Entacyd",
+          "generic_name": "Aluminium Hydroxide + Magnesium Hydroxide + Simethicone",
+          "form": "Suspension / Chewable Tablet",
+          "manufacturer": "Square / Incepta",
+          "instruction": "তাৎক্ষণিক বুক জ্বালা ও গ্যাসে খাবারের ১ ঘণ্টা পর ২ চা চামচ সিরাপ পান করুন।",
+          "max_daily_dose": "প্রয়োজনে দিনে ৩-৪ বার।",
+          "google_search_url": "https://www.google.com/search?q=Antacid+Plus+syrup+uses",
+          "app_link": "/medicines/antacid-plus"
+        }
+      ]
+    },
+    {
+      "condition_id": "cold_sneezing_allergy",
+      "condition_name": "Cold, Runny Nose & Allergy",
+      "bengali_name": "সর্দি, হাঁচি ও নাক দিয়ে পানি পড়া",
+      "category": "Allergy & Respiratory",
+      "recommended_action": "ধুলাবালি ও ঠান্ডা বাতাস থেকে দূরে থাকুন। কুসুম গরম পানির ভাপ (Steam Inhalation) নিন।",
+      "medicines": [
+        {
+          "brand_name": "Alatrol (10mg)",
+          "generic_name": "Cetirizine Hydrochloride",
+          "form": "Tablet / Syrup",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "রাতে ঘুমানোর আগে ১টি ট্যাবলেট। হাঁচি ও সর্দির উপশমে কাজ করে।",
+          "max_daily_dose": "দিনে সর্বোচ্চ ১টি ট্যাবলেট। এটি খেলে হালকা ঘুম ঘুম ভাব হতে পারে।",
+          "google_search_url": "https://www.google.com/search?q=Alatrol+10mg+tablet+Square+uses",
+          "app_link": "/medicines/alatrol"
+        },
+        {
+          "brand_name": "Fexo (120mg)",
+          "generic_name": "Fexofenadine Hydrochloride",
+          "form": "Tablet",
+          "manufacturer": "Square Pharmaceuticals Ltd.",
+          "instruction": "সকালে বা রাতে ১টি ট্যাবলেট। এটি সাধারণত ঘুম বা ঝিমুনি তৈরি করে না।",
+          "max_daily_dose": "দিনে ১টি ট্যাবলেট।",
+          "google_search_url": "https://www.google.com/search?q=Fexo+120mg+tablet+Square+uses",
+          "app_link": "/medicines/fexo"
+        }
+      ]
+    }
+  ]
+}

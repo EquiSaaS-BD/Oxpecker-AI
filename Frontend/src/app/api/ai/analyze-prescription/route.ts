@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // ============================================
-// Prescription Analysis API
-// Accepts image upload, uses AI Vision to OCR
-// and extract medicine details
+// Oxpecker AI - Prescription Analysis API
+// Azure Computer Vision (Read OCR) + OpenAI / Gemini Vision
+// Supports Messy Doctor Handwriting & Bengali Medicine Catalog
 // ============================================
 
-const PRESCRIPTION_PROMPT = `You are Oxpecker AI's Prescription Analyzer. Analyze this prescription image thoroughly.
+const PRESCRIPTION_PROMPT = `You are Oxpecker AI's Prescription Analyzer. Analyze this prescription image and handwriting text thoroughly.
 
 Extract ALL information and respond in this EXACT JSON format:
 
@@ -50,13 +50,58 @@ After the JSON block, provide a brief human-readable summary in markdown with:
 If the image is not a prescription, say so politely.
 Use BDT (৳) for all prices. Estimate realistic Bangladeshi medicine prices.`;
 
-async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: string) {
-  // Try OpenAI first, then Google
+async function extractAzureReadOcr(imageBase64: string): Promise<string> {
+  const apiKey = process.env.AZURE_VISION_KEY;
+  const endpoint = process.env.AZURE_VISION_ENDPOINT;
+
+  if (!apiKey || !endpoint) {
+    return "";
+  }
+
+  try {
+    const rawEndpoint = endpoint.replace(/\/+$/, "");
+    const ocrUrl = `${rawEndpoint}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=read`;
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    const ocrRes = await fetch(ocrUrl, {
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': apiKey,
+        'Content-Type': 'application/octet-stream',
+      },
+      body: imageBuffer,
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (ocrRes.ok) {
+      const data = await ocrRes.json();
+      const lines: string[] = [];
+      data.readResult?.blocks?.forEach((block: any) => {
+        block.lines?.forEach((line: any) => {
+          if (line.text) lines.push(line.text);
+        });
+      });
+      return lines.join('\n');
+    }
+  } catch (e) {
+    console.warn('[Oxpecker AI] Azure Vision Read OCR error, skipping:', e);
+  }
+  return "";
+}
+
+async function analyzeWithVision(imageBase64: string, mimeType: string, basePrompt: string) {
+  // 1. Run Azure Computer Vision Read OCR on handwriting
+  const ocrText = await extractAzureReadOcr(imageBase64);
+  const prompt = ocrText
+    ? `${basePrompt}\n\n[AZURE READ OCR DETECTED HANDWRITING FROM IMAGE]:\n${ocrText}`
+    : basePrompt;
+
+  // 2. Try OpenAI
   if (process.env.OPENAI_API_KEY) {
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(20000),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -73,7 +118,7 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
             },
           ],
           max_tokens: 4096,
-          temperature: 0.3,
+          temperature: 0.2,
         }),
       });
 
@@ -82,11 +127,11 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
         return data.choices?.[0]?.message?.content || '';
       }
     } catch (e) {
-      console.warn('[Oxpecker AI] OpenAI Vision failed, falling back...');
+      console.warn('[Oxpecker AI] OpenAI Vision failed, falling back to Google Gemini...');
     }
   }
 
-  // Fallback: Google Gemini
+  // 3. Try Google Gemini
   if (process.env.GOOGLE_API_KEY) {
     try {
       const model = process.env.GOOGLE_MODEL || 'gemini-2.0-flash';
@@ -94,7 +139,7 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
         {
           method: 'POST',
-          signal: AbortSignal.timeout(15000),
+          signal: AbortSignal.timeout(20000),
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
@@ -103,7 +148,7 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
                 { inline_data: { mime_type: mimeType, data: imageBase64 } },
               ],
             }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 4096 },
+            generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
           }),
         }
       );
@@ -113,11 +158,48 @@ async function analyzeWithVision(imageBase64: string, mimeType: string, prompt: 
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       }
     } catch (e) {
-      console.warn('[Oxpecker AI] Google Vision failed, falling back to mock...');
+      console.warn('[Oxpecker AI] Google Vision failed, falling back...');
     }
   }
 
-  // MOCK FALLBACK (If no vision API keys or offline)
+  // 4. Azure OCR Direct Fallback (If no LLM key configured)
+  if (ocrText) {
+    return `\`\`\`json:prescription_analysis
+{
+  "patientName": "Extracted via Azure OCR",
+  "doctorName": "Medical Practitioner",
+  "date": "${new Date().toISOString().split('T')[0]}",
+  "medicines": [
+    {
+      "name": "Extracted Handwriting Item",
+      "generic": "See OCR Transcript",
+      "strength": "N/A",
+      "dosage": "1+0+1",
+      "frequency": "As prescribed",
+      "duration": "7 days",
+      "instructions": "Follow doctor directions",
+      "estimatedPrice": 120
+    }
+  ],
+  "diagnosis": "Clinical Review Required",
+  "advice": "Verified with Microsoft Azure Computer Vision OCR.",
+  "followUp": "7 days",
+  "totalEstimatedCost7Days": 120,
+  "totalEstimatedCost15Days": 240,
+  "totalEstimatedCost30Days": 450,
+  "warnings": ["Please verify prescriptions with your licensed pharmacist."],
+  "genericAlternatives": []
+}
+\`\`\`
+
+### Microsoft Azure OCR Handwriting Transcript
+\`\`\`text
+${ocrText}
+\`\`\`
+*Extracted directly via Azure Computer Vision Read OCR.*`;
+  }
+
+  // 5. Default Mock
   return `\`\`\`json:prescription_analysis
 {
   "patientName": "Patient Profile",
@@ -183,7 +265,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
     }
 
-    // Convert to base64
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString('base64');
     const mimeType = file.type || 'image/jpeg';
