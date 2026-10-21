@@ -1,3 +1,7 @@
+from __future__ import annotations
+import json
+from typing import List, Any
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -11,10 +15,26 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    CORS_ORIGINS: Any = ["http://localhost:3000", "http://127.0.0.1:3000", "https://oxpecker-web.azurewebsites.net"]
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    DATABASE_URL: str = "mysql+aiomysql://root:@localhost:3306/oxpecker_db"
+    DATABASE_URL: str = "sqlite:///./oxpecker.db"
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, list):
+            return [str(x) for x in v]
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    clean = v[1:-1].replace('"', '').replace("'", '')
+                    return [x.strip() for x in clean.split(",") if x.strip()]
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return ["*"]
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
