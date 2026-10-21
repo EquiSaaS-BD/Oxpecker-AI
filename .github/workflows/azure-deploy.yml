@@ -26,11 +26,11 @@ jobs:
           cache: 'pip'
           cache-dependency-path: 'Backend/requirements.txt'
 
-      - name: Install Dependencies
+      - name: Install Python Dependencies Locally
         working-directory: Backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --target=".python_packages/lib/site-packages" -r requirements.txt
 
       - name: Create Backend Deployment Package
         run: |
@@ -66,7 +66,7 @@ jobs:
         working-directory: Frontend
         run: npx prisma generate
 
-      - name: Build Next.js Production App
+      - name: Build Next.js Production Standalone App
         working-directory: Frontend
         env:
           NEXT_PUBLIC_API_URL: 'https://oxpecker-api.azurewebsites.net'
@@ -76,10 +76,12 @@ jobs:
           NODE_ENV: 'production'
         run: npm run build
 
-      - name: Create Frontend Deployment Package
+      - name: Prepare Standalone Package
         run: |
-          cd Frontend
-          zip -r ../frontend-deploy.zip . -x "node_modules/.cache/*" ".git*"
+          cp -r Frontend/public Frontend/.next/standalone/public
+          cp -r Frontend/.next/static Frontend/.next/standalone/.next/static
+          cd Frontend/.next/standalone
+          zip -r ../../../frontend-deploy.zip .
 
       - name: Deploy to Azure Web App (Frontend)
         uses: azure/webapps-deploy@v3
