@@ -136,9 +136,34 @@ export async function callMultimodalVision(
       if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
         endpoint = `https://${endpoint}`;
       }
-      const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AZURE_OPENAI_MODEL || 'gpt-4o';
+      const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AZURE_OPENAI_MODEL || 'gpt-5-mini';
       const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-08-01-preview';
       const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+
+      const azurePayload: Record<string, any> = {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              { 
+                type: 'text', 
+                text: (userPrompt && userPrompt.trim()) 
+                  ? userPrompt.trim() 
+                  : 'অনুগ্রহ করে এই প্রেসক্রিপশনটির ছবি বিশ্লেষণ করে ওষুধের নাম, সেবনের নিয়ম, আনুমানিক খরচ এবং সাশ্রয়ী বিকল্প ওষুধগুলোর তালিকা দিন।' 
+              },
+              { type: 'image_url', image_url: { url: `data:${cleanMime};base64,${base64Data}` } }
+            ]
+          }
+        ],
+        max_completion_tokens: 3500,
+      };
+
+      if (deployment.includes('gpt-5') || deployment.includes('o1') || deployment.includes('o3') || deployment.includes('o4')) {
+        azurePayload.reasoning_effort = 'low';
+      } else {
+        azurePayload.temperature = 0.15;
+      }
 
       const res = await fetch(url, {
         method: 'POST',
@@ -146,21 +171,8 @@ export async function callMultimodalVision(
           'Content-Type': 'application/json',
           'api-key': azureKey,
         },
-        body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: userPrompt },
-                { type: 'image_url', image_url: { url: `data:${cleanMime};base64,${base64Data}` } }
-              ]
-            }
-          ],
-          temperature: 0.15,
-          max_tokens: 4096,
-        }),
-        signal: AbortSignal.timeout(20000),
+        body: JSON.stringify(azurePayload),
+        signal: AbortSignal.timeout(30000),
       });
 
       if (res.ok) {
