@@ -46,6 +46,7 @@ export function ChatInput({
   onSelectMode?: (mode: ChatMode | null) => void;
 }) {
   const [text, setText] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -288,15 +289,25 @@ export function ChatInput({
         />
 
         {/* Input Container */}
-        <div className="w-full flex items-end gap-1.5 sm:gap-2 bg-white/60 backdrop-blur-xl rounded-xl p-1 sm:p-1.5 min-h-[48px] sm:min-h-[52px] border border-slate-200/80 shadow-sm focus-within:spatial-shadow-hover focus-within:border-primary/20 focus-within:bg-white transition-all duration-300">
+        <div 
+          onClick={() => textareaRef.current?.focus()}
+          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-all duration-200 cursor-text ${
+            isFocused
+              ? "bg-white border-[#2797de] ring-4 ring-[#2797de]/20 shadow-[0_8px_30px_rgba(39,151,222,0.18)] -translate-y-0.5"
+              : "bg-white/90 backdrop-blur-xl border-slate-200/90 shadow-xs hover:border-slate-300 hover:shadow-md hover:bg-white"
+          }`}
+        >
           
           {/* Left Action (Plus Button) */}
           <button 
             type="button"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
             className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] shrink-0 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-transparent transition-all duration-300 active:scale-95 mb-0.5 ml-0.5"
           >
-            <Plus size={22} className={`transition-transform duration-300 ease-out ${menuOpen ? 'rotate-[135deg] text-primary' : ''}`} />
+            <Plus size={22} className={`transition-transform duration-300 ease-out ${menuOpen ? 'rotate-[135deg] text-[#2797de]' : ''}`} />
           </button>
 
           {/* Textarea Wrapper */}
@@ -320,7 +331,10 @@ export function ChatInput({
                       <span className="text-[12px] font-bold text-slate-700">{selectedMode.title}</span>
                     </div>
                     <button 
-                      onClick={() => onSelectMode?.(null)} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectMode?.(null);
+                      }} 
                       className="text-slate-500 hover:text-slate-600 hover:bg-slate-200 p-0.5 rounded-full transition-colors ml-2"
                     >
                       <X size={14} />
@@ -335,6 +349,8 @@ export function ChatInput({
               ref={textareaRef}
               value={text}
               onChange={handleTextChange}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               onKeyDown={(e) => {
                 if (showMentionMenu && filteredSuggestions.length > 0) {
                   if (e.key === 'ArrowDown') {
@@ -364,13 +380,13 @@ export function ChatInput({
                 }
               }}
               placeholder={getDynamicPlaceholder()}
-              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-500 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-tight"
+              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-400 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-relaxed"
               rows={1}
             />
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1 shrink-0 mb-0.5 pr-0.5">
+          <div className="flex items-center gap-1 shrink-0 mb-0.5 pr-0.5" onClick={(e) => e.stopPropagation()}>
             {/* Voice Waveform (visible when listening) */}
             <VoiceWaveform isActive={isListening} />
             
@@ -380,7 +396,8 @@ export function ChatInput({
             </div>
             <button 
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setPendingAnalysisType('image');
                 fileInputRef.current?.click();
               }}
@@ -389,10 +406,15 @@ export function ChatInput({
               <Camera size={20} />
             </button>
             <button 
-              onClick={handleSend}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSend();
+              }}
               disabled={!text.trim() && !selectedMode}
               className={`w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center transition-all duration-300 ${
-                (text.trim() || selectedMode) ? "bg-primary text-white shadow-[0_4px_12px_rgba(0,61,155,0.25)] hover:bg-primary/90 hover:shadow-[0_6px_16px_rgba(0,61,155,0.3)] hover:scale-105 active:scale-95" : "bg-slate-100/80 text-slate-500"
+                (text.trim() || selectedMode) 
+                  ? "bg-[#2797de] text-white shadow-[0_4px_14px_rgba(39,151,222,0.35)] hover:bg-[#1f84c4] hover:shadow-[0_6px_18px_rgba(39,151,222,0.45)] hover:scale-105 active:scale-95" 
+                  : "bg-slate-100/80 text-slate-400"
               }`}
             >
               <ArrowRight size={20} className={(text.trim() || selectedMode) ? "ml-0.5" : ""} strokeWidth={2.5} />
