@@ -288,13 +288,13 @@ export function ChatInput({
           accept="image/*,.pdf,.doc,.docx"
         />
 
-        {/* Input Container - Claude AI style: subtle, calm, and feather-light */}
+        {/* Input Container - Ultra-light Medical Ice-Porcelain */}
         <div 
           onClick={() => textareaRef.current?.focus()}
-          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-colors duration-150 cursor-text ${
+          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-all duration-200 cursor-text ${
             isFocused
-              ? "bg-white border-slate-400 ring-1 ring-slate-400/20 shadow-[0_2px_6px_rgba(0,0,0,0.04)]"
-              : "bg-white border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-slate-300"
+              ? "bg-white border-[#2797de] ring-4 ring-[#2797de]/15 shadow-[0_8px_30px_rgba(39,151,222,0.12)]"
+              : "bg-[#f4f9fd] border-[#d4e7f7] shadow-[0_2px_12px_rgba(39,151,222,0.05)] hover:bg-[#ebf5fc] hover:border-[#b8daf5]"
           }`}
         >
           
@@ -305,7 +305,7 @@ export function ChatInput({
               e.stopPropagation();
               setMenuOpen(!menuOpen);
             }}
-            className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] shrink-0 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-transparent transition-all duration-300 active:scale-95 mb-0.5 ml-0.5"
+            className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] shrink-0 rounded-full bg-white flex items-center justify-center text-[#2797de] hover:bg-[#e8f3fc] hover:text-[#1c80c0] border border-[#d4e7f7] shadow-xs transition-all duration-200 active:scale-95 mb-0.5 ml-0.5"
           >
             <Plus size={22} className={`transition-transform duration-300 ease-out ${menuOpen ? 'rotate-[135deg] text-[#2797de]' : ''}`} />
           </button>
@@ -321,7 +321,7 @@ export function ChatInput({
                   exit={{ opacity: 0, y: 5, height: 0, marginBottom: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-100/80 rounded-[10px] w-fit border border-slate-200/60 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-white rounded-[10px] w-fit border border-[#d4e7f7] shadow-xs">
                     <div className="flex items-center gap-2">
                       {selectedMode.icon && (
                         <div className={`w-5 h-5 rounded-[6px] flex items-center justify-center ${selectedMode.bg} ${selectedMode.color} shadow-sm border border-white/50`}>
@@ -335,7 +335,7 @@ export function ChatInput({
                         e.stopPropagation();
                         onSelectMode?.(null);
                       }} 
-                      className="text-slate-500 hover:text-slate-600 hover:bg-slate-200 p-0.5 rounded-full transition-colors ml-2"
+                      className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 p-0.5 rounded-full transition-colors ml-2"
                     >
                       <X size={14} />
                     </button>
@@ -401,7 +401,7 @@ export function ChatInput({
                 setPendingAnalysisType('image');
                 fileInputRef.current?.click();
               }}
-              className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-500 hover:bg-white hover:text-[#2797de] transition-colors"
             >
               <Camera size={20} />
             </button>
