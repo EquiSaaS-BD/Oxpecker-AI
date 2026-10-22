@@ -192,11 +192,11 @@
 }
 
 /* =========================================
-   ULTRA SLEEK DARK SCROLLBARS (CODEX STYLE)
+   SUBTLE & ELEGANT SCROLLBARS (#2797de with low opacity)
    ========================================= */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -204,19 +204,20 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgba(39, 151, 222, 0.22);
   border-radius: 9999px;
   border: none;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(39, 151, 222, 0.45);
 }
 
 /* Firefox Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: rgba(39, 151, 222, 0.22) transparent;
 }
 
 .candy-scrollbar::-webkit-scrollbar {
@@ -227,8 +228,11 @@
   background: transparent;
 }
 .candy-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgba(39, 151, 222, 0.22);
   border-radius: 9999px;
+}
+.candy-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(39, 151, 222, 0.45);
 }
 @keyframes breathing {
   0%, 100% { transform: scale(1); }
@@ -317,7 +321,7 @@
 
 
 /* =========================================
-   CUSTOM SLEEK MEDICAL SCROLLBAR
+   CUSTOM SLEEK MEDICAL SCROLLBAR (LOW OPACITY #2797de)
    ========================================= */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
@@ -329,15 +333,15 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(39, 151, 222, 0.22);
   border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(39, 151, 222, 0.45);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: rgba(39, 151, 222, 0.25) transparent;
 }

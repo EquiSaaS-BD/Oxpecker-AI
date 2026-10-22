@@ -1,6 +1,7 @@
 "use client";
 
 import { Hero3DBackground } from "./Hero3DBackground";
+import { HeroLocationDropdown } from "./HeroLocationDropdown";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -150,25 +151,11 @@ export function HeroSection() {
           {/* Search Input Form */}
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             {activeTab === "doctors" && (
-              <div className="relative sm:w-44 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-100 pb-2 sm:pb-0 sm:pr-2">
-                <div className="flex items-center gap-2 px-2 text-slate-500">
-                  <MapPin size={16} className="text-slate-500 shrink-0" />
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-700 outline-none cursor-pointer"
-                  >
-                    <option value="All Locations">All Locations</option>
-                    <option value="Dhaka">Dhaka</option>
-                    <option value="Chittagong">Chittagong</option>
-                    <option value="Sylhet">Sylhet</option>
-                    <option value="Rajshahi">Rajshahi</option>
-                    <option value="Khulna">Khulna</option>
-                    <option value="Barisal">Barisal</option>
-                    <option value="Rangpur">Rangpur</option>
-                    <option value="Mymensingh">Mymensingh</option>
-                  </select>
-                </div>
+              <div className="relative sm:w-52 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-100 pb-2 sm:pb-0 sm:pr-2">
+                <HeroLocationDropdown
+                  value={selectedLocation}
+                  onChange={setSelectedLocation}
+                />
               </div>
             )}
 

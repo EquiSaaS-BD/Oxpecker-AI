@@ -123,7 +123,7 @@ export function Footer() {
                 { name: "Facebook", icon: Facebook, href: "https://facebook.com/oxpecker" },
                 { name: "YouTube", icon: Youtube, href: "https://youtube.com/@oxpecker_ai" },
                 { name: "Instagram", icon: Instagram, href: "https://instagram.com/oxpecker_ai" },
-                { name: "LinkedIn", icon: Linkedin, href: "https://linkedin.com/company/oxpecker" },
+                { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/company/oxpecker-ai" },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
