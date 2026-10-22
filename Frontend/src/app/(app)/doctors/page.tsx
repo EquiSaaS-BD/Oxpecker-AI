@@ -84,6 +84,7 @@ export default function DoctorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [maxFee, setMaxFee] = useState<number>(5000);
   const [sortBy, setSortBy] = useState<"recommended" | "rating" | "fee">("recommended");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
@@ -93,10 +94,10 @@ export default function DoctorsPage() {
   const ITEMS_PER_PAGE = 21;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset to first page when search or sort criteria change
+  // Reset to first page when search, sort, or fee filter criteria change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, sortBy]);
+  }, [searchQuery, sortBy, maxFee]);
 
   // Close sort dropdown when clicking outside
   useEffect(() => {
@@ -115,11 +116,13 @@ export default function DoctorsPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const filteredDoctors = mockDoctors.filter(doc => 
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.hospital.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDoctors = mockDoctors.filter(doc => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.hospital.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFee = !maxFee || (Number(doc.fee) || 0) <= maxFee;
+    return matchesSearch && matchesFee;
+  });
 
   const sortedDoctors = [...filteredDoctors].sort((a, b) => {
     if (sortBy === "rating") return b.rating - a.rating;
@@ -219,10 +222,11 @@ export default function DoctorsPage() {
             />
             <button 
               onClick={() => setShowFilters(true)}
-              className="h-[44px] sm:h-[48px] px-3 sm:px-6 bg-sky-600 hover:bg-[#0052cc] text-white rounded-[12px] flex items-center justify-center gap-2 font-bold text-[14px] sm:text-[15px] transition-all duration-300 shadow-md ml-1 sm:ml-2 shrink-0"
+              className="h-[44px] sm:h-[48px] px-3 sm:px-6 bg-[#2797de] hover:bg-[#1f84c4] text-white rounded-[12px] flex items-center justify-center gap-2 font-bold text-[14px] sm:text-[15px] transition-all duration-300 shadow-md ml-1 sm:ml-2 shrink-0"
             >
               <SlidersHorizontal size={18} className="text-white shrink-0" />
-              <span className="hidden sm:inline">Filters</span>
+              <span className="hidden sm:inline">{maxFee < 5000 ? `≤৳${maxFee}` : "Filters"}</span>
+              {maxFee < 5000 && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
             </button>
           </div>
         </div>
@@ -390,6 +394,10 @@ export default function DoctorsPage() {
       <DoctorFilterModal 
         isOpen={showFilters} 
         onClose={() => setShowFilters(false)} 
+        selectedFee={maxFee}
+        onApplyFilters={(filters) => {
+          setMaxFee(filters.fee);
+        }}
       />
     </div>
   );

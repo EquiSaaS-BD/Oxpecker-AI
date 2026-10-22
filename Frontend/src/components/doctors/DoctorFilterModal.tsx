@@ -2,22 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { X, SlidersHorizontal } from "lucide-react";
+import { SegmentedVolumeSlider } from "@/components/ui/SegmentedVolumeSlider";
 
 interface DoctorFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedFee?: number;
+  onApplyFilters?: (filters: { fee: number; specs: string[]; availability: string[]; types: string[] }) => void;
 }
 
 const specializations = ["Cardiologist", "Neurologist", "Dentist", "Orthopedic", "Gynecologist", "Pediatrician"];
 const availability = ["Available Today", "Available Tomorrow", "Next Week"];
 const consultationTypes = ["Hospital Visit", "Video Call", "Audio Call", "Home Visit"];
 
-export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
+export function DoctorFilterModal({ isOpen, onClose, selectedFee = 5000, onApplyFilters }: DoctorFilterModalProps) {
   const [selectedSpecs, setSelectedSpecs] = useState<string[]>([]);
   const [selectedAvail, setSelectedAvail] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [feeRange, setFeeRange] = useState<number>(5000);
+  const [feeRange, setFeeRange] = useState<number>(selectedFee || 5000);
   const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (selectedFee) {
+      setFeeRange(selectedFee);
+    }
+  }, [selectedFee]);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,7 +44,13 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
   };
 
   const handleApply = () => {
-    onClose();
+    onApplyFilters?.({
+      fee: feeRange,
+      specs: selectedSpecs,
+      availability: selectedAvail,
+      types: selectedTypes,
+    });
+    handleClose();
   };
 
   const handleClear = () => {
@@ -139,25 +154,15 @@ export function DoctorFilterModal({ isOpen, onClose }: DoctorFilterModalProps) {
 
           {/* Consultation Fee */}
           <div>
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Consultation Fee</h3>
-              <span className="text-[14px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">Up to ৳{feeRange}</span>
-            </div>
-            <div className="px-1 mt-4">
-              <input 
-                type="range" 
-                min="500" 
-                max="5000"
-                step="500"
-                value={feeRange}
-                onChange={(e) => setFeeRange(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-              <div className="flex justify-between text-[12px] text-slate-500 mt-2 font-medium">
-                <span>৳500</span>
-                <span>৳5000+</span>
-              </div>
-            </div>
+            <SegmentedVolumeSlider
+              value={feeRange}
+              onChange={setFeeRange}
+              min={500}
+              max={5000}
+              step={250}
+              segmentsCount={20}
+              label="CONSULTATION FEE"
+            />
           </div>
 
         </div>
