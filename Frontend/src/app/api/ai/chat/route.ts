@@ -656,7 +656,46 @@ export async function POST(request: NextRequest) {
     ];
 
     // ============================================
-    // Provider Attempt 1: Direct OpenAI API (GPT-4o / GPT-4o-mini)
+    // Provider Attempt 1: Microsoft Azure OpenAI (Native Azure Subscription)
+    // ============================================
+    if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
+      try {
+        const endpoint = process.env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
+        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-5-mini';
+        const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-08-01-preview';
+        const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+
+        const azurePayload: Record<string, any> = {
+          messages: fullMessages,
+          max_completion_tokens: 2500,
+        };
+
+        if (deployment.includes('gpt-5') || deployment.includes('o1') || deployment.includes('o3') || deployment.includes('o4')) {
+          azurePayload.reasoning_effort = 'low';
+        } else {
+          azurePayload.temperature = 0.3;
+        }
+
+        const stream = await streamFromOpenAIEndpoint(
+          url,
+          { 'api-key': process.env.AZURE_OPENAI_API_KEY },
+          azurePayload
+        );
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-AI-Provider': 'Azure-OpenAI',
+          },
+        });
+      } catch (err: any) {
+        console.warn('[Oxpecker AI] Azure OpenAI streaming error, trying OpenAI:', err.message || err);
+      }
+    }
+
+    // ============================================
+    // Provider Attempt 2: Direct OpenAI API (GPT-4o / GPT-4o-mini)
     // ============================================
     const openaiKey = process.env.OPENAI_API_KEY;
     if (openaiKey && openaiKey.trim().length > 10 && !openaiKey.includes('dummy')) {
@@ -681,39 +720,7 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch (err: any) {
-        console.warn('[Oxpecker AI] OpenAI streaming error, trying Azure OpenAI:', err.message || err);
-      }
-    }
-
-    // ============================================
-    // Provider Attempt 2: Microsoft Azure OpenAI (Student/Production Plan)
-    // ============================================
-    if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
-      try {
-        const endpoint = process.env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
-        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-mini';
-        const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
-        const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
-
-        const stream = await streamFromOpenAIEndpoint(
-          url,
-          { 'api-key': process.env.AZURE_OPENAI_API_KEY },
-          {
-            messages: fullMessages,
-            temperature: 0.3,
-            max_tokens: 3000,
-          }
-        );
-        return new Response(stream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-AI-Provider': 'Azure-OpenAI',
-          },
-        });
-      } catch (err: any) {
-        console.warn('[Oxpecker AI] Azure OpenAI streaming error, trying Groq:', err.message || err);
+        console.warn('[Oxpecker AI] OpenAI streaming error, trying Groq:', err.message || err);
       }
     }
 
