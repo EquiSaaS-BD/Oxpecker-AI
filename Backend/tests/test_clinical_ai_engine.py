@@ -50,22 +50,22 @@ def test_category_grounding():
     # Test medicine category
     diag_med = clinical_engine.diagnose("প্যারাসিটামল সেবনবিধি", category="medicines")
     assert diag_med is not None
-    assert "Medicines" in diag_med["category"]
+    assert "medicine" in diag_med["category"].lower()
 
     # Test prescription category
     diag_rx = clinical_engine.diagnose("প্রেসক্রিপশনের অ্যান্টিবায়োটিক ডোজ", category="prescriptions")
     assert diag_rx is not None
-    assert "Prescription" in diag_rx["category"]
+    assert "prescription" in diag_rx["category"].lower()
 
     # Test nutrition category
     diag_nut = clinical_engine.diagnose("ডায়াবেটিসের পুষ্টিকর খাবার", category="nutrition")
     assert diag_nut is not None
-    assert "Nutrition" in diag_nut["category"]
+    assert "nutrition" in diag_nut["category"].lower()
 
     # Test hospitals category
     diag_hosp = clinical_engine.diagnose("নিকটস্থ আইসিইউ হাসপাতাল", category="hospitals")
     assert diag_hosp is not None
-    assert "Hospital" in diag_hosp["category"] or "Facilities" in diag_hosp["category"]
+    assert "hospital" in diag_hosp["category"].lower() or "facilities" in diag_hosp["category"].lower()
 
 
 def test_9600_cases_dataset():
@@ -78,15 +78,17 @@ def test_9600_cases_dataset():
 
 
 def test_empty_symptoms_fallback():
-    """Test diagnosis when no symptoms are provided."""
+    """Test diagnosis when no symptoms are provided - must NOT diagnose a disease."""
     diag = clinical_engine.diagnose("")
     assert diag is not None
-    assert diag["condition"].startswith("General Symptoms Assessment")
+    assert diag["has_clinical_match"] is False
+    assert diag["condition"] is None
     assert diag["triage_urgency"] == "ROUTINE"
 
-    # With category fallback
-    diag_cat = clinical_engine.diagnose("", category="hospitals")
-    assert "Healthcare Facilities" in diag_cat["category"]
+    # With non-symptom lead/general text
+    diag_lead = clinical_engine.diagnose("আমি একটি অ্যাপয়েন্টমেন্ট বুকিং করতে চাই")
+    assert diag_lead["has_clinical_match"] is False
+    assert diag_lead["condition"] is None
 
 
 if __name__ == "__main__":

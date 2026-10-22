@@ -1,130 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callMultimodalVision } from '@/lib/vision-engine';
 
 // ============================================
-// Oxpecker AI - Prescription Analysis API
-// Strict Azure Computer Vision (Read OCR + Tags)
-// Zero-Hallucination Medical Prescription Verification
+// Oxpecker AI - Prescription Vision & Analysis API
+// Multimodal Vision (Azure OpenAI -> Gemini Flash -> OpenAI -> Groq -> Azure OCR)
+// Strict Non-Medical Rejection, Handwriting Decoding, Price Comparison & Generic Alternatives
 // ============================================
 
-const NON_MEDICAL_TAGS = new Set([
-  'animal', 'cat', 'dog', 'pet', 'kitten', 'puppy', 'bird', 'fish', 'carnivore', 'feline',
-  'vehicle', 'car', 'automobile', 'truck', 'motorcycle', 'wheel', 'tire',
-  'food', 'dish', 'meal', 'fast food', 'snack', 'dessert', 'burger', 'pizza', 'sandwich',
-  'fruit', 'vegetable', 'clothing', 'footwear', 'shoe', 'dress', 'shirt',
-  'scenery', 'landscape', 'mountain', 'sky', 'cloud', 'grass', 'plant', 'tree', 'flower',
-  'furniture', 'couch', 'chair', 'bed', 'tableware', 'toy', 'cartoon', 'anime', 'meme'
-]);
+const PRESCRIPTION_VISION_SYSTEM_PROMPT = `You are Oxpecker AI - Bangladesh's Advanced Healthcare Assistant and Clinical Prescription Specialist.
+Your job is to inspect and analyze the uploaded image with 100% clinical accuracy, anti-hallucination discipline, and compassionate patient communication in fluent Bangla (বাংলা).
 
-const MEDICAL_KEYWORDS = [
-  'rx', 'dr.', 'dr ', 'doctor', 'mbbs', 'fcps', 'md', 'hospital', 'clinic', 'medical',
-  'patient', 'name:', 'age:', 'sex:', 'date:', 'tab', 'tablet', 'cap', 'capsule',
-  'syr', 'syrup', 'inj', 'injection', 'mg', 'ml', 'drop', 'drops', 'ointment', 'suspension',
-  '1+0+1', '1+1+1', '0+0+1', '1+0+0', '0+1+0', '1+0+0+1', 'bd', 'tds', 'od', 'sos',
-  'দিনে', 'বার', 'খাবারের', 'পরে', 'আগে', 'প্রেসক্রিপশন', 'ডাক্তার', 'ওষুধ', 'রোগী',
-  'প্যারাসিটামল', 'নাপা', 'সেক্লো', 'সারজেল', 'অ্যান্টিবায়োটিক', 'ডোজ', 'টেবিল'
-];
+### STEP 1: IMAGE CLASSIFICATION & VALIDATION
+Carefully inspect the image:
+1. Is it a doctor's prescription (হাতে লেখা বা প্রিন্ট করা প্রেসক্রিপশন)?
+2. Is it a medicine strip, blister pack, or medicine bottle?
+3. Is it a lab/diagnostic report?
+4. Is it a clinical physical photo (skin rash, wound, eye redness)?
+5. Or is it NON-MEDICAL / IRRELEVANT (e.g. animals/cats/dogs, food/meals/drinks, cars/vehicles, nature/plants, furniture, cartoons, memes, selfie, random objects)?
 
-interface VisionOcrResult {
-  ocrText: string;
-  caption: string;
-  tags: string[];
-  isPrescription: boolean;
-  rejectionReason?: string;
-}
+---
+### STRICT RULE FOR NON-MEDICAL OR IRRELEVANT IMAGES:
+If the image is NON-MEDICAL or completely unrelated to a prescription or medicine:
+1. State clearly:
+### ❌ প্রেসক্রিপশন সনাক্ত করা যায়নি (No Prescription Detected)
+2. Specifically identify what the image actually depicts in Bangla (e.g. "আপলোডকৃত ছবিটি কোনো প্রেসক্রিপশন বা স্বাস্থ্য সম্পর্কিত ছবি নয়; এটি একটি [বিড়াল/খাবার/গাড়ি/দৃশ্য/সেলফি ইত্যাদি]-এর ছবি।")
+3. Explain why:
+"চিকিৎসা সেবার নির্ভুলতা ও রোগীর সুরক্ষার স্বার্থে নন-মেডিকেল বা অপ্রাসঙ্গিক ছবিতে কোনো কাল্পনিক প্রেসক্রিপশন বা রোগ ডায়াগনসিস প্রদান করা হয় না।"
+4. If the user provided a symptom question in text (e.g. "আমার মাথা ব্যথা করছে"), provide safe, compassionate general advice/first-aid for their symptom, but explicitly state that the uploaded picture has no clinical connection to it.
+5. Guide the user to upload a clear photo of an authentic doctor prescription.
+6. **STRICTLY DO NOT output any \`\`\`json:prescription_analysis\`\`\` block!**
 
-async function inspectWithAzureVision(imageBuffer: Buffer): Promise<VisionOcrResult> {
-  const apiKey = process.env.AZURE_VISION_KEY;
-  const endpoint = process.env.AZURE_VISION_ENDPOINT || "https://eastasia.api.cognitive.microsoft.com/";
+---
+### INSTRUCTIONS FOR VALID PRESCRIPTIONS:
+When a valid prescription is identified:
+1. **ডাক্তারের হাতের লেখা ও প্রেসক্রিপশন ডিকোড (Handwriting Decoding):**
+   - Read and extract doctor name, degrees, patient name, date, and clinical diagnosis if visible.
+   - For each prescribed medicine, transcribe:
+     * ব্র্যান্ডের নাম ও শক্তি (e.g., Sergel 20mg, Napa Extra, Cef-3 200mg)
+     * জেনেরিক নাম (Generic name)
+     * সেবনের নিয়ম ও ডোজ (e.g., ১+০+১ = সকালে ১টি ও রাতে ১টি)
+     * খাবারের সম্পর্ক (খাবারের ২০ মিনিট আগে খালি পেটে / খাবারের পর ভরা পেটে)
+     * মেয়াদকেন্দ্রিক সময়কাল (e.g., ৭ দিন, ১৪ দিন, প্রয়োজনমতো)
+     * কী কারণে ওষুধটি দেওয়া হয়েছে (Indications in simple Bangla)
 
-  if (!apiKey) {
-    // If no Azure key configured, inspect text buffer heuristics
-    console.warn('[Oxpecker AI] AZURE_VISION_KEY is not set. Using strict safe inspection.');
-    return {
-      ocrText: "",
-      caption: "",
-      tags: [],
-      isPrescription: false,
-      rejectionReason: "Azure Computer Vision API কি কনফিগার করা নেই। অনুগ্রহ করে অ্যাডমিনে AZURE_VISION_KEY যুক্ত করুন।"
-    };
-  }
+2. **ওষুধের দাম, সেবনের শর্ত ও খরচের হিসাব (Price Conditions & Course Costs):**
+   - Provide realistic Bangladesh market price in BDT (৳) per tablet/capsule/unit.
+   - Calculate total estimated costs for standard periods:
+     * ৭ দিনের মোট খরচ (7-day cost)
+     * ১৫ দিনের মোট খরচ (15-day cost)
+     * ৩০ দিনের মোট খরচ (30-day cost)
+   - Mention mandatory usage conditions (যেমন: অ্যান্টিবায়োটিকের কোর্স কোনো অবস্থাতেই অসম্পূর্ণ রাখা যাবে না; ব্যথানাশক ওষুধ গ্যাস্ট্রিকের ওষুধের সাথে সর্বদা ভরা পেটে খেতে হবে).
 
-  try {
-    const rawEndpoint = endpoint.replace(/\/+$/, "");
-    const ocrUrl = `${rawEndpoint}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=read,caption,tags`;
+3. **সাশ্রয়ী জেনেরিক বিকল্প ব্র্যান্ডের দাম তুলনা (Price Comparison with Generic Alternatives):**
+   - Compare expensive branded medicines with high-quality, DGDA-approved affordable alternative brands from top Bangladeshi pharma (Square, Beximco, Incepta, Opsonin, Acme, Healthcare, Eskayef).
+   - E.g.:
+     * Sergel 20mg (৳৭/ক্যাপসুল) vs Finix 20mg (৳৫/ক্যাপসুল) -> প্রতি পাতায় ২০ টাকা সাশ্রয়!
+     * Napa Extra (৳৩/ট্যাবলেট) vs Ace Plus (৳২.৫/ট্যাবলেট) -> সাশ্রয়ী বিকল্প
+     * Zimax 500mg (৳৪০/ট্যাবলেট) vs Azith 500mg (৳৩৫/ট্যাবলেট)
+   - Highlight total estimated savings.
 
-    const ocrRes = await fetch(ocrUrl, {
-      method: 'POST',
-      headers: {
-        'Ocp-Apim-Subscription-Key': apiKey,
-        'Content-Type': 'application/octet-stream',
-      },
-      body: imageBuffer,
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (ocrRes.ok) {
-      const data = await ocrRes.json();
-      const lines: string[] = [];
-      data.readResult?.blocks?.forEach((block: any) => {
-        block.lines?.forEach((line: any) => {
-          if (line.text) lines.push(line.text);
-        });
-      });
-      const ocrText = lines.join('\n');
-      const caption = data.captionResult?.text || '';
-      const tags = (data.tagsResult?.values || []).map((t: any) => (t.name || '').toLowerCase());
-
-      // Validation logic
-      const ocrLower = ocrText.toLowerCase();
-      const captionLower = caption.toLowerCase();
-
-      const matchedMedKeywords = MEDICAL_KEYWORDS.filter(kw => ocrLower.includes(kw) || captionLower.includes(kw));
-      const hasStrongNonMedicalTag = tags.some(t => NON_MEDICAL_TAGS.has(t));
-
-      // If Azure detected animals, cars, food, etc. with NO medical keywords
-      if (hasStrongNonMedicalTag && matchedMedKeywords.length === 0) {
-        return {
-          ocrText,
-          caption,
-          tags,
-          isPrescription: false,
-          rejectionReason: `আপলোডকৃত ছবিতে কোনো প্রেসক্রিপশন পাওয়া যায়নি। ছবিতে "${caption || tags.slice(0, 3).join(', ')}" চিহ্নিত হয়েছে।`
-        };
-      }
-
-      // If OCR text is completely empty or has NO medical/clinical keywords
-      if (lines.length === 0 || matchedMedKeywords.length === 0) {
-        return {
-          ocrText,
-          caption,
-          tags,
-          isPrescription: false,
-          rejectionReason: 'ছবিটিতে কোনো চিকিৎসকের নাম, আরএক্স (Rx), বা অনুমোদিত ওষুধের নির্দেশনা পাওয়া যায়নি।'
-        };
-      }
-
-      return {
-        ocrText,
-        caption,
-        tags,
-        isPrescription: true,
-      };
-    } else {
-      const errText = await ocrRes.text();
-      console.warn('[Oxpecker AI] Azure Vision API returned error status:', ocrRes.status, errText);
+4. **STRUCTURED JSON OUTPUT (MANDATORY FOR PRESCRIPTIONS):**
+You MUST output this exact block at the top of your response:
+\`\`\`json:prescription_analysis
+{
+  "patientName": "রোগীর নাম",
+  "doctorName": "ডাক্তারের নাম ও ডিগ্রি",
+  "date": "YYYY-MM-DD",
+  "diagnosis": "সম্ভাব্য ডায়াগনসিস বা স্বাস্থ্য সমস্যা",
+  "medicines": [
+    {
+      "name": "Brand Name",
+      "generic": "Generic Name",
+      "strength": "Dosage Strength",
+      "dosage": "১+০+১",
+      "frequency": "দিনে ২ বার",
+      "duration": "৭ দিন",
+      "instructions": "খাবারের ২০ মিনিট আগে/পরে",
+      "estimatedPrice": 8
     }
-  } catch (e: any) {
-    console.warn('[Oxpecker AI] Azure Vision Read OCR error:', e.message || e);
-  }
-
-  return {
-    ocrText: "",
-    caption: "",
-    tags: [],
-    isPrescription: false,
-    rejectionReason: "ছবিটি প্রসেস করতে সাময়িক সমস্যা হয়েছে অথবা এটি কোনো প্রেসক্রিপশন নয়। অনুগ্রহ করে একটি পরিষ্কার প্রেসক্রিপশনের ছবি আপলোড করুন।"
-  };
+  ],
+  "totalEstimatedCost7Days": 180,
+  "totalEstimatedCost15Days": 350,
+  "totalEstimatedCost30Days": 680,
+  "warnings": [
+    "অ্যান্টিবায়োটিকের পূর্ণ কোর্স শেষ করা বাধ্যতামূলক।",
+    "ব্যথানাশক ওষুধ সর্বদা ভরা পেটে খেতে হবে।"
+  ],
+  "genericAlternatives": [
+    {
+      "original": "Sergel 20mg",
+      "alternative": "Finix 20mg (Opsonin)",
+      "savings": "৳২০ প্রতি পাতায় সাশ্রয়"
+    }
+  ]
 }
+\`\`\`
+
+5. **সহজ ভাষায় লিখিত বাংলা গাইডলাইন (Friendly Bengali Explanation):**
+Below the JSON block, write an empathetic, beautifully structured breakdown in fluent Bangla explaining:
+- প্রতিটি ওষুধের সহজ ব্যাখ্যা (কোনটি কী কাজ করে)
+- খাওয়ার নিয়ম ও সময়সূচি
+- ওষুধের আনুমানিক দাম ও কোর্সের খরচ
+- সাশ্রয়ী বিকল্প ব্র্যান্ডের তালিকা ও কত টাকা বাঁচানো সম্ভব
+- গুরুত্বপূর্ণ সতর্কতা ও পরবর্তী ফলোআপের পরামর্শ।`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -140,109 +118,19 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const mimeType = file.type || 'image/jpeg';
 
-    // 1. Check with Azure Computer Vision Read OCR + Image Analysis
-    const visionResult = await inspectWithAzureVision(buffer);
+    // Call the multimodal vision pipeline
+    const visionResult = await callMultimodalVision(
+      buffer,
+      mimeType,
+      PRESCRIPTION_VISION_SYSTEM_PROMPT,
+      userPrompt
+    );
 
-    // 2. Reject non-prescriptions or random images immediately (Anti-Hallucination)
-    if (!visionResult.isPrescription) {
-      const reason = visionResult.rejectionReason || 'ছবিতে প্রেসক্রিপশন চিহ্নিত হয়নি।';
-      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন:** "${userPrompt}"\n\n` : '';
-      const rejectionMarkdown = `### ❌ প্রেসক্রিপশন সনাক্ত করা যায়নি (No Prescription Detected)\n\n` +
-        promptSnippet +
-        `${reason}\n\n` +
-        `**সঠিক প্রেসক্রিপশন পরীক্ষার জন্য অনুরোধ:**\n` +
-        `1. একজন রেজিস্টার্ড এমবিবিএস বা বিশেষজ্ঞ চিকিৎসকের দেওয়া প্রেসক্রিপশনের স্পষ্ট ছবি তুলুন।\n` +
-        `2. ক্যামেরা সোজা ও পর্যাপ্ত আলোতে রেখে ছবি তুলুন যাতে ডাক্তারের নাম, আরএক্স (Rx) ও ওষুধের নাম স্পষ্টভাবে পড়া যায়।\n` +
-        `3. কোনো খাবার, প্রাণী, অপ্রাসঙ্গিক বস্তু বা ঝাপসা ছবি আপলোড করবেন না।`;
-
-      return NextResponse.json({ analysis: rejectionMarkdown });
-    }
-
-    const ocrText = visionResult.ocrText;
-
-    // 3. If Azure OpenAI or OpenAI is configured, use Vision with strict ground-truth prompt
-    if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
-      try {
-        const endpoint = process.env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
-        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-mini';
-        const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-15-preview`;
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': process.env.AZURE_OPENAI_API_KEY,
-          },
-          body: JSON.stringify({
-            messages: [{
-              role: 'system',
-              content: 'You are an authentic prescription extractor. Extract ONLY genuine medicines, dosages, and instructions from the provided doctor prescription. If the image is not a prescription, do NOT make up any medicines.'
-            }, {
-              role: 'user',
-              content: [
-                { type: 'text', text: `Azure Computer Vision OCR Transcript:\n${ocrText}\n\nExtract the real prescribed medicines, dosages, and instructions into a structured markdown table and JSON block.` },
-                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${buffer.toString('base64')}` } },
-              ]
-            }],
-            max_tokens: 4096,
-            temperature: 0.1,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.choices?.[0]?.message?.content;
-          if (content) return NextResponse.json({ analysis: content });
-        }
-      } catch (err) {
-        console.warn('[Oxpecker AI] Azure OpenAI vision call error:', err);
-      }
-    }
-
-    // 4. Generate Verified Prescription Analysis from Azure Read OCR Transcript
-    const lines = ocrText.split('\n').map(l => l.trim()).filter(Boolean);
-    const dateStr = new Date().toISOString().split('T')[0];
-
-    const structuredMarkdown = `\`\`\`json:prescription_analysis
-{
-  "patientName": "Extracted via Azure OCR",
-  "doctorName": "Licensed Medical Practitioner",
-  "date": "${dateStr}",
-  "medicines": [
-    ${lines.slice(0, 4).map((line, idx) => `{
-      "name": "${line.replace(/"/g, '\\"')}",
-      "generic": "Verified via Azure Read OCR",
-      "strength": "As prescribed",
-      "dosage": "ডাক্তারের পরামর্শ অনুযায়ী",
-      "frequency": "নিয়মিত",
-      "duration": "৭ দিন",
-      "instructions": "খাবারের পরে পর্যাপ্ত পানি সহ",
-      "estimatedPrice": 80
-    }`).join(',\n    ')}
-  ],
-  "diagnosis": "ক্লিনিক্যাল প্রেসক্রিপশন পর্যালোচনা",
-  "advice": "প্রেসক্রিপশন অনুযায়ী সঠিক সময়ে ওষুধ সেবন করুন এবং কোর্স সম্পন্ন করুন।",
-  "followUp": "প্রয়োজনে ৭ দিন পর চিকিৎসকের ফলোআপ নিন",
-  "totalEstimatedCost7Days": ${Math.max(120, lines.length * 60)},
-  "totalEstimatedCost15Days": ${Math.max(240, lines.length * 110)},
-  "totalEstimatedCost30Days": ${Math.max(450, lines.length * 200)},
-  "warnings": ["ডাক্তারের প্রেসক্রিপশন ছাড়া নিজে নিজে অ্যান্টিবায়োটিক বন্ধ বা পরিবর্তন করবেন না।"],
-  "genericAlternatives": []
-}
-\`\`\`
-
-### 📋 প্রেসক্রিপশন বিশ্লেষণ (Microsoft Azure Computer Vision Read OCR)
-- **চিহ্নিত প্রেসক্রিপশন টেক্সট:** ${lines.length} টি লাইন সফলভাবে অপটিক্যাল রিকগনিশন দ্বারা যাচাই করা হয়েছে।
-- **নির্দেশনা:** প্রেসক্রিপশন অনুযায়ী নিয়মিত ওষুধ সেবন করুন এবং কোনো বিরূপ প্রতিক্রিয়া দেখা দিলে চিকিৎসকের পরামর্শ নিন।
-
-#### 🔍 প্রেসক্রিপশন থেকে অপটিক্যাল পাঠ (Transcript):
-\`\`\`text
-${ocrText}
-\`\`\`
-
-> ⚠️ **সতর্কতা:** এই প্রেসক্রিপশন বিশ্লেষণটি Microsoft Azure Computer Vision OCR দ্বারা প্রস্তুতকৃত। ফার্মেসি থেকে ওষুধ কেনার সময় মূল প্রেসক্রিপশনটি ফার্মাসিস্টকে দেখিয়ে নিশ্চিত করুন।`;
-
-    return NextResponse.json({ analysis: structuredMarkdown });
+    return NextResponse.json({ 
+      analysis: visionResult.rawText,
+      category: visionResult.imageCategory,
+      provider: visionResult.provider
+    });
 
   } catch (error: any) {
     console.error('[Oxpecker AI] Prescription analysis error:', error);

@@ -470,12 +470,7 @@ export function detectOTCCondition(text: string): OTCCondition | undefined {
 
 export function analyzeClinicalCase(userMessage: string, language: string = 'bn', category?: string): ClinicalAnalysis {
   const detectedSymptoms = detectSymptomsFromText(userMessage);
-  let otcGuidance = detectOTCCondition(userMessage);
-
-  // If user selected 'medicines' category but no specific keyword matched, default to general OTC guidance
-  if (!otcGuidance && (category === 'medicines' || category === 'medicine')) {
-    otcGuidance = VERIFIED_OTC_CONDITIONS[0];
-  }
+  const otcGuidance = detectOTCCondition(userMessage);
 
   // Check emergency keywords
   const isEmergency = detectedSymptoms.includes('retrosternal_chest_pain') ||
@@ -491,40 +486,40 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
     ? 'বুকে তীব্র ব্যথা বা সম্ভাব্য কার্ডিয়াক ইমার্জেন্সি / তীব্র শ্বাসকষ্টের লক্ষণ চিহ্নিত হয়েছে।'
     : undefined;
 
-  // Match against verified diseases
+  // Match against verified diseases ONLY when actual patient symptoms are detected
   const matches: ClinicalMatchResult[] = [];
 
-  for (const disease of VERIFIED_DISEASES) {
-    const allDiseaseSymptoms = [...disease.cardinal, ...disease.associated];
-    const matched = detectedSymptoms.filter(s => allDiseaseSymptoms.includes(s));
-    
-    // Category match bonus
-    const isCategoryMatch = category && disease.category.toLowerCase().includes(category.toLowerCase());
+  if (detectedSymptoms.length > 0) {
+    for (const disease of VERIFIED_DISEASES) {
+      const allDiseaseSymptoms = [...disease.cardinal, ...disease.associated];
+      const matched = detectedSymptoms.filter(s => allDiseaseSymptoms.includes(s));
+      
+      // STRICT: ONLY match if the user has at least one actual reported symptom
+      if (matched.length > 0) {
+        const cardinalMatches = matched.filter(s => disease.cardinal.includes(s));
+        let score = Math.round(
+          (cardinalMatches.length * 2.5 + matched.length * 1.5) / 
+          (disease.cardinal.length * 2.5) * 100
+        );
+        const isCategoryMatch = category && disease.category.toLowerCase().includes(category.toLowerCase());
+        if (isCategoryMatch) score += 10;
 
-    if (matched.length > 0 || isCategoryMatch) {
-      // Calculate clinical relevance score
-      const cardinalMatches = matched.filter(s => disease.cardinal.includes(s));
-      let score = Math.round(
-        (cardinalMatches.length * 2.5 + matched.length * 1.5) / 
-        (disease.cardinal.length * 2.5) * 100
-      );
-      if (isCategoryMatch) score = Math.max(score, 40) + 15;
+        let triage: 'Low' | 'Moderate' | 'High' | 'Emergency' = 'Low';
+        if (disease.category === 'Cardiovascular' || isEmergency) {
+          triage = 'Emergency';
+        } else if (score >= 60 || (disease.red_flags && disease.red_flags.some(rf => detectedSymptoms.includes(rf)))) {
+          triage = 'High';
+        } else if (score >= 30) {
+          triage = 'Moderate';
+        }
 
-      let triage: 'Low' | 'Moderate' | 'High' | 'Emergency' = 'Low';
-      if (disease.category === 'Cardiovascular' || isEmergency) {
-        triage = 'Emergency';
-      } else if (score >= 60 || (disease.red_flags && disease.red_flags.some(rf => detectedSymptoms.includes(rf)))) {
-        triage = 'High';
-      } else if (score >= 30) {
-        triage = 'Moderate';
+        matches.push({
+          disease,
+          matchScore: Math.min(100, Math.max(25, score)),
+          matchedSymptoms: matched,
+          triageLevel: triage,
+        });
       }
-
-      matches.push({
-        disease,
-        matchScore: Math.min(100, Math.max(25, score)),
-        matchedSymptoms: matched,
-        triageLevel: triage,
-      });
     }
   }
 
@@ -532,8 +527,8 @@ export function analyzeClinicalCase(userMessage: string, language: string = 'bn'
   matches.sort((a, b) => b.matchScore - a.matchScore);
 
   const primaryMatches = matches.slice(0, 3);
-  const hasSymptomMatch = primaryMatches.length > 0;
-  const isHealthQuery = hasSymptomMatch || !!otcGuidance || isEmergency || !!category;
+  const hasSymptomMatch = primaryMatches.length > 0 && detectedSymptoms.length > 0;
+  const isHealthQuery = hasSymptomMatch || !!otcGuidance || isEmergency;
 
   const recommendedSpeciality = primaryMatches[0]?.disease.speciality || 
     (isEmergency ? 'Emergency Medicine / Cardiology' : 'General Physician');
@@ -603,23 +598,23 @@ function generateMarkdownReport(data: {
   // 2. Clinical Evaluation Table (Primary when Symptoms, Emergency, or General)
   if (data.primaryMatches.length > 0) {
     const topMatch = data.primaryMatches[0];
-    output += `### 🩺 ক্লিনিক্যাল লক্ষণ বিশ্লেষণ (Clinical Evaluation)\n`;
-    output += `আপনার লক্ষণগুলোর সাথে **বাংলাদেশ স্বাস্থ্য অধিদপ্তর (DGHS)** ও **WHO** গাইডলাইন অনুযায়ী সম্ভাব্য রোগের মিল নিচে দেওয়া হলো:\n\n`;
+    output += `### 🩺 লক্ষণ বিশ্লেষণ ও প্রাথমিক পরামর্শ\n`;
+    output += `আপনার উল্লেখিত লক্ষণসমূহের সাথে চিকিৎসা গাইডলাইন অনুযায়ী সম্ভাব্য প্রাথমিক মূল্যায়ন নিচে দেওয়া হলো:\n\n`;
     
-    output += `| সম্ভাব্য রোগ (Possible Condition) | ম্যাচ মাত্রা | ঝুঁকির মাত্রা (Triage) | প্রস্তাবিত বিশেষজ্ঞ |\n`;
+    output += `| সম্ভাব্য সমস্যা / রোগ | ম্যাচ মাত্রা | ঝুঁকির মাত্রা | প্রস্তাবিত বিশেষজ্ঞ |\n`;
     output += `| :--- | :--- | :--- | :--- |\n`;
     for (const m of data.primaryMatches) {
-      output += `| **${m.disease.bengali_name}** (${m.disease.name}) | ${m.matchScore}% | **${m.triageLevel} Risk** | ${m.disease.speciality} |\n`;
+      output += `| **${m.disease.bengali_name}** (${m.disease.name}) | ${m.matchScore}% | **${m.triageLevel}** | ${m.disease.speciality} |\n`;
     }
     output += `\n`;
 
     // Clinical Details & Recommended Diagnostic Tests
-    output += `#### 📋 করণীয় ও নির্ভরযোগ্য ল্যাব টেস্ট:\n`;
-    output += `- **প্রাথমিক স্বাস্থ্য পরামর্শ:** ${topMatch.disease.primary_advice_bn}\n`;
-    output += `- **প্রয়োজনীয় ল্যাব টেস্ট:** ${topMatch.disease.diagnostic_tests.join(', ')}\n\n`;
+    output += `#### 📋 করণীয় ও প্রাথমিক ডায়াগনস্টিক টেস্ট:\n`;
+    output += `- **পরামর্শ:** ${topMatch.disease.primary_advice_bn}\n`;
+    output += `- **প্রয়োজনীয় টেস্ট:** ${topMatch.disease.diagnostic_tests.join(', ')}\n\n`;
   } else if (data.category === 'symptoms') {
-    output += `### 🩺 লক্ষণ ও রোগ মূল্যায়ন সহায়িকা (DGHS 150-Disease Clinical Engine)\n`;
-    output += `বাংলাদেশ স্বাস্থ্য অধিদপ্তর (DGHS) এর চিকিৎসানীতি অনুযায়ী যেকোনো শারীরিক সমস্যার মূল্যায়নে লক্ষণসমূহ সঠিকভাবে বিশ্লেষণ করা জরুরি।\n\n`;
+    output += `### 🩺 লক্ষণ ও প্রাথমিক স্বাস্থ্য নির্দেশিকা\n`;
+    output += `শারীরিক যেকোনো সমস্যার মূল্যায়নে লক্ষণসমূহ সঠিকভাবে বিশ্লেষণ করা জরুরি:\n\n`;
     output += `| লক্ষণ ক্যাটাগরি | সচরাচর লক্ষণসমূহ | প্রাথমিক সতর্কতা মাত্রা | জরুরি পরামর্শ |\n`;
     output += `| :--- | :--- | :--- | :--- |\n`;
     output += `| **জ্বর ও সংক্রমণ** | তীব্র জ্বর, কাঁপুনি, গা গরম, শরীর ব্যথা | মাঝারি (Moderate) | প্রচুর তরল পান করুন, তাপমাত্রা রেকর্ড করুন |\n`;

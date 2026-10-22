@@ -72,11 +72,13 @@ function ChatContent() {
     let displayContent = userMsgContent;
 
     if (activeMode) {
-      const additionalText = userMsgContent ? `\n\n${userMsgContent}` : "";
-      const basePrompt = activeMode.promptText ? `\n\n${activeMode.promptText}` : "";
-      apiContent = `[Action: ${activeMode.title}]${basePrompt}${additionalText}`;
-      
-      displayContent = `|MODE:${activeMode.title}|${userMsgContent}`;
+      if (userMsgContent) {
+        apiContent = userMsgContent;
+        displayContent = `|MODE:${activeMode.title}|${userMsgContent}`;
+      } else {
+        apiContent = activeMode.promptText || activeMode.title;
+        displayContent = `|MODE:${activeMode.title}|${activeMode.promptText || activeMode.title}`;
+      }
       setSelectedMode(null);
     }
 
@@ -247,8 +249,6 @@ function ChatContent() {
       promptText: modeItem.promptText 
     };
     setSelectedMode(modeObj);
-    // Directly send with promptText so that it immediately answers scoped to this category!
-    handleSend(modeItem.promptText || modeItem.title, modeObj);
   };
 
   const followUpChips = [

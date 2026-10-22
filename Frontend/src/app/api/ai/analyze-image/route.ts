@@ -1,31 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callMultimodalVision } from '@/lib/vision-engine';
 
 // ============================================
-// Medical Image Analysis API
-// Azure Computer Vision (Caption + Tags + OCR)
-// Strict Non-Medical Rejection & Anti-Hallucination
+// Oxpecker AI - Medical & General Image Analysis API
+// Multimodal Vision (Azure OpenAI -> Gemini Flash -> OpenAI -> Groq -> Azure OCR)
+// Strict Non-Medical Rejection, Clinical Image Diagnosis & Specialist Routing
 // ============================================
 
-const NON_MEDICAL_TAGS = new Set([
-  'animal', 'cat', 'dog', 'pet', 'kitten', 'puppy', 'bird', 'fish', 'carnivore', 'feline',
-  'vehicle', 'car', 'automobile', 'truck', 'motorcycle', 'wheel', 'tire',
-  'food', 'dish', 'meal', 'fast food', 'snack', 'dessert', 'burger', 'pizza', 'sandwich',
-  'fruit', 'vegetable', 'clothing', 'footwear', 'shoe', 'dress', 'shirt',
-  'scenery', 'landscape', 'mountain', 'sky', 'cloud', 'grass', 'plant', 'tree', 'flower',
-  'furniture', 'couch', 'chair', 'bed', 'tableware', 'toy', 'cartoon', 'anime', 'meme'
-]);
+const GENERAL_IMAGE_VISION_SYSTEM_PROMPT = `You are Oxpecker AI - Bangladesh's Advanced Healthcare Assistant and Clinical Image Specialist.
+Analyze the uploaded image with 100% clinical responsibility, strict anti-hallucination safeguards, and compassionate patient communication in fluent Bangla (বাংলা).
 
-const MEDICAL_IMAGE_TAGS = new Set([
-  'medical', 'medicine', 'hospital', 'clinic', 'doctor', 'patient', 'health',
-  'skin', 'rash', 'wound', 'injury', 'bone', 'x-ray', 'radiography', 'radiology',
-  'mri', 'ct scan', 'ultrasound', 'ecg', 'ekg', 'lesion', 'dermatology', 'teeth',
-  'mouth', 'eye', 'handwriting', 'document', 'paper', 'prescription'
-]);
+### STEP 1: IMAGE CLASSIFICATION & VALIDATION
+Carefully inspect the image:
+1. **PRESCRIPTION (প্রেসক্রিপশন):** Written or printed doctor's prescription.
+2. **MEDICINE BOX / STRIP (ওষুধের মোড়ক বা পাতা):** A pack, blister strip, box, or bottle of medication.
+3. **LAB / DIAGNOSTIC REPORT (মেডিকেল টেস্ট রিপোর্ট):** Blood test, CBC, urine test, ECG, X-Ray, etc.
+4. **CLINICAL SYMPTOM (শারীরিক বা চাক্ষুষ লক্ষণ):** Skin rash/allergy, wound/cut, eye redness, swelling, bruise, burn.
+5. **NON-MEDICAL / IRRELEVANT (অপ্রাসঙ্গিক ছবি):** Animals (cats, dogs, birds), food/meals/drinks, vehicles (cars, bikes), landscape/nature, furniture, cartoons, memes, selfies, random household objects.
+
+---
+### STRICT RULE FOR NON-MEDICAL / IRRELEVANT IMAGES:
+If the uploaded image is NON-MEDICAL or unrelated to healthcare:
+1. State clearly:
+### ❌ মেডিকেল ছবি সনাক্ত করা যায়নি (Non-Medical Image Detected)
+2. State what the image actually depicts in Bangla (e.g., "আপলোডকৃত ছবিটি কোনো স্বাস্থ্য, চিকিৎসা বা ক্লিনিক্যাল ছবি হিসেবে চিহ্নিত করা যায়নি; এটি একটি [বিড়াল/খাবার/গাড়ি/দৃশ্য/সেলফি ইত্যাদি]-এর ছবি।")
+3. Explain why:
+"রোগ নির্ণয়ের নির্ভুলতা ও রোগীর জীবন রক্ষার স্বার্থে অপ্রাসঙ্গিক বা সাধারণ ছবিতে কোনো চিকিৎসা ডায়াগনসিস প্রদান করা হয় না।"
+4. If the user asked a symptom question in text (e.g. "আমার মাথায় ব্যথা করছে" or "গা চুলকাচ্ছে"):
+   - Answer their text question with standard safe first-aid and home care advice in Bangla.
+   - However, emphasize that the uploaded photo is non-medical and has no clinical relation to their symptoms.
+5. Guide the user to upload a relevant medical document, report, or clinical photo.
+6. **STRICTLY DO NOT output any structured JSON blocks (no fake prescription or report cards).**
+
+---
+### INSTRUCTIONS FOR PRESCRIPTIONS:
+If a prescription is detected:
+- Decode doctor handwriting, medicines, and timings in simple Bangla.
+- Calculate 7, 15, and 30-day course costs in BDT (৳).
+- Provide affordable generic alternative comparisons (e.g. Sergel vs Finix, Napa Extra vs Ace Plus).
+- Output the \`\`\`json:prescription_analysis\`\`\` block.
+
+---
+### INSTRUCTIONS FOR CLINICAL SYMPTOMS (Skin, Cut/Wound, Rash, Eye, Swelling):
+1. **পর্যবেক্ষণ (Visual Findings):** Describe the visible clinical signs safely and objectively.
+2. **প্রাথমিক ফার্স্ট-এইড ও নিরাপদ যত্ন (Safe First-Aid & OTC Care):**
+   - যেমন: ক্ষতস্থানে জীবাণুনাশক (স্যাভলন/পোভিডোন আয়োডিন মলম) লাগানো এবং ব্যান্ডেজ করা।
+   - ত্বকের চুলকানিতে ক্যালামাইন লোশন বা নিরাপদ অ্যান্টিহিস্টামিন গাইডলাইন।
+   - মাংসপেশি বা জয়েন্টে ব্যথায় ঠান্ডা সেঁক (আইস প্যাক) ও বাহ্যিক ব্যথানাশক জেল (Volmac Gel)।
+3. **বিপদচিহ্ন ও সতর্কতা (Red Flags):** পুঁজ হওয়া, তীব্র ব্যথা, অতিরিক্ত রক্তপাত বা সংক্রমণ ছড়িয়ে পড়ার লক্ষণ থাকলে জরুরি চিকিৎসার পরামর্শ দিন।
+4. **বিশেষজ্ঞ ডাক্তার পরামর্শ (Doctor Recommendation):**
+   - Output the doctor recommendation block:
+\`\`\`json:doctor_recommendation
+{
+  "speciality": "Dermatology",
+  "reason": "ত্বকের অ্যালার্জি ও রashes বিশেষজ্ঞ চর্মরোগ চিকিৎসকের পরামর্শ নেওয়া জরুরি",
+  "urgency": "soon"
+}
+\`\`\`
+*(Choose appropriate specialty: Dermatology, Surgery, Orthopaedics, Ophthalmology, General Medicine)*`;
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('image') as File | null;
+    const userPrompt = ((formData.get('prompt') as string) || '').trim();
 
     if (!file) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
@@ -35,121 +73,23 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const mimeType = file.type || 'image/jpeg';
 
-    const userPrompt = ((formData.get('prompt') as string) || '').trim();
+    const visionResult = await callMultimodalVision(
+      buffer,
+      mimeType,
+      GENERAL_IMAGE_VISION_SYSTEM_PROMPT,
+      userPrompt
+    );
 
-    const apiKey = process.env.AZURE_VISION_KEY;
-    const endpoint = process.env.AZURE_VISION_ENDPOINT || "https://eastasia.api.cognitive.microsoft.com/";
-
-    let caption = '';
-    let tags: string[] = [];
-    let ocrLines: string[] = [];
-
-    if (apiKey) {
-      try {
-        const rawEndpoint = endpoint.replace(/\/+$/, "");
-        const visionUrl = `${rawEndpoint}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=read,caption,tags`;
-
-        const res = await fetch(visionUrl, {
-          method: 'POST',
-          headers: {
-            'Ocp-Apim-Subscription-Key': apiKey,
-            'Content-Type': 'application/octet-stream',
-          },
-          body: buffer,
-          signal: AbortSignal.timeout(15000),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          caption = data.captionResult?.text || '';
-          tags = (data.tagsResult?.values || []).map((t: any) => (t.name || '').toLowerCase());
-          data.readResult?.blocks?.forEach((b: any) => {
-            b.lines?.forEach((l: any) => {
-              if (l.text) ocrLines.push(l.text);
-            });
-          });
-        }
-      } catch (err: any) {
-        console.warn('[Oxpecker AI] Azure Vision analyze-image error:', err.message || err);
-      }
-    }
-
-    // Check whether the image is medical
-    const isNonMedical = tags.some(t => NON_MEDICAL_TAGS.has(t));
-    const isMedical = tags.some(t => MEDICAL_IMAGE_TAGS.has(t)) || (ocrLines.length > 2 && ocrLines.some(l => /dr\.|rx|hospital|patient|clinic|test|report/i.test(l)));
-
-    // Strict rejection of non-medical or unverified images (Anti-Hallucination)
-    if (!isMedical || isNonMedical) {
-      const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন/সমস্যা:** "${userPrompt}"\n\n` : '';
-      return NextResponse.json({
-        analysis: `### ❌ মেডিকেল ছবি সনাক্ত করা যায়নি (Non-Medical Image)\n\n` +
-          promptSnippet +
-          `আপলোডকৃত ছবিটি কোনো স্বাস্থ্য, চিকিৎসা বা ক্লিনিক্যাল ছবি হিসেবে চিহ্নিত করা যায়নি${caption ? ` (ছবিতে চিহ্নিত বিষয়: "${caption}")` : ''}।\n\n` +
-          `ভুল রোগ নির্ণয়ের ঝুঁকি এড়াতে অপ্রাসঙ্গিক বা সাধারণ ছবিতে কোনো চিকিৎসা ডায়াগনসিস দেওয়া হয় না। Oxpecker AI শুধুমাত্র মেডিকেল সম্পর্কিত ছবি বিশ্লেষণ করতে পারে (যেমন: এক্স-রে, এমআরআই, ত্বকের সমস্যা, জখম, ইসিজি ইত্যাদি)।\n\n` +
-          `অনুগ্রহ করে একটি সঠিক ও প্রাসঙ্গিক মেডিকেল ছবি আপলোড করুন।`
-      });
-    }
-
-    // If Azure OpenAI is configured, perform deep vision analysis
-    if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
-      try {
-        const rawEndpoint = process.env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
-        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-mini';
-        const url = `${rawEndpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-15-preview`;
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': process.env.AZURE_OPENAI_API_KEY,
-          },
-          body: JSON.stringify({
-            messages: [{
-              role: 'system',
-              content: 'You are Oxpecker AI Medical Image Analyzer. Analyze this medical image. If it is NOT a medical image, reject it and politely state why. Do not fabricate diagnoses.'
-            }, {
-              role: 'user',
-              content: [
-                { type: 'text', text: `Azure Vision caption: ${caption}, tags: ${tags.join(', ')}.\nAnalyze this medical image with observations, risk level, and specialist recommendations in Bengali and English.` },
-                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${buffer.toString('base64')}` } },
-              ]
-            }],
-            max_tokens: 4096,
-            temperature: 0.1,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data.choices?.[0]?.message?.content;
-          if (content) return NextResponse.json({ analysis: content });
-        }
-      } catch (err) {
-        console.warn('[Oxpecker AI] Azure OpenAI vision call error:', err);
-      }
-    }
-
-    // Verified output based on Azure Vision features
-    const reportMarkdown = `### 🩺 মেডিকেল ছবি বিশ্লেষণ (Microsoft Azure Computer Vision)
-${caption ? `- **শনাক্তকৃত বিবরণ:** ${caption}` : ''}
-${tags.length > 0 ? `- **ক্লিনিক্যাল ট্যাগসমূহ:** ${tags.slice(0, 5).join(', ')}` : ''}
-
-### পর্যবেক্ষণ ও স্বাস্থ্য পরামর্শ
-- ছবিটি সফলভাবে যাচাই করা হয়েছে। প্রাথমিক পর্যবেক্ষণে কোনো জরুরি বিপদাশঙ্কা পরিলক্ষিত না হলেও নিশ্চিত ডায়াগনোসিসের জন্য সংশ্লিষ্ট বিশেষজ্ঞ চিকিৎসকের পরামর্শ নিন।
-- যদি ত্বকে বা আক্রান্ত স্থানে ব্যথা, লালভাব বা ফোলা বৃদ্ধি পায়, তবে অনতিবিলম্বে হাসপাতালে পরীক্ষা করান।
-
-\`\`\`json:doctor_recommendation
-{"speciality": "General Medicine / Dermatology", "reason": "মেডিকেল ছবির গভীর ক্লিনিক্যাল নিরীক্ষার জন্য চিকিৎসকের পরামর্শ প্রয়োজন।", "urgency": "normal"}
-\`\`\`
-
-> ⚠️ **সতর্কতা:** এই বিশ্লেষণটি কোনো চূড়ান্ত চিকিৎসা ডায়াগনসিস নয়। এটি শুধুমাত্র সচেতনতা ও প্রাথমিক নির্দেশনার জন্য।`;
-
-    return NextResponse.json({ analysis: reportMarkdown });
+    return NextResponse.json({
+      analysis: visionResult.rawText,
+      category: visionResult.imageCategory,
+      provider: visionResult.provider
+    });
 
   } catch (error: any) {
-    console.error('[Oxpecker AI] Medical Image analysis error:', error);
-    return NextResponse.json({ 
-      analysis: `❌ **মেডিকেল ছবি বিশ্লেষণে ত্রুটি:** ${error.message || 'অনুগ্রহ করে ফাইলটি পুনরায় আপলোড করুন।'}` 
+    console.error('[Oxpecker AI] Image analysis error:', error);
+    return NextResponse.json({
+      analysis: `❌ **ছবি বিশ্লেষণে ত্রুটি:** ${error.message || 'অনুগ্রহ করে ফাইলটি পুনরায় আপলোড করুন।'}`
     }, { status: 500 });
   }
 }

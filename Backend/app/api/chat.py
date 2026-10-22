@@ -48,20 +48,26 @@ async def analyze_symptoms(message: ChatMessage):
         # Description
         is_bn = (message.language == "bn") or any(ord(c) >= 0x0980 and ord(c) <= 0x09FF for c in message.text)
         advice = diag.get("advice", "")
-        protocol = diag.get("clinical_protocol", "DGHS Bangladesh Guidelines")
-        
-        if is_bn:
-            description = (
-                f"বাংলাদেশ স্বাস্থ্য অধিদপ্তর (DGHS) ও WHO গাইডলাইন অনুযায়ী আপনার লক্ষণগুলো "
-                f"সম্ভাব্য '{condition}' নির্দেশ করে। "
-                f"ঝুঁকির মাত্রা: {triage}। {advice}"
-            )
+        has_match = diag.get("has_clinical_match", False)
+
+        if has_match and condition:
+            if is_bn:
+                description = (
+                    f"বাংলাদেশ স্বাস্থ্য অধিদপ্তর (DGHS) ও WHO গাইডলাইন অনুযায়ী আপনার লক্ষণগুলো "
+                    f"সম্ভাব্য '{condition}' নির্দেশ করে। "
+                    f"ঝুঁকির মাত্রা: {triage}। {advice}"
+                )
+            else:
+                description = (
+                    f"Based on DGHS Bangladesh and WHO clinical protocols, your reported symptoms "
+                    f"match probable '{condition}'. "
+                    f"Triage Level: {triage}. {advice}"
+                )
         else:
-            description = (
-                f"Based on DGHS Bangladesh and WHO clinical protocols, your reported symptoms "
-                f"match probable '{condition}'. "
-                f"Triage Level: {triage}. {advice}"
-            )
+            if is_bn:
+                description = "আপনার বার্তায় কোনো নির্দিষ্ট শারীরিক রোগ বা লক্ষণের মিল পাওয়া যায়নি। স্বাস্থ্যসেবা, পরামর্শ বা ডাক্তারের জন্য প্রশ্ন করতে পারেন।"
+            else:
+                description = "No specific physical symptoms or clinical conditions were detected. You can ask for healthcare guidance, appointments, or services."
 
         # Matched symptoms list
         matched_symptom_names = diag.get("primary_symptoms_matched", [message.text])

@@ -71,6 +71,9 @@ export function ChatInput({
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 220)}px`;
     }
+    if (selectedMode && textareaRef.current) {
+      textareaRef.current.focus();
+    }
   }, [text, selectedMode]);
 
   useEffect(() => {
@@ -147,24 +150,28 @@ export function ChatInput({
   ];
 
   const getDynamicPlaceholder = () => {
-    const catId = selectedMode?.id || selectedMode?.category;
-    if (catId === 'symptoms') {
+    const catId = (selectedMode?.category || selectedMode?.id || '').toLowerCase();
+    const title = (selectedMode?.title || '').toLowerCase();
+    if (catId === 'symptoms' || title.includes('symptom') || title.includes('লক্ষণ')) {
       return 'আপনার শারীরিক লক্ষণ বা রোগ সম্পর্কে বিস্তারিত লিখুন...';
     }
-    if (catId === 'prescriptions') {
-      return 'প্রেসক্রিপশন বুঝতে চান বা সেবনবিধি জানতে চান?...';
+    if (catId === 'prescriptions' || title.includes('prescription') || title.includes('প্রেসক্রিপশন')) {
+      return 'প্রেসক্রিপশন বুঝতে চান বা সেবনবিধি জানতে চান? এখানে লিখুন...';
     }
-    if (catId === 'medicines') {
+    if (catId === 'medicines' || title.includes('medicine') || title.includes('ওষুধ')) {
       return 'ওষুধের নাম, সঠিক ডোজ বা বিকল্প ব্র্যান্ড খুঁজুন...';
     }
-    if (catId === 'nutrition') {
+    if (catId === 'nutrition' || title.includes('nutrition') || title.includes('calorie') || title.includes('পুষ্টি') || title.includes('খাবার')) {
       return 'খাবারের পুষ্টিমান, ক্যালোরি বা পথ্য সম্পর্কে লিখুন...';
     }
-    if (catId === 'hospitals') {
+    if (catId === 'hospitals' || title.includes('hospital') || title.includes('doctor') || title.includes('হাসপাতাল')) {
       return 'হাসপাতাল, আইসিইউ বেড বা বিশেষজ্ঞ ডাক্তার খুঁজুন...';
     }
+    if (catId === 'emergency' || title.includes('emergency') || title.includes('risk') || title.includes('জরুরি')) {
+      return 'জরুরি শারীরিক সমস্যা বা প্রাথমিক চিকিৎসার প্রশ্ন লিখুন...';
+    }
     if (selectedMode) {
-      return `Add a message about ${selectedMode.title.toLowerCase()}...`;
+      return `"${selectedMode.title}" বিষয়ে আপনার প্রশ্ন লিখুন...`;
     }
     return 'Ask Oxpecker AI a health question...';
   };

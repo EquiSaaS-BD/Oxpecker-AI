@@ -248,6 +248,26 @@ class ClinicalAIEngine:
             if w in SYMPTOM_MAP:
                 extracted_tokens.add(SYMPTOM_MAP[w])
 
+        # Check direct disease mentions
+        direct_disease_mentions = [
+            (d_name, entry) for d_name, entry in self.unique_diseases.items()
+            if d_name.lower() in query_norm or (entry.get("bengali_name") and entry.get("bengali_name") in query)
+        ]
+
+        # STRICT: If no symptoms are detected and no disease is directly named, DO NOT diagnose a disease!
+        if not extracted_tokens and not direct_disease_mentions:
+            return {
+                "engine": "Oxpecker-Clinical-DGHS-150",
+                "has_clinical_match": False,
+                "condition": None,
+                "category": (category.title() if category else "General Communication"),
+                "triage_urgency": "ROUTINE",
+                "confidence_score": 0.0,
+                "primary_symptoms_matched": [],
+                "advice": None,
+                "red_flags": []
+            }
+
         best_match = None
         highest_score = 0
         matched_symptoms_list = []
@@ -256,14 +276,9 @@ class ClinicalAIEngine:
             score = 0
             curr_matched = []
 
-            # Category boost if user scoped
-            d_category = entry.get("category", "")
-            if category and (category.lower() in d_category.lower() or d_category.lower() in category.lower()):
-                score += 15
-
             # Check direct name mentions
-            if disease_name.lower() in query_norm or entry.get("bengali_name", "") in query:
-                score += 60
+            if disease_name.lower() in query_norm or (entry.get("bengali_name") and entry.get("bengali_name") in query):
+                score += 50
                 curr_matched.append("Direct disease mention")
 
             # Check symptom overlaps against both 9,600 verified case aggregate and summary
@@ -278,28 +293,30 @@ class ClinicalAIEngine:
                         score += 20
                         curr_matched.append(ds)
 
-            # Check raw word overlap
-            for w in words:
-                if len(w) >= 4 and any(w in ds for ds in d_symptoms):
-                    score += 5
+            # Boost category ONLY IF there are already matched symptoms
+            if curr_matched and category:
+                d_category = entry.get("category", "")
+                if category.lower() in d_category.lower() or d_category.lower() in category.lower():
+                    score += 15
 
-            if score > highest_score:
+            if curr_matched and score > highest_score:
                 highest_score = score
                 best_match = entry
                 matched_symptoms_list = list(set(curr_matched))
 
-        if best_match and highest_score >= 20:
+        if best_match and highest_score >= 20 and matched_symptoms_list:
             triage = best_match.get("triage_level", "Moderate")
             triage_std = "EMERGENCY" if "emergency" in triage.lower() or "severe" in triage.lower() else ("URGENT" if "mod" in triage.lower() or "urgent" in triage.lower() else "ROUTINE")
 
             return {
                 "engine": "Oxpecker-Clinical-DGHS-150",
+                "has_clinical_match": True,
                 "condition": f"{best_match.get('disease_name')} ({best_match.get('bengali_name')})",
                 "category": best_match.get("category", "General Clinical"),
                 "triage_urgency": triage_std,
                 "confidence_score": min(round(highest_score / 80.0, 2), 0.98),
                 "clinical_protocol": best_match.get("clinical_reference", "WHO & DGHS Bangladesh Clinical Guidelines"),
-                "primary_symptoms_matched": matched_symptoms_list if matched_symptoms_list else [query],
+                "primary_symptoms_matched": matched_symptoms_list,
                 "advice": self._get_triage_advice(triage_std, best_match.get("disease_name")),
                 "red_flags": [
                     "শ্বাসে কষ্ট বা অতিরিক্ত দ্রুত শ্বাস",
@@ -309,79 +326,16 @@ class ClinicalAIEngine:
                 ] if triage_std in ["EMERGENCY", "URGENT"] else ["লক্ষণ ৪ দিনের বেশি স্থায়ী হলে চিকিৎসকের পরামর্শ নিন"]
             }
 
-        # Category-grounded fallback responses
-        cat_lower = (category or "").lower()
-        if cat_lower in ["medicines", "medicine"]:
-            return {
-                "engine": "Oxpecker-Clinical-DGHS-150",
-                "condition": "Medicines & Pharmacology Information (ওষুধের তথ্য ও নির্দেশিকা)",
-                "category": "Medicines & Pharmacology",
-                "triage_urgency": "ROUTINE",
-                "confidence_score": 0.85,
-                "clinical_protocol": "DGDA & DGHS Essential Drugs List Bangladesh",
-                "primary_symptoms_matched": [query] if query else ["Medicines Guidance"],
-                "advice": "ওষুধ সেবনের পূর্বে রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন ও নির্দেশনা যাচাই করুন। অ্যান্টিবায়োটিক পূর্ণ কোর্স সম্পন্ন করুন এবং রেজিস্টার্ড ফার্মাসিস্টের পরামর্শ গ্রহণ করুন।",
-                "red_flags": ["ওষুধের অ্যালার্জি বা তীব্র পার্শ্বপ্রতিক্রিয়া", "অতিরিক্ত মাত্রা (Overdose)"]
-            }
-        elif cat_lower in ["prescriptions", "prescription"]:
-            return {
-                "engine": "Oxpecker-Clinical-DGHS-150",
-                "condition": "Prescription Interpretation & Schedule (প্রেসক্রিপশন ও সেবনবিধি)",
-                "category": "Prescription Guidance",
-                "triage_urgency": "ROUTINE",
-                "confidence_score": 0.85,
-                "clinical_protocol": "DGHS Bangladesh Standard Prescription Protocol",
-                "primary_symptoms_matched": [query] if query else ["Prescription Analysis"],
-                "advice": "প্রেসক্রিপশন অনুযায়ী সঠিক সময়ে সঠিক মাত্রায় ওষুধ সেবন করুন। ১+০+১ অর্থ সকালে ও রাতে, ১+১+১ অর্থ তিন বেলা। খাবারের আগে বা পরে খাওয়ার নিয়ম সতর্কতার সাথে মেনে চলুন।",
-                "red_flags": ["প্রেসক্রিপশন ছাড়া অ্যান্টিবায়োটিক গ্রহণ", "ডোজের অনিয়ম"]
-            }
-        elif cat_lower in ["nutrition", "food"]:
-            return {
-                "engine": "Oxpecker-Clinical-DGHS-150",
-                "condition": "Clinical Nutrition & Balanced Diet (পুষ্টি ও খাদ্যতালিকা গাইড)",
-                "category": "Clinical Nutrition",
-                "triage_urgency": "ROUTINE",
-                "confidence_score": 0.85,
-                "clinical_protocol": "National Nutrition Services (NNS) Bangladesh & WHO",
-                "primary_symptoms_matched": [query] if query else ["Nutrition Guidance"],
-                "advice": "সুষম দেশীয় খাবার (লাল চালের ভাত, দেশি মাছ, ডাল, তাজা মৌসুমি শাকসবজি) গ্রহণ করুন। পর্যাপ্ত বিশুদ্ধ পানি (প্রতিদিন ৮-১০ গ্লাস) পান করুন। অতিরিক্ত তেল, চিনি ও লবণ পরিহার করুন।",
-                "red_flags": ["তীব্র পানিশূন্যতা", "দীর্ঘস্থায়ী অপুষ্টি"]
-            }
-        elif cat_lower in ["hospitals", "hospital"]:
-            return {
-                "engine": "Oxpecker-Clinical-DGHS-150",
-                "condition": "Healthcare Facilities & Hospital Guidance (হাসপাতাল ও স্বাস্থ্যসেবা)",
-                "category": "Healthcare Facilities",
-                "triage_urgency": "ROUTINE",
-                "confidence_score": 0.85,
-                "clinical_protocol": "DGHS Hospital Services Management & Emergency Network",
-                "primary_symptoms_matched": [query] if query else ["Hospital Navigation"],
-                "advice": "জরুরি চিকিৎসার প্রয়োজনে জাতীয় জরুরি সেবা ৯৯৯ এ কল করুন। সাধারণ পরামর্শের জন্য স্বাস্থ্য অধিদপ্তরের ১৬২৬৩ নম্বরে ২৪ ঘণ্টা বিনামূল্যে ডাক্তারের সেবা পাওয়া যায়।",
-                "red_flags": ["জরুরি কার্ডিয়াক উপসর্গ", "তীব্র শ্বাসকষ্ট", "অতিরিক্ত রক্তপাত"]
-            }
-        elif cat_lower in ["emergency"]:
-            return {
-                "engine": "Oxpecker-Clinical-DGHS-150",
-                "condition": "Medical Emergency Assessment (জরুরি স্বাস্থ্য মূল্যায়ন)",
-                "category": "Emergency & Critical Care",
-                "triage_urgency": "EMERGENCY",
-                "confidence_score": 0.95,
-                "clinical_protocol": "DGHS Emergency Medical Services (EMS) Protocol",
-                "primary_symptoms_matched": [query] if query else ["Emergency Care"],
-                "advice": "অবিলম্বে নিকটস্থ জরুরি বিভাগে রোগীকে নিয়ে যান অথবা জরুরি সেবা ৯৯৯ এ অ্যাম্বুলেন্সের জন্য কল করুন। রোগীকে শান্ত রাখুন এবং প্রাথমিক ফার্স্ট এইড দিন।",
-                "red_flags": ["বুকে তীব্র ব্যথা", "জ্ঞান হারানো", "তীব্র শ্বাসকষ্ট", "অনিয়ন্ত্রিত রক্তপাত"]
-            }
-
         return {
             "engine": "Oxpecker-Clinical-DGHS-150",
-            "condition": "General Symptoms Assessment (সাধারণ লক্ষণ মূল্যায়ন)",
-            "category": "Primary Care / Triage Assessment",
+            "has_clinical_match": False,
+            "condition": None,
+            "category": (category.title() if category else "General Communication"),
             "triage_urgency": "ROUTINE",
-            "confidence_score": 0.50,
-            "clinical_protocol": "DGHS Bangladesh Primary Healthcare Standard",
-            "primary_symptoms_matched": [query],
-            "advice": "লক্ষণগুলো পরিষ্কারভাবে মূল্যায়নের জন্য নিকটস্থ নিবন্ধিত চিকিৎসকের পরামর্শ নিন। প্রচুর তরল খাবার গ্রহণ করুন ও পর্যাপ্ত বিশ্রাম নিন।",
-            "red_flags": ["উচ্চ জ্বর", "শ্বাসকষ্ট", "তীব্র রক্তক্ষরণ"]
+            "confidence_score": 0.0,
+            "primary_symptoms_matched": [],
+            "advice": None,
+            "red_flags": []
         }
 
     def _parse_neural_output(self, text: str, query: str) -> Dict[str, Any]:
