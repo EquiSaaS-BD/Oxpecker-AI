@@ -380,7 +380,7 @@ export function ChatInput({
                 }
               }}
               placeholder={getDynamicPlaceholder()}
-              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-400 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-relaxed"
+              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-400 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-relaxed font-bengali"
               rows={1}
             />
           </div>

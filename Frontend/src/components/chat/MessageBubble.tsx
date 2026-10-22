@@ -85,7 +85,7 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
         {/* Message Content */}
         <div className={`flex-1 min-w-0 ${isUser ? "" : "pt-1"}`}>
           {isUser ? (
-            <div className="text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap flex flex-col items-end gap-1.5">
+            <div className="font-bengali text-[15px] sm:text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap flex flex-col items-end gap-1.5">
               {content.startsWith('|MODE:') ? (
                 <>
                   <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[12px] font-bold border border-primary/20 flex items-center gap-1.5 shadow-sm">
@@ -116,7 +116,7 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
             <div className="space-y-4">
               {/* Markdown content */}
               {cleanedContent && (
-                <div className="prose prose-slate max-w-none text-[16px] leading-relaxed prose-p:mb-4 prose-headings:font-semibold prose-a:text-primary hover:prose-a:underline prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800">
+                <div className="font-bengali prose prose-slate max-w-none text-[15px] sm:text-[16px] leading-[1.8] prose-p:mb-3.5 prose-headings:font-bold prose-headings:tracking-normal prose-a:text-primary hover:prose-a:underline prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
