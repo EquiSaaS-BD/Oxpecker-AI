@@ -11,6 +11,8 @@ import Image from "next/image";
 import { detectEmergency } from "@/lib/ai/emergency-detector";
 import { useChatHistory, Message } from "@/context/ChatHistoryContext";
 import { MedicalLoader } from "@/components/shared/MedicalLoader";
+import { useAuth } from "@/context/AuthContext";
+import { apiGetProfile } from "@/lib/api";
 
 type EmergencyAlert = {
   type: string;
@@ -27,6 +29,23 @@ function ChatContent() {
   const autoSentRef = useRef(false);
 
   const { activeThreadId, getActiveThread, addMessageToThread, createNewThread, updateMessageInThread, updateThreadTitle, isLoaded } = useChatHistory();
+  const { user } = useAuth();
+  const [patientProfile, setPatientProfile] = useState<any>(null);
+
+  // Live Patient Profile Sync for AI Grounding
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveProfile() {
+      try {
+        const res = await apiGetProfile();
+        if (isMounted && res?.data?.profile) {
+          setPatientProfile(res.data.profile);
+        }
+      } catch {}
+    }
+    loadLiveProfile();
+    return () => { isMounted = false; };
+  }, []);
   
   // Create a thread if none exists on mount, but ONLY after localStorage is loaded
   useEffect(() => {
@@ -127,11 +146,14 @@ function ChatContent() {
       }
       abortControllerRef.current = new AbortController();
 
-      let pContext: any = null;
+      let pContext: any = patientProfile || user || null;
       if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("oxpecker_user");
+        const stored = localStorage.getItem("oxpecker_user") || localStorage.getItem("oxpecker_mock_user");
         if (stored) {
-          try { pContext = JSON.parse(stored); } catch {}
+          try { 
+            const parsed = JSON.parse(stored);
+            pContext = { ...parsed, ...(patientProfile || {}), ...(user || {}) };
+          } catch {}
         }
       }
 

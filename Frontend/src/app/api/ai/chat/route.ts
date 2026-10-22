@@ -258,30 +258,59 @@ function streamConversationalText(text: string): ReadableStream {
   });
 }
 
-function buildIntelligentFallback(queryText: string, category?: string, clinicalAnalysis?: ClinicalAnalysis): string {
+function buildIntelligentFallback(
+  queryText: string, 
+  category?: string, 
+  clinicalAnalysis?: ClinicalAnalysis,
+  patientContext?: any
+): string {
   const q = queryText.toLowerCase().trim();
-  const isGreeting = /^(hi|hello|hey|হ্যালো|হাই|সালাম|আসসালামু|কেমন|আছেন|help|শুনুন)/i.test(q);
-
-  if (isGreeting) {
-    return `হ্যালো! আমি **Oxpecker AI** — আপনার ডিজিটাল স্বাস্থ্য ও কল সেন্টার সহকারী। 🩺
-
-আজ আপনাকে কীভাবে সাহায্য করতে পারি?
-- কোনো শারীরিক **লক্ষণ** থাকলে তা বিস্তারিত লিখে পরামর্শ নিতে পারেন।
-- কোনো নির্দিষ্ট **ওষুধ** বা সেবনবিধি সম্পর্কে জানতে পারেন।
-- **প্রেসক্রিপশন বা রিপোর্ট** ছবি তুলে আপলোড করতে পারেন।
-- বিশেষজ্ঞ **ডাক্তার বা হাসপাতালের** সেবা ও যোগাযোগ নম্বর পেতে পারেন।
-
-আপনার প্রশ্নটি লিখে জানান, আমি আপনাকে দ্রুত সঠিক সহায়তা করছি।`;
+  const rawQuery = queryText.trim();
+  
+  // Patient Profile Personalization
+  let patientGreeting = "";
+  let patientDossier = "";
+  if (patientContext && typeof patientContext === 'object') {
+    const pName = patientContext.name || patientContext.full_name;
+    if (pName) {
+      patientGreeting = `প্রিয় **${pName}**, `;
+    }
+    const details = [];
+    if (patientContext.blood_group) details.push(`রক্তের গ্রুপ: ${patientContext.blood_group}`);
+    if (patientContext.allergies && patientContext.allergies !== "None" && patientContext.allergies !== "None reported") {
+      details.push(`পরিচিত এলার্জি: ${patientContext.allergies}`);
+    }
+    if (patientContext.medical_history && patientContext.medical_history !== "None" && patientContext.medical_history !== "None reported") {
+      details.push(`মেডিকেল হিস্ট্রি: ${patientContext.medical_history}`);
+    }
+    if (details.length > 0) {
+      patientDossier = `\n> 👤 **রোগীর স্বাস্থ্য প্রোফাইল:** ${details.join(' | ')}\n`;
+    }
   }
 
-  // Lead / Service / Call Center questions
-  const isLeadOrService = /^(সেবা|সার্ভিস|সার্ভিসেস|লিড|অ্যাপয়েন্টমেন্ট|বুকিং|সিরিয়াল|ডাক্তার|ফি|খরচ|কল সেন্টার|নাম্বার|হেল্পলাইন|ঠিকানা|কোথায়|তথ্য|প্যাকেজ|service|lead|appointment|booking|fee|cost|call center|helpline|phone|contact|address)/i.test(q);
+  // Detect Greetings
+  const isGreeting = /^(hi|hello|hey|হ্যালো|হাই|সালাম|আসসালামু|কেমন আছেন|kemon achen|kemon আছেন|help|শুনুন)/i.test(q);
+  if (isGreeting) {
+    return `${patientGreeting}হ্যালো! আমি **Oxpecker AI** — আপনার ডিজিটাল স্বাস্থ্য ও ক্লিনিক্যাল পরামর্শক। 🩺
 
+${patientDossier}
+আজ আপনার স্বাস্থ্যের ব্যাপারে কীভাবে সাহায্য করতে পারি?
+- 💬 আপনার শারীরিক যে কোনো **লক্ষণ বা অনুভূতি** বিস্তারিত লিখুন (যেমন: জ্বর, গা গরম লাগা, মাথাব্যথা, পেটব্যথা, ক্লান্তি)।
+- 💊 কোনো নির্দিষ্ট **ওষুধ** বা প্রেসক্রিপশনের সেবনবিধি সম্পর্কে জানতে পারেন।
+- 📸 **প্রেসক্রিপশন বা টেস্ট রিপোর্ট** ছবি তুলে আপলোড করে বিশ্লেষণ করতে পারেন।
+- 🏥 বিশেষজ্ঞ **ডাক্তার বা হাসপাতালের** সেবা ও জরুরি হটলাইন জানতে পারেন।
+
+আপনার শারীরিক সমস্যা বা প্রশ্নটি লিখুন, আমি এখনই সাহায্য করছি।`;
+  }
+
+  // Detect Services, Appointments, Leads, Hotlines
+  const isLeadOrService = /^(সেবা|সার্ভিস|সার্ভিসেস|লিড|অ্যাপয়েন্টমেন্ট|বুকিং|সিরিয়াল|ডাক্তার|ফি|খরচ|কল সেন্টার|নাম্বার|হেল্পলাইন|ঠিকানা|কোথায়|তথ্য|প্যাকেজ|service|lead|appointment|booking|fee|cost|call center|helpline|phone|contact|address)/i.test(q);
   if (isLeadOrService) {
     return `### 🏥 Oxpecker AI স্বাস্থ্যসেবা ও সহায়তা কেন্দ্র
 
-Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বাগতম। আমরা কৃত্রিম বুদ্ধিমত্তা ও চিকিৎসা নির্দেশিকার সমন্বয়ে ডিজিটাল স্বাস্থ্য সহায়তা প্রদান করে থাকি:
+${patientGreeting ? `${patientGreeting}Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বাগতম।` : "Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বাগতম।"}
 
+${patientDossier}
 #### আমাদের প্রধান সেবাসমূহ:
 - 🩺 **লক্ষণ মূল্যায়ন ও ট্রায়াজ:** রোগীর শারীরিক লক্ষণ অনুযায়ী প্রাথমিক সতর্কতা ও সঠিক বিভাগের পরামর্শ।
 - 📄 **প্রেসক্রিপশন ও ল্যাব রিপোর্ট স্ক্যানার:** প্রেসক্রিপশন ও রিপোর্টের ছবি থেকে ওষুধ ও পরীক্ষার ব্যাখ্যা।
@@ -292,141 +321,163 @@ Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বা
 - 📞 **স্বাস্থ্য বাতায়ন (স্বাস্থ্য অধিদপ্তর):** **১৬২৬৩** (২৪ ঘণ্টা অভিজ্ঞ ডাক্তারের সাথে সরাসরি কথা বলুন)
 - 🚨 **জাতীয় জরুরি সেবা:** **৯৯৯** (জরুরি অ্যাম্বুলেন্স ও পুলিশ সহায়তা)
 
-> 💬 আপনি কি কোনো নির্দিষ্ট বিশেষজ্ঞ ডাক্তারের অ্যাপয়েন্টমেন্ট অথবা কোনো সেবা সম্পর্কে জানতে চান? বিস্তারিত জানালে আমি আপনাকে সাহায্য করব।`;
+> 💬 আপনি কি কোনো নির্দিষ্ট বিশেষজ্ঞ ডাক্তারের অ্যাপয়েন্টমেন্ট অথবা কোনো সেবা সম্পর্কে জানতে চান? বিস্তারিত জানালে আমি আপনাকে সহায়তা করছি।`;
   }
 
-  // -------------------------------------------------------------
-  // Common Everyday Ailments - Basic Treatment & Safe OTC Guidance
-  // (মাথা ব্যথা, হালকা জ্বর, সর্দি-কাশি, ছেঁড়া-কাটা, গ্যাস্ট্রিক, বমি/পাতলা পায়খানা)
-  // -------------------------------------------------------------
-  if (q.includes('মাথা ব্যথা') || q.includes('মাথাব্যথা') || q.includes('headache')) {
-    return `### 🩺 মাথাব্যথার প্রাথমিক ঘরোয়া যত্ন ও সাধারণ চিকিৎসা
+  // -------------------------------------------------------------------------
+  // Dynamic Symptom Engine (Bangla + English + Banglish Transliterations)
+  // -------------------------------------------------------------------------
 
-মাথাব্যথা দূর করতে নিচের প্রাথমিক পদক্ষেপগুলো অনুসরণ করতে পারেন:
+  // 1. Fever / Feverish Feeling (জ্বর, জ্বর জ্বর ভাব, গা গরম, jor, fever, feverish)
+  const isFever = /(জ্বর|গা গরম|jor|fever|feverish|tapmatra|temp|temperature|gorom lagche|gorom)/i.test(q);
+  if (isFever) {
+    const isFeverishOnly = q.includes('অনুভব') || q.includes('ভাব') || q.includes('lagche') || q.includes('feel') || q.includes('অনূভব');
+    return `### 🩺 ${isFeverishOnly ? 'জ্বর জ্বর অনুভব হওয়া ও গা গরম লাগার প্রাথমিক পরামর্শ' : 'জ্বর ও শারীরিক অস্বস্তির প্রাথমিক চিকিৎসা ও গাইডলাইন'}
 
-#### ১. ঘরোয়া যত্ন ও ফার্স্ট-এইড:
-- শান্ত ও অন্ধকার ঘরে কিছুক্ষণ চোখ বন্ধ করে বিশ্রাম নিন।
-- কপালে বা ঘাড়ে স্বাভাবিক ঠান্ডা পানির নরম তোয়ালে দিয়ে সেঁক দিন।
-- পর্যাপ্ত পরিমাণে পানি পান করুন (ডিহাইড্রেশনের কারণে প্রায়ই মাথাব্যথা হয়)।
-- মোবাইল, কম্পিউটার স্ক্রিন বা উজ্জ্বল আলো থেকে অন্তত ১-২ ঘণ্টা দূরে থাকুন।
+${patientGreeting}আপনার প্রশ্ন **"${rawQuery}"**-এর প্রেক্ষিতে চিকিৎসা নির্দেশনা তুলে ধরা হলো:
 
-#### ২. নিরাপদ প্রাথমিক ওষুধ (OTC Guidance):
-- **ট্যাবলেট নাপা ৫০০ মিগ্রা (Napa 500mg) বা এইস (Ace 500mg):** খাবারের পর ১টি ট্যাবলেট খেতে পারেন।
-- মাথাব্যথা খুব তীব্র হলে **Napa Extra** বা **Ace Plus** (প্যারাসিটামল + ক্যাফেইন) খাবারের পর ১টি।
-- *সতর্কতা: খালি পেটে খাবেন না এবং দিনে ৪টির বেশি ট্যাবলেট সেবন করবেন না।*
+${patientDossier}
+#### ১. লক্ষণ ও প্রাথমিক অবস্থা বিশ্লেষণ:
+- ${isFeverishOnly ? 'শরীরে "জ্বর জ্বর অনুভব হওয়া" (Malaise / Low-grade feverish feeling) সাধারণত শারীরিক ক্লান্তি, অতিরিক্ত পরিশ্রম, পানিশূন্যতা বা কোনো সাধারণ ভাইরাল সংক্রমণের প্রাথমিক ধাপ নির্দেশ করে।' : 'জ্বর মূলত শরীরের রোগ প্রতিরোধ ব্যবস্থার একটি স্বাভাবিক প্রতিক্রিয়া, যা কোনো সংক্রমণ বা প্রদাহের বিরুদ্ধে লড়াই করার সময় দেখা দেয়।'}
+- **প্রথম করণীয়:** অবিলম্বে একটি থার্মোমিটার দিয়ে বগল বা জিহ্বার নিচে শরীরের সঠিক তাপমাত্রা পরিমাপ করুন।
+  - **৯৮.৪°F - ৯৯°F:** স্বাভাবিক গা গরম বা ক্লান্তি।
+  - **১০০°F বা তার বেশি:** মৃদু থেকে মাঝারি জ্বর।
+
+#### ২. জরুরি প্রাথমিক ঘরোয়া যত্ন:
+- **বিশ্রাম ও হাইড্রেশন:** প্রচুর বিশুদ্ধ পানি, খাবার স্যালাইন (Orsaline-N), ডাবের পানি বা কুসুম গরম লেবু-আদা চা পান করুন।
+- **স্পঞ্জিং:** শরীরের তাপমাত্রা বেশি হলে স্বাভাবিক তাপমাত্রার পানি দিয়ে কপাল, ঘাড় ও হাত-পা নরম সুতি কাপড় দিয়ে মুছে দিন (কখনোই বরফ পানি ব্যবহার করবেন না)।
+- ভারী বা মোটা কাপড় এড়িয়ে খোলামেলা ও আরামদায়ক সুতি পোশাক পরিধান করুন।
+
+#### ৩. ওষুধ বিষয়ক সতর্কতা (Safe OTC Guidance):
+- তাপমাত্রা ১০০°F এর বেশি হলে এবং শরীরে অস্বস্তি বা ব্যথা থাকলে একজন প্রাপ্তবয়স্ক ব্যক্তি চিকিৎসকের সাধারণ নির্দেশনায় **প্যারাসিটামল ৫০০ মিগ্রা (যেমন: Napa / Ace 500mg)** খাবারের পর ১টি ট্যাবলেট সেবন করতে পারেন (দিনে সর্বোচ্চ ৩-৪ বার, প্রতি ৬ ঘণ্টা পর পর)।
+- ⚠️ **অ্যান্টিবায়োটিক সতর্কতা:** চিকিৎসকের সুনির্দিষ্ট পরামর্শ ও প্রেসক্রিপশন ব্যতীত নিজে নিজে কোনো অবস্থাতেই অ্যান্টিবায়োটিক সেবন করবেন না।
 
 \`\`\`json:doctor_recommendation
 {
   "speciality": "Medicine",
-  "reason": "মাথাব্যথা ৩ দিনের বেশি স্থায়ী হলে বা তীব্র হলে ডাক্তারের পরামর্শ নিন",
+  "reason": "জ্বর জ্বর ভাব ৩ দিনের বেশি স্থায়ী হলে বা তাপমাত্রা ১০১ ডিগ্রির বেশি হলে মেডিসিন বিশেষজ্ঞের পরামর্শ নিন",
+  "urgency": "${isFeverishOnly ? 'routine' : 'soon'}"
+}
+\`\`\`
+
+> 🚨 **কখন জরুরি ভিত্তিতে ডাক্তার দেখাবেন (Red Flags):** জ্বরের সাথে তীব্র কাঁপুনি, প্রচণ্ড মাথাব্যথা, চোখের পেছনে ব্যথা, ত্বকে লালচে ছোপ/র‌্যাশ, বা তীব্র বমি দেখা দিলে কালবিলম্ব না করে রক্ত পরীক্ষা (CBC, Dengue NS1) করিয়ে ডাক্তারের পরামর্শ নিন।`;
+  }
+
+  // 2. Headache / Dizziness (মাথাব্যথা, মাথা ঘোরা, matha betha, headache, matha ghora)
+  const isHeadache = /(মাথা ব্যথা|মাথাব্যথা|মাথা ঘোরা|মাথা ঝিমঝিম|headache|matha betha|matha ghora|dizziness)/i.test(q);
+  if (isHeadache) {
+    return `### 🩺 মাথাব্যথার প্রাথমিক মূল্যায়ন ও ঘরোয়া যত্ন
+
+${patientGreeting}আপনার উল্লেখিত সমস্যা **"${rawQuery}"**-এর প্রেক্ষিতে পরামর্শ:
+
+${patientDossier}
+#### ১. সম্ভাব্য কারণ ও প্রাথমিক পর্যালোচনা:
+- মাথাব্যথা সাধারণত অতিরিক্ত মানসিক চাপ, ঘুমের ঘাটতি, চোখের ওপর চাপ (স্ক্রিন টাইম), সাইনাস ইনফেকশন বা ডিহাইড্রেশনের (পানিশূন্যতা) কারণে বেশি হয়ে থাকে।
+
+#### ২. তাৎক্ষণিক ঘরোয়া যত্ন:
+- একটি শান্ত ও অন্ধকার ঘরে অন্তত ৩০ থেকে ৪৫ মিনিট চোখ বন্ধ করে শুয়ে বিশ্রাম নিন।
+- কপালে ও ঘাড়ে স্বাভাবিক ঠান্ডা পানির ভেজা কাপড় দিয়ে হালকা সেঁক দিন।
+- অন্তত ১-২ গ্লাস স্বাভাবিক পানি বা ইলেকট্রোলাইট পান করুন।
+- মোবাইল, ল্যাপটপ স্ক্রিন ও উচ্চ শব্দ থেকে সাময়িক বিরতি নিন।
+
+#### ৩. প্রাথমিক ওষুধ নির্দেশিকা:
+- প্রয়োজনবোধে ভরা পেটে **ট্যাবলেট প্যারাসিটামল ৫০০ মিগ্রা (Napa / Ace)** ১টি সেবন করতে পারেন। খালি পেটে কোনো ব্যথানাশক ওষুধ খাবেন না।
+
+\`\`\`json:doctor_recommendation
+{
+  "speciality": "Neurology",
+  "reason": "মাথাব্যথা নিয়মিত হলে, দৃষ্টি ঝাপসা হলে বা তীব্র মাইগ্রেনের লক্ষণ থাকলে বিশেষজ্ঞ দেখান",
   "urgency": "routine"
 }
 \`\`\`
 
-> ⚠️ **কখন দ্রুত ডাক্তার দেখাবেন:** মাথাব্যথার সাথে বমি, দৃষ্টি ঝাপসা হওয়া, ঘাড় শক্ত হওয়া বা খিঁচুনি হলে অবিলম্বে চিকিৎসকের শরণাপন্ন হোন।`;
+> 🚨 **সতর্কতা:** মাথাব্যথার সাথে বমি, ঘাড় শক্ত হওয়া বা চোখে দেখতে সমস্যা হলে দ্রুত নিকটস্থ হাসপাতালে যোগাযোগ করুন।`;
   }
 
-  if (q.includes('জ্বর') || q.includes('fever')) {
-    return `### 🩺 হালকা জ্বরের প্রাথমিক চিকিৎসা ও পরিচর্যা
+  // 3. Cough, Cold & Sore Throat (কাশি, সর্দি, ঠান্ডা, kashi, shordi, cold, cough, gola betha)
+  const isColdCough = /(কাশি|কফ|সর্দি|ঠান্ডা|গলা ব্যথা|kashi|cough|shordi|cold|thanda|gola betha|sore throat)/i.test(q);
+  if (isColdCough) {
+    return `### 🩺 সর্দি, কাশি ও গলা ব্যথার কার্যকর প্রাথমিক চিকিৎসা
 
-জ্বরের তাপমাত্রা নিয়ন্ত্রণে প্রাথমিক সতর্কতা ও যত্ন:
+${patientGreeting}আপনার উল্লেখিত লক্ষণ **"${rawQuery}"**-এর প্রেক্ষিতে পরামর্শ:
 
-#### ১. ঘরোয়া যত্ন:
-- স্বাভাবিক তাপমাত্রার পানি দিয়ে কপাল ও শরীর বারবার নরম কাপড় দিয়ে স্পঞ্জ করে মুছে দিন (বরফ পানি ব্যবহার করবেন না)।
-- রোগীকে খোলামেলা, বাতাসযুক্ত ঘরে রাখুন এবং ভারী কম্বল বা চাদর এড়িয়ে চলুন।
-- প্রচুর পানি, ওরস্যালাইন, ফলের রস ও পাতলা স্যুপ পান করান।
+${patientDossier}
+#### ১. ঘরোয়া যত্ন ও আরামদায়ক সমাধান:
+- **লবণ পানির গার্গল:** দিনে ৩-৪ বার কুসুম গরম পানিতে আধা চা চামচ লবণ মিশিয়ে ভালো করে কুলকুচি ও গার্গল করুন।
+- **গরম পানির ভাপ (Steam Inhalation):** ফুটন্ত গরম পানির ভাপ দিনে ২ বার নাক ও মুখ দিয়ে টেনে নিলে বন্ধ নাক ও শ্বাসনালী পরিষ্কার হয়।
+- **ভেষজ চা:** তুলসী পাতা, আদা, লবঙ্গ ও মধু দিয়ে বানানো গরম চা গলার অস্বস্তি দ্রুত উপশম করে।
 
-#### ২. নিরাপদ প্রাথমিক ওষুধ (OTC):
-- **ট্যাবলেট নাপা ৫০০ মিগ্রা (Napa / Ace 500mg):** প্রাপ্তবয়স্কদের জন্য খাবারের পর ১টি ট্যাবলেট (দিনে ৩-৪ বার, প্রতি ৬ ঘণ্টা পর পর)।
-- শিশুদের ক্ষেত্রে ওজন ও বয়স অনুযায়ী প্যারাসিটামল সিরাপ (যেমন Napa Syrup / Ace Syrup) সেব্য।
+#### ২. প্রাথমিক ওষুধ নির্দেশিকা:
+- সর্দির কারণে নাক বন্ধ বা ঘন ঘন হাঁচি হলে একটি সাধারণ অ্যান্টিহিস্টামিন যেমন **ট্যাবলেট এলাট্রল ১০ মিগ্রা (Alatrol 10mg) বা ফেক্সো ১২০ মিগ্রা (Fexo 120mg)** রাতে খাবারের পর ১টি সেবন করা যেতে পারে।
 
 \`\`\`json:doctor_recommendation
 {
-  "speciality": "Medicine",
-  "reason": "জ্বর ১০২ ডিগ্রির বেশি হলে বা ৩ দিনের বেশি স্থায়ী হলে রক্ত পরীক্ষা (CBC, Dengue NS1) ও ডাক্তার দেখানো আবশ্যক",
-  "urgency": "soon"
-}
-\`\`\`
-
-> ⚠️ **সতর্কতা:** ডাক্তারের পরামর্শ ব্যতীত কোনো অবস্থাতেই নিজে নিজে অ্যান্টিবায়োটিক শুরু করবেন না।`;
-  }
-
-  if (q.includes('ছেঁড়া') || q.includes('কাটা') || q.includes('ক্ষত') || q.includes('wound') || q.includes('cut')) {
-    return `### 🩺 ছেঁড়া-কাটা ও ক্ষতের প্রাথমিক ফার্স্ট-এইড চিকিৎসা
-
-আঘাত বা ধারালো কিছুতে কেটে গেলে সংক্রমণ রোধে দ্রুত করণীয়:
-
-#### ১. রক্তপাত বন্ধ ও পরিষ্কারকরণ:
-- রক্তপাত বন্ধ করতে পরিষ্কার সুতি কাপড় বা জীবাণুমুক্ত গজ দিয়ে ক্ষতের উপর ৫ মিনিট চেপে ধরে রাখুন।
-- পরিষ্কার জীবাণুমুক্ত পানি দিয়ে আলতো করে ক্ষতস্থান ও আশেপাশের ধুলোবালি ধুয়ে নিন।
-
-#### ২. অ্যান্টিসেপ্টিক ও ব্যান্ডেজ:
-- ক্ষতস্থানে **পোভিডোন আয়োডিন ১০% মলম (Povisep Ointment / Viodin 10%)** বা **নেবানল (Nebanol Ointment)** আলতো করে লাগিয়ে দিন।
-- এরপর একটি জীবাণুমুক্ত ব্যান্ড-এইড (Band-Aid) বা পাতলা গজ ব্যান্ডেজ দিয়ে ঢেকে রাখুন।
-
-\`\`\`json:doctor_recommendation
-{
-  "speciality": "Surgery",
-  "reason": "ক্ষত গভীর হলে সেলাই (Stitch) লাগতে পারে এবং টিটেনাস (টিটি) টিকা নিশ্চিত করা প্রয়োজন",
-  "urgency": "soon"
-}
-\`\`\`
-
-> ⚠️ **টিটেনাস সতর্কতা:** গত ৫ বছরে ধনুষ্টংকার বা টিটেনাস (Tetanus Toxoid - TT) টিকা নেওয়া না থাকলে এবং ক্ষতটি নোংরা বা জং ধরা লোহা দিয়ে হয়ে থাকলে ২৪ ঘণ্টার মধ্যে টিটেনাস টিকা নিন।`;
-  }
-
-  if (q.includes('গ্যাস') || q.includes('গ্যাস্ট্রিক') || q.includes('বুক জ্বালা') || q.includes('acidity') || q.includes('gastric')) {
-    return `### 🩺 গ্যাস্ট্রিক ও বুক জ্বালাপোড়ার ঘরোয়া যত্ন ও ওষুধ
-
-গ্যাস্ট্রিক ও বদহজম নিয়ন্ত্রণে প্রাথমিক পরামর্শ:
-
-#### ১. ঘরোয়া নিয়মাবলি:
-- অতিরিক্ত তেল, মসলাযুক্ত ও ভাজাপোড়া খাবার সম্পূর্ণ এড়িয়ে চলুন।
-- খাবারের পর পরই শুয়ে না পড়ে অন্তত ২০-৩০ মিনিট সোজা থাকুন বা হালকা হাঁটাহাঁটি করুন।
-- ধূমপান, চা, কফি ও কোমল পানীয় সাময়িকভাবে পরিহার করুন।
-
-#### ২. প্রাথমিক ওষুধ:
-- **ক্যাপসুল সেক্লো ২০ মিগ্রা (Seclo 20mg) বা ওমেপ (Omep 20mg):** সকালে ও রাতে খাবারের ২০-৩০ মিনিট আগে খালি পেটে সেব্য।
-- তীব্র বুক জ্বালা ও টক ঢেকুরের তাৎক্ষণিক উপশমে: **Antacid Plus Suspension** (২ চা চামচ খাবারের ১ ঘণ্টা পর)।
-
-\`\`\`json:doctor_recommendation
-{
-  "speciality": "Gastroenterology",
-  "reason": "দীর্ঘমেয়াদী পেটে তীব্র ব্যথা বা বুক জ্বালায় গ্যাস্ট্রোএন্টারোলজি বিশেষজ্ঞের পরামর্শ নিন",
+  "speciality": "ENT",
+  "reason": "কাশি ৭ দিনের বেশি স্থায়ী হলে বা কাশির সাথে রক্ত/শ্বাসকষ্ট হলে ইএনটি বা বক্ষব্যাধি বিশেষজ্ঞ দেখান",
   "urgency": "routine"
 }
 \`\`\``;
   }
 
-  if (q.includes('বমি') || q.includes('পাতলা পায়খানা') || q.includes('ডায়রিয়া') || q.includes('diarrhea') || q.includes('vomiting')) {
+  // 4. Stomach Ache, Acidity, Gastric (পেটব্যথা, গ্যাস, বদহজম, pet betha, gastric, acidity, gas)
+  const isStomach = /(পেট ব্যথা|পেটব্যথা|গ্যাস|গ্যাস্ট্রিক|বুক জ্বালা|বদহজম|pet betha|stomach|gastric|acidity|heartburn)/i.test(q);
+  if (isStomach) {
+    return `### 🩺 পেটের সমস্যা ও গ্যাস্ট্রিকের প্রাথমিক চিকিৎসা
+
+${patientGreeting}আপনার প্রশ্ন **"${rawQuery}"**-এর প্রেক্ষিতে করণীয়:
+
+${patientDossier}
+#### ১. খাদ্যাভ্যাস ও জীবনযাত্রা:
+- তৈলাক্ত, অতিরিক্ত মসলাযুক্ত, ভাজাপোড়া ও ঝাল খাবার খাওয়া সম্পূর্ণ পরিহার করুন।
+- খাবারের পর পরই শুয়ে না পড়ে অন্তত ২০-৩০ মিনিট সোজা থাকুন।
+- চা, কফি, কোমল পানীয় ও ধূমপান থেকে বিরত থাকুন।
+
+#### ২. প্রাথমিক ওষুধ নির্দেশিকা:
+- বুক জ্বালাপোড়া ও গ্যাসের জন্য **ক্যাপসুল সেক্লো ২০ মিগ্রা (Seclo 20mg) বা সার্জেল ২০ মিগ্রা (Sergel 20mg)** সকালে ও রাতে খাবারের ২০-৩০ মিনিট আগে খালি পেটে সেব্য।
+- তাৎক্ষণিক উপশমের জন্য **Antacid Plus Suspension** (২ চা চামচ খাবারের ১ ঘণ্টা পর) খাওয়া যেতে পারে।
+
+\`\`\`json:doctor_recommendation
+{
+  "speciality": "Gastroenterology",
+  "reason": "পেটে তীব্র বা দীর্ঘমেয়াদী ব্যথা থাকলে পরিপাকতন্ত্র বিশেষজ্ঞের পরামর্শ নিন",
+  "urgency": "routine"
+}
+\`\`\``;
+  }
+
+  // 5. Diarrhea, Vomiting (বমি, পাতলা পায়খানা, bomi, diarrhea, vomiting, patla paykhana)
+  const isDiarrhea = /(বমি|পাতলা পায়খানা|ডায়রিয়া|আমশয়|bomi|diarrhea|vomiting|loose motion)/i.test(q);
+  if (isDiarrhea) {
     return `### 🩺 বমি ও পাতলা পায়খানার জরুরি প্রাথমিক চিকিৎসা
 
-পানিশূন্যতা রোধ করাই ডায়রিয়া ও বমির প্রধান চিকিৎসা:
+${patientGreeting}আপনার উল্লেখিত সমস্যা **"${rawQuery}"**-এর প্রেক্ষিতে জরুরি নির্দেশনা:
 
-#### ১. পানিশূন্যতা রোধ (সবচেয়ে গুরুত্বপূর্ণ):
-- প্রতিবার পাতলা পায়খানা বা বমির পর **১ গ্লাস (২৫০ মিলি) ওরস্যালাইন-এন (Orsaline-N)** তৈরি করে ধীরে ধীরে চুমুক দিয়ে পান করুন।
-- স্যালাইনের পাশাপাশি ডাবের পানি, ভাতের মাড় ও চিড়ার পানি পান করতে পারেন।
+${patientDossier}
+#### ১. প্রধান লক্ষ্য: পানিশূন্যতা রোধ
+- প্রতিবার পাতলা পায়খানা বা বমির পর অবশ্যই **১ গ্লাস (২৫০ মিলি) প্রস্তুতকৃত খাবার স্যালাইন (Orsaline-N)** অল্প অল্প করে চুমুক দিয়ে পান করুন।
+- স্যালাইনের পাশাপাশি ডাবের পানি, ভাতের মাড় ও চিড়ার পানি গ্রহণ করুন।
 
-#### ২. প্রাথমিক ওষুধ:
-- বমি ভাব থাকলে: **ট্যাবলেট ওমিডন ১০ মিগ্রা (Omidon 10mg / Domperidone):** খাবারের ১৫ মিনিট আগে ১টি।
-- শিশুদের ক্ষেত্রে ডায়রিয়ায় জিংক সিরাপ (Soluzinc / Baby Zinc) ১০ দিন খাওয়ানো হয়।
+#### ২. ওষুধ নির্দেশিকা:
+- বমি ভাব থাকলে খাবারের ১৫ মিনিট আগে **ট্যাবলেট ডমপেরিডন ১০ মিগ্রা (Omidon 10mg)** ১টি সেব্য।
 
 \`\`\`json:doctor_recommendation
 {
   "speciality": "Medicine",
-  "reason": "তীব্র পানিশূন্যতা, চোখ গর্তে যাওয়া বা রক্ত আমাশয় দেখা দিলে হাসপাতালে স্যালাইন (IV) প্রয়োজন হতে পারে",
+  "reason": "তীব্র পানিশূন্যতা, চোখ বসে যাওয়া বা দিনে ৬-৮ বারের বেশি পাতলা পায়খানা হলে দ্রুত চিকিৎসকের শরণাপন্ন হোন",
   "urgency": "urgent"
 }
 \`\`\`
 
-> 🚨 **বিপদচিহ্ন:** প্রস্রাব বন্ধ হওয়া, প্রচণ্ড দুর্বলতা বা বমির কারণে কিছুই পেটে না থাকলে কালবিলম্ব না করে নিকটস্থ হাসপাতালে যান।`;
+> 🚨 **বিপদচিহ্ন:** প্রস্রাবের পরিমাণ কমে যাওয়া, মাত্রাতিরিক্ত দুর্বলতা বা পায়খানার সাথে রক্ত গেলে জরুরি ভিত্তিতে হাসপাতালে যান।`;
   }
 
+  // Category based guidance
   if (category === 'medicines') {
     return `### 💊 ওষুধ ও ফার্মাকোলজি নির্দেশনা
 
-ওষুধ সেবনের ক্ষেত্রে সর্বদা রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন ও সঠিক মাত্রা মেনে চলা উচিত:
+${patientGreeting}ওষুধ সেবনের ক্ষেত্রে সর্বদা রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন ও সঠিক মাত্রা মেনে চলা উচিত:
 
+${patientDossier}
 | বিষয় | দিকনির্দেশনা |
 | :--- | :--- |
 | **ওষুধের নাম ও ডোজ** | চিকিৎসকের নির্দেশিত নির্দিষ্ট মাত্রা ও সময়ে সেবন করুন |
@@ -439,8 +490,9 @@ Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বা
   if (category === 'prescriptions') {
     return `### 📄 প্রেসক্রিপশন ও সেবনবিধি নির্দেশিকা
 
-প্রেসক্রিপশনের নির্দেশনা সঠিকভাবে মেনে চলা দ্রুত সুস্থতার জন্য অপরিহার্য:
+${patientGreeting}প্রেসক্রিপশনের নির্দেশনা সঠিকভাবে মেনে চলা দ্রুত সুস্থতার জন্য অপরিহার্য:
 
+${patientDossier}
 | সংকেত | অর্থ | খাওয়ার সময় |
 | :--- | :--- | :--- |
 | **১ + ০ + ১** | সকালে ১টি, রাতে ১টি | খাবারের পরে পর্যাপ্ত পানিসহ |
@@ -454,8 +506,9 @@ Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বা
   if (category === 'nutrition') {
     return `### 🥗 পুষ্টি ও সুষম খাদ্যতালিকা গাইড
 
-সুস্থ থাকার জন্য প্রতিদিন সুষম পুষ্টি নিশ্চিত করা জরুরি:
+${patientGreeting}সুস্থ থাকার জন্য প্রতিদিন সুষম পুষ্টি নিশ্চিত করা জরুরি:
 
+${patientDossier}
 | পুষ্টি উপাদান | দেশীয় খাদ্য উৎস | স্বাস্থ্য উপকারিতা |
 | :--- | :--- | :--- |
 | **শর্করা** | লাল চালের ভাত, লাল আটার রুটি | দীর্ঘস্থায়ী কর্মশক্তি বজায় রাখে |
@@ -467,41 +520,49 @@ Oxpecker AI প্ল্যাটফর্মে আপনাকে স্বা
   if (category === 'hospitals') {
     return `### 🏥 হাসপাতাল ও জরুরি চিকিৎসা যোগাযোগ
 
-জরুরি চিকিৎসা সহায়তা ও প্রাতিষ্ঠানিক সেবার জন্য নিচের নম্বরগুলোতে যোগাযোগ করতে পারেন:
+${patientGreeting}জরুরি চিকিৎসা সহায়তা ও প্রাতিষ্ঠানিক সেবার জন্য নিচের নম্বরগুলোতে যোগাযোগ করতে পারেন:
 
+${patientDossier}
 - 🚨 **জাতীয় জরুরি সেবা:** **৯৯৯** (জরুরি অ্যাম্বুলেন্স সহায়তা)
 - 📞 **স্বাস্থ্য বাতায়ন:** **১৬২৬৩** (স্বাস্থ্য অধিদপ্তরের সার্বক্ষণিক ডাক্তারের সেবা)
 - 🏥 **সরকারি হাসপাতাল:** নিকটস্থ উপজেলা স্বাস্থ্য কমপ্লেক্স, জেলা সদর হাসপাতাল বা মেডিকেল কলেজ হাসপাতালের জরুরি বিভাগ সার্বক্ষণিক সেবা প্রদান করে।`;
   }
 
   // If patient actually reported symptoms and matches were found
-  if (clinicalAnalysis && clinicalAnalysis.hasSymptomMatch && clinicalAnalysis.detectedSymptoms.length > 0 && clinicalAnalysis.primaryMatches.length > 0) {
+  if (clinicalAnalysis && clinicalAnalysis.hasSymptomMatch && clinicalAnalysis.primaryMatches.length > 0) {
     const top = clinicalAnalysis.primaryMatches[0];
-    return `### 🩺 লক্ষণ পর্যালোচনা ও প্রাথমিক পরামর্শ
+    return `### 🩺 লক্ষণ পর্যালোচনা ও ক্লিনিক্যাল ট্রায়াজ গাইড
 
-আপনার উল্লেখিত লক্ষণসমূহের প্রেক্ষিতে প্রাথমিক মূল্যায়ন নিচে তুলে ধরা হলো:
+${patientGreeting}আপনার বার্তা **"${rawQuery}"** পর্যালোচনা করে প্রাথমিক মূল্যায়ন তৈরি করা হলো:
 
-- **সম্ভাব্য বিষয়:** **${top.disease.bengali_name} (${top.disease.name})**
-- **পরামর্শ:** ${top.disease.primary_advice_bn}
-- **প্রয়োজনীয় ল্যাব টেস্ট:** ${top.disease.diagnostic_tests.join(', ')}
+${patientDossier}
+- **সম্ভাব্য অবস্থা:** **${top.disease.bengali_name} (${top.disease.name})**
+- **ক্লিনিক্যাল পরামর্শ:** ${top.disease.primary_advice_bn}
+- **প্রস্তাবিত ডায়াগনস্টিক পরীক্ষা:** ${top.disease.diagnostic_tests.join(', ')}
 
-#### 📋 সাধারণ স্বাস্থ্যবিধি:
-1. পর্যাপ্ত বিশ্রাম নিন এবং বিশুদ্ধ পানি ও পুষ্টিকর তরল পান করুন।
-2. লক্ষণ তীব্র হলে বা দীর্ঘস্থায়ী হলে দ্রুত রেজিস্টার্ড চিকিৎসকের পরামর্শ নিন।
+#### 📋 করণীয় প্রাথমিক যত্ন:
+1. পর্যাপ্ত বিশ্রাম নিশ্চিত করুন এবং প্রচুর তরল ও পুষ্টিকর খাবার গ্রহণ করুন।
+2. লক্ষণগুলো নিবিড়ভাবে পর্যবেক্ষণ করুন এবং তীব্র হলে রেজিস্টার্ড চিকিৎসকের পরামর্শ নিন।
 
 \`\`\`json:doctor_recommendation
-{"speciality": "${top.disease.speciality}", "reason": "সঠিক রোগ নির্ণয় ও প্রেসক্রিপশন গ্রহণ", "urgency": "${top.triageLevel === 'Emergency' ? 'emergency' : 'normal'}"}
+{"speciality": "${top.disease.speciality}", "reason": "লক্ষণগুলো নিবিড় পর্যবেক্ষণ ও সঠিক ব্যবস্থাপনার জন্য", "urgency": "${top.triageLevel === 'Emergency' ? 'emergency' : 'routine'}"}
 \`\`\`
 
-> ⚠️ **সতর্কতা:** এই তথ্য প্রাথমিক সচেতনতার জন্য, সরাসরি চিকিৎসকের বিকল্প নয়।`;
+> ⚠️ **চিকিৎসা পরামর্শ:** এটি একটি প্রাথমিক ডিজিটাল স্বাস্থ্য পরামর্শ, জরুরি বা জটিল অবস্থায় সরাসরি ডাক্তারের কাছে যাওয়া আবশ্যক।`;
   }
 
-  // Non-symptom general response
-  return `আপনার স্বাস্থ্যসেবা বা চিকিৎসা বিষয়ক জিজ্ঞাসার জন্য ধন্যবাদ। 
+  // 7. General Dynamic Response tailored to user's text
+  return `### 🩺 Oxpecker AI ক্লিনিক্যাল স্বাস্থ্যসেবা
 
-আপনার যদি কোনো শারীরিক সমস্যা বা লক্ষণ (যেমন: জ্বর, সর্দি, কাশি, মাথাব্যথা, পেটব্যথা ইত্যাদি) দেখা দিয়ে থাকে, তবে অনুগ্রহ করে বিস্তারিত লক্ষণ উল্লেখ করুন যাতে সঠিক পরামর্শ দেওয়া সম্ভব হয়।
+${patientGreeting}আপনার বার্তা: **"${rawQuery}"**
 
-নির্দিষ্ট কোনো ওষুধ, প্রেসক্রিপশন, পুষ্টি বা হাসপাতাল সম্পর্কিত তথ্য জানতেও সরাসরি প্রশ্ন করতে পারেন।`;
+${patientDossier}
+আপনার উল্লেখিত বিষয়টি আমরা গুরুত্বের সাথে গ্রহণ করেছি। আপনার জন্য পরামর্শ:
+1. **সুনির্দিষ্ট লক্ষণ উল্লেখ:** আপনার কোনো শারীরিক অস্বস্তি (যেমন জ্বর, কাশি, ব্যথা, দুর্বলতা) অনুভূত হলে অনুগ্রহ করে বিস্তারিত জানান, যাতে লক্ষণ অনুযায়ী সঠিক নির্দেশনা ও ওটিসি ঘরোয়া পরামর্শ দেওয়া সম্ভব হয়।
+2. **ওষুধ বা রিপোর্ট:** কোনো ওষুধ সম্পর্কে জানতে চাইলে তার নাম অথবা প্রেসক্রিপশন থাকলে ক্যামেরায় ছবি তুলে আপলোড করতে পারেন।
+3. **জরুরি অবস্থা:** কোনো জরুরি শারীরিক সংকটে অবিলম্বে জাতীয় জরুরি সেবা **৯৯৯** অথবা স্বাস্থ্য বাতায়ন **১৬২৬৩** নম্বরে কল করার পরামর্শ দেওয়া হচ্ছে।
+
+> 💬 আপনার শারীরিক অবস্থার আরও কোনো বিবরণ থাকলে এখানে লিখে জানান, আমি আপনাকে সহায়তা করছি।`;
 }
 
 // ============================================
@@ -595,7 +656,37 @@ export async function POST(request: NextRequest) {
     ];
 
     // ============================================
-    // Provider Attempt 1: Microsoft Azure OpenAI (Student/Production Plan)
+    // Provider Attempt 1: Direct OpenAI API (GPT-4o / GPT-4o-mini)
+    // ============================================
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (openaiKey && openaiKey.trim().length > 10 && !openaiKey.includes('dummy')) {
+      try {
+        const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
+        const stream = await streamFromOpenAIEndpoint(
+          `${baseUrl}/chat/completions`,
+          { 'Authorization': `Bearer ${openaiKey.trim()}` },
+          {
+            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+            messages: fullMessages,
+            temperature: 0.35,
+            max_tokens: 3000,
+          }
+        );
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-AI-Provider': 'OpenAI-GPT4o',
+          },
+        });
+      } catch (err: any) {
+        console.warn('[Oxpecker AI] OpenAI streaming error, trying Azure OpenAI:', err.message || err);
+      }
+    }
+
+    // ============================================
+    // Provider Attempt 2: Microsoft Azure OpenAI (Student/Production Plan)
     // ============================================
     if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
       try {
@@ -622,72 +713,15 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch (err: any) {
-        console.warn('[Oxpecker AI] Azure OpenAI streaming error, trying next provider:', err.message || err);
+        console.warn('[Oxpecker AI] Azure OpenAI streaming error, trying Groq:', err.message || err);
       }
     }
 
     // ============================================
-    // Provider Attempt 2: Direct OpenAI API
+    // Provider Attempt 3: Groq AI (Ultra-fast Llama-3.3 / Qwen)
     // ============================================
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const stream = await streamFromOpenAIEndpoint(
-          'https://api.openai.com/v1/chat/completions',
-          { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
-          {
-            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-            messages: fullMessages,
-            temperature: 0.3,
-            max_tokens: 3000,
-          }
-        );
-        return new Response(stream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-AI-Provider': 'OpenAI',
-          },
-        });
-      } catch (err: any) {
-        console.warn('[Oxpecker AI] OpenAI streaming error, trying Gemini:', err.message || err);
-      }
-    }
-
-    // ============================================
-    // Provider Attempt 3: Google Gemini (OpenAI-Compatible endpoint)
-    // ============================================
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || 'AIzaSyBzMLxU5OTUJy0SPTtU4ZyQB73N3vlwccU';
-    if (geminiKey) {
-      try {
-        const stream = await streamFromOpenAIEndpoint(
-          'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-          { 'Authorization': `Bearer ${geminiKey}` },
-          {
-            model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
-            messages: fullMessages,
-            temperature: 0.3,
-            max_tokens: 3000,
-          }
-        );
-        return new Response(stream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-AI-Provider': 'Google-Gemini',
-          },
-        });
-      } catch (err: any) {
-        console.warn('[Oxpecker AI] Gemini streaming error, trying Groq:', err.message || err);
-      }
-    }
-
-    // ============================================
-    // Provider Attempt 4: Groq AI (Ultra-fast Llama-3 / Qwen)
-    // ============================================
-    const groqKey = process.env.GROQ_API_KEY || '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';
-    if (groqKey) {
+    const groqKey = process.env.GROQ_API_KEY;
+    if (groqKey && groqKey.startsWith('gsk_') && !groqKey.includes('QMaZdoqj5rKrodGXauFDWGdyb3FY')) {
       try {
         const stream = await streamFromOpenAIEndpoint(
           'https://api.groq.com/openai/v1/chat/completions',
@@ -708,15 +742,44 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch (err: any) {
-        console.warn('[Oxpecker AI] Groq streaming error, falling back to clinical synthesizer:', err.message || err);
+        console.warn('[Oxpecker AI] Groq streaming error, trying Gemini:', err.message || err);
+      }
+    }
+
+    // ============================================
+    // Provider Attempt 4: Google Gemini (OpenAI-Compatible endpoint)
+    // ============================================
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (geminiKey && geminiKey.startsWith('AIzaSy') && !geminiKey.includes('BzMLxU5OTUJy0SPTtU4ZyQB73N3vlwccU')) {
+      try {
+        const stream = await streamFromOpenAIEndpoint(
+          'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+          { 'Authorization': `Bearer ${geminiKey}` },
+          {
+            model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+            messages: fullMessages,
+            temperature: 0.3,
+            max_tokens: 3000,
+          }
+        );
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-AI-Provider': 'Google-Gemini',
+          },
+        });
+      } catch (err: any) {
+        console.warn('[Oxpecker AI] Gemini streaming error, falling back to clinical synthesizer:', err.message || err);
       }
     }
 
     // ============================================
     // Resilient Fallback: Conversational Synthesizer
-    // (Never spits out rigid static disease tables or robotic headers)
+    // (Truly dynamic, symptom-responsive, Banglish-aware, personalized with Patient Profile)
     // ============================================
-    const fallbackResponse = buildIntelligentFallback(queryText, activeCategory, clinicalAnalysis);
+    const fallbackResponse = buildIntelligentFallback(queryText, activeCategory, clinicalAnalysis, patientContext);
     const stream = streamConversationalText(fallbackResponse);
 
     return new Response(stream, {
@@ -724,7 +787,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'X-AI-Provider': 'Oxpecker-Conversational-Engine',
+        'X-AI-Provider': 'Oxpecker-Dynamic-Clinical-Engine',
       },
     });
 
