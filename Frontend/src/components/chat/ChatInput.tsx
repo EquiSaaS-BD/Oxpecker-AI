@@ -288,13 +288,13 @@ export function ChatInput({
           accept="image/*,.pdf,.doc,.docx"
         />
 
-        {/* Input Container */}
+        {/* Input Container - Claude AI style: subtle, calm, and feather-light */}
         <div 
           onClick={() => textareaRef.current?.focus()}
-          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-all duration-200 cursor-text ${
+          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-colors duration-150 cursor-text ${
             isFocused
-              ? "bg-white border-[#2797de] ring-4 ring-[#2797de]/20 shadow-[0_8px_30px_rgba(39,151,222,0.18)] -translate-y-0.5"
-              : "bg-white/90 backdrop-blur-xl border-slate-200/90 shadow-xs hover:border-slate-300 hover:shadow-md hover:bg-white"
+              ? "bg-white border-slate-400 ring-1 ring-slate-400/20 shadow-[0_2px_6px_rgba(0,0,0,0.04)]"
+              : "bg-white border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-slate-300"
           }`}
         >
           
@@ -411,10 +411,10 @@ export function ChatInput({
                 handleSend();
               }}
               disabled={!text.trim() && !selectedMode}
-              className={`w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center transition-all duration-300 ${
+              className={`w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center transition-all duration-200 ${
                 (text.trim() || selectedMode) 
-                  ? "bg-[#2797de] text-white shadow-[0_4px_14px_rgba(39,151,222,0.35)] hover:bg-[#1f84c4] hover:shadow-[0_6px_18px_rgba(39,151,222,0.45)] hover:scale-105 active:scale-95" 
-                  : "bg-slate-100/80 text-slate-400"
+                  ? "bg-[#2797de] text-white shadow-xs hover:bg-[#1f84c4] active:scale-95" 
+                  : "bg-slate-100 text-slate-400"
               }`}
             >
               <ArrowRight size={20} className={(text.trim() || selectedMode) ? "ml-0.5" : ""} strokeWidth={2.5} />
