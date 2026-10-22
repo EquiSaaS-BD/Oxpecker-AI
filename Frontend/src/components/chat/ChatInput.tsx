@@ -287,35 +287,6 @@ export function ChatInput({
           accept="image/*,.pdf,.doc,.docx"
         />
 
-        {/* 5 Quick Category Buttons */}
-        <div className="w-full flex items-center gap-1.5 sm:gap-2 mb-2 overflow-x-auto [&::-webkit-scrollbar]:hidden py-0.5">
-          {COMPOSER_CATEGORIES.map((cat) => {
-            const isSelected = selectedMode?.id === cat.id || selectedMode?.category === cat.id;
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  if (isSelected) {
-                    onSelectMode?.(null);
-                  } else {
-                    onSelectMode?.(cat);
-                  }
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 border shadow-2xs ${
-                  isSelected
-                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                    : "bg-white text-slate-700 border-slate-200/90 hover:border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                <Icon size={14} className={isSelected ? "text-sky-400" : cat.color} />
-                <span>{cat.title}</span>
-              </button>
-            );
-          })}
-        </div>
-
         {/* Input Container */}
         <div className="w-full flex items-end gap-1.5 sm:gap-2 bg-white/60 backdrop-blur-xl rounded-xl p-1 sm:p-1.5 min-h-[48px] sm:min-h-[52px] border border-slate-200/80 shadow-sm focus-within:spatial-shadow-hover focus-within:border-primary/20 focus-within:bg-white transition-all duration-300">
           
