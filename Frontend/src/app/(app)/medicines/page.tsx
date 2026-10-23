@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
 
 const CATEGORIES = [
   { id: "All", name: "All", icon: Pill, color: "text-slate-500", bg: "bg-slate-100" },
@@ -43,22 +44,12 @@ export default function MedicinesPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [priceSnapshot, setPriceSnapshot] = useState<{ source: string; generatedAt: string | null; ageDays?: number | null; freshness?: string } | null>(null);
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   
-  // Labor Illusion states
-  const [scanProgress, setScanProgress] = useState(0);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  
-  const scanSteps = [
-    { title: "Initializing High-Resolution Image Capture...", pct: 15 },
-    { title: "Running Optical Character Recognition (OCR)...", pct: 40 },
-    { title: "Parsing Active Pharmaceutical Ingredients (APIs)...", pct: 65 },
-    { title: "Mapping Generic Equivalents & Querying DGDA Database...", pct: 85 },
-    { title: "Optimizing Pricing Algorithms & Finding Nearest Alternatives...", pct: 99 }
-  ];
 
   const fetchMedicines = useCallback(async (pageNum: number, isNewSearch: boolean = false) => {
     try {
@@ -76,6 +67,7 @@ export default function MedicinesPage() {
       const data = await res.json();
 
       if (data && data.data) {
+        setPriceSnapshot(data.priceSnapshot || null);
         if (isNewSearch) {
           setMedicines(data.data);
         } else {
@@ -111,55 +103,31 @@ export default function MedicinesPage() {
   const handleUploadPrescription = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Create preview
-    const imageUrl = URL.createObjectURL(file);
-    setUploadedImage(imageUrl);
-    
-    setIsScanning(true);
-    setScanResult(null);
-    setScanProgress(0);
-    setCurrentStepIndex(0);
-
-    // Dynamic step animation representing the "Labor Illusion"
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 5;
-      if (progress >= 100) {
-        clearInterval(interval);
-        setScanProgress(100);
-        
-        setTimeout(() => {
-          setIsScanning(false);
-          // Simulate finding a drug and its cheaper alternatives
-          const scannedGroup = [
-            { id: "a1", name: "Nexum 20mg", company: "Incepta", price: 8.00 },
-            { id: "a2", name: "Maxpro 20mg", company: "Renata", price: 7.00 },
-            { id: "a3", name: "Emax 20mg", company: "Beximco", price: 5.50 },
-            { id: "a4", name: "Sergel 20mg", company: "Healthcare", price: 7.00 }
-          ];
-          
-          // Smart Pricing Logic: Sort from Lowest Price to Highest Price
-          scannedGroup.sort((a, b) => a.price - b.price);
-          
-          setScanResult({
-            detected: "Esomeprazole 20mg (Gastric)",
-            alternatives: scannedGroup
-          });
-        }, 500);
-      } else {
-        setScanProgress(progress);
-        
-        // Update current step index based on progress percent thresholds
-        let nextStepIndex = 0;
-        for (let i = 0; i < scanSteps.length; i++) {
-          if (progress >= scanSteps[i].pct) {
-            nextStepIndex = Math.min(i + 1, scanSteps.length - 1);
-          }
-        }
-        setCurrentStepIndex(nextStepIndex);
+    void (async () => {
+      try {
+        const accessToken = await requestMedicalDocumentConsent();
+        if (!accessToken) return;
+        setUploadedImage(URL.createObjectURL(file));
+        setIsScanning(true);
+        setScanResult(null);
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("consent", "true");
+        const response = await fetch("/api/ai/analyze-prescription", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Prescription analysis failed");
+        setScanResult(data);
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "Prescription analysis failed.");
+      } finally {
+        setIsScanning(false);
+        e.target.value = "";
       }
-    }, 150); // Complete scan in ~3 seconds with smooth micro-ticks
+    })();
   };
 
   return (
@@ -251,18 +219,10 @@ export default function MedicinesPage() {
                   </div>
                   <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-md border border-slate-100 w-full max-w-[320px]">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[12px] font-bold text-sky-600 uppercase tracking-wider">Analyzing Rx</span>
-                      <span className="text-[14px] font-black text-slate-800">{scanProgress}%</span>
-                    </div>
-                    {/* Progress Bar Container */}
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden mb-3">
-                      <div 
-                        className="bg-sky-600 h-2 rounded-full transition-all duration-150 ease-out"
-                        style={{ width: `${scanProgress}%` }}
-                      ></div>
+                      <span className="text-[12px] font-bold text-sky-600 uppercase tracking-wider">Analyzing prescription</span>
                     </div>
                     <p className="text-[13px] text-slate-700 font-bold text-left animate-pulse">
-                      {scanSteps[currentStepIndex]?.title}
+                      Transcribing image and checking the dated medicine catalog…
                     </p>
                   </div>
                 </div>
@@ -309,33 +269,40 @@ export default function MedicinesPage() {
                 </div>
                 <div>
                   <h2 className="text-[20px] font-bold text-[#065f46]">Prescription Analyzed</h2>
-                  <p className="text-[14px] font-medium text-[#047857]">Found Generic: <strong>{scanResult.detected}</strong></p>
+                  <p className="text-[14px] font-medium text-[#047857]">Saved privately · Reference: <strong>{scanResult.documentId}</strong></p>
                 </div>
               </div>
+
+              <pre className="bg-white rounded-2xl p-5 mb-6 whitespace-pre-wrap text-sm text-slate-700 max-h-96 overflow-auto font-sans">{scanResult.analysis}</pre>
               
               <h3 className="text-[16px] font-bold text-[#065f46] mb-4 flex items-center gap-2">
-                <TrendingDown size={18} /> Smart Alternatives (Cheapest First)
+                <TrendingDown size={18} /> Exact-formulation catalog price matches
               </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {scanResult.alternatives.map((alt: any, i: number) => (
-                  <div key={i} className="bg-white rounded-[16px] p-5 shadow-sm border border-[#a7f3d0] hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">{alt.company}</span>
-                      {i === 0 && (
-                        <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Cheapest</span>
-                      )}
+              <p className="text-xs text-slate-600 mb-4">Source: {scanResult.priceSnapshot?.source || "catalog snapshot"}; generated {scanResult.priceSnapshot?.generatedAt || "date unavailable"} ({scanResult.priceSnapshot?.ageDays ?? "unknown"} days old, {scanResult.priceSnapshot?.freshness || "freshness unknown"}). Matches require the same generic, strength, dosage form, and package size.</p>
+              {(scanResult.medicineComparisons || []).map((comparison: any, medicineIndex: number) => (
+                <div key={medicineIndex} className="bg-white rounded-xl p-4 mb-3 border border-emerald-100">
+                  <p className="font-bold text-slate-900 mb-2">Prescription entry: {comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Medicine not identified"} · {comparison.prescribed?.strength || "strength unreadable"}</p>
+                  {comparison.baselinePrice !== null && comparison.baselinePrice !== undefined && (
+                    <p className="text-sm text-slate-700 mb-3">Catalog price for the prescribed brand: ৳ {comparison.baselinePrice.toFixed(2)} / {comparison.baselinePriceBasis}</p>
+                  )}
+                  {(comparison.comparablePrices || []).map((alternative: any, alternativeIndex: number) => (
+                    <div key={alternativeIndex} className="py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{alternative.brandName} · {alternative.manufacturer}</p>
+                        <p className="text-xs text-slate-500">{alternative.generic} · {alternative.strength} · {alternative.dosageForm} · {alternative.packageSize}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-extrabold text-sky-700">৳ {alternative.price.toFixed(2)} / {alternative.priceBasis}</p>
+                        {alternative.savings !== null && <p className="text-xs text-emerald-700">৳ {alternative.savings.toFixed(2)} lower per {alternative.priceBasis}</p>}
+                      </div>
                     </div>
-                    <h4 className="text-[18px] font-bold text-slate-900 mb-4">{alt.name}</h4>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[18px] font-[800] text-sky-600">৳ {alt.price.toFixed(2)}</span>
-                      <button className="w-10 h-10 bg-slate-50 hover:bg-sky-600 hover:text-white text-slate-500 rounded-full flex items-center justify-center transition-colors">
-                        <ShoppingCart size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  {!comparison.comparablePrices?.length && <p className="text-sm text-slate-600 border-t border-slate-100 pt-3">No exact-pack equivalent was found for the extracted details.</p>}
+                </div>
+              ))}
+              {!(scanResult.medicineComparisons || []).some((comparison: any) => comparison.comparablePrices?.length) && (
+                <p className="text-sm text-slate-600">No exact-pack equivalent was found. Confirm unclear medicine and package details with a pharmacist before substituting.</p>
+              )}
             </div>
           </div>
         )}
@@ -348,6 +315,9 @@ export default function MedicinesPage() {
             </h2>
             <p className="text-[15px] text-slate-500 font-medium mt-2">
               Browse {totalCount > 0 ? totalCount.toLocaleString() : 'thousands of'} commonly prescribed medicines grouped by their primary usage.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              Prices from {priceSnapshot?.source || "the bundled catalog"}; generated {priceSnapshot?.generatedAt || "date unavailable"} ({priceSnapshot?.ageDays ?? "unknown"} days old, {priceSnapshot?.freshness || "freshness unknown"}). Displayed price is per unit where recorded.
             </p>
           </div>
         </div>
@@ -448,7 +418,7 @@ export default function MedicinesPage() {
                           </div>
                           
                           <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-100">
-                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">৳{med.price.toFixed(2)}</span>
+                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">{typeof med.price === "number" ? `৳${med.price.toFixed(2)} / ${med.priceBasis || "unit"}` : "Price unavailable"}</span>
                             <button 
                               type="button"
                               onClick={(e) => {

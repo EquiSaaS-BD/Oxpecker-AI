@@ -1,10 +1,11 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 
-import { useState } from "react";
-import { FileText, Download, Eye, File, Calendar, User, Search, Filter, Stethoscope, FlaskConical, Receipt, X, Activity, Pill } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, Download, Eye, File, Calendar, User, Search, Filter, Stethoscope, FlaskConical, Receipt, X, Activity, Pill, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 const mockReports = [
   { id: 1, title: "Complete Blood Count (CBC)", date: "10 Jul 2026", doctor: "Dr. Sarah Rahman", type: "Lab Result", size: "2.4 MB" },
@@ -23,6 +24,51 @@ export default function ReportsPage(props: any) {
   const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReport, setSelectedReport] = useState<typeof mockReports[0] | null>(null);
+  const [savedDocuments, setSavedDocuments] = useState<any[]>([]);
+  const [savedDocumentsLoading, setSavedDocumentsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session?.access_token) {
+          if (active) setSavedDocuments([]);
+          return;
+        }
+        const response = await fetch("/api/medical-documents", {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not load saved documents.");
+        if (active) setSavedDocuments(result.documents || []);
+      } catch (error) {
+        if (active) toast.error(error instanceof Error ? error.message : "Could not load saved documents.");
+      } finally {
+        if (active) setSavedDocumentsLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [user?.id]);
+
+  const deleteSavedDocument = async (id: string) => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session?.access_token) {
+      toast.error("Sign in to manage saved documents.");
+      return;
+    }
+    const response = await fetch(`/api/medical-documents?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${data.session.access_token}` },
+    });
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      toast.error(result.error || "Could not delete document.");
+      return;
+    }
+    setSavedDocuments((documents) => documents.filter((document) => document.id !== id));
+    toast.success("Saved medical document deleted.");
+  };
 
   const handleDownload = (title: string) => {
     toast.success(`${title} ডাউনলোড শুরু হচ্ছে...`);
@@ -107,7 +153,42 @@ export default function ReportsPage(props: any) {
 
       {/* Content Section */}
       <div className="max-w-[1200px] mx-auto py-6 md:py-10 pb-[100px] px-4 md:px-6 lg:px-12">
+
+        <section className="mb-10">
+          <h2 className="text-xl font-extrabold text-slate-900 mb-2">Saved AI medical documents</h2>
+          <p className="text-sm text-slate-600 mb-4">Private to your signed-in account. Stored until you delete them.</p>
+          {savedDocumentsLoading ? <p className="text-sm text-slate-500">Loading saved documents…</p> : savedDocuments.length === 0 ? (
+            <p className="text-sm text-slate-500 bg-white rounded-xl border border-slate-200 p-4">No saved AI analyses are available for this account.</p>
+          ) : (
+            <div className="space-y-3">
+              {savedDocuments.map((document) => (
+                <details key={document.id} className="bg-white rounded-2xl border border-slate-200 p-4">
+                  <summary className="cursor-pointer flex flex-wrap items-center justify-between gap-3">
+                    <span className="font-bold text-slate-900">{document.kind === "report" ? "Medical report" : "Prescription"}: {document.originalName}</span>
+                    <span className="text-xs text-slate-500">{new Date(document.createdAt).toLocaleString()}</span>
+                  </summary>
+                  <pre className="whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 rounded-xl p-4 mt-4 max-h-96 overflow-auto font-sans">{document.analysis}</pre>
+                  {document.medicineComparisons?.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-emerald-100 p-4">
+                      <p className="font-bold text-slate-800 mb-2">Saved price comparison · {document.priceSnapshot?.source} · {document.priceSnapshot?.generatedAt}</p>
+                      {document.medicineComparisons.map((comparison: any, index: number) => (
+                        <div key={index} className="text-sm text-slate-700 py-2 border-t border-slate-100">
+                          <p>{comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Unidentified medicine"}: {comparison.comparablePrices?.length ? comparison.comparablePrices.map((alternative: any) => `${alternative.brandName} ৳${alternative.price}/${alternative.priceBasis}`).join(" · ") : "No exact-package match"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center mt-3 text-xs text-slate-500">
+                    <span>AI provider: {document.provider} · Consent recorded {new Date(document.consentAt).toLocaleString()}</span>
+                    <button onClick={() => void deleteSavedDocument(document.id)} className="inline-flex items-center gap-1 text-rose-700 hover:text-rose-900 font-semibold"><Trash2 size={14} /> Delete</button>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
+        </section>
         
+        <h2 className="text-lg font-bold text-slate-700 mb-4">Example report cards</h2>
         {filteredReports.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-[24px] border border-slate-200 shadow-sm">
             <File size={48} className="mx-auto text-slate-600 mb-4" />

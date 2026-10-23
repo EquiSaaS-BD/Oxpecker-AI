@@ -13,6 +13,7 @@ import { useChatHistory, Message } from "@/context/ChatHistoryContext";
 import { MedicalLoader } from "@/components/shared/MedicalLoader";
 import { useAuth } from "@/context/AuthContext";
 import { apiGetProfile } from "@/lib/api";
+import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
 
 type EmergencyAlert = {
   type: string;
@@ -278,6 +279,16 @@ function ChatContent() {
   ];
 
   const handleFileUpload = async (file: File, analysisType: string, userPrompt?: string) => {
+    let documentAccessToken: string | null = null;
+    if (analysisType === "prescription" || analysisType === "report") {
+      try {
+        documentAccessToken = await requestMedicalDocumentConsent();
+        if (!documentAccessToken) return;
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "Sign in before uploading a medical document.");
+        return;
+      }
+    }
     const analysisEndpoints: Record<string, string> = {
       prescription: '/api/ai/analyze-prescription',
       report: '/api/ai/analyze-report',
@@ -315,6 +326,7 @@ function ChatContent() {
     try {
       const formData = new FormData();
       formData.append('image', file);
+      if (documentAccessToken) formData.append('consent', 'true');
       if (userPrompt && userPrompt.trim()) {
         formData.append('prompt', userPrompt.trim());
       }
@@ -325,6 +337,7 @@ function ChatContent() {
 
       const response = await fetch(endpoint, {
         method: 'POST',
+        headers: documentAccessToken ? { Authorization: `Bearer ${documentAccessToken}` } : undefined,
         body: formData,
       });
 

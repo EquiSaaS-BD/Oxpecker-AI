@@ -55,6 +55,24 @@ model LabReport {
   createdAt DateTime @default(now())
 }
 
+model MedicalDocument {
+  id           String   @id @default(uuid())
+  ownerId      String   @db.VarChar(191)
+  kind         String   @db.VarChar(32)
+  originalName String   @db.VarChar(255)
+  mimeType     String   @db.VarChar(64)
+  provider     String   @db.VarChar(128)
+  category     String?  @db.VarChar(32)
+  analysis     String   @db.LongText
+  priceComparison String? @db.LongText
+  priceSnapshot String? @db.VarChar(512)
+  image        Bytes    @db.LongBlob
+  consentAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([ownerId, createdAt])
+}
+
 // ============================================
 // Oxpecker AI — Medical AI Assistant Models
 // ============================================

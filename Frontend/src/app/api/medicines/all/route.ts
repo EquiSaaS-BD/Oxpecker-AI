@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getCatalogMedicines, getMedicineSnapshotMetadata, normalizePackageSize } from '@/lib/medicine-catalog';
 
 // Memory cache for the large database to avoid reading from disk on every request
 let cachedMedicines: any[] = [];
-let lastModifiedTime: number = 0;
+let lastGeneratedAt: string | null = null;
 
 function determineCategory(genericName: string): string {
   const generic = (genericName || '').toLowerCase();
@@ -24,15 +23,6 @@ function determineCategory(genericName: string): string {
   return 'Other';
 }
 
-function extractPrice(packageContainer: string): number {
-  if (!packageContainer) return 0;
-  const match = packageContainer.match(/৳\s*([\d,\.]+)/);
-  if (match && match[1]) {
-    return parseFloat(match[1].replace(/,/g, ''));
-  }
-  return 0;
-}
-
 function getUseFor(category: string, generic: string): string {
   switch(category) {
     case 'Gastric': return 'Acidity & Ulcer';
@@ -46,44 +36,37 @@ function getUseFor(category: string, generic: string): string {
 }
 
 function loadDatabase() {
-  const possiblePaths = [
-    path.join(process.cwd(), 'public/data/medicines.json'),
-    path.join(process.cwd(), '../organized_medicine_data/organized/medicines.json'),
-  ];
-
-  const filePath = possiblePaths.find(p => fs.existsSync(p));
-  if (!filePath) {
-    console.warn('[Medicine API] No medicines.json found on disk.');
-    return cachedMedicines;
-  }
-  
   try {
-    const stats = fs.statSync(filePath);
-    // If the file hasn't changed, return cached data
-    if (cachedMedicines.length > 0 && stats.mtimeMs === lastModifiedTime) {
+    const catalog = getCatalogMedicines();
+    if (cachedMedicines.length > 0 && catalog.generatedAt === lastGeneratedAt) {
       return cachedMedicines;
     }
     
-    console.log('[Medicine API] Loading full database into memory...');
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(fileContents);
-    
     // Map raw data to the format frontend expects
-    cachedMedicines = (data.data || []).map((med: any) => {
+    cachedMedicines = (catalog.data || []).map((med: any) => {
       const category = determineCategory(med.generic_name);
+      const unitPriceMatch = String(med.package_container || '').match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
+      const unitPrice = unitPriceMatch ? Number(unitPriceMatch[1].replace(/,/g, '')) : null;
+      const packagePriceMatch = String(med.package_size || '').match(/৳\s*([\d,]+(?:\.\d{1,2})?)/)
+        || String(med.package_container || '').match(/(?:pack|bottle|box|strip)[^৳]*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
+      const packagePrice = packagePriceMatch ? Number(packagePriceMatch[1].replace(/,/g, '')) : null;
       return {
         id: med.id.toString(),
         name: med.brand_name || 'Unknown',
         generic: med.generic_name || 'Unknown Generic',
         company: med.manufacturer || 'Unknown Manufacturer',
-        price: extractPrice(med.package_container),
+        price: Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : (Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null),
+        priceBasis: Number.isFinite(unitPrice) && unitPrice! > 0 ? 'unit' : (Number.isFinite(packagePrice) && packagePrice! > 0 ? 'package' : null),
+        unitPrice: Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : null,
+        packagePrice: Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null,
+        packageSize: normalizePackageSize(med.package_size) || null,
         type: med.dosage_form || 'Tablet',
         category: category,
         useFor: getUseFor(category, med.generic_name),
       };
     });
     
-    lastModifiedTime = stats.mtimeMs;
+    lastGeneratedAt = catalog.generatedAt;
     console.log(`[Medicine API] Loaded ${cachedMedicines.length} medicines successfully.`);
     return cachedMedicines;
   } catch (error) {
@@ -162,6 +145,7 @@ export async function GET(request: Request) {
       page,
       limit,
       hasMore,
+      priceSnapshot: getMedicineSnapshotMetadata(),
       data: paginatedResults
     });
 

@@ -385,12 +385,11 @@ export async function callMultimodalVision(
         }
 
         if (ocrLines.length > 0) {
-          const synthesized = buildSynthesizedPrescriptionResponse(ocrCombined, userPrompt);
           return {
-            rawText: synthesized,
-            imageCategory: 'prescription',
+            rawText: `Visible text extracted by OCR:\n\n${ocrCombined}\n\nOCR may be incomplete. Confirm every medicine name, strength, and instruction with the original prescription or a pharmacist. No dose or price has been inferred.`,
+            imageCategory: systemPrompt.includes('report_analysis') ? 'lab_report' : 'prescription',
             isMedical: true,
-            provider: 'Azure-Vision-OCR-Synthesizer'
+            provider: 'Azure-Vision-OCR'
           };
         }
       }
@@ -412,13 +411,7 @@ export async function callMultimodalVision(
     };
   }
 
-  const fallbackResponse = buildFallbackPrescriptionResponse(userPrompt);
-  return {
-    rawText: fallbackResponse,
-    imageCategory: 'prescription',
-    isMedical: true,
-    provider: 'Oxpecker-Offline-Clinical-Synthesizer'
-  };
+  throw new Error('No configured vision provider could analyze this image.');
 }
 
 /**
@@ -502,143 +495,4 @@ function detectCategoryFromText(text: string): ImageCategory {
     return 'food';
   }
   return 'prescription';
-}
-
-/**
- * Builds structured prescription response from OCR transcript
- */
-export function buildSynthesizedPrescriptionResponse(ocrTranscript: string, userPrompt?: string): string {
-  const dateStr = new Date().toISOString().split('T')[0];
-  const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন:** "${userPrompt}"\n\n` : '';
-
-  return `${promptSnippet}\`\`\`json:prescription_analysis
-{
-  "patientName": "Extracted via OCR",
-  "doctorName": "Registered Physician (MBBS)",
-  "date": "${dateStr}",
-  "diagnosis": "প্রেসক্রিপশন পর্যালোচনা ও ওষুধ বিশ্লেষণ",
-  "medicines": [
-    {
-      "name": "Napa Extra 500mg+65mg",
-      "generic": "Paracetamol + Caffeine",
-      "strength": "500mg + 65mg",
-      "dosage": "১+০+১",
-      "frequency": "দিনে ২ বার",
-      "duration": "৩ দিন",
-      "instructions": "খাবারের পরে পর্যাপ্ত পানি সহ সেব্য",
-      "estimatedPrice": 3
-    },
-    {
-      "name": "Sergel 20mg",
-      "generic": "Esomeprazole",
-      "strength": "20mg",
-      "dosage": "১+০+১",
-      "frequency": "দিনে ২ বার",
-      "duration": "১৪ দিন",
-      "instructions": "সকালে ও রাতে খাবারের ২০ মিনিট পূর্বে",
-      "estimatedPrice": 7
-    }
-  ],
-  "totalEstimatedCost7Days": 140,
-  "totalEstimatedCost15Days": 250,
-  "totalEstimatedCost30Days": 450,
-  "warnings": [
-    "চিকিৎসকের পরামর্শ ছাড়া অ্যান্টিবায়োটিক বন্ধ বা পরিবর্তন করবেন না।",
-    "গ্যাস্ট্রিকের ওষুধ খালি পেটে এবং ব্যথানাশক ওষুধ সর্বদা ভরা পেটে খাবেন।"
-  ],
-  "genericAlternatives": [
-    {
-      "original": "Napa Extra",
-      "alternative": "Ace Plus (Square)",
-      "savings": "৳৫ প্রতি পাতায় সাশ্রয়"
-    },
-    {
-      "original": "Sergel 20mg",
-      "alternative": "Finix 20mg (Opsonin) / Omep 20mg",
-      "savings": "৳২০ প্রতি পাতায় সাশ্রয়"
-    }
-  ]
-}
-\`\`\`
-
-### 📋 প্রেসক্রিপশন বিস্তারিত বিশ্লেষণ (Medical Prescription Breakdown)
-
-১. **ডাক্তারের লেখার সহজ ব্যাখ্যা ও ওষুধের খাওয়ার নিয়ম:**
-- **Napa Extra (প্যারাসিটামল + ক্যাফেইন):** মাথা ব্যথা ও শরীর ব্যথা কমানোর জন্য। নিয়ম: \`১+০+১\` (সকালে ১টি ও রাতে ১টি খাবারের পর)।
-- **Sergel 20mg (এসোমিপ্রাজল):** গ্যাস্ট্রিক ও বুক জ্বালাপোড়া প্রতিরোধের জন্য। নিয়ম: \`১+০+১\` (সকালে ১টি ও রাতে ১টি খাবারের ২০ মিনিট আগে খালি পেটে)।
-
-২. **ওষুধের আনুমানিক দাম ও খরচের হিসাব (Price & Course Conditions):**
-- **৭ দিনের সম্ভাব্য খরচ:** প্রায় ৳১৪০
-- **১৫ দিনের সম্ভাব্য খরচ:** প্রায় ৳২৫০
-- **১ মাসের সম্ভাব্য খরচ:** প্রায় ৳৪৫০
-
-৩. **সাশ্রয়ী বিকল্প ব্র্যান্ডের দাম তুলনা (Price Comparison & Savings):**
-- **Sergel 20mg (৳৭/ক্যাপসুল):** এর বদলে সমমানের জেনেরিক **Finix 20mg (৳৫)** বা **Omep 20mg** নিলে প্রতি পাতায় **৳২০ সাশ্রয়** হবে।
-- **Napa Extra (৳৩/ট্যাবলেট):** এর বদলে সমমানের **Ace Plus (৳২.৫)** নিলে প্রতি পাতায় **৳৫ সাশ্রয়** হবে।
-
-> ⚠️ **সতর্কতা:** প্রেসক্রিপশন অনুযায়ী সঠিক সময়ে ওষুধ সেবন করুন। যেকোনো ওষুধের ডোজ পরিবর্তনের পূর্বে অবশ্যই আপনার চিকিৎসকের সাথে কথা বলুন।`;
-}
-
-/**
- * Fallback prescription response
- */
-export function buildFallbackPrescriptionResponse(userPrompt?: string): string {
-  const dateStr = new Date().toISOString().split('T')[0];
-  const promptSnippet = userPrompt ? `> **আপনার প্রশ্ন:** "${userPrompt}"\n\n` : '';
-
-  return `${promptSnippet}\`\`\`json:prescription_analysis
-{
-  "patientName": "Patient Profile",
-  "doctorName": "Licensed Medical Officer",
-  "date": "${dateStr}",
-  "diagnosis": "প্রাথমিক প্রেসক্রিপশন নির্দেশনা ও ওষুধ পর্যালোচনা",
-  "medicines": [
-    {
-      "name": "Napa 500mg",
-      "generic": "Paracetamol",
-      "strength": "500mg",
-      "dosage": "১+১+১",
-      "frequency": "দিনে ৩ বার",
-      "duration": "৩-৫ দিন",
-      "instructions": "খাবারের পরে সেবন করুন",
-      "estimatedPrice": 1.2
-    },
-    {
-      "name": "Seclo 20mg",
-      "generic": "Omeprazole",
-      "strength": "20mg",
-      "dosage": "১+০+১",
-      "frequency": "দিনে ২ বার",
-      "duration": "১৪ দিন",
-      "instructions": "খাবারের ২০-৩০ মিনিট আগে",
-      "estimatedPrice": 6
-    }
-  ],
-  "totalEstimatedCost7Days": 95,
-  "totalEstimatedCost15Days": 185,
-  "totalEstimatedCost30Days": 360,
-  "warnings": [
-    "প্রেসক্রিপশন অনুযায়ী নির্দিষ্ট মেয়াদে পূর্ণ কোর্স সম্পন্ন করুন।",
-    "ব্যথানাশক ওষুধ সর্বদা ভরা পেটে এবং গ্যাস্ট্রিকের ক্যাপসুল খালি পেটে খেতে হয়।"
-  ],
-  "genericAlternatives": [
-    {
-      "original": "Seclo 20mg",
-      "alternative": "Omep 20mg / Omecon 20mg",
-      "savings": "৳১০ প্রতি পাতায় সাশ্রয়"
-    }
-  ]
-}
-\`\`\`
-
-### 📋 প্রেসক্রিপশন ও ওষুধ নির্দেশিকা
-
-১. **সহজ ভাষায় ওষুধের নিয়ম:**
-- **Napa 500mg:** জ্বর ও শরীর ব্যথায় খাবারের পর সেবনযোগ্য।
-- **Seclo 20mg:** পেটের গ্যাস ও এসিডিটি নিরাময়ে খাবারের পূর্বে।
-
-২. **আনুমানিক খরচ ও সাশ্রয়:**
-- ৭ দিনের সম্ভাব্য খরচ: **৳৯৫**
-- ১৫ দিনের সম্ভাব্য খরচ: **৳১৮৫**
-- বিকল্প হিসেবে সমমানের জেনেরিক ব্র্যান্ড নিলে প্রতি পাতায় **৳১০-১৫ সাশ্রয়** সম্ভব।`;
 }

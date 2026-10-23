@@ -8,6 +8,7 @@ import {
   FileSearch, Brain, Clipboard, Check, Edit3, Download,
 } from "lucide-react";
 import { useSpeechToText, VoiceMicButton, VoiceWaveform } from "@/components/chat/VoiceInput";
+import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
 
 // ============================================
 // Doctor AI Assistant - "Second Doctor"
@@ -309,6 +310,14 @@ export function DoctorAIAssistant({
 
   // Handle report upload
   const handleReportUpload = async (file: File) => {
+    let accessToken: string | null;
+    try {
+      accessToken = await requestMedicalDocumentConsent();
+      if (!accessToken) return;
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Sign in before uploading a medical document.");
+      return;
+    }
     const doctorMsg: DoctorMessage = {
       id: Date.now().toString(),
       role: "doctor",
@@ -324,9 +333,11 @@ export function DoctorAIAssistant({
     try {
       const formData = new FormData();
       formData.append("image", file);
+      formData.append("consent", "true");
 
       const response = await fetch("/api/ai/analyze-report", {
         method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
       });
 

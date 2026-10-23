@@ -12,6 +12,7 @@ import { NutritionCard } from "@/components/chat/cards/NutritionCard";
 import { PrescriptionCard } from "@/components/chat/cards/PrescriptionCard";
 import { ReportCard } from "@/components/chat/cards/ReportCard";
 import { AssemblyAISpeechClient } from "@/lib/ai/assemblyai-client";
+import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
 
 interface Message {
   id: string;
@@ -311,6 +312,14 @@ export function AIAssistancePanel() {
 
   // Report upload handler
   const handleReportUpload = async (file: File) => {
+    let accessToken: string | null;
+    try {
+      accessToken = await requestMedicalDocumentConsent();
+      if (!accessToken) return;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Sign in before uploading a medical document.");
+      return;
+    }
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -325,9 +334,11 @@ export function AIAssistancePanel() {
     try {
       const formData = new FormData();
       formData.append("image", file);
+      formData.append("consent", "true");
 
       const response = await fetch("/api/ai/analyze-report", {
         method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
       });
 
