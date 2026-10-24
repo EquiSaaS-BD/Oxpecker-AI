@@ -6,6 +6,7 @@ export type Message = {
   id: string;
   role: "user" | "bot";
   content: string;
+  sensitive?: boolean;
 };
 
 export type ChatThread = {
@@ -53,7 +54,13 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
   // Save to localStorage on change
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("oxpecker_chat_history", JSON.stringify(threads));
+      const localSafeThreads = threads.map((thread) => ({
+        ...thread,
+        messages: thread.messages.map((message) => message.sensitive
+          ? { ...message, content: "Prescription scan details are not retained in local chat history. If the scan was saved, review it in Reports." }
+          : message),
+      }));
+      localStorage.setItem("oxpecker_chat_history", JSON.stringify(localSafeThreads));
     }
   }, [threads, isLoaded]);
 
@@ -88,7 +95,7 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
           // Auto-generate title from first user message if it's currently "New Chat"
           let newTitle = t.title;
           if (t.messages.length === 0 && message.role === "user") {
-            const words = message.content.split(" ");
+            const words = message.sensitive ? ["Prescription", "scan"] : message.content.split(" ");
             newTitle = words.slice(0, 4).join(" ") + (words.length > 4 ? "..." : "");
           }
           return {

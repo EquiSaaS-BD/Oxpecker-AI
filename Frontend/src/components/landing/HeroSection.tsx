@@ -68,9 +68,12 @@ export function HeroSection() {
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Trust Signal */}
         <div className="flex items-center justify-start mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />
-            <span>{t("Health Information in One Place", "স্বাস্থ্য তথ্য এক জায়গায়")}</span>
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
+            </span>
+            <span>{t("Your Personal AI Healthcare Assistant", "আপনার ব্যক্তিগত এআই স্বাস্থ্য সহকারী")}</span>
           </div>
         </div>
 
@@ -102,8 +105,8 @@ export function HeroSection() {
             className="text-base sm:text-lg md:text-xl text-slate-600 leading-relaxed font-normal max-w-2xl"
           >
             {t(
-              "Create a Digital Health ID to organize your medical records, find doctors and hospitals, and ask health questions in Bengali or English.",
-              "ডিজিটাল হেলথ আইডিতে মেডিকেল রেকর্ড গুছিয়ে রাখুন, ডাক্তার ও হাসপাতাল খুঁজুন এবং বাংলা বা ইংরেজিতে স্বাস্থ্য বিষয়ে প্রশ্ন করুন।"
+              "Get instant AI-powered health guidance, symptom analysis, prescription understanding, doctor recommendations, and medicine intelligence — all in one secure platform.",
+              "তাৎক্ষণিক এআই স্বাস্থ্য পরামর্শ, লক্ষণ বিশ্লেষণ, প্রেসক্রিপশন ব্যাখ্যা, ডাক্তার সন্ধান এবং ওষুধের নির্ভরযোগ্য তথ্য — সবকিছু এক নিরাপদ প্ল্যাটফর্মে।"
             )}
           </motion.p>
         </div>

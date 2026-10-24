@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         const { data: dbRecords } = await supabase
           .from("patient_health_records")
           .select("*")
-          .limit(50);
+          .limit(30);
 
         if (dbRecords && dbRecords.length > 0) {
           const dbCards = dbRecords
@@ -68,21 +68,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // Perform genuine biometric visual feature matching
-    // Strict threshold: only matches >= 70% are returned. No fake/dummy data.
+    // Perform visual feature matching
     const candidates = await matchPatientPhoto(imageBase64, allCards, targetPatientId);
-    const matchFound = candidates.length > 0;
-    const topMatch = matchFound ? candidates[0] : null;
 
     // Audit log biometric face scan in emergency access logs
-    if (isSupabaseConfigured && topMatch) {
+    if (isSupabaseConfigured && candidates.length > 0) {
       try {
         await supabase.from("emergency_access_logs").insert([
           {
-            patient_uhid: topMatch.card.card_number || "BIOMETRIC_SCAN",
+            patient_uhid: candidates[0]?.card.card_number || "BIOMETRIC_SCAN",
             doctor_name: doctorName || "Emergency Attending Doctor",
             hospital_name: hospitalName || "Emergency Trauma Dept",
-            access_reason: `Visual AI Biometric Match (${topMatch.similarity}% Confidence)`,
+            access_reason: "Visual AI Biometric Facial Recognition Match",
           },
         ]);
       } catch (logErr) {
@@ -92,9 +89,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      matchFound,
       count: candidates.length,
-      topMatch,
+      topMatch: candidates[0] || null,
       candidates,
     });
   } catch (err: any) {

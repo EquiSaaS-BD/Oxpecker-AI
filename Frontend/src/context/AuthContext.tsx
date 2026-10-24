@@ -18,6 +18,7 @@ export interface AppUser {
   gender?: string;
   blood_group?: string;
   address?: string;
+  hospital_name?: string;
   image?: string;
   assistantId?: string;
   doctorId?: string;

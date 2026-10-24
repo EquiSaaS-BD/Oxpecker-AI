@@ -112,7 +112,7 @@ export default function SettingsPage() {
         // Instantly sync with HealthPass Card in localStorage so it appears on card immediately!
         const targetUserId = user?.id || "current";
         const savedCard = localStorage.getItem(`hp_card_${targetUserId}`);
-        let currentCard = savedCard ? JSON.parse(savedCard) : {};
+        const currentCard = savedCard ? JSON.parse(savedCard) : {};
         currentCard.patient_image = compressedUrl;
         localStorage.setItem(`hp_card_${targetUserId}`, JSON.stringify(currentCard));
 
@@ -164,7 +164,7 @@ export default function SettingsPage() {
 
       const targetUserId = user?.id || "current";
       const savedCard = localStorage.getItem(`hp_card_${targetUserId}`);
-      let currentCard = savedCard ? JSON.parse(savedCard) : {};
+      const currentCard = savedCard ? JSON.parse(savedCard) : {};
       if (profileImage) currentCard.patient_image = profileImage;
       currentCard.patient_name = name;
       currentCard.english_name = name.toUpperCase();

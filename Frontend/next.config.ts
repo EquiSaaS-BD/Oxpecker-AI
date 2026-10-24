@@ -2,15 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  experimental: {
+    // Keep build workers single-process on constrained Windows build hosts.
+    cpus: 1,
+    staticGenerationMaxConcurrency: 1,
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
     unoptimized: true,
     remotePatterns: [

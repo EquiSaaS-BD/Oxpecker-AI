@@ -352,7 +352,9 @@ stateDiagram-v2
 
 ## 7. OCR Processing Flow
 
-Detailed breakdown of how the Optical Character Recognition (OCR) engine extracts structured medical data from raw prescriptions and reports.
+Implemented prescription/report uploads are handled synchronously by the Next.js Node route. The backend verifies the Supabase bearer token, explicit consent, a JPEG/PNG/WebP image signature and an 8 MB limit before forwarding the image only to Azure OpenAI vision, then Azure Computer Vision OCR. It does not forward medical-document images to Gemini, direct OpenAI, or Groq. This is not the Celery/Tesseract flow in the original design sketch below.
+
+Prescription OCR is a transcription draft: it returns image readability, visible prescription fields, qualitative field confidence and uncertain fields. It must not infer a generic, medicine, dose or price. Azure Computer Vision's OCR-only fallback returns raw OCR text and marks medicine fields for manual review instead of pretending to parse them. The encrypted original image and encrypted analysis are stored in `MedicalDocument`, scoped to the authenticated owner. Records remain until that owner deletes them; consent time is recorded. The Reports view loads the encrypted original only on expansion through an owner-scoped, no-store endpoint, so the user can compare the image and extracted text.
 
 ```mermaid
 sequenceDiagram

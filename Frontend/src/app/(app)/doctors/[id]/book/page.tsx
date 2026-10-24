@@ -76,7 +76,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       const bookingDateStr = selectedDateIso || new Date().toISOString().split("T")[0];
 
       const { data, error } = await supabase.from("bookings").insert({
-        patient_id: isValidUuid(user?.id) ? user.id : null,
+        patient_id: user && isValidUuid(user.id) ? user.id : null,
         doctor_id: isValidUuid(doctor?.id) ? doctor.id : null,
         patient_name: patientName.trim() || user?.name || "Patient",
         patient_email: user?.email || null,

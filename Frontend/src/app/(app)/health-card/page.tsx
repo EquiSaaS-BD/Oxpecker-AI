@@ -210,9 +210,11 @@ export default function HealthCardPage() {
             address: "House 42, Road 9/A, Dhanmondi, Dhaka",
             last_location_sync: nowStr,
           };
-          const newCard = { ...card, ...updatedLoc };
-          setCard(newCard);
-          localStorage.setItem(`hp_location_${user.id}`, JSON.stringify(updatedLoc));
+          if (card && user) {
+            const newCard = { ...card, ...updatedLoc };
+            setCard(newCard);
+            localStorage.setItem(`hp_location_${user.id}`, JSON.stringify(updatedLoc));
+          }
           setIsLocating(false);
           toast.success("GPS location synced successfully: Dhaka (1205)");
         },
@@ -263,6 +265,10 @@ export default function HealthCardPage() {
     try {
       const newCard = await createHealthCard({
         patientId: user.id,
+        patientName: user.name || "Unknown",
+        bloodGroup: user.blood_group || "Not provided",
+        dob: user.date_of_birth || "Not provided",
+        gender: user.gender || "Not provided",
         nidNumber: data.idType === "nid" ? data.idNumber : undefined,
         birthCertNumber: data.idType === "birth_cert" ? data.idNumber : undefined,
         emergencyContactName: data.emergencyName,
@@ -380,6 +386,7 @@ export default function HealthCardPage() {
                 value=""
                 onChange={() => {}}
                 onLocationSelect={(loc) => {
+                  if (!card || !user) return;
                   const nowStr = new Date().toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "short",

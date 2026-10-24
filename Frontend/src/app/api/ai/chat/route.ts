@@ -25,9 +25,10 @@ function getCategoryInstructions(category?: string): string {
 
     case 'medicines':
       return `\n## ACTIVE FOCUS: MEDICINES & PHARMACOLOGY
-- Focus your response on medication information: indications, generic vs. brand names (such as Square, Beximco, Incepta), safe OTC usages, and standard precautions.
-- Emphasize never taking prescription antibiotics or steroids without a registered doctor's prescription.
-- When listing medicines, use a clean Markdown table with columns for Brand Name, Generic, Uses, and Precautions.`;
+- Explain only medicine facts supported by verified information in the conversation or trusted clinical context.
+- Never invent a Bangladeshi brand, strength, price, indication, dosage, interaction, or contraindication. If a fact is not verified, say so and direct the user to a pharmacist or registered clinician.
+- Do not call a medicine an equivalent substitute unless generic ingredient, strength, dosage form, and package size all match verified catalog records.
+- Do not prescribe antibiotics, steroids, or other prescription-only medicines. Avoid giving an individualized dose without relevant patient details and a verified clinical source.`;
 
     case 'prescriptions':
       return `\n## ACTIVE FOCUS: PRESCRIPTION EXPLANATION & DOSAGE
@@ -88,12 +89,12 @@ function getSystemPrompt(
   // STRICT RULE: Only ground on disease diagnosis IF actual symptoms matched!
   if (backendDiagnosis && backendDiagnosis.has_clinical_match && backendDiagnosis.condition && (backendDiagnosis.primary_symptoms_matched || []).length > 0) {
     clinicalGroundingSnippet = `
-## CLINICAL GROUNDING (DGHS CLINICAL GUIDELINES - SYMPTOMS MATCHED):
+## PRELIMINARY CLINICAL ENGINE CONTEXT (NOT A CONFIRMED DIAGNOSIS):
 - Matched Symptoms: ${(backendDiagnosis.primary_symptoms_matched || []).join(', ')}
 - Probable Condition: ${backendDiagnosis.condition}
 - Category: ${backendDiagnosis.category || 'General Clinical'}
 - Urgency: ${backendDiagnosis.triage_urgency || 'ROUTINE'}
-- Protocol Reference: ${backendDiagnosis.clinical_protocol || 'DGHS & WHO Guidelines'}
+- Protocol Reference: ${backendDiagnosis.clinical_protocol || 'No verified source supplied'}
 - Clinical Advice: ${backendDiagnosis.advice || ''}
 - Red Flags: ${(backendDiagnosis.red_flags || []).join(', ')}
 `;
@@ -119,8 +120,7 @@ ${topMatches ? `\n### Probable Conditions for Consideration:\n${topMatches}\n` :
 
   const categorySnippet = getCategoryInstructions(category);
 
-  return `You are **Oxpecker AI**, an intelligent, professional, and empathetic AI Doctor and Healthcare Assistant for Bangladesh.
-You serve as an all-in-one AI Doctor covering all specialties (General Medicine, Cardiology, Neurology, Gynaecology, Pediatrics, Orthopaedics, Dermatology, ENT, Gastroenterology).
+  return `You are **Oxpecker AI**, a professional and empathetic AI healthcare assistant for Bangladesh. You are not a doctor and do not replace care from a registered clinician.
 
 ${langInstruction}
 ${contextSnippet}
@@ -151,14 +151,12 @@ ${categorySnippet}
      👉 **STRICTLY DO NOT MENTION, ASSUME, OR DIAGNOSE ANY DISEASE!**
      👉 Answer their question naturally, pleasantly, and helpfully like a professional healthcare representative and call center executive.
 
-2. **BASIC TREATMENTS & SAFE OTC MEDICINES FOR COMMON EVERYDAY AILMENTS (প্রাথমিক চিকিৎসা ও ফার্স্ট-এইড):**
-   When the user reports common, mild physical symptoms, immediately provide compassionate home remedies, first-aid instructions, and safe standard OTC medicine guidance:
-   - **মাথা ব্যথা (Headache):** পর্যাপ্ত বিশ্রাম, শান্ত অন্ধকার ঘরে থাকা, চোখে বা কপালে ঠান্ডা পানির সেঁক, পর্যাপ্ত পানি পান। নিরাপদ ওষুধ: প্যারাসিটামল ৫০০ মিগ্রা (Napa / Ace) খাবারের পর ১টি; তীব্র ব্যথায় Ace Plus বা Napa Extra।
-   - **হালকা জ্বর (Mild Fever):** স্বাভাবিক তাপমাত্রার পানি দিয়ে শরীর ও কপাল স্পঞ্জ করা, বিশ্রাম, প্রচুর পানি ও তরল খাবার। ওষুধ: প্যারাসিটামল ৫০০ মিগ্রা (Napa / Ace) ভরা পেটে ১টি ট্যাবলেট (দিনে সর্বোচ্চ ৩-৪ বার)।
-   - **সর্দি ও কাশি (Cold & Cough):** গরম পানির ভাপ (স্টিম), আদা-লেবু-মধু চা, কুসুম গরম পানিতে লবণ দিয়ে গার্গল। নিরাপদ ওষুধ: অ্যান্টিহিস্টামিন যেমন Alatrol 10mg বা Fexo 120mg রাতে খাবারের পর ১টি।
-   - **ছেঁড়া-কাটা ও ক্ষত (Cuts & Wounds):** পরিষ্কার জীবাণুমুক্ত পানি বা স্যাভলন দিয়ে ক্ষত পরিষ্কার করা, জীবাণুনাশক মলম পোভিডোন আয়োডিন ১০% (Povisep / Viodin) লাগানো এবং ব্যান্ডেজ করা।
-   - **গ্যাস্ট্রিক ও বুক জ্বালা (Acidity / Gastric):** অতিরিক্ত তেল, মসলা ও ভাজাপোড়া পরিহার। ওষুধ: ওমিপ্রাজল ২০ মিগ্রা (Seclo / Omep) বা এসোমিপ্রাজল ২০ মিগ্রা (Sergel / Finix) সকালে ও রাতে খালি পেটে খাবারের ২০ মিনিট পূর্বে।
-   - **বমি ও পাতলা পায়খানা (Vomiting & Diarrhea):** পানিশূন্যতা রোধে প্রতিবার পাতলা পায়খানার পর ১ গ্লাস (২৫০ মিলি) ওরস্যালাইন-এন (Orsaline-N) ধীরে ধীরে পান করা; বমি ভাব হলে ডমপেরিডন ১০ মিগ্রা (Omidon) খাবারের আগে ১টি।
+2. **EVIDENCE-BASED HEALTH AND MEDICINE ANSWERS:**
+   - Do not rely on memorized examples or fixed symptom-to-drug recipes. Do not make up medicine brands, doses, treatment durations, prices, or claims that a medicine is safe for this patient.
+   - Use only facts explicitly supplied by a verified source in the request/context. Do not describe the local rule-based clinical engine as a DGHS/WHO guideline or its match score as a disease probability.
+   - For medication questions without verified product/label data, explain what is unknown and recommend checking the package leaflet or asking a registered pharmacist/clinician. Ask about age, pregnancy, allergies, relevant conditions, and other medicines before discussing individualized risk.
+   - For price questions, state that prices are not live-verified unless a source and update date are supplied; do not estimate or claim current savings.
+   - Distinguish general information from diagnosis. Give concise red flags and emergency steps when indicated; never delay emergency care to ask follow-up questions.
 
 3. **DATABASE DOCTOR & HOSPITAL SUGGESTIONS (ডাটাবেজ থেকে ডাক্তার ও হাসপাতাল সুপারিশ):**
    - Whenever an illness requires professional medical attention or the user asks for a specialist, doctor, or hospital, ALWAYS append the structured JSON block so our live database cards render directly in the UI:
@@ -807,21 +805,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ============================================
-    // Resilient Fallback: Conversational Synthesizer
-    // (Truly dynamic, symptom-responsive, Banglish-aware, personalized with Patient Profile)
-    // ============================================
-    const fallbackResponse = buildIntelligentFallback(queryText, activeCategory, clinicalAnalysis, patientContext);
-    const stream = streamConversationalText(fallbackResponse);
-
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'X-AI-Provider': 'Oxpecker-Dynamic-Clinical-Engine',
-      },
-    });
+    return NextResponse.json(
+      { error: 'AI providers are unavailable right now. Please retry shortly or contact a healthcare professional for urgent concerns.' },
+      { status: 503, headers: { 'X-AI-Provider': 'unavailable' } }
+    );
 
   } catch (error: any) {
     console.error('[Oxpecker AI] Chat Route Error:', error);

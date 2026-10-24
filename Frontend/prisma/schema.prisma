@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -30,11 +30,11 @@ model Prescription {
   patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   chiefComplaint     String?  @db.Text
   physicalExam       String?  @db.Text
-  vitals             Json?    
+  vitals             Json?
   diagnosis          String?  @db.Text
   investigations     String?  @db.Text
-  investigationsList Json?    
-  medicines          Json?    
+  investigationsList Json?
+  medicines          Json?
   advice             String?  @db.Text
   followUp           String?
   theme              String?  @default("modern")
@@ -56,19 +56,19 @@ model LabReport {
 }
 
 model MedicalDocument {
-  id           String   @id @default(uuid())
-  ownerId      String   @db.VarChar(191)
-  kind         String   @db.VarChar(32)
-  originalName String   @db.VarChar(255)
-  mimeType     String   @db.VarChar(64)
-  provider     String   @db.VarChar(128)
-  category     String?  @db.VarChar(32)
-  analysis     String   @db.LongText
-  priceComparison String? @db.LongText
-  priceSnapshot String? @db.VarChar(512)
-  image        Bytes    @db.LongBlob
-  consentAt    DateTime
-  createdAt    DateTime @default(now())
+  id              String   @id @default(uuid())
+  ownerId         String   @db.VarChar(191)
+  kind            String   @db.VarChar(32)
+  originalName    String   @db.VarChar(255)
+  mimeType        String   @db.VarChar(64)
+  provider        String   @db.VarChar(128)
+  category        String?  @db.VarChar(32)
+  analysis        String   @db.Text
+  priceComparison String?  @db.Text
+  priceSnapshot   String?  @db.VarChar(512)
+  image           Bytes
+  consentAt       DateTime
+  createdAt       DateTime @default(now())
 
   @@index([ownerId, createdAt])
 }
@@ -78,27 +78,27 @@ model MedicalDocument {
 // ============================================
 
 model AiProvider {
-  id         String   @id @default(uuid())
-  name       String   // "openai", "google", "anthropic", "deepseek"
-  model      String   // "gpt-4o-mini", "gemini-2.0-flash", etc.
-  apiKey     String   @db.Text // Encrypted at application layer
-  priority   Int      @default(0)
-  isEnabled  Boolean  @default(true)
-  isDefault  Boolean  @default(false)
+  id         String    @id @default(uuid())
+  name       String // "openai", "google", "anthropic", "deepseek"
+  model      String // "gpt-4o-mini", "gemini-2.0-flash", etc.
+  apiKey     String    @db.Text // Encrypted at application layer
+  priority   Int       @default(0)
+  isEnabled  Boolean   @default(true)
+  isDefault  Boolean   @default(false)
   rateLimit  Int?
-  usageCount Int      @default(0)
-  totalCost  Float    @default(0)
+  usageCount Int       @default(0)
+  totalCost  Float     @default(0)
   lastUsed   DateTime?
-  healthOk   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  healthOk   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model ChatThread {
   id        String        @id @default(uuid())
   userId    String?
   title     String?
-  mode      String?       // "symptom_checker", "medicine", "nutrition", etc.
+  mode      String? // "symptom_checker", "medicine", "nutrition", etc.
   language  String        @default("en")
   messages  ChatMessage[]
   createdAt DateTime      @default(now())
@@ -109,9 +109,9 @@ model ChatMessage {
   id        String     @id @default(uuid())
   threadId  String
   thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  role      String     // "user", "assistant", "system"
-  content   String     @db.LongText
-  metadata  Json?      // tool calls, sources, structured cards
+  role      String // "user", "assistant", "system"
+  content   String     @db.Text
+  metadata  Json? // tool calls, sources, structured cards
   createdAt DateTime   @default(now())
 }
 
@@ -124,11 +124,11 @@ model Doctor {
   name            String
   degree          String
   speciality      String
-  experience      Int           // years
+  experience      Int // years
   hospital        String
   consultationFee Float
-  languages       Json          // ["Bangla", "English"]
-  availableSlots  Json?         // structured availability
+  languages       Json // ["Bangla", "English"]
+  availableSlots  Json? // structured availability
   location        String
   lat             Float?
   lng             Float?
@@ -146,7 +146,7 @@ model Hospital {
   id              String   @id @default(uuid())
   name            String
   address         String
-  specialities    Json     // ["Cardiology", "Gynecology", ...]
+  specialities    Json // ["Cardiology", "Gynecology", ...]
   hasEmergency    Boolean  @default(false)
   hasICU          Boolean  @default(false)
   hasNICU         Boolean  @default(false)
@@ -164,32 +164,32 @@ model Hospital {
 }
 
 model DiagnosticCentre {
-  id              String   @id @default(uuid())
-  name            String
-  address         String
-  packages        Json     // [{name, price, discount}]
-  homeCollection  Boolean  @default(false)
-  lat             Float?
-  lng             Float?
-  rating          Float    @default(0)
-  phone           String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String
+  address        String
+  packages       Json // [{name, price, discount}]
+  homeCollection Boolean  @default(false)
+  lat            Float?
+  lng            Float?
+  rating         Float    @default(0)
+  phone          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 }
 
 model Medicine {
-  id            String   @id @default(uuid())
-  brandName     String
-  genericName   String
-  manufacturer  String
-  strength      String
-  price         Float
-  availability  Boolean  @default(true)
-  category      String?
-  dosageForm    String?  // tablet, syrup, injection
-  warnings      Json?    // ["pregnancy", "kidney"]
-  alternatives  Json?    // [{brandName, price, manufacturer}]
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  brandName    String
+  genericName  String
+  manufacturer String
+  strength     String
+  price        Float
+  availability Boolean  @default(true)
+  category     String?
+  dosageForm   String? // tablet, syrup, injection
+  warnings     Json? // ["pregnancy", "kidney"]
+  alternatives Json? // [{brandName, price, manufacturer}]
+  createdAt    DateTime @default(now())
 }
 
 model Appointment {
@@ -199,7 +199,7 @@ model Appointment {
   doctorId      String
   doctor        Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   dateTime      DateTime
-  type          String   // "in_person", "video"
+  type          String // "in_person", "video"
   status        String   @default("pending") // pending, confirmed, cancelled
   paymentStatus String   @default("unpaid")
   notes         String?  @db.Text

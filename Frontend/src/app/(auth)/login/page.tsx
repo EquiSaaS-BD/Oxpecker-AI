@@ -117,7 +117,7 @@ function LoginForm() {
       }
 
       let userId = dbProfile?.id;
-      let userName = dbProfile?.name || email.split("@")[0] || "User";
+      const userName = dbProfile?.name || email.split("@")[0] || "User";
       let userRole: UserRole = (dbProfile?.role as UserRole) || "patient";
 
       // 4. Auto-provision profile if completely new/unregistered (e.g. testing)

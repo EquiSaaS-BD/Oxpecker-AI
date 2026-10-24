@@ -119,7 +119,8 @@ export async function callMultimodalVision(
   buffer: Buffer,
   mimeType: string,
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  options: { azureOnly?: boolean } = {},
 ): Promise<VisionAnalysisResult> {
   const base64Data = buffer.toString('base64');
   const cleanMime = mimeType || 'image/jpeg';
@@ -148,9 +149,11 @@ export async function callMultimodalVision(
             content: [
               { 
                 type: 'text', 
-                text: (userPrompt && userPrompt.trim()) 
-                  ? userPrompt.trim() 
-                  : 'অনুগ্রহ করে এই প্রেসক্রিপশনটির ছবি বিশ্লেষণ করে ওষুধের নাম, সেবনের নিয়ম, আনুমানিক খরচ এবং সাশ্রয়ী বিকল্প ওষুধগুলোর তালিকা দিন।' 
+                text: (userPrompt && userPrompt.trim())
+                  ? userPrompt.trim()
+                  : systemPrompt.includes("json:prescription_analysis")
+                    ? 'Transcribe only what is visible in this prescription using the required JSON schema. Set unclear fields to null; do not guess.'
+                    : 'Analyze this image according to the system instructions. Do not infer details that are not visible.'
               },
               { type: 'image_url', image_url: { url: `data:${cleanMime};base64,${base64Data}` } }
             ]
@@ -199,7 +202,7 @@ export async function callMultimodalVision(
   // Provider 2: Google Gemini Flash Vision (Fast, Highly Accurate Multimodal)
   // -------------------------------------------------------------
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (geminiKey) {
+  if (!options.azureOnly && geminiKey) {
     const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
     for (const model of modelsToTry) {
       try {
@@ -252,7 +255,7 @@ export async function callMultimodalVision(
   // -------------------------------------------------------------
   // Provider 3: OpenAI Vision (Direct)
   // -------------------------------------------------------------
-  if (process.env.OPENAI_API_KEY) {
+  if (!options.azureOnly && process.env.OPENAI_API_KEY) {
     try {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -299,7 +302,7 @@ export async function callMultimodalVision(
   // Provider 4: Groq Vision (Llama-3.2 Vision)
   // -------------------------------------------------------------
   const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey) {
+  if (!options.azureOnly && groqKey) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -355,7 +358,7 @@ export async function callMultimodalVision(
           'Ocp-Apim-Subscription-Key': process.env.AZURE_VISION_KEY,
           'Content-Type': 'application/octet-stream',
         },
-        body: buffer,
+        body: new Uint8Array(buffer),
         signal: AbortSignal.timeout(15000),
       });
 
@@ -385,6 +388,27 @@ export async function callMultimodalVision(
         }
 
         if (ocrLines.length > 0) {
+          if (systemPrompt.includes("json:prescription_analysis")) {
+            const transcription = {
+              imageQuality: {
+                status: "partially_readable",
+                reasons: ["OCR found visible text, but medicine names and handwritten instructions have not been structurally verified."],
+              },
+              prescriptionDate: null,
+              patientName: null,
+              doctorName: null,
+              medicines: [],
+              uncertainFields: ["Medicine names, strengths, doses, schedules, and durations need manual review."],
+              rawOcrText: ocrCombined,
+              manualReviewRequired: true,
+            };
+            return {
+              rawText: `\`\`\`json:prescription_analysis\n${JSON.stringify(transcription, null, 2)}\n\`\`\``,
+              imageCategory: "prescription",
+              isMedical: true,
+              provider: "Azure-Vision-OCR",
+            };
+          }
           return {
             rawText: `Visible text extracted by OCR:\n\n${ocrCombined}\n\nOCR may be incomplete. Confirm every medicine name, strength, and instruction with the original prescription or a pharmacist. No dose or price has been inferred.`,
             imageCategory: systemPrompt.includes('report_analysis') ? 'lab_report' : 'prescription',

@@ -56,8 +56,8 @@ const QUICK_ACTIONS = [
     icon: ClipboardList,
     title: "প্রেসক্রিপশন লিখুন",
     titleEn: "Write Prescription",
-    desc: "রোগীর লক্ষণ বলুন, AI প্রেসক্রিপশন তৈরি করবে",
-    prompt: "এই রোগীর জন্য প্রেসক্রিপশন তৈরি করুন। রোগীর লক্ষণগুলো হলো: ",
+    desc: "রোগীর তথ্য সাজাতে সহায়তা নিন; চিকিৎসক যাচাই করবেন",
+    prompt: "প্রদত্ত রোগীর তথ্যের ভিত্তিতে একটি খসড়া তৈরি করুন। কোনো রোগনির্ণয়, ওষুধ, ডোজ বা সময়কাল অনুমান করবেন না; অনুপস্থিত তথ্য ও চিকিৎসকের যাচাইয়ের বিষয়গুলো আলাদা করে লিখুন। তথ্য: ",
     color: "text-blue-600 bg-blue-50 border-blue-100",
   },
   {
@@ -72,8 +72,8 @@ const QUICK_ACTIONS = [
     icon: Pill,
     title: "ওষুধ সাজেশন",
     titleEn: "Medicine Suggestion",
-    desc: "রোগ বলুন, সঠিক ওষুধ ও ডোজ পাবেন",
-    prompt: "এই রোগের জন্য সঠিক ওষুধ, ডোজ এবং সতর্কতা সাজেস্ট করুন: ",
+    desc: "যাচাইকৃত ওষুধের তথ্য পর্যালোচনা করুন",
+    prompt: "প্রদত্ত যাচাইকৃত ওষুধ/লেবেলের তথ্য পর্যালোচনা করুন। ব্র্যান্ড, ডোজ বা সময়কাল বানাবেন না; তথ্য না থাকলে তা স্পষ্টভাবে বলুন: ",
     color: "text-emerald-600 bg-emerald-50 border-emerald-100",
   },
   {
@@ -88,8 +88,8 @@ const QUICK_ACTIONS = [
     icon: Stethoscope,
     title: "ট্রিটমেন্ট প্ল্যান",
     titleEn: "Treatment Plan",
-    desc: "সম্পূর্ণ চিকিৎসা পরিকল্পনা তৈরি করুন",
-    prompt: "এই রোগীর জন্য সম্পূর্ণ ট্রিটমেন্ট প্ল্যান তৈরি করুন। ডায়াগনোসিস: ",
+    desc: "চিকিৎসকের পর্যালোচনার জন্য তথ্য সাজান",
+    prompt: "প্রদত্ত তথ্য সাজিয়ে চিকিৎসকের পর্যালোচনার জন্য পরিকল্পনার খসড়া দিন। অজানা রোগনির্ণয়, ওষুধ, ডোজ বা সময়কাল পূরণ করবেন না: ",
     color: "text-rose-600 bg-rose-50 border-rose-100",
   },
   {
@@ -103,20 +103,19 @@ const QUICK_ACTIONS = [
 ];
 
 // System prompt for Doctor AI Assistant
-const DOCTOR_SYSTEM_PROMPT = `You are Oxpecker AI - Doctor's Clinical Assistant. You work alongside doctors to help them:
+const DOCTOR_SYSTEM_PROMPT = `You are Oxpecker AI - a clinical documentation assistant for licensed doctors. You do not replace clinical judgment and must not present generated text as verified medical advice. You work alongside doctors to help them:
 
-1. **Write Prescriptions**: When a doctor describes symptoms/diagnosis, generate a complete prescription in structured format.
+1. **Draft Documentation**: Organize only information supplied by the doctor into a reviewable draft. Do not create orders from symptoms alone.
 2. **Analyze Reports**: When given lab report data, identify abnormals, explain findings, suggest follow-up.
-3. **Suggest Medicines**: Recommend appropriate medicines with exact brand names (Bangladeshi market), dosage, frequency, duration, and warnings.
+3. **Review Medicines**: Discuss medicine facts only when supported by a supplied verified label/source. Never invent local brands, prices, doses, frequency, duration, or safety claims.
 4. **Differential Diagnosis**: Given symptoms, list probable diagnoses ranked by likelihood.
 5. **Drug Interactions**: Check for dangerous drug interactions.
 6. **Treatment Plans**: Create comprehensive treatment plans.
 
 RULES:
 - You are assisting a LICENSED DOCTOR, not a patient. Speak professionally.
-- Use Bangladeshi medicine brand names (Napa, Seclo, Ace, Sergel, etc.)
-- Prices in BDT (৳)
-- Always include generic names alongside brand names
+- Do not invent Bangladeshi brands or prices. Mention price only with a dated, named source supplied in context.
+- Keep missing prescription fields blank or identify them as requiring the doctor's decision; never fill with example defaults.
 - Flag any contraindications or drug interactions
 - When writing prescriptions, use this JSON format:
 
@@ -127,16 +126,16 @@ RULES:
   "vitals": "...",
   "medicines": [
     {
-      "name": "Brand Name",
-      "generic": "Generic Name",
-      "strength": "500mg",
-      "dosage": "1+0+1",
-      "frequency": "Twice daily",
-      "duration": "7 days",
-      "instructions": "After meal"
+      "name": "",
+      "generic": "",
+      "strength": "",
+      "dosage": "",
+      "frequency": "",
+      "duration": "",
+      "instructions": ""
     }
   ],
-  "investigations": ["CBC", "Urine R/E"],
+  "investigations": [],
   "advice": "...",
   "followUp": "7 days"
 }

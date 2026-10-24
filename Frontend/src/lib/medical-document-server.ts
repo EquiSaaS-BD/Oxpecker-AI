@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { callMultimodalVision } from "@/lib/vision-engine";
 import { comparePrescriptionPrices } from "@/lib/medicine-catalog";
+import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -24,15 +25,19 @@ function encryptDocumentBytes(value: Buffer): Buffer {
   return Buffer.concat([iv, cipher.getAuthTag(), encrypted]);
 }
 
-export function decryptDocumentText(value: string): string {
-  const packed = Buffer.from(value, "base64");
+export function decryptDocumentBytes(value: Uint8Array): Buffer {
+  const packed = Buffer.from(value);
   if (packed.length < 29) throw new Error("Encrypted medical document data is invalid.");
   const iv = packed.subarray(0, 12);
   const authTag = packed.subarray(12, 28);
   const encrypted = packed.subarray(28);
   const decipher = createDecipheriv("aes-256-gcm", getDocumentEncryptionKey(), iv);
   decipher.setAuthTag(authTag);
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]);
+}
+
+export function decryptDocumentText(value: string): string {
+  return decryptDocumentBytes(Buffer.from(value, "base64")).toString("utf8");
 }
 
 function jsonError(message: string, status: number) {
@@ -64,14 +69,84 @@ function safeFileName(name: string): string {
   return normalized || "medical-image";
 }
 
-function parsePrescription(text: string): unknown {
-  const block = text.match(/```json:prescription_analysis\s*([\s\S]*?)```/i)?.[1]
-    ?? text.match(/```json\s*([\s\S]*?)```/i)?.[1];
-  if (!block) return null;
+function boundedText(value: unknown, maxLength = 500): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text ? text.slice(0, maxLength) : null;
+}
+
+function confidenceValue(value: unknown): "clear" | "uncertain" | "illegible" {
+  return value === "clear" || value === "illegible" ? value : "uncertain";
+}
+
+export async function updatePrescriptionTranscription(request: Request) {
+  const ownerId = await getVerifiedUserId(request);
+  if (!ownerId) return jsonError("Sign in to update a saved prescription transcription.", 401);
+
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 48 * 1024) return jsonError("The correction data is too large.", 413);
+
+  let body: any;
   try {
-    return JSON.parse(block.trim());
+    body = await request.json();
   } catch {
-    return null;
+    return jsonError("A valid JSON correction is required.", 400);
+  }
+  if (typeof body?.documentId !== "string" || body.documentId.length > 191) return jsonError("A valid document id is required.", 400);
+  const input = body?.transcription;
+  if (!input || typeof input !== "object" || !Array.isArray(input.medicines) || input.medicines.length > 30) {
+    return jsonError("A valid prescription transcription is required.", 400);
+  }
+  if (input.userReview?.verifiedAgainstImage !== true) return jsonError("Confirm that you compared the text with the original image.", 400);
+
+  const document = await prisma.medicalDocument.findFirst({
+    where: { id: body.documentId, ownerId, kind: "prescription" },
+    select: { id: true },
+  });
+  if (!document) return jsonError("Prescription document not found.", 404);
+
+  const fieldNames = ["brandName", "genericName", "strength", "dosageForm", "packageSize", "dose", "frequency", "duration", "route", "instructionsTranscribed"] as const;
+  const transcription = {
+    imageQuality: {
+      status: input.imageQuality?.status === "clear" || input.imageQuality?.status === "unreadable" ? input.imageQuality.status : "partially_readable",
+      reasons: Array.isArray(input.imageQuality?.reasons) ? input.imageQuality.reasons.slice(0, 20).map((reason: unknown) => boundedText(reason, 240)).filter(Boolean) : [],
+    },
+    prescriptionDate: boundedText(input.prescriptionDate, 120),
+    patientName: boundedText(input.patientName, 200),
+    doctorName: boundedText(input.doctorName, 200),
+    medicines: input.medicines.map((medicine: any) => {
+      const normalized: Record<string, unknown> = {};
+      for (const field of fieldNames) normalized[field] = boundedText(medicine?.[field], 500);
+      const fieldConfidence: Record<string, string> = {};
+      for (const field of fieldNames) fieldConfidence[field] = confidenceValue(medicine?.fieldConfidence?.[field]);
+      return {
+        ...normalized,
+        confidence: confidenceValue(medicine?.confidence),
+        fieldConfidence,
+        evidence: boundedText(medicine?.evidence, 300),
+      };
+    }),
+    uncertainFields: Array.isArray(input.uncertainFields) ? input.uncertainFields.slice(0, 50).map((field: unknown) => boundedText(field, 240)).filter(Boolean) : [],
+    rawOcrText: boundedText(input.rawOcrText, 12000),
+    manualReviewRequired: true,
+    userReview: { verifiedAgainstImage: true, reviewedAt: new Date().toISOString() },
+  };
+
+  try {
+    const comparisons = comparePrescriptionPrices(transcription);
+    const analysis = `\`\`\`json:prescription_analysis\n${JSON.stringify(transcription, null, 2)}\n\`\`\``;
+    await prisma.medicalDocument.update({
+      where: { id: document.id },
+      data: {
+        analysis: encryptDocumentBytes(Buffer.from(analysis, "utf8")).toString("base64"),
+        priceComparison: encryptDocumentBytes(Buffer.from(JSON.stringify(comparisons.matches), "utf8")).toString("base64"),
+        priceSnapshot: JSON.stringify(comparisons.snapshot),
+      },
+    });
+    return NextResponse.json({ analysis, transcription, medicineComparisons: comparisons.matches, priceSnapshot: comparisons.snapshot });
+  } catch (error) {
+    console.error("[Medical document] Prescription correction save failed:", error);
+    return jsonError("Could not securely save the corrected transcription.", 503);
   }
 }
 
@@ -108,9 +183,11 @@ export async function analyzeAndStoreMedicalImage(
   const userPrompt = String(formData.get("prompt") || "").trim().slice(0, 1000);
   try {
     getDocumentEncryptionKey();
-    const result = await callMultimodalVision(buffer, file.type, systemPrompt, userPrompt);
-    const parsedPrescription = kind === "prescription" ? parsePrescription(result.rawText) : null;
-    const comparisons = parsedPrescription ? comparePrescriptionPrices(parsedPrescription) : null;
+    const result = await callMultimodalVision(buffer, file.type, systemPrompt, userPrompt, { azureOnly: true });
+    const parsedPrescription = kind === "prescription" ? parsePrescriptionTranscription(result.rawText) : null;
+    if (kind === "prescription" && result.imageCategory !== "non_medical" && !parsedPrescription) {
+      return jsonError("The vision provider did not return a reviewable transcription. Nothing was saved. Try a clearer, fully framed image.", 422);
+    }
     const saved = await prisma.medicalDocument.create({
       data: {
         ownerId: userId,
@@ -120,8 +197,8 @@ export async function analyzeAndStoreMedicalImage(
         provider: result.provider,
         category: result.imageCategory,
         analysis: encryptDocumentBytes(Buffer.from(result.rawText, "utf8")).toString("base64"),
-        priceComparison: comparisons ? encryptDocumentBytes(Buffer.from(JSON.stringify(comparisons.matches), "utf8")).toString("base64") : null,
-        priceSnapshot: comparisons ? JSON.stringify(comparisons.snapshot) : null,
+        priceComparison: null,
+        priceSnapshot: null,
         image: encryptDocumentBytes(buffer),
         consentAt: new Date(),
       },
@@ -134,8 +211,8 @@ export async function analyzeAndStoreMedicalImage(
       analysis: result.rawText,
       category: result.imageCategory,
       provider: result.provider,
-      priceSnapshot: comparisons?.snapshot,
-      medicineComparisons: comparisons?.matches,
+      priceSnapshot: null,
+      medicineComparisons: [],
     });
   } catch (error) {
     console.error(`[Medical document] ${kind} analysis or storage failed:`, error);

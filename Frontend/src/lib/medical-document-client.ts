@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 
 export async function requestMedicalDocumentConsent(): Promise<string | null> {
   const accepted = window.confirm(
-    "This medical image will be sent to the configured AI provider for analysis and saved privately to your account. If you are uploading for a patient, confirm that they have agreed to this processing and storage. Continue?"
+    "This medical image will be sent to the configured Azure AI service for analysis and saved privately to your account. If you are uploading for a patient, confirm that they have agreed to this processing and storage. Continue?"
   );
   if (!accepted) return null;
 

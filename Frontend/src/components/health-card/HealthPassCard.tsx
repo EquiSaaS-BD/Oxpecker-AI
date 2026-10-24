@@ -20,8 +20,6 @@ interface Props {
 
 export const HealthPassCard = forwardRef<HTMLDivElement, Props>(
   ({ card, profileImage, interactive = true, onFlip }, ref) => {
-    if (!card) return null;
-
     const safeCardNumber = card.card_number || "HP-2026-94821";
     const safeDob = card.date_of_birth || "1995-03-15";
 
@@ -45,6 +43,8 @@ export const HealthPassCard = forwardRef<HTMLDivElement, Props>(
 
     const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
     const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
+
+    if (!card) return null;
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
       if (!interactive || !cardContainerRef.current) return;

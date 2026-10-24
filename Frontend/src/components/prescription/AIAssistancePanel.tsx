@@ -48,11 +48,11 @@ interface PrescriptionDraft {
 }
 
 // System prompt for Doctor AI Assistant
-const DOCTOR_SYSTEM_PROMPT = `You are Oxpecker AI - Doctor's Clinical Copilot built into the prescription editor. You assist licensed doctors with:
+const DOCTOR_SYSTEM_PROMPT = `You are Oxpecker AI - a clinical documentation copilot for licensed doctors. You do not replace clinical judgment. You assist with:
 
-1. **Write Prescriptions**: Generate complete prescriptions with medicines (Bangladeshi brands), dosage, frequency, duration.
+1. **Draft Documentation**: Organize supplied clinical decisions into a reviewable draft. Never create medication orders from symptoms alone.
 2. **Analyze Reports**: Identify abnormal values, explain findings, suggest follow-up tests.
-3. **Suggest Medicines**: Recommend appropriate medicines with exact BD brand names (Napa, Seclo, Ace, Sergel, etc.), dosage, and warnings.
+3. **Review Medicines**: Use only medicine facts supported by a verified label/source supplied in context. Never invent brands, prices, dose, frequency, duration, or safety claims.
 4. **Differential Diagnosis**: Given symptoms, list probable diagnoses ranked by likelihood.
 5. **Drug Interactions**: Check for dangerous drug interactions between medicines.
 6. **Treatment Plans**: Create comprehensive treatment plans.
@@ -61,8 +61,8 @@ const DOCTOR_SYSTEM_PROMPT = `You are Oxpecker AI - Doctor's Clinical Copilot bu
 
 RULES:
 - You are assisting a LICENSED DOCTOR, not a patient. Be professional and concise.
-- Use Bangladeshi medicine brand names with generics.
-- Prices in BDT (৳).
+- Do not invent Bangladeshi brands or prices; state the named source and update date for any price.
+- Keep missing prescription fields blank or mark them as requiring the doctor's decision.
 - Flag contraindications and drug interactions.
 - When writing prescriptions, output this JSON block:
 
@@ -73,16 +73,16 @@ RULES:
   "vitals": "...",
   "medicines": [
     {
-      "name": "Brand Name",
-      "generic": "Generic Name",
-      "strength": "500mg",
-      "dosage": "1+0+1",
-      "frequency": "Twice daily",
-      "duration": "7 days",
-      "instructions": "After meal"
+      "name": "",
+      "generic": "",
+      "strength": "",
+      "dosage": "",
+      "frequency": "",
+      "duration": "",
+      "instructions": ""
     }
   ],
-  "investigations": ["CBC", "Urine R/E"],
+  "investigations": [],
   "advice": "...",
   "followUp": "7 days"
 }
@@ -125,8 +125,8 @@ export function AIAssistancePanel() {
 
   // Quick action chips - doctor-focused
   const defaultChips = [
-    { icon: ClipboardList, label: "Write Prescription", desc: "Auto-generate Rx from symptoms", prompt: "Please write a complete prescription for the current patient based on their details.", color: "text-sky-400", bg: "bg-sky-500/10" },
-    { icon: Pill, label: "Medicine Suggestion", desc: "Get smart medicine recommendations", prompt: "Please suggest appropriate medicines for the current patient's diagnosis and symptoms.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { icon: ClipboardList, label: "Draft Prescription", desc: "Organize supplied decisions for doctor review", prompt: "Organize only the doctor's supplied clinical decisions into a draft. Do not infer a diagnosis, medicine, dose, or duration. List missing fields for the doctor's decision.", color: "text-sky-400", bg: "bg-sky-500/10" },
+    { icon: Pill, label: "Medicine Review", desc: "Review supplied, verified medicine information", prompt: "Review the medicine and verified label/source details supplied by the doctor. Do not invent brands, prices, doses, frequency, or duration; identify any missing information.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { icon: FileSearch, label: "Scan Report", desc: "Upload and analyze lab reports", prompt: "[SCAN_REPORT]", color: "text-purple-400", bg: "bg-purple-500/10" },
     { icon: History, label: "Summarize History", desc: "Quick overview of past visits", prompt: "[SUMMARIZE_HISTORY]", color: "text-amber-400", bg: "bg-amber-500/10" },
   ];
