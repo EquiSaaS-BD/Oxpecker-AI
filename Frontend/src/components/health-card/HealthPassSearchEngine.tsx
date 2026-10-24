@@ -9,8 +9,7 @@ import {
   Printer, MessageCircle, AlertOctagon, HeartPulse, User,
   RotateCcw, FileText, Download, Eye, Globe, Building,
   Thermometer, Droplet, Clock, Check, Copy, QrCode, Layers,
-  ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal,
-  Users, AlertCircle
+  ChevronDown, ChevronUp, ChevronLeft, Minus, Plus, Camera, ScanFace, Upload, Sparkles, SlidersHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -79,7 +78,6 @@ export function HealthPassSearchEngine({
   const [visualProbeImage, setVisualProbeImage] = useState<string | null>(null);
   const [visualCandidates, setVisualCandidates] = useState<VisualSearchResult[]>([]);
   const [isAnalyzingBiometrics, setIsAnalyzingBiometrics] = useState(false);
-  const [biometricMatchStatus, setBiometricMatchStatus] = useState<"idle" | "matched" | "no_match">("idle");
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
   const webcamVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -89,9 +87,6 @@ export function HealthPassSearchEngine({
 
   // Soft & gentle Skeleton Loader transition state
   const [isLoadingPatient, setIsLoadingPatient] = useState(false);
-
-  // Mobile Master-Detail view tab: "list" (patient queue) vs "dossier" (active medical chart)
-  const [mobileTab, setMobileTab] = useState<"list" | "dossier">("dossier");
 
   // Collapsible / Minimizable Sub-Cards State
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -120,7 +115,6 @@ export function HealthPassSearchEngine({
 
   // Helper to switch patient with a gentle 200ms shimmer transition
   const handleSelectPatientWithSkeleton = (patient: HealthPassCardType) => {
-    setMobileTab("dossier");
     if (currentCard?.id === patient.id) return;
     setIsLoadingPatient(true);
     setSelectedCard(patient);
@@ -407,12 +401,10 @@ export function HealthPassSearchEngine({
     setVisualTab("presets");
     setVisualProbeImage(null);
     setVisualCandidates([]);
-    setBiometricMatchStatus("idle");
   };
 
   const handleCloseVisualModal = () => {
     setShowVisualModal(false);
-    setBiometricMatchStatus("idle");
     handleStopWebcam();
   };
 
@@ -479,54 +471,19 @@ export function HealthPassSearchEngine({
 
   const runBiometricAnalysis = async (probeImage: string, targetPatientId?: string) => {
     setIsAnalyzingBiometrics(true);
-    setBiometricMatchStatus("idle");
     try {
-      const res = await fetch("/api/emergency/visual-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageBase64: probeImage,
-          targetPatientId,
-          doctorName: portalRole === "hospital" ? "Emergency Hospital Triage" : "Dr. Attending Physician",
-          hospitalName: "Dhaka Central Trauma Hospital",
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && data.candidates && data.candidates.length > 0) {
-        setVisualCandidates(data.candidates);
-        setBiometricMatchStatus("matched");
+      const candidates = await matchPatientPhoto(probeImage, INITIAL_HEALTH_CARDS, targetPatientId);
+      setVisualCandidates(candidates);
+      if (candidates.length > 0 && candidates[0].similarity >= 80) {
         toast.success(
           lang === "en"
-            ? `Biometric Match Found: ${data.candidates[0].card.patient_name} (${data.candidates[0].similarity}% Confidence)`
-            : `বায়োমেট্রিক ফেস ম্যাচ পাওয়া গেছে: ${data.candidates[0].card.patient_name} (${data.candidates[0].similarity}% মিল)`,
+            ? `Biometric Match Found: ${candidates[0].card.patient_name} (${candidates[0].similarity}% Confidence)`
+            : `বায়োমেট্রিক ফেস ম্যাচ পাওয়া গেছে: ${candidates[0].card.patient_name} (${candidates[0].similarity}% মিল)`,
           { icon: "👤" }
-        );
-      } else {
-        setVisualCandidates([]);
-        setBiometricMatchStatus("no_match");
-        toast.error(
-          lang === "en"
-            ? "No matching registered patient found in registry."
-            : "ডাটাবেজে কোনো নিবন্ধিত রোগীর সাথে মুখের মিল পাওয়া যায়নি।",
-          { icon: "⚠️" }
         );
       }
     } catch (err) {
-      console.warn("Biometric API error, fallback to local:", err);
-      try {
-        const fallback = await matchPatientPhoto(probeImage, INITIAL_HEALTH_CARDS, targetPatientId);
-        if (fallback.length > 0) {
-          setVisualCandidates(fallback);
-          setBiometricMatchStatus("matched");
-        } else {
-          setVisualCandidates([]);
-          setBiometricMatchStatus("no_match");
-        }
-      } catch {
-        setVisualCandidates([]);
-        setBiometricMatchStatus("no_match");
-      }
+      console.warn("Biometric analysis error:", err);
     } finally {
       setIsAnalyzingBiometrics(false);
     }
@@ -775,44 +732,10 @@ export function HealthPassSearchEngine({
         </div>
       </div>
 
-      {/* Mobile Master-Detail View Switcher (Visible only on screens < lg) */}
-      <div className="lg:hidden flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-2xs">
-        <button
-          type="button"
-          onClick={() => setMobileTab("list")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            mobileTab === "list"
-              ? "bg-white text-sky-700 shadow-xs border border-slate-200/80 font-black"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <Users size={14} />
-          <span>{lang === "en" ? `Queue (${safeResults.length})` : `রোগী তালিকা (${safeResults.length})`}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMobileTab("dossier")}
-          disabled={!currentCard}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            mobileTab === "dossier"
-              ? "bg-white text-sky-700 shadow-xs border border-slate-200/80 font-black"
-              : "text-slate-600 hover:text-slate-900 disabled:opacity-40"
-          }`}
-        >
-          <FileText size={14} />
-          <span className="truncate max-w-[140px]">
-            {currentCard ? (currentCard.english_name || currentCard.patient_name) : (lang === "en" ? "Patient Dossier" : "রোগীর রেকর্ড")}
-          </span>
-        </button>
-      </div>
-
       {/* Main Content Area: Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Results List with Sticky Split-Scroll & 10-per-Page Pagination */}
-        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"} ${
-          mobileTab === "list" ? "block" : "hidden lg:flex"
-        }`}>
+        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"}`}>
           {/* Queue Header & Status */}
           <div className="flex items-center justify-between px-1 shrink-0">
             <div className="flex items-center gap-2">
@@ -902,7 +825,8 @@ export function HealthPassSearchEngine({
                   <motion.div
                     key={patient.id}
                     onClick={() => handleSelectPatientWithSkeleton(patient)}
-                    className={`p-3.5 sm:p-4 rounded-2xl border transition-colors cursor-pointer relative overflow-hidden ${
+                    whileHover={{ scale: 1.01 }}
+                    className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
                         ? "bg-sky-50/70 border-sky-400 shadow-md ring-2 ring-sky-400/20"
                         : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
@@ -921,19 +845,15 @@ export function HealthPassSearchEngine({
 
                     <div className="flex items-start justify-between gap-3 pl-1">
                       <div className="flex items-start gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-[4px] bg-slate-100 border border-slate-200/50 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-11 h-11 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                           {patient.patient_image ? (
                             <img
                               src={patient.patient_image}
                               alt={patient.patient_name}
-                              width={44}
-                              height={44}
-                              className="w-full h-full object-cover block rounded-[4px]"
+                              className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-slate-100 text-sky-600">
-                              <User size={20} />
-                            </div>
+                            <User size={22} className="text-sky-300" />
                           )}
                         </div>
 
@@ -1078,79 +998,137 @@ export function HealthPassSearchEngine({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className={`lg:col-span-7 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-7 shadow-xs space-y-6 ${
-              mobileTab === "dossier" ? "block" : "hidden lg:block"
-            }`}
+            className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs space-y-6"
           >
-            {/* Mobile Back-to-Queue Navigation Bar (Visible only on screens < lg) */}
-            <div className="lg:hidden flex items-center justify-between pb-3 border-b border-slate-100">
-              <button
-                type="button"
-                onClick={() => setMobileTab("list")}
-                className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-xl border border-sky-200/60 transition-colors cursor-pointer"
-              >
-                <ChevronLeft size={14} />
-                <span>{lang === "en" ? `Back to Queue (${safeResults.length})` : `রোগী তালিকায় ফিরুন (${safeResults.length})`}</span>
-              </button>
-              <span className="text-[11px] font-bold text-slate-400 font-sans">
-                UID: {currentCard.smart_card_uid}
-              </span>
-            </div>
-
-            {/* Clean, Unified Header: Patient Identity + Minimal View Switcher & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-              {/* Left: Patient Identity */}
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                  {viewMode === "paper" ? <FileText size={18} /> : <CreditCard size={18} />}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">
-                      {viewMode === "paper"
-                        ? (lang === "en" ? "Clinical Dossier" : "ক্লিনিক্যাল ডসিয়ার")
-                        : (lang === "en" ? "Emergency Health Card" : "জরুরি হেলথ কার্ড")}
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {lang === "en" ? "ACTIVE EHR" : "সক্রিয় রেকর্ড"}
+            {/* Executive Dual Viewport Mode Selector (Dossier vs Card) */}
+            <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto flex-1 max-w-md">
+                {/* Option 1: Clinical Dossier Paper */}
+                <button
+                  type="button"
+                  onClick={() => setViewMode("paper")}
+                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                    viewMode === "paper"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    viewMode === "paper" ? "bg-sky-50 text-sky-600" : "bg-transparent text-slate-400"
+                  }`}>
+                    <FileText size={15} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block leading-tight font-black">
+                      {lang === "en" ? "Clinical Paper Dossier" : "ক্লিনিক্যাল ডসিয়ার পেপার"}
+                    </span>
+                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
+                      {lang === "en" ? "Standard Hospital EHR • 6 Sections" : "হাসপাতাল ভর্তি ও সামারি শিট"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
-                    UID: <span className="font-bold text-sky-800">{currentCard.smart_card_uid}</span>
-                    {currentCard.nid_number ? ` • NID: ${currentCard.nid_number}` : ""}
-                  </p>
-                </div>
+                  {viewMode === "paper" && (
+                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[9px] font-bold">
+                      Active
+                    </span>
+                  )}
+                </button>
+
+                {/* Option 2: Smart Emergency ID Card */}
+                <button
+                  type="button"
+                  onClick={() => setViewMode("card")}
+                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                    viewMode === "card"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    viewMode === "card" ? "bg-indigo-50 text-indigo-600" : "bg-transparent text-slate-400"
+                  }`}>
+                    <CreditCard size={15} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block leading-tight font-black">
+                      {lang === "en" ? "Smart Emergency Card" : "স্মার্ট হেলথ কার্ড (3D Pass)"}
+                    </span>
+                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
+                      {lang === "en" ? "Pocket Pass • Tap to Flip" : "পকেট কার্ড • সামনে ও পেছনে"}
+                    </span>
+                  </div>
+                  {viewMode === "card" && (
+                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[9px] font-bold">
+                      Active
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Right Corner: The 2 Simple View Toggle Buttons */}
-              <div className="no-print shrink-0 self-end sm:self-auto">
-                <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+              {/* Utility Action Buttons: Collapse All + Download + Print */}
+              <div className="no-print flex items-center justify-end gap-1.5 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+                {viewMode === "paper" && (
                   <button
                     type="button"
-                    onClick={() => setViewMode("paper")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === "paper"
-                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
+                    onClick={() => {
+                      const allCollapsed = Object.values(collapsedSections).every(Boolean);
+                      toggleAllSections(!allCollapsed);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                    title="Collapse or expand all dossier sections"
                   >
-                    <FileText size={14} />
-                    <span>{lang === "en" ? "Dossier" : "ডসিয়ার"}</span>
+                    {Object.values(collapsedSections).every(Boolean) ? (
+                      <>
+                        <Plus size={13} className="text-slate-600" />
+                        <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Minus size={13} className="text-slate-600" />
+                        <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                      </>
+                    )}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("card")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === "card"
-                        ? "bg-white text-sky-700 shadow-xs border border-slate-200/60 font-black"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    <CreditCard size={14} />
-                    <span>{lang === "en" ? "Card" : "কার্ড"}</span>
-                  </button>
-                </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleDownloadDossier}
+                  disabled={isDownloadingDossier}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                  title="Download patient document"
+                >
+                  <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
+                  <span className="hidden sm:inline">
+                    {isDownloadingDossier ? (lang === "en" ? "Saving..." : "ডাউনলোড...") : (lang === "en" ? "Download" : "ডাউনলোড")}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePrintDossier}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  title="Print standardized hospital emergency admission paper"
+                >
+                  <Printer size={13} />
+                  <span className="hidden sm:inline">{lang === "en" ? "Print" : "প্রিন্ট"}</span>
+                </button>
               </div>
+            </div>
+
+            {/* Dossier Patient Identity Banner */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                  {lang === "en" ? "Emergency Clinical Records" : "জরুরি ক্লিনিক্যাল রেকর্ডস"}
+                </h3>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {lang === "en" ? "VERIFIED REGISTRY" : "ভেরিফায়েড রেকর্ড"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-mono">
+                UID: <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span> • NID: {currentCard.nid_number || "Unregistered"}
+              </p>
             </div>
 
             {/* Soft & Gentle Shimmer Skeleton Loader for Clinical Dossier */}
@@ -1323,78 +1301,18 @@ export function HealthPassSearchEngine({
                   id="printable-patient-dossier"
                   className="space-y-6 bg-white"
                 >
-                {/* Secondary Action Toolbar: Brought down below the header */}
-                <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="text-xs font-bold text-slate-700">
-                      {lang === "en" ? "Standard Hospital EHR • 6 Clinical Sections" : "হাসপাতাল ভর্তি ও সামারি রেকর্ড • ৬টি সেকশন"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Collapse / Expand Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const allCollapsed = Object.values(collapsedSections).every(Boolean);
-                        toggleAllSections(!allCollapsed);
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
-                      title={lang === "en" ? "Collapse or expand all sections" : "সব সেকশন সংক্ষেপ বা বিস্তারিত করুন"}
-                    >
-                      {Object.values(collapsedSections).every(Boolean) ? (
-                        <>
-                          <Plus size={13} />
-                          <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Minus size={13} />
-                          <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Download Button */}
-                    <button
-                      type="button"
-                      onClick={handleDownloadDossier}
-                      disabled={isDownloadingDossier}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
-                      title={lang === "en" ? "Download patient document" : "রোগীর তথ্য ডাউনলোড করুন"}
-                    >
-                      <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
-                      <span>{isDownloadingDossier ? (lang === "en" ? "Saving..." : "ডাউনলোড...") : (lang === "en" ? "Download" : "ডাউনলোড")}</span>
-                    </button>
-
-                    {/* Print Button */}
-                    <button
-                      type="button"
-                      onClick={handlePrintDossier}
-                      className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
-                      title={lang === "en" ? "Print hospital sheet" : "প্রিন্ট করুন"}
-                    >
-                      <Printer size={13} />
-                      <span>{lang === "en" ? "Print" : "প্রিন্ট"}</span>
-                    </button>
-                  </div>
-                </div>
-
                 {/* 1. Patient Demographics & Profile Summary */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex items-start sm:items-center gap-4 min-w-0">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[4px] bg-slate-100 border border-slate-200/60 overflow-hidden shrink-0 relative">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200 border-2 border-white shadow-xs overflow-hidden shrink-0 relative">
                       {currentCard.patient_image ? (
                         <img
                           src={currentCard.patient_image}
                           alt={currentCard.patient_name}
-                          width={80}
-                          height={80}
-                          className="w-full h-full object-cover block rounded-[4px]"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-sky-600">
+                        <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-300">
                           <User size={32} />
                         </div>
                       )}
@@ -1415,43 +1333,31 @@ export function HealthPassSearchEngine({
                         {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
                       </p>
 
-                      {/* Demographics & National Registry Identifiers (8px Curved Badges + Compact Sizing) */}
+                      {/* Demographics & National Registry Identifiers (Clean, No Duplicate Phone/QR) */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                        {/* NID */}
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">NID:</span>
-                          <span className="font-sans font-bold text-slate-900 text-xs tracking-wide tabular-nums">
-                            {currentCard.nid_number || "Unregistered"}
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">NID:</span>
+                          <span>{currentCard.nid_number || "Unregistered"}</span>
+                        </span>
 
-                        {/* DOB */}
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">DOB:</span>
-                          <span className="font-sans font-bold text-slate-900 text-xs tracking-wide">
-                            {formatDate(currentCard.date_of_birth)}
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">DOB:</span>
+                          <span>{formatDate(currentCard.date_of_birth)}</span>
+                        </span>
 
-                        {/* CARD UID */}
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-slate-200/90 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold font-sans">CARD UID:</span>
-                          <span className="font-sans font-bold text-sky-700 text-xs tracking-wide tabular-nums">
-                            {currentCard.smart_card_uid}
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Card UID:</span>
+                          <span className="text-sky-700">{currentCard.smart_card_uid}</span>
+                        </span>
 
-                        {/* CELL */}
                         {currentCard.personal_phone && (
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-sky-50/70 border border-sky-200 shadow-2xs">
-                            <span className="text-[10px] uppercase tracking-wider text-sky-600 font-bold font-sans">CELL:</span>
-                            <span className="font-sans font-bold text-sky-950 text-xs tracking-wide tabular-nums">
-                              {currentCard.personal_phone}
-                            </span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-xs font-mono font-bold text-sky-800">
+                            <span className="text-[10px] uppercase tracking-wider text-sky-500 font-sans font-semibold">Cell:</span>
+                            <span>{currentCard.personal_phone}</span>
                             <button
                               type="button"
                               onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
-                              className="ml-0.5 text-sky-600 hover:text-sky-900 cursor-pointer p-0.5 rounded hover:bg-sky-100 transition-colors"
+                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer"
                               title="Copy cell phone"
                             >
                               {copiedField === "patient_cell" ? (
@@ -1460,7 +1366,7 @@ export function HealthPassSearchEngine({
                                 <Copy size={11} />
                               )}
                             </button>
-                          </div>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -2348,46 +2254,43 @@ export function HealthPassSearchEngine({
                     : "ট্রমা ট্রায়াজ ক্যামেরা টেস্ট করার জন্য নিচের যেকোনো একটি ছবি সিলেক্ট করুন:"}
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {INITIAL_HEALTH_CARDS.map((card) => {
-                    const cardImage = card.patient_image || card.photo_url || "";
-                    return (
-                      <button
-                        key={card.id}
-                        type="button"
-                        onClick={() => handleSelectPreset(card.id, cardImage)}
-                        className={`p-3 rounded-2xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col items-center text-center ${
-                          visualProbeImage === cardImage
-                            ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm"
-                            : "border-slate-200 hover:border-indigo-300 bg-white"
-                        }`}
-                      >
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={cardImage}
-                            alt={card.patient_name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span className="text-xs font-bold text-slate-900 truncate w-full">
-                          {card.english_name || card.patient_name}
+                  {INITIAL_HEALTH_CARDS.map((card) => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(card.id, card.photo_url || "")}
+                      className={`p-3 rounded-2xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col items-center text-center ${
+                        visualProbeImage === card.photo_url
+                          ? "border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm"
+                          : "border-slate-200 hover:border-indigo-300 bg-white"
+                      }`}
+                    >
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={card.photo_url ?? card.patient_image ?? undefined}
+                          alt={card.patient_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-900 truncate w-full">
+                        {card.english_name || card.patient_name}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {card.blood_group} • {card.gender}
+                      </span>
+                      {card.has_pacemaker && (
+                        <span className="mt-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                          Pacemaker
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
-                          {card.blood_group} • {card.gender}
+                      )}
+                      {card.organ_donor && !card.has_pacemaker && (
+                        <span className="mt-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
+                          O- Donor
                         </span>
-                        {card.has_pacemaker && (
-                          <span className="mt-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
-                            Pacemaker
-                          </span>
-                        )}
-                        {card.organ_donor && !card.has_pacemaker && (
-                          <span className="mt-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
-                            O- Donor
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -2466,51 +2369,9 @@ export function HealthPassSearchEngine({
                 <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs font-bold text-indigo-950">
                   {lang === "en"
-                    ? "Running Biometric Neural Analysis: Extracting 64-point facial vectors & database matching..."
-                    : "বায়োমেট্রিক বিশ্লেষণ চলছে: সার্ভার এআই ফেসিয়াল ফিচার ও লুমিন্যান্স ভেক্টর তুলনা করা হচ্ছে..."}
+                    ? "Running Biometric Neural Analysis: Extracting 16-zone luminance vectors & RGB profile..."
+                    : "বায়োমেট্রিক বিশ্লেষণ চলছে: ফেসিয়াল ফিচার ও লুমিন্যান্স ভেক্টর তুলনা করা হচ্ছে..."}
                 </p>
-              </div>
-            )}
-
-            {/* Zero Fake Data Guarantee: Authentic No-Match State */}
-            {!isAnalyzingBiometrics && biometricMatchStatus === "no_match" && (
-              <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-200 text-center space-y-3 animate-in fade-in">
-                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-xs">
-                  <AlertCircle size={24} />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-amber-950">
-                    {lang === "en" ? "No Matching Registered Patient Found" : "কোনো নিবন্ধিত রোগীর সাথে মুখের মিল পাওয়া যায়নি"}
-                  </h4>
-                  <p className="text-xs text-amber-800 max-w-md mx-auto">
-                    {lang === "en"
-                      ? "This patient may not be registered in the national health database, or the image lighting/angle is insufficient. No false or simulated data is displayed."
-                      : "এই রোগী কেন্দ্রীয় স্বাস্থ্য ডাটাবেজে পূর্বে নিবন্ধিত নন, অথবা ছবির আলো ও কোণ পর্যাপ্ত নয়। সিস্টেমে কোনো ভুল বা ডামি ডাটা প্রদর্শন করা হয় না।"}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBiometricMatchStatus("idle");
-                      setVisualProbeImage(null);
-                    }}
-                    className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg cursor-pointer transition-colors"
-                  >
-                    {lang === "en" ? "Try Another Photo" : "অন্য ছবি দিন"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowVisualModal(false);
-                      handleStopWebcam();
-                      setQuery("");
-                    }}
-                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
-                  >
-                    {lang === "en" ? "Search by NID / Phone" : "NID বা ফোন দিয়ে খুঁজুন"}
-                  </button>
-                </div>
               </div>
             )}
 
@@ -2562,7 +2423,7 @@ export function HealthPassSearchEngine({
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-md bg-slate-800">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={top.card.patient_image || top.card.photo_url || ""}
+                                src={top.card.photo_url ?? top.card.patient_image ?? undefined}
                                 alt="Registry"
                                 className="w-full h-full object-cover"
                               />
@@ -2633,7 +2494,7 @@ export function HealthPassSearchEngine({
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={c.card.patient_image || c.card.photo_url || ""} alt="" className="w-full h-full object-cover" />
+                              <img src={c.card.photo_url ?? c.card.patient_image ?? undefined} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-slate-900 truncate">
