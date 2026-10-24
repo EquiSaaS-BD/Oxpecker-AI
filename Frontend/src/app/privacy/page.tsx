@@ -17,6 +17,11 @@ export default function PrivacyPage() {
       <p>
         Your medical data is solely shared with authorized healthcare providers (hospitals, verified doctors, and diagnostic centers) within the National Healthcare Network for the direct purpose of your treatment and continuity of care.
       </p>
+
+      <h2>4. Privacy & Data Protection Notice (Clinical Registry)</h2>
+      <p>
+        Patient health information is confidential and is accessible only to authorized individuals for legitimate healthcare purposes. Unauthorized access, disclosure, copying, or sharing of personal medical data is prohibited and may be subject to applicable laws of Bangladesh.
+      </p>
     </PageLayout>
   );
 }

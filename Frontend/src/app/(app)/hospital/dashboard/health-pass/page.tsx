@@ -44,17 +44,17 @@ class HealthPassErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundar
           <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl font-bold">
             ⚠️
           </div>
-          <h2 className="text-lg font-black text-slate-900">ইমার্জেন্সি হেলথপাস ডিসপ্লে রিফ্রেশ প্রয়োজন</h2>
+          <h2 className="text-lg font-black text-slate-900">Emergency HealthPass Display Refresh Required</h2>
           <p className="text-xs text-slate-500">
-            ব্রাউজারের সাময়িক স্ক্রিপ্ট ক্যাশের কারণে পৃষ্ঠাটি রিফ্রেশ করা প্রয়োজন। নিচের বাটনে ক্লিক করুন।
+            Please refresh the clinical registry view to reload cached HealthPass verification records.
           </p>
           <button
             type="button"
             onClick={this.handleReset}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer"
           >
             <RefreshCw size={14} />
-            <span>ক্যাশ ক্লিয়ার ও রিফ্রেশ করুন (Reload)</span>
+            <span>Clear Cache & Reload View</span>
           </button>
         </div>
       );
@@ -65,7 +65,7 @@ class HealthPassErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundar
 
 function HospitalHealthPassContent() {
   return (
-    <div className="p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6">
       <HealthPassSearchEngine portalRole="hospital" />
     </div>
   );
@@ -74,7 +74,7 @@ function HospitalHealthPassContent() {
 export default function HospitalHealthPassPage() {
   return (
     <HealthPassErrorBoundary>
-      <Suspense fallback={<div className="p-8 flex justify-center"><MedicalLoader text="লোড হচ্ছে..." /></div>}>
+      <Suspense fallback={<div className="p-8 flex justify-center"><MedicalLoader text="Connecting to HealthPass Core..." /></div>}>
         <HospitalHealthPassContent />
       </Suspense>
     </HealthPassErrorBoundary>

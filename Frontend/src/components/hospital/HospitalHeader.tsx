@@ -82,13 +82,22 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
             <ShieldAlert size={16} />
             Emergency HealthPass
           </Link>
-          <button
-            onClick={() => toast.info("Add Doctor Feature Coming Soon")}
-            className="flex items-center gap-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
+          <Link
+            href="/hospital/dashboard/beds/new"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+            title="Create New Bed Suite (Full Page)"
+          >
+            <BedDouble size={14} className="text-emerald-600" />
+            Add Bed
+          </Link>
+          <Link
+            href="/hospital/dashboard/doctors?action=add"
+            className="flex items-center gap-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer"
+            title="Register & Affiliated Consultant Doctor"
           >
             <UserPlus size={14} />
             Add Doctor
-          </button>
+          </Link>
         </div>
 
         {/* Notifications */}

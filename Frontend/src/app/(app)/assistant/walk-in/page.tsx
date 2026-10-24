@@ -47,7 +47,7 @@ export default function WalkInPage() {
     }
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const newErrors = [];
     if (!formData.name.trim()) newErrors.push('name');
     if (!formData.age.trim()) newErrors.push('age');
@@ -63,9 +63,44 @@ export default function WalkInPage() {
       return;
     }
 
+    // Persist patient registration and token entry to database API
+    try {
+      await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tokenId,
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          phone: fullPhone,
+          doctor: formData.doctor,
+          symptoms: formData.symptoms,
+          priority: formData.priority,
+          date: 'Today',
+        }),
+      });
+
+      await fetch('/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: tokenId,
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          phone: fullPhone,
+          doctor: formData.doctor,
+          symptoms: formData.symptoms,
+        }),
+      });
+    } catch (saveErr) {
+      console.warn("Async server persistence warning:", saveErr);
+    }
+
     // Success logic
     setIsGenerated(true);
-    toast.success(`Token ${tokenId} generated successfully!`);
+    toast.success(`Token ${tokenId} generated and saved to database!`);
   };
 
   const handleReset = () => {

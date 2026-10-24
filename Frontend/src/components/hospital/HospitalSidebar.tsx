@@ -27,18 +27,45 @@ interface HospitalSidebarProps {
   onClose: () => void;
 }
 
-const navItems = [
-  { label: "Overview", href: "/hospital/dashboard", icon: LayoutDashboard },
-  { label: "Emergency HealthPass", href: "/hospital/dashboard/health-pass", icon: CreditCard },
-  { label: "Profile & Gigs", href: "/hospital/dashboard/profile", icon: Store },
-  { label: "Bed Management", href: "/hospital/dashboard/beds", icon: BedDouble },
-  { label: "Booking Management", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },
-  { label: "Doctors Roster", href: "/hospital/dashboard/doctors", icon: Users },
-  { label: "Appointments", href: "/hospital/dashboard/appointments", icon: CalendarDays },
-  { label: "Patients & Admissions", href: "/hospital/dashboard/patients", icon: UserPlus },
-  { label: "Billing & Finances", href: "/hospital/dashboard/billing", icon: Receipt },
-  { label: "Test Reports", href: "/hospital/dashboard/reports", icon: FileText },
-  { label: "Inventory", href: "/hospital/dashboard/inventory", icon: Package },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: any;
+  badge?: string;
+}
+
+interface NavGroup {
+  sectionTitle: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    sectionTitle: "Operations & Inpatients",
+    items: [
+      { label: "Overview", href: "/hospital/dashboard", icon: LayoutDashboard },
+      { label: "Bed & Inpatient Hub", href: "/hospital/dashboard/beds", icon: BedDouble, badge: "Live" },
+      { label: "Bookings & Clearance", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },
+      { label: "Inpatient Registry", href: "/hospital/dashboard/patients", icon: UserPlus },
+      { label: "Emergency HealthPass", href: "/hospital/dashboard/health-pass", icon: CreditCard },
+    ],
+  },
+  {
+    sectionTitle: "Clinical & Patient Care",
+    items: [
+      { label: "Doctors Roster", href: "/hospital/dashboard/doctors", icon: Users },
+      { label: "Appointments", href: "/hospital/dashboard/appointments", icon: CalendarDays },
+      { label: "Test Reports", href: "/hospital/dashboard/reports", icon: FileText },
+    ],
+  },
+  {
+    sectionTitle: "Finance & Facility",
+    items: [
+      { label: "Billing & Settlement", href: "/hospital/dashboard/billing", icon: Receipt },
+      { label: "Inventory & Pharmacy", href: "/hospital/dashboard/inventory", icon: Package },
+      { label: "Hospital Profile", href: "/hospital/dashboard/profile", icon: Store },
+    ],
+  },
 ];
 
 export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
@@ -93,37 +120,50 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
         </div>
 
         {/* Scrollable Navigation List */}
-        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 custom-scrollbar">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => onClose()}
-                className={`
-                  doctor-sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
-                  ${
-                    active
-                      ? "bg-emerald-50 text-emerald-700 font-semibold shadow-xs"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  }
-                `}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    size={18}
-                    className={`transition-colors ${
-                      active ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-700"
-                    }`}
-                  />
-                  <span>{item.label}</span>
-                </div>
-                {active && <ChevronRight size={16} className="text-emerald-500" />}
-              </Link>
-            );
-          })}
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-4 custom-scrollbar">
+          {navGroups.map((group, gIdx) => (
+            <div key={gIdx} className="space-y-1">
+              <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                {group.sectionTitle}
+              </div>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => onClose()}
+                    className={`
+                      doctor-sidebar-item flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group
+                      ${
+                        active
+                          ? "bg-emerald-50 text-emerald-800 font-bold shadow-2xs"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon
+                        size={17}
+                        className={`transition-colors shrink-0 ${
+                          active ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-700"
+                        }`}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.badge ? (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                        {item.badge}
+                      </span>
+                    ) : active ? (
+                      <ChevronRight size={14} className="text-emerald-500" />
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* FIXED BOTTOM SECTION: Settings and Logout together */}

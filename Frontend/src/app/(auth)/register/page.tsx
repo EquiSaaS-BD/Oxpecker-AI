@@ -330,8 +330,12 @@ export default function RegisterPage() {
             existingUser.role = targetRole;
           }
         }
+        existingUser.role = targetRole;
         toast.success(`Welcome back, ${existingUser.name}! Logging you in as ${targetRole}...`);
-        login(existingUser as any);
+        login({
+          ...existingUser,
+          role: targetRole,
+        } as any);
         return;
       }
 
@@ -655,7 +659,7 @@ export default function RegisterPage() {
         id: registeredId,
         name: registeredProfileData?.name || name || "User",
         email: registeredProfileData?.email || email,
-        role: registeredProfileData?.role || role,
+        role: role,
         phone: registeredProfileData?.phone || phone || undefined,
         image: registeredProfileData?.image || undefined,
         date_of_birth: registeredProfileData?.date_of_birth || (formData.accountType === "patient" ? formData.patientDob : undefined),
@@ -952,6 +956,7 @@ export default function RegisterPage() {
                       id="doctorSpec"
                       label="Primary Specialization"
                       required
+                      isHalf
                       value={formData.doctorSpec}
                       onChange={(val: string) => updateForm("doctorSpec", val)}
                     />
@@ -1279,7 +1284,7 @@ export default function RegisterPage() {
                     <InputField error={errors["doctorEmail"]} id="doctorEmail" label="Email Address" type="email" required isHalf value={formData.doctorEmail} onChange={(e: any) => updateForm("doctorEmail", e.target.value)} />
                     <PhoneInputWithCountry error={errors["doctorMobile"]} id="doctorMobile" label="Mobile Number" required isHalf value={formData.doctorMobile} onChange={(val: string) => updateForm("doctorMobile", val)} />
                     <InputField error={errors["doctorRegNo"]} id="doctorRegNo" label="Medical Registration Number" required isHalf value={formData.doctorRegNo} onChange={(e: any) => updateForm("doctorRegNo", e.target.value)} />
-                    <DoctorSpecializationSelector error={errors["doctorSpec"]} id="doctorSpec" label="Specialization" required value={formData.doctorSpec} onChange={(val: string) => updateForm("doctorSpec", val)} />
+                    <DoctorSpecializationSelector error={errors["doctorSpec"]} id="doctorSpec" label="Specialization" required isHalf value={formData.doctorSpec} onChange={(val: string) => updateForm("doctorSpec", val)} />
                     <div className="col-span-2 mt-2 bg-slate-50 p-4 rounded-[16px] border border-slate-100 shadow-sm">
                       <p className="text-sm text-slate-500 font-medium leading-relaxed">
                         <span className="font-bold text-slate-700">Note:</span> Qualification, Experience, Consultation Fee, Profile Photo and Certificates can be added later from Profile Settings.

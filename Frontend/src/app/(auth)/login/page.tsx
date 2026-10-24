@@ -2,14 +2,14 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Mail, 
   Lock, 
   Eye, 
   EyeOff, 
   ArrowLeft, 
-  LogIn 
+  LogIn
 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -31,6 +31,10 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
 function LoginForm() {
   const { login, isAuthenticated, isLoading, role } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Role query param if linked from specific context (e.g. ?role=doctor)
+  const queryRole = searchParams?.get("role") as UserRole | null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +44,6 @@ function LoginForm() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      // Sanitize any stored redirect against the user's actual role
       const storedUrl = sessionStorage.getItem("redirect_after_login");
       if (storedUrl) sessionStorage.removeItem("redirect_after_login");
       
@@ -64,12 +67,35 @@ function LoginForm() {
           .select("*")
           .ilike("email", lowerEmail)
           .maybeSingle();
-        dbProfile = data;
+        if (data) dbProfile = data;
       } catch (err) {
         console.error("Supabase profile lookup error:", err);
       }
 
-      // 2. Check hospitals table if not found in profiles
+      // 2. Check doctors table
+      if (!dbProfile) {
+        try {
+          const { data: doc } = await supabase
+            .from("doctors")
+            .select("*")
+            .ilike("email", lowerEmail)
+            .maybeSingle();
+          if (doc) {
+            dbProfile = {
+              id: doc.profile_id || doc.id,
+              name: doc.name,
+              email: doc.email,
+              role: "doctor",
+              specialty: doc.specialty,
+              status: "active",
+            };
+          }
+        } catch (docErr) {
+          console.warn("Doctor table check error:", docErr);
+        }
+      }
+
+      // 3. Check hospitals table
       if (!dbProfile) {
         try {
           const { data: hosp } = await supabase
@@ -93,30 +119,7 @@ function LoginForm() {
         }
       }
 
-      // 3. Check doctors table if not found in profiles
-      if (!dbProfile) {
-        try {
-          const { data: doc } = await supabase
-            .from("doctors")
-            .select("*")
-            .ilike("email", lowerEmail)
-            .maybeSingle();
-          if (doc) {
-            dbProfile = {
-              id: doc.profile_id || doc.id,
-              name: doc.name,
-              email: doc.email,
-              role: "doctor",
-              specialty: doc.specialty,
-              status: "active",
-            };
-          }
-        } catch (docErr) {
-          console.warn("Doctor table check error:", docErr);
-        }
-      }
-
-      // Check locally registered profiles if Supabase is offline or dummy key
+      // 4. Check locally registered profiles cache
       if (!dbProfile && typeof localStorage !== "undefined") {
         try {
           const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
@@ -129,53 +132,29 @@ function LoginForm() {
         }
       }
 
-      let userId = dbProfile?.id;
+      // Automatically determine user role from database
+      const resolvedRole: UserRole = (dbProfile?.role as UserRole) || (queryRole as UserRole) || "patient";
+      const userId = dbProfile?.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "user-" + Date.now());
       const userName = dbProfile?.name || email.split("@")[0] || "User";
-      let userRole: UserRole = (dbProfile?.role as UserRole) || "patient";
 
-      // 4. Auto-provision profile if completely new/unregistered (e.g. testing)
-      if (!dbProfile) {
-        if (lowerEmail.includes("hospital")) userRole = "hospital";
-        else if (lowerEmail.includes("doctor") || lowerEmail.includes("dr.")) userRole = "doctor";
-        else if (lowerEmail.includes("assistant")) userRole = "assistant";
-        else if (lowerEmail.includes("admin")) userRole = "admin";
-        else userRole = "patient";
-
-        try {
-          const { data: inserted } = await supabase
-            .from("profiles")
-            .insert({
-              name: userName,
-              email: lowerEmail,
-              role: userRole,
-              status: "active",
-            })
-            .select()
-            .maybeSingle();
-          if (inserted?.id) {
-            userId = inserted.id;
-            userRole = (inserted.role as UserRole) || userRole;
-          }
-        } catch (insertErr) {
-          console.error("Auto-provision profile error:", insertErr);
-        }
-      }
-
-      toast.success(`Welcome back, ${userName}!`);
-      
-      login({
-        id: userId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "user-" + Date.now()),
+      const userSession = {
+        id: userId,
         name: userName,
         email: dbProfile?.email || lowerEmail,
-        role: userRole,
+        role: resolvedRole,
         phone: dbProfile?.phone || undefined,
         date_of_birth: dbProfile?.date_of_birth || undefined,
         gender: dbProfile?.gender || undefined,
         blood_group: dbProfile?.blood_group || undefined,
         address: dbProfile?.address || undefined,
+        specialty: dbProfile?.specialty || (resolvedRole === "doctor" ? "General Physician" : undefined),
+        hospital_name: dbProfile?.hospital_name || (resolvedRole === "hospital" ? "Oxpecker Partner Hospital" : undefined),
         image: dbProfile?.image || undefined,
         status: dbProfile?.status || "active",
-      } as any);
+      };
+
+      toast.success(`Welcome back, ${userName}!`);
+      login(userSession as any);
 
     } catch (err: any) {
       console.error("Login error:", err);
@@ -187,57 +166,25 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
+
     try {
       const gUser = await initiateGoogleSignIn();
       const lowerEmail = gUser.email.toLowerCase().trim();
 
       // 1. Authoritative lookup from Supabase profiles table
-      let { data: dbProfile } = await supabase
-        .from("profiles")
-        .select("*")
-        .ilike("email", lowerEmail)
-        .maybeSingle();
-
-      // 2. Check hospitals table if profile is missing
-      if (!dbProfile) {
-        const { data: hosp } = await supabase
-          .from("hospitals")
+      let dbProfile: any = null;
+      try {
+        const { data } = await supabase
+          .from("profiles")
           .select("*")
           .ilike("email", lowerEmail)
           .maybeSingle();
-        if (hosp) {
-          dbProfile = {
-            id: hosp.profile_id || hosp.id,
-            name: hosp.name,
-            email: lowerEmail,
-            role: "hospital",
-            phone: hosp.phone,
-            address: hosp.address,
-            status: "active",
-          };
-        }
+        if (data) dbProfile = data;
+      } catch (err) {
+        console.error("Supabase Google profile lookup error:", err);
       }
 
-      // 3. Check doctors table if profile is missing
-      if (!dbProfile) {
-        const { data: doc } = await supabase
-          .from("doctors")
-          .select("*")
-          .ilike("email", lowerEmail)
-          .maybeSingle();
-        if (doc) {
-          dbProfile = {
-            id: doc.profile_id || doc.id,
-            name: doc.name,
-            email: lowerEmail,
-            role: "doctor",
-            specialty: doc.specialty,
-            status: "active",
-          };
-        }
-      }
-
-      // Check locally registered profiles if Supabase is offline or dummy key
+      // 2. Check local profiles cache
       if (!dbProfile && typeof localStorage !== "undefined") {
         try {
           const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
@@ -245,36 +192,78 @@ function LoginForm() {
           if (matched) {
             dbProfile = matched;
           }
-        } catch (localErr) {
-          console.warn("Local profile check error:", localErr);
-        }
+        } catch (localErr) {}
       }
 
-      // 4. If account exists in database, login directly with their authoritative registered role!
+      // 3. Check doctors table
+      if (!dbProfile) {
+        try {
+          const { data: doc } = await supabase
+            .from("doctors")
+            .select("*")
+            .ilike("email", lowerEmail)
+            .maybeSingle();
+          if (doc) {
+            dbProfile = {
+              id: doc.profile_id || doc.id,
+              name: doc.name,
+              email: lowerEmail,
+              role: "doctor",
+              specialty: doc.specialty,
+              status: "active",
+            };
+          }
+        } catch (docErr) {}
+      }
+
+      // 4. Check hospitals table
+      if (!dbProfile) {
+        try {
+          const { data: hosp } = await supabase
+            .from("hospitals")
+            .select("*")
+            .ilike("email", lowerEmail)
+            .maybeSingle();
+          if (hosp) {
+            dbProfile = {
+              id: hosp.profile_id || hosp.id,
+              name: hosp.name,
+              email: lowerEmail,
+              role: "hospital",
+              phone: hosp.phone,
+              address: hosp.address,
+              status: "active",
+            };
+          }
+        } catch (hospErr) {}
+      }
+
+      // If account exists, log in immediately with role from profile
       if (dbProfile) {
-        const userRole: UserRole = (dbProfile.role as UserRole) || "patient";
+        const resolvedRole: UserRole = (dbProfile.role as UserRole) || "patient";
         toast.success(`Welcome back, ${dbProfile.name || gUser.name}!`);
         login({
           ...dbProfile,
           id: dbProfile.id,
           name: dbProfile.name || gUser.name,
           email: lowerEmail,
-          role: userRole,
+          role: resolvedRole,
           image: dbProfile.image || gUser.picture || null,
           status: dbProfile.status || "active",
         } as any);
         return;
       }
 
-      // 5. If NO account exists in the database:
-      // Store Google credentials and redirect to registration so the user can select their role
+      // If NO account exists: store Google credentials and redirect to register
+      const defaultRole: UserRole = queryRole || "patient";
       sessionStorage.setItem("oxpecker_google_user", JSON.stringify({
         name: gUser.name,
         email: lowerEmail,
         picture: gUser.picture,
+        role: defaultRole,
       }));
 
-      toast.info("No registered account found with this Google email. Please select your role to complete sign-up.");
+      toast.info("Please complete your account registration.");
       router.push("/register");
 
     } catch (err: any) {
@@ -296,7 +285,7 @@ function LoginForm() {
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
-      {/* Clean Ambient Background (Unified across all auth pages) */}
+      {/* Clean Ambient Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-b from-slate-50 via-white to-sky-50/25">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
@@ -311,11 +300,13 @@ function LoginForm() {
 
         <div className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-7 sm:p-9 relative z-20 ring-1 ring-black/5">
           <div className="mb-6 text-center">
-            <Link href="/" className="inline-flex mb-5">
+            <Link href="/" className="inline-flex mb-4">
               <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={160} height={45} className="h-9 sm:h-10 w-auto object-contain" priority />
             </Link>
-            <h1 className="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1">Sign in with your email to access your account</p>
+            <h1 className="text-2xl font-extrabold text-slate-900">Sign In</h1>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">
+              Welcome back! Please enter your details.
+            </p>
           </div>
 
           {/* Continue with Google */}
@@ -339,7 +330,7 @@ function LoginForm() {
           </button>
 
           {/* Divider */}
-          <div className="flex items-center my-5 gap-3">
+          <div className="flex items-center my-6 gap-3">
             <div className="flex-1 h-px bg-slate-200"></div>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Or email login</span>
             <div className="flex-1 h-px bg-slate-200"></div>
@@ -347,7 +338,9 @@ function LoginForm() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-[13px] font-semibold text-slate-500 mb-1.5 tracking-tight">Email Address</label>
+              <label className="block text-[13px] font-semibold text-slate-600 mb-1.5 tracking-tight">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -362,7 +355,7 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-slate-500 mb-1.5 tracking-tight">Password</label>
+              <label className="block text-[13px] font-semibold text-slate-600 mb-1.5 tracking-tight">Password</label>
               <div className="relative">
                 <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -376,7 +369,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -392,7 +385,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-[50px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-1"
+              className="w-full h-[50px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-1 cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

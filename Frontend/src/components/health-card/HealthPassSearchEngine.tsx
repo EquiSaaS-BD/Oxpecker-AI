@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import {
   Search, CreditCard, Shield, AlertTriangle, Phone,
   Calendar, MapPin, Heart, Stethoscope, Pill,
@@ -41,6 +42,9 @@ export function HealthPassSearchEngine({
   
   // View mode: Comprehensive Paper Dossier vs Compact Smart ID Card
   const [viewMode, setViewMode] = useState<"paper" | "card">("paper");
+  
+  // Mobile master-detail view tab switcher ('list' for patient queue vs 'detail' for active dossier)
+  const [mobileTab, setMobileTab] = useState<"list" | "detail">("detail");
   
   // Selected active patient (Defaults strictly to Rahim Uddin - Doctor Queue S-01)
   const [selectedCard, setSelectedCard] = useState<HealthPassCardType | null>(() => {
@@ -115,6 +119,7 @@ export function HealthPassSearchEngine({
 
   // Helper to switch patient with a gentle 200ms shimmer transition
   const handleSelectPatientWithSkeleton = (patient: HealthPassCardType) => {
+    setMobileTab("detail");
     if (currentCard?.id === patient.id) return;
     setIsLoadingPatient(true);
     setSelectedCard(patient);
@@ -599,23 +604,23 @@ export function HealthPassSearchEngine({
               ) : null}
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="grid grid-cols-3 sm:flex items-center gap-1.5 sm:gap-2 shrink-0 w-full sm:w-auto">
               {/* Custom Production-Grade Filter Dropdown Popover */}
-              <div ref={filterRef} className="relative shrink-0">
+              <div ref={filterRef} className="relative w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="h-11 px-3.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                  className="h-11 px-2 sm:px-3.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
                   title="Select search criterion"
                 >
                   {(() => {
                     const Icon = currentFilterOption.icon;
                     return <Icon size={14} className="text-sky-600 shrink-0" />;
                   })()}
-                  <span>{lang === "en" ? currentFilterOption.labelEn : currentFilterOption.labelBn}</span>
+                  <span className="truncate max-w-[70px] sm:max-w-none">{lang === "en" ? currentFilterOption.labelEn : currentFilterOption.labelBn}</span>
                   <ChevronDown
                     size={14}
-                    className={`text-slate-400 transition-transform duration-200 ${isFilterOpen ? "rotate-180 text-sky-600" : ""}`}
+                    className={`text-slate-400 transition-transform duration-200 shrink-0 ${isFilterOpen ? "rotate-180 text-sky-600" : ""}`}
                   />
                 </button>
 
@@ -626,7 +631,7 @@ export function HealthPassSearchEngine({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
                       transition={{ duration: 0.15, ease: "easeOut" }}
-                      className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-72 sm:w-80 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-2 z-50 space-y-1"
+                      className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-[calc(100vw-2.5rem)] max-w-xs sm:w-80 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-2 z-50 space-y-1"
                     >
                       <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
@@ -686,22 +691,21 @@ export function HealthPassSearchEngine({
                 type="button"
                 onClick={handleOpenVisualModal}
                 title={lang === "en" ? "Visual AI Biometric Search (Photo/Webcam)" : "ভিজ্যুয়াল এআই বায়োমেট্রিক ফেস সার্চ (ছবি/ক্যামেরা)"}
-                className="h-11 px-3.5 sm:px-4 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md shrink-0 cursor-pointer flex items-center gap-1.5 group relative"
+                className="h-11 px-2 sm:px-4 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs hover:shadow-md shrink-0 cursor-pointer flex items-center justify-center gap-1.5 group relative w-full sm:w-auto"
               >
-                <ScanFace size={16} className="text-sky-200 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">{lang === "en" ? "Visual Search" : "ছবি সার্চ"}</span>
-                <span className="flex sm:hidden"><Camera size={15} /></span>
-                <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-900 font-black text-[9px] px-1 rounded-full uppercase tracking-wider shadow-xs">
+                <ScanFace size={16} className="text-sky-200 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="truncate">{lang === "en" ? "Visual" : "ছবি"}</span>
+                <span className="absolute -top-1.5 -right-1 bg-amber-400 text-slate-900 font-black text-[9px] px-1 rounded-full uppercase tracking-wider shadow-xs">
                   AI
                 </span>
               </button>
 
               <button
                 type="button"
-                className="h-11 px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+                className="h-11 px-2 sm:px-5 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
               >
-                <Search size={15} />
-                <span>{lang === "en" ? "Search" : "অনুসন্ধান"}</span>
+                <Search size={15} className="shrink-0" />
+                <span>{lang === "en" ? "Search" : "খুঁজুন"}</span>
               </button>
             </div>
           </div>
@@ -732,10 +736,41 @@ export function HealthPassSearchEngine({
         </div>
       </div>
 
+      {/* Mobile Master-Detail Tab Switcher */}
+      <div className="lg:hidden flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setMobileTab("list")}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === "list"
+              ? "bg-white text-sky-700 shadow-xs border border-slate-200/60"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <User size={14} />
+          <span>{lang === "en" ? `Patient Queue (${safeResults.length})` : `রোগী তালিকা (${safeResults.length})`}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab("detail")}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === "detail"
+              ? "bg-white text-indigo-700 shadow-xs border border-slate-200/60"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <FileText size={14} />
+          <span className="truncate max-w-[140px]">
+            {currentCard ? (currentCard.english_name || currentCard.patient_name) : (lang === "en" ? "Patient Dossier" : "রোগীর ডসিয়ার")}
+          </span>
+        </button>
+      </div>
+
       {/* Main Content Area: Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Results List with Sticky Split-Scroll & 10-per-Page Pagination */}
-        <div className={`space-y-3 ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"}`}>
+        <div className={`space-y-3 ${mobileTab === "detail" ? "hidden lg:flex" : "flex"} ${currentCard ? "lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] flex flex-col" : "lg:col-span-12"}`}>
           {/* Queue Header & Status */}
           <div className="flex items-center justify-between px-1 shrink-0">
             <div className="flex items-center gap-2">
@@ -998,74 +1033,59 @@ export function HealthPassSearchEngine({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-xs space-y-6"
+            className={`lg:col-span-7 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xs space-y-5 sm:space-y-6 ${mobileTab === "list" ? "hidden lg:block" : "block"}`}
           >
-            {/* Executive Dual Viewport Mode Selector (Dossier vs Card) */}
-            <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-              <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto flex-1 max-w-md">
-                {/* Option 1: Clinical Dossier Paper */}
+            {/* Mobile 'Back to Queue List' Header */}
+            <div className="lg:hidden flex items-center justify-between pb-2 border-b border-slate-100">
+              <button
+                type="button"
+                onClick={() => setMobileTab("list")}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-800 cursor-pointer"
+              >
+                <ChevronLeft size={15} />
+                <span>{lang === "en" ? "Back to Patient Queue" : "রোগী তালিকায় ফিরুন"}</span>
+              </button>
+              <span className="text-[11px] font-mono text-slate-400 font-bold">
+                UID: {currentCard.smart_card_uid}
+              </span>
+            </div>
+
+            {/* Sleek Mode Selector (Dossier vs Card) & Utility Actions */}
+            <div className="bg-slate-50 p-1.5 sm:p-2 rounded-2xl border border-slate-200/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 w-full sm:w-fit">
+                {/* Dossier */}
                 <button
                   type="button"
                   onClick={() => setViewMode("paper")}
-                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer select-none border ${
                     viewMode === "paper"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                      ? "bg-white text-sky-700 shadow-2xs border-slate-200"
+                      : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/60"
                   }`}
+                  title="Clinical Dossier"
                 >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    viewMode === "paper" ? "bg-sky-50 text-sky-600" : "bg-transparent text-slate-400"
-                  }`}>
-                    <FileText size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="block leading-tight font-black">
-                      {lang === "en" ? "Clinical Paper Dossier" : "ক্লিনিক্যাল ডসিয়ার পেপার"}
-                    </span>
-                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
-                      {lang === "en" ? "Standard Hospital EHR • 6 Sections" : "হাসপাতাল ভর্তি ও সামারি শিট"}
-                    </span>
-                  </div>
-                  {viewMode === "paper" && (
-                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[9px] font-bold">
-                      Active
-                    </span>
-                  )}
+                  <FileText size={14} className={viewMode === "paper" ? "text-sky-600" : "text-slate-400"} />
+                  <span>Dossier</span>
                 </button>
 
-                {/* Option 2: Smart Emergency ID Card */}
+                {/* Card */}
                 <button
                   type="button"
                   onClick={() => setViewMode("card")}
-                  className={`relative flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer select-none ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer select-none border ${
                     viewMode === "card"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
+                      ? "bg-white text-indigo-700 shadow-2xs border-slate-200"
+                      : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/60"
                   }`}
+                  title="Smart Health Card"
                 >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    viewMode === "card" ? "bg-indigo-50 text-indigo-600" : "bg-transparent text-slate-400"
-                  }`}>
-                    <CreditCard size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="block leading-tight font-black">
-                      {lang === "en" ? "Smart Emergency Card" : "স্মার্ট হেলথ কার্ড (3D Pass)"}
-                    </span>
-                    <span className="hidden sm:block text-[9px] font-medium text-slate-400">
-                      {lang === "en" ? "Pocket Pass • Tap to Flip" : "পকেট কার্ড • সামনে ও পেছনে"}
-                    </span>
-                  </div>
-                  {viewMode === "card" && (
-                    <span className="ml-auto hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[9px] font-bold">
-                      Active
-                    </span>
-                  )}
+                  <CreditCard size={14} className={viewMode === "card" ? "text-indigo-600" : "text-slate-400"} />
+                  <span>Card</span>
                 </button>
               </div>
 
               {/* Utility Action Buttons: Collapse All + Download + Print */}
-              <div className="no-print flex items-center justify-end gap-1.5 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+              <div className="no-print flex items-center justify-end gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 w-full sm:w-auto">
                 {viewMode === "paper" && (
                   <button
                     type="button"
@@ -1073,18 +1093,18 @@ export function HealthPassSearchEngine({
                       const allCollapsed = Object.values(collapsedSections).every(Boolean);
                       toggleAllSections(!allCollapsed);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
                     title="Collapse or expand all dossier sections"
                   >
                     {Object.values(collapsedSections).every(Boolean) ? (
                       <>
                         <Plus size={13} className="text-slate-600" />
-                        <span>{lang === "en" ? "Expand All" : "সব খুলুন"}</span>
+                        <span className="hidden xs:inline">{lang === "en" ? "Expand" : "খুলুন"}</span>
                       </>
                     ) : (
                       <>
                         <Minus size={13} className="text-slate-600" />
-                        <span>{lang === "en" ? "Collapse All" : "সব সংক্ষেপ"}</span>
+                        <span className="hidden xs:inline">{lang === "en" ? "Collapse" : "সংক্ষেপ"}</span>
                       </>
                     )}
                   </button>
@@ -1094,11 +1114,11 @@ export function HealthPassSearchEngine({
                   type="button"
                   onClick={handleDownloadDossier}
                   disabled={isDownloadingDossier}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200/90 shadow-2xs"
                   title="Download patient document"
                 >
                   <Download size={13} className={isDownloadingDossier ? "animate-bounce" : ""} />
-                  <span className="hidden sm:inline">
+                  <span>
                     {isDownloadingDossier ? (lang === "en" ? "Saving..." : "ডাউনলোড...") : (lang === "en" ? "Download" : "ডাউনলোড")}
                   </span>
                 </button>
@@ -1106,29 +1126,13 @@ export function HealthPassSearchEngine({
                 <button
                   type="button"
                   onClick={handlePrintDossier}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
                   title="Print standardized hospital emergency admission paper"
                 >
                   <Printer size={13} />
-                  <span className="hidden sm:inline">{lang === "en" ? "Print" : "প্রিন্ট"}</span>
+                  <span>{lang === "en" ? "Print" : "প্রিন্ট"}</span>
                 </button>
               </div>
-            </div>
-
-            {/* Dossier Patient Identity Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                  {lang === "en" ? "Emergency Clinical Records" : "জরুরি ক্লিনিক্যাল রেকর্ডস"}
-                </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {lang === "en" ? "VERIFIED REGISTRY" : "ভেরিফায়েড রেকর্ড"}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-mono">
-                UID: <span className="font-bold text-sky-700">{currentCard.smart_card_uid}</span> • NID: {currentCard.nid_number || "Unregistered"}
-              </p>
             </div>
 
             {/* Soft & Gentle Shimmer Skeleton Loader for Clinical Dossier */}
@@ -1137,7 +1141,7 @@ export function HealthPassSearchEngine({
                 {/* Header Skeleton */}
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200 shrink-0" />
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[5px] bg-slate-200 shrink-0" />
                     <div className="space-y-2">
                       <div className="h-5 bg-slate-200 rounded w-48" />
                       <div className="h-3.5 bg-slate-100 rounded w-32" />
@@ -1301,84 +1305,48 @@ export function HealthPassSearchEngine({
                   id="printable-patient-dossier"
                   className="space-y-6 bg-white"
                 >
-                {/* 1. Patient Demographics & Profile Summary */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="flex items-start sm:items-center gap-4 min-w-0">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-200 border-2 border-white shadow-xs overflow-hidden shrink-0 relative">
-                      {currentCard.patient_image ? (
-                        <img
-                          src={currentCard.patient_image}
-                          alt={currentCard.patient_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-300">
-                          <User size={32} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                          {currentCard.english_name || currentCard.patient_name}
-                        </h3>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          <span>{lang === "en" ? "Verified" : "ভেরিফায়েড"}</span>
-                        </span>
-                      </div>
-
-                      <p className="text-xs sm:text-sm font-semibold text-sky-700">
-                        {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
-                      </p>
-
-                      {/* Demographics & National Registry Identifiers (Clean, No Duplicate Phone/QR) */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">NID:</span>
-                          <span>{currentCard.nid_number || "Unregistered"}</span>
-                        </span>
-
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">DOB:</span>
-                          <span>{formatDate(currentCard.date_of_birth)}</span>
-                        </span>
-
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 text-xs font-mono font-bold text-slate-800 shadow-2xs">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Card UID:</span>
-                          <span className="text-sky-700">{currentCard.smart_card_uid}</span>
-                        </span>
-
-                        {currentCard.personal_phone && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-xs font-mono font-bold text-sky-800">
-                            <span className="text-[10px] uppercase tracking-wider text-sky-500 font-sans font-semibold">Cell:</span>
-                            <span>{currentCard.personal_phone}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
-                              className="ml-1 text-sky-600 hover:text-sky-900 cursor-pointer"
-                              title="Copy cell phone"
-                            >
-                              {copiedField === "patient_cell" ? (
-                                <Check size={11} className="text-emerald-600" />
-                              ) : (
-                                <Copy size={11} />
-                              )}
-                            </button>
-                          </span>
+                {/* 1. Patient Demographics & Profile Summary (100% Mobile Bulletproof Responsive) */}
+                <div className="p-3.5 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 flex flex-col gap-3 w-full overflow-hidden">
+                  {/* Top Row: Avatar + Name/Age + Blood Group Badge */}
+                  <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                      <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[5px] bg-slate-200 border-2 border-white shadow-xs overflow-hidden shrink-0 relative">
+                        {currentCard.patient_image ? (
+                          <img
+                            src={currentCard.patient_image}
+                            alt={currentCard.patient_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-300">
+                            <User size={28} />
+                          </div>
                         )}
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Blood Group Display */}
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-200 shrink-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-rose-600 text-white font-black flex items-center justify-center text-2xl shadow-xs border border-rose-700 shrink-0">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <h3 className="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate">
+                            {currentCard.english_name || currentCard.patient_name}
+                          </h3>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span>{lang === "en" ? "Verified" : "ভেরিফায়েড"}</span>
+                          </span>
+                        </div>
+
+                        <p className="text-xs sm:text-sm font-semibold text-sky-700 mt-0.5 truncate">
+                          {currentCard.patient_name} • {currentCard.gender.toUpperCase()} • {calculateAge(currentCard.date_of_birth)} {lang === "en" ? "Yrs" : "বছর"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Blood Group Badge (Top-Right on Mobile & Desktop) */}
+                    <div className="shrink-0 flex items-center gap-2.5">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-rose-600 text-white font-black flex items-center justify-center text-xl sm:text-2xl shadow-xs border border-rose-700 shrink-0">
                         {currentCard.blood_group}
                       </div>
-                      <div className="md:text-right">
+                      <div className="hidden sm:block text-right">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                           {lang === "en" ? "Blood Group" : "রক্তের গ্রুপ"}
                         </span>
@@ -1387,6 +1355,75 @@ export function HealthPassSearchEngine({
                         </span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Bottom Row: Demographics & National Identifiers Badges (Full Width, Zero Overflow) */}
+                  <div className="w-full pt-2.5 border-t border-slate-200/80 flex flex-wrap items-center gap-1.5 text-xs">
+                    {/* NID */}
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">NID:</span>
+                      <span className="truncate">{currentCard.nid_number || "Unregistered"}</span>
+                    </div>
+
+                    {/* DOB */}
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">DOB:</span>
+                      <span>{formatDate(currentCard.date_of_birth)}</span>
+                    </div>
+
+                    {/* Card UID */}
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Card UID:</span>
+                      <span className="text-sky-700 truncate">{currentCard.smart_card_uid}</span>
+                    </div>
+
+                    {/* Cell */}
+                    {currentCard.personal_phone && (
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold">Cell:</span>
+                        <span>{currentCard.personal_phone}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(currentCard.personal_phone!, "patient_cell", "Patient Cell")}
+                          className="ml-1 text-slate-400 hover:text-slate-800 cursor-pointer"
+                          title="Copy cell phone"
+                        >
+                          {copiedField === "patient_cell" ? (
+                            <Check size={11} className="text-emerald-600" />
+                          ) : (
+                            <Copy size={11} />
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Patient Address with Live Google Maps View Button (Full Width on Mobile, Fluid on Desktop) */}
+                    {(() => {
+                      const patientAddress = currentCard.address || [currentCard.upazila, currentCard.zila, "Bangladesh"].filter(Boolean).join(", ") || "Dhanmondi, Dhaka, Bangladesh";
+                      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(patientAddress + ", Bangladesh")}`;
+                      return (
+                        <div className="w-full sm:w-auto flex-1 min-w-[200px] flex items-center justify-between sm:inline-flex sm:items-center gap-1.5 px-2.5 py-1 rounded-[10px] bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-mono font-bold text-slate-800">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <MapPin size={12} className="text-rose-500 shrink-0" />
+                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans font-semibold shrink-0">Address:</span>
+                            <span className="font-sans font-medium text-slate-700 truncate" title={patientAddress}>
+                              {patientAddress}
+                            </span>
+                          </div>
+                          <a
+                            href={mapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white hover:bg-sky-50 text-sky-600 hover:text-sky-700 border border-slate-200/90 shadow-2xs text-[10px] font-sans font-bold shrink-0 transition-all cursor-pointer ml-1"
+                            title="View Location on Google Maps"
+                          >
+                            <Eye size={11} className="text-sky-600" />
+                            <span>View</span>
+                            <ExternalLink size={9} className="opacity-60" />
+                          </a>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1531,12 +1568,12 @@ export function HealthPassSearchEngine({
                       </span>
 
                       {/* Actions: Copy + QR + Call + WhatsApp */}
-                      <div className="no-print flex flex-wrap items-center gap-2">
+                      <div className="no-print grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                         {/* 1-Click Copy Button */}
                         <button
                           type="button"
                           onClick={() => handleCopyText(currentCard.emergency_contact_phone, "parent_phone_card", "Parent Phone")}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-all cursor-pointer w-full sm:w-auto"
                         >
                           {copiedField === "parent_phone_card" ? (
                             <>
@@ -1555,7 +1592,7 @@ export function HealthPassSearchEngine({
                         <button
                           type="button"
                           onClick={() => setShowPhoneQrModal(true)}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-2xs transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-2xs transition-all cursor-pointer w-full sm:w-auto"
                           title="Scan QR with phone to auto-dial"
                         >
                           <QrCode size={14} className="text-sky-600" />
@@ -1565,7 +1602,7 @@ export function HealthPassSearchEngine({
                         {/* Direct Call Button */}
                         <a
                           href={`tel:${currentCard.emergency_contact_phone}`}
-                          className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto"
                         >
                           <Phone size={14} />
                           <span>{lang === "en" ? "Direct Call" : "সরাসরি কল"}</span>
@@ -1579,7 +1616,7 @@ export function HealthPassSearchEngine({
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer w-full sm:w-auto"
                             title="Send verified WhatsApp emergency alert"
                           >
                             <MessageCircle size={14} />
@@ -1806,12 +1843,12 @@ export function HealthPassSearchEngine({
                 </div>
 
                 {/* Final 1-Click Print & Download Actions */}
-                <div className="no-print flex flex-wrap items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <div className="no-print flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={handleDownloadDossier}
                     disabled={isDownloadingDossier}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm rounded-xl transition-all cursor-pointer border border-slate-200"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm rounded-xl transition-all cursor-pointer border border-slate-200 w-full sm:w-auto"
                   >
                     <Download size={15} className={isDownloadingDossier ? "animate-bounce" : ""} />
                     <span>{isDownloadingDossier ? (lang === "en" ? "Downloading..." : "ডাউনলোড হচ্ছে...") : (lang === "en" ? "Download Dossier Slip" : "ডসিয়ার স্লিপ ডাউনলোড")}</span>
@@ -1820,7 +1857,7 @@ export function HealthPassSearchEngine({
                   <button
                     type="button"
                     onClick={handlePrintDossier}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer w-full sm:w-auto"
                   >
                     <Printer size={15} />
                     <span>{lang === "en" ? "Print Full Clinical Dossier & Summary Sheet" : "সম্পূর্ণ ক্লিনিক্যাল ডসিয়ার ও সামারি প্রিন্ট করুন"}</span>
@@ -1833,6 +1870,32 @@ export function HealthPassSearchEngine({
       )}
     </motion.div>
   )}
+      </div>
+
+      {/* Privacy & Data Protection Compliance Notice (Full-Width 1-Line Footer Banner) */}
+      <div className="bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-2.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 text-xs text-slate-600 shadow-2xs">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center shrink-0">
+            <Shield size={13} />
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+            <strong className="text-slate-900 font-bold shrink-0">
+              {lang === "en" ? "Privacy & Data Protection Notice:" : "গোপনীয়তা ও তথ্য সুরক্ষা নোটিশ:"}
+            </strong>
+            <span className="text-slate-600 leading-snug">
+              {lang === "en"
+                ? "Patient health information is confidential and is accessible only to authorized individuals for legitimate healthcare purposes. Unauthorized access, disclosure, copying, or sharing of personal medical data is prohibited and may be subject to applicable laws of Bangladesh."
+                : "রোগীর স্বাস্থ্য সম্পর্কিত তথ্য সম্পূর্ণ গোপনীয় এবং কেবল অনুমোদিত ব্যক্তিদের জন্য প্রযোজ্য। ব্যক্তিগত চিকিৎসা তথ্যের অননুমোদিত প্রবেশাধিকার, প্রকাশ বা আদান-প্রদান আইনত নিষিদ্ধ এবং বাংলাদেশের প্রচলিত আইন অনুযায়ী দণ্ডনীয় অপরাধ।"}
+            </span>
+          </div>
+        </div>
+        <Link
+          href="/privacy"
+          className="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800 font-bold hover:underline shrink-0 text-xs self-end md:self-center transition-colors"
+        >
+          <span>{lang === "en" ? "Privacy Policy" : "প্রাইভেসি পলিসি"}</span>
+          <ArrowRight size={12} />
+        </Link>
       </div>
 
       {/* MODAL 1: OFFICIAL DIAGNOSTIC LAB REPORT PAPER VIEWER & DOWNLOADER */}
@@ -1909,7 +1972,7 @@ export function HealthPassSearchEngine({
 
             {/* Detailed Parameters Table if available */}
             {activeReportModal.parameters && activeReportModal.parameters.length > 0 && (
-              <div className="border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="border border-slate-200 rounded-2xl overflow-x-auto custom-scrollbar">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
                     <tr>

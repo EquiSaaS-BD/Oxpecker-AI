@@ -1,275 +1,454 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Edit2, Plus, X, Trash2, MapPin, Phone, Mail, Building, Clock, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Camera,
+  Edit2,
+  Plus,
+  Trash2,
+  MapPin,
+  Building,
+  Clock,
+  LogOut,
+  BedDouble,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  UserCheck,
+  CalendarDays,
+  ExternalLink,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-
-// Sample Gig Data
-const initialGigs = [
-  {
-    id: 1,
-    title: "Premium ICU Package (24/7 Monitoring)",
-    price: "৳ 15,000 / day",
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&h=400&fit=crop",
-    features: ["Dedicated Nurse", "Oxygen Support", "Cardiac Monitor"],
-  },
-  {
-    id: 2,
-    title: "Maternity & Delivery Package (Normal)",
-    price: "৳ 25,000 Total",
-    image: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=400&fit=crop",
-    features: ["2 Days Cabin Stay", "Baby Care", "Medicine Included"],
-  }
-];
+import { toast, Toaster } from "sonner";
+import type { BedGig, BedStatus } from "@/types/hospital-hms";
+import {
+  getHospitalBeds,
+  deleteHospitalBed,
+  updateBedStatus,
+} from "@/lib/hospital-hms";
 
 export default function HospitalProfilePage() {
   const { user, logout } = useAuth();
-  const [gigs, setGigs] = useState(initialGigs);
-  const [isGigModalOpen, setIsGigModalOpen] = useState(false);
-  const [newGig, setNewGig] = useState({ title: "", price: "", features: "" });
+  const [beds, setBeds] = useState<BedGig[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<string>("All");
 
-  const handleCreateGig = (e: React.FormEvent) => {
+  // Load Beds on Mount
+  useEffect(() => {
+    setBeds(getHospitalBeds());
+  }, []);
+
+  // Quick stats
+  const totalBeds = beds.length;
+  const occupiedBeds = beds.filter((b) => b.status === "Occupied").length;
+  const vacantBeds = beds.filter((b) => b.status === "Vacant").length;
+  const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+
+  // Filtered Gigs
+  const filteredBeds =
+    selectedFilter === "All"
+      ? beds
+      : beds.filter((b) => b.category === selectedFilter || b.status === selectedFilter);
+
+  // Delete Bed Gig
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     e.preventDefault();
-    const featuresList = newGig.features.split(",").map(f => f.trim()).filter(Boolean);
-    const created = {
-      id: Date.now(),
-      title: newGig.title,
-      price: newGig.price,
-      image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&h=400&fit=crop",
-      features: featuresList.length > 0 ? featuresList : ["Standard Features"],
-    };
-    setGigs([...gigs, created]);
-    setIsGigModalOpen(false);
-    setNewGig({ title: "", price: "", features: "" });
+    if (confirm(`Are you sure you want to remove bed ${id} from your hospital registry?`)) {
+      const updated = deleteHospitalBed(id);
+      setBeds(updated);
+      toast.success(`Bed ${id} removed successfully`);
+    }
   };
 
-  const deleteGig = (id: number) => {
-    setGigs(gigs.filter((g) => g.id !== id));
+  // Quick Status Toggle
+  const handleStatusChange = (bedId: string, newStatus: BedStatus, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const updated = updateBedStatus(bedId, newStatus);
+    setBeds(updated);
+    toast.info(`Bed ${bedId} status changed to ${newStatus}`);
   };
 
   return (
-    <div className="w-full space-y-8 pb-10">
-      {/* 1. Profile Header Section */}
-      <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden relative">
+    <div className="w-full space-y-8 pb-16">
+      <Toaster position="top-right" richColors />
+
+      {/* 1. Singapore-Grade Hospital Header Section */}
+      <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-xs overflow-hidden relative">
         {/* Cover Photo */}
-        <div className="relative w-full h-[240px] bg-slate-200 group">
+        <div className="relative w-full h-[220px] sm:h-[260px] bg-slate-900 group">
           <Image
-            src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&h=400&fit=crop"
-            alt="Cover"
+            src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1600&h=600&fit=crop"
+            alt="Hospital Banner"
             fill
-            className="object-cover"
+            priority
+            className="object-cover opacity-90 group-hover:scale-102 transition-transform duration-700"
           />
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-          <button className="absolute top-4 right-4 bg-white/90 hover:bg-white text-slate-700 h-9 px-4 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm transition-all">
-            <Camera size={16} />
-            Edit Cover
-          </button>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent" />
+
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-bold shadow-md backdrop-blur-md">
+              <ShieldCheck size={14} /> Singapore Hospital Ecosystem
+            </span>
+            <button className="bg-white/90 hover:bg-white text-slate-800 h-9 px-3.5 rounded-xl flex items-center gap-2 text-xs font-bold shadow-md transition-all cursor-pointer">
+              <Camera size={15} />
+              Change Cover
+            </button>
+          </div>
         </div>
 
-        {/* Profile Info Section */}
+        {/* Profile Info Row */}
         <div className="px-6 pb-6 pt-16 relative">
-          {/* Profile Picture (Absolute Positioning) */}
-          <div className="absolute -top-[60px] left-8 group cursor-pointer">
-            <div className="w-[120px] h-[120px] rounded-full border-4 border-white shadow-md bg-white relative overflow-hidden">
+          {/* Hospital Logo Avatar */}
+          <div className="absolute -top-[55px] left-6 group cursor-pointer">
+            <div className="w-[110px] h-[110px] rounded-2xl border-4 border-white shadow-xl bg-white relative overflow-hidden flex items-center justify-center">
               <Image
                 src="/images/Oxpecker_Full.png"
-                alt="Profile"
+                alt="Hospital Logo"
                 fill
-                className="object-cover"
+                className="object-contain p-2"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="text-slate-900" size={24} />
+                <Camera className="text-white" size={22} />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mt-2">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mt-1">
             <div>
-              <h1 className="text-[24px] font-bold text-slate-800">{user?.hospital_name || user?.name || "Oxpecker General Hospital"}</h1>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-slate-600">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {user?.hospital_name || user?.name || "Oxpecker International Specialist Hospital"}
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
+                  <Sparkles size={12} /> JCI & DGHS Certified
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-2.5 text-xs sm:text-sm text-slate-600 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Building size={16} className="text-slate-500" />
-                  Multi-Specialty Hospital
+                  <Building size={16} className="text-emerald-600" />
+                  Tertiary Care & Trauma Center
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={16} className="text-slate-500" />
-                  {user?.address || "Dhanmondi, Dhaka"}
+                  <MapPin size={16} className="text-rose-600" />
+                  {user?.address || "Road 27, Dhanmondi, Dhaka-1209"}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={16} className="text-slate-500" />
-                  24/7 Open
+                  <Clock size={16} className="text-blue-600" />
+                  24/7 Critical Care & Emergency
                 </span>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2.5">
-              <button className="h-[44px] px-5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-medium text-[14px] flex items-center gap-2 transition-colors cursor-pointer">
-                <Edit2 size={16} />
-                Edit Profile Info
-              </button>
-              <button type="button" onClick={logout} className="h-[44px] px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl font-semibold text-[14px] flex items-center gap-2 transition-colors cursor-pointer">
+
+            <div className="flex items-center gap-3 shrink-0 flex-wrap">
+              <Link
+                href="/hospital/dashboard/beds/new"
+                className="h-11 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus size={16} />
+                Add Bed Suite (Full Page)
+              </Link>
+              <Link
+                href="/hospital/dashboard/patients"
+                className="h-11 px-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+              >
+                <UserCheck size={16} />
+                Admissions Desk
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="h-11 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer"
+              >
                 <LogOut size={16} />
                 Sign Out
               </button>
             </div>
           </div>
         </div>
+
+        {/* Live Ecosystem Metric Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-slate-100 bg-slate-50/70 p-4 gap-4 text-center">
+          <div className="p-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Total Bed Gigs
+            </span>
+            <p className="text-2xl font-black text-slate-900 mt-0.5">{totalBeds}</p>
+          </div>
+          <div className="p-2 border-l border-slate-200/60">
+            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">
+              Available (Vacant)
+            </span>
+            <p className="text-2xl font-black text-emerald-600 mt-0.5">{vacantBeds}</p>
+          </div>
+          <div className="p-2 border-l border-slate-200/60">
+            <span className="text-[11px] font-bold text-orange-600 uppercase tracking-wider">
+              Inpatient Occupied
+            </span>
+            <p className="text-2xl font-black text-orange-600 mt-0.5">{occupiedBeds}</p>
+          </div>
+          <div className="p-2 border-l border-slate-200/60">
+            <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+              Occupancy Rate
+            </span>
+            <p className="text-2xl font-black text-blue-600 mt-0.5">{occupancyRate}%</p>
+          </div>
+        </div>
       </div>
 
-      {/* 2. Gig Creation Section (Services & Packages) */}
+      {/* 2. Bed Gigs & Inpatient Suites Showcase */}
       <div className="space-y-6">
-        <div>
-          <h2 className="text-[20px] font-bold text-slate-800">Hospital Services & Packages</h2>
-          <p className="text-[14px] text-slate-500 mt-1">
-            Create attractive service packages (Gigs) that patients can book directly.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <BedDouble className="text-emerald-600" size={24} />
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Hospital Bed Gigs & Clinical Suites
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500 mt-1">
+              Fiverr-style bed listing & package management. Click any suite to open its full-page clinical editor and booking management.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/hospital/dashboard/beds/new"
+              className="h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 shadow-xs transition-colors shrink-0"
+            >
+              <Plus size={18} />
+              Add New Bed Gig (Full Page)
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* Create New Gig Button (Dashed Box) */}
-          <button
-            onClick={() => setIsGigModalOpen(true)}
-            className="w-full h-[380px] rounded-[16px] border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all flex flex-col items-center justify-center gap-4 group"
-          >
-            <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-              <Plus size={24} className="text-slate-500 group-hover:text-emerald-600" />
-            </div>
-            <span className="text-[16px] font-bold text-slate-600 group-hover:text-emerald-700">
-              Create New Package
-            </span>
-          </button>
-
-          {/* Render Existing Gigs */}
-          {gigs.map((gig) => (
-            <motion.div
-              key={gig.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full h-[380px] rounded-[16px] border border-slate-200 bg-white hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden group"
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {[
+            "All",
+            "Vacant",
+            "Occupied",
+            "ICU",
+            "CCU",
+            "VIP Suite",
+            "Deluxe Cabin",
+            "General Ward",
+            "NICU",
+          ].map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedFilter(tag)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                selectedFilter === tag
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+              }`}
             >
-              <div className="w-full h-[180px] bg-slate-100 relative">
-                <Image src={gig.image} alt={gig.title} fill className="object-cover" />
-                <button
-                  onClick={() => deleteGig(gig.id)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-500 flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              
-              <div className="p-5 flex-1 flex flex-col">
-                <h3 className="text-[16px] font-bold text-slate-800 line-clamp-2 mb-2 leading-[24px]">
-                  {gig.title}
-                </h3>
-                
-                <ul className="space-y-1 mb-auto">
-                  {gig.features.slice(0, 3).map((feature, i) => (
-                    <li key={i} className="text-[13px] text-slate-500 flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      {feature}
-                    </li>
-                  ))}
-                  {gig.features.length > 3 && (
-                    <li className="text-[12px] text-slate-500 italic">+{gig.features.length - 3} more</li>
-                  )}
-                </ul>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[12px] text-slate-500 font-medium uppercase tracking-wider">Starting At</span>
-                  <span className="text-[18px] font-bold text-emerald-600">{gig.price}</span>
-                </div>
-              </div>
-            </motion.div>
+              {tag}
+            </button>
           ))}
         </div>
+
+        {/* Gigs Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Create New Bed Gig Card (Direct Full-Page Link) */}
+          <Link
+            href="/hospital/dashboard/beds/new"
+            className="w-full min-h-[420px] rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer p-6"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors shadow-xs">
+              <Plus size={28} className="text-slate-500 group-hover:text-emerald-700" />
+            </div>
+            <div className="text-center">
+              <span className="text-base font-bold text-slate-800 group-hover:text-emerald-800 block">
+                Publish New Bed Gig (Full Page)
+              </span>
+              <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
+                Add multiple room photos, ICU amenities, daily pricing, and live real-time preview
+              </p>
+            </div>
+          </Link>
+
+          {/* Render Bed Gigs */}
+          {filteredBeds.map((gig) => {
+            const isVacant = gig.status === "Vacant";
+            const isOccupied = gig.status === "Occupied";
+            const isCleaning = gig.status === "Cleaning";
+            const coverImage =
+              (gig.images && gig.images[0]) ||
+              gig.image ||
+              "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=500&fit=crop";
+            const photoCount = (gig.images && gig.images.length) || 1;
+
+            return (
+              <motion.div
+                key={gig.id}
+                layout
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full rounded-2xl border border-slate-200/80 bg-white hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group relative"
+              >
+                {/* Photo & Category Header */}
+                <div className="w-full h-[200px] bg-slate-900 relative overflow-hidden">
+                  <img
+                    src={coverImage}
+                    alt={gig.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+
+                  {/* Bed ID & Category Badge */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-black uppercase tracking-wider border border-white/20">
+                      {gig.id}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-600/90 backdrop-blur-md text-white text-[11px] font-bold">
+                      {gig.category}
+                    </span>
+                  </div>
+
+                  {/* Top Right Action Icons */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                    <Link
+                      href={`/hospital/dashboard/beds/${encodeURIComponent(gig.id)}`}
+                      title="Edit Suite (Full Page)"
+                      className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-700 flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
+                    >
+                      <Edit2 size={14} />
+                    </Link>
+                    <button
+                      onClick={(e) => handleDelete(gig.id, e)}
+                      title="Delete Gig"
+                      className="w-8 h-8 rounded-full bg-white/90 hover:bg-rose-50 text-slate-700 hover:text-rose-600 flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  {/* Ward Location & Status on Image */}
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
+                    <span className="flex items-center gap-1 truncate max-w-[180px] font-medium text-slate-200">
+                      <MapPin size={12} className="text-emerald-400 shrink-0" />
+                      {gig.ward}
+                    </span>
+
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider backdrop-blur-md ${
+                        isVacant
+                          ? "bg-emerald-500/90 text-white"
+                          : isOccupied
+                          ? "bg-amber-500/90 text-white"
+                          : isCleaning
+                          ? "bg-cyan-500/90 text-white"
+                          : "bg-rose-500/90 text-white"
+                      }`}
+                    >
+                      {gig.status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Gig Details Body */}
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <Link
+                      href={`/hospital/dashboard/beds/${encodeURIComponent(gig.id)}`}
+                      className="text-base font-bold text-slate-900 hover:text-emerald-600 transition-colors line-clamp-1 leading-snug"
+                    >
+                      {gig.title}
+                    </Link>
+                    <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
+                      {gig.description}
+                    </p>
+
+                    {/* Occupant Notice if Occupied */}
+                    {isOccupied && gig.currentPatientName && (
+                      <div className="mt-3 p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs">
+                        <span className="text-amber-800 font-semibold flex items-center gap-1.5">
+                          <UserCheck size={13} className="text-amber-600" />
+                          Admitted: <strong>{gig.currentPatientName}</strong>
+                        </span>
+                        <Link
+                          href="/hospital/dashboard/patients"
+                          className="text-[11px] font-bold text-amber-700 hover:underline"
+                        >
+                          Dossier →
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Amenities Feature Pills */}
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {gig.features.slice(0, 3).map((feat, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"
+                        >
+                          <CheckCircle2 size={11} className="text-emerald-600" />
+                          {feat}
+                        </span>
+                      ))}
+                      {gig.features.length > 3 && (
+                        <span className="text-[11px] font-bold text-slate-400 self-center">
+                          +{gig.features.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Pricing & Quick Action Footer */}
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                        Hospital Daily Rate
+                      </span>
+                      <span className="text-lg font-black text-slate-900">
+                        {gig.priceDisplay || `৳ ${gig.price.toLocaleString()} / day`}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/hospital/dashboard/beds/${encodeURIComponent(gig.id)}`}
+                        className="h-9 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors"
+                      >
+                        Details
+                      </Link>
+
+                      {isVacant ? (
+                        <Link
+                          href={`/hospital/dashboard/patients?bed=${encodeURIComponent(gig.id)}`}
+                          className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors"
+                        >
+                          Admit <ArrowRight size={12} />
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={(e) =>
+                            handleStatusChange(
+                              gig.id,
+                              isOccupied ? "Cleaning" : "Vacant",
+                              e
+                            )
+                          }
+                          className="h-8 px-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Mark {isOccupied ? "Vacated" : "Ready"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
-
-      {/* 3. Gig Editor Modal */}
-      <AnimatePresence>
-        {isGigModalOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsGigModalOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] max-h-[90vh] overflow-y-auto bg-white rounded-[20px] shadow-2xl z-50 p-6 custom-scrollbar"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[20px] font-bold text-slate-800">Create New Package (Gig)</h3>
-                <button
-                  onClick={() => setIsGigModalOpen(false)}
-                  className="p-2 text-slate-500 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateGig} className="space-y-5">
-                <div>
-                  <label className="block text-[14px] font-medium text-slate-700 mb-1">Package Title</label>
-                  <input
-                    required
-                    type="text"
-                    value={newGig.title}
-                    onChange={(e) => setNewGig({ ...newGig, title: e.target.value })}
-                    placeholder="e.g. Executive Health Checkup"
-                    className="w-full h-[46px] px-4 rounded-[12px] border border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-[15px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[14px] font-medium text-slate-700 mb-1">Price (৳)</label>
-                  <input
-                    required
-                    type="text"
-                    value={newGig.price}
-                    onChange={(e) => setNewGig({ ...newGig, price: e.target.value })}
-                    placeholder="e.g. ৳ 5,000"
-                    className="w-full h-[46px] px-4 rounded-[12px] border border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-[15px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[14px] font-medium text-slate-700 mb-1">Features (Comma separated)</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={newGig.features}
-                    onChange={(e) => setNewGig({ ...newGig, features: e.target.value })}
-                    placeholder="CBC Test, ECG, Doctor Consultation, Breakfast Included"
-                    className="w-full p-4 rounded-[12px] border border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-[15px] resize-none"
-                  />
-                </div>
-
-                <div className="pt-4 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsGigModalOpen(false)}
-                    className="h-[44px] px-6 rounded-[12px] text-slate-600 font-medium hover:bg-slate-100 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="h-[44px] px-6 rounded-[12px] bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors shadow-sm"
-                  >
-                    Publish Package
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

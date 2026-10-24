@@ -153,12 +153,29 @@ export function getAuthorizedRedirectUrl(
     // Already a relative path
   }
 
-  // Auth routes should never be redirect targets
+  // Auth routes, root, or patient profile/dashboard should NEVER hijack doctor/hospital login!
   if (
+    pathname === "/" ||
     pathname === "/login" ||
     pathname.startsWith("/register") ||
-    pathname === "/reset-password"
+    pathname === "/reset-password" ||
+    pathname === "/profile" ||
+    pathname === "/dashboard"
   ) {
+    return home;
+  }
+
+  // Strict role boundaries for home redirect:
+  if (role === "doctor" && !pathname.startsWith("/doctor")) {
+    return home;
+  }
+  if (role === "hospital" && !pathname.startsWith("/hospital")) {
+    return home;
+  }
+  if (role === "assistant" && !pathname.startsWith("/assistant")) {
+    return home;
+  }
+  if (role === "patient" && (pathname.startsWith("/doctor") || pathname.startsWith("/hospital") || pathname.startsWith("/admin") || pathname.startsWith("/assistant"))) {
     return home;
   }
 

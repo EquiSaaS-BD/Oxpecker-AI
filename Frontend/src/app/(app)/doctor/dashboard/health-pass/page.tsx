@@ -65,7 +65,7 @@ class HealthPassErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundar
 
 function DoctorHealthPassContent() {
   return (
-    <div className="p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6">
       <HealthPassSearchEngine portalRole="doctor" />
     </div>
   );
