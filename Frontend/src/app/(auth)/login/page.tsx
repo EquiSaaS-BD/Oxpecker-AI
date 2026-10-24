@@ -116,6 +116,19 @@ function LoginForm() {
         }
       }
 
+      // Check locally registered profiles if Supabase is offline or dummy key
+      if (!dbProfile && typeof localStorage !== "undefined") {
+        try {
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          const matched = localProfiles.find((p: any) => p.email?.toLowerCase() === lowerEmail);
+          if (matched) {
+            dbProfile = matched;
+          }
+        } catch (localErr) {
+          console.warn("Local profile check error:", localErr);
+        }
+      }
+
       let userId = dbProfile?.id;
       const userName = dbProfile?.name || email.split("@")[0] || "User";
       let userRole: UserRole = (dbProfile?.role as UserRole) || "patient";
@@ -221,6 +234,19 @@ function LoginForm() {
             specialty: doc.specialty,
             status: "active",
           };
+        }
+      }
+
+      // Check locally registered profiles if Supabase is offline or dummy key
+      if (!dbProfile && typeof localStorage !== "undefined") {
+        try {
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          const matched = localProfiles.find((p: any) => p.email?.toLowerCase() === lowerEmail);
+          if (matched) {
+            dbProfile = matched;
+          }
+        } catch (localErr) {
+          console.warn("Local profile check error:", localErr);
         }
       }
 

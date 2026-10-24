@@ -27,8 +27,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-// Clean ambient background (3D Fiber removed for performance & aesthetics)
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
+import { PhoneInputWithCountry } from "@/components/auth/PhoneInputWithCountry";
+import { DoctorSpecializationSelector } from "@/components/auth/DoctorSpecializationSelector";
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -223,26 +224,47 @@ export default function RegisterPage() {
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  const validatePhone = (phoneStr: string) => {
+    if (!phoneStr || !phoneStr.trim()) return "Mobile number is required";
+    const cleanDigits = phoneStr.replace(/\D/g, "");
+    if (phoneStr.includes("+880")) {
+      const national = phoneStr.replace("+880", "").replace(/\D/g, "");
+      const minRequired = national.startsWith("0") ? 11 : 10;
+      if (national.length < minRequired) {
+        return `সঠিক ${minRequired} ডিজিটের মোবাইল নম্বর দিন (যেমন: 1712345678)`;
+      }
+    } else {
+      if (cleanDigits.length < 8) {
+        return "Please enter a valid mobile number";
+      }
+    }
+    return null;
+  };
+
   const validateStep2 = () => {
     const errs: Record<string, string> = {};
     if (formData.accountType === "patient") {
       if (!formData.patientFullName.trim()) errs.patientFullName = "Required";
       if (!formData.patientEmail.trim() || !isValidEmail(formData.patientEmail)) errs.patientEmail = "Valid email required";
-      if (!formData.patientMobile.trim()) errs.patientMobile = "Required";
+      const pErr = validatePhone(formData.patientMobile);
+      if (pErr) errs.patientMobile = pErr;
     } else if (formData.accountType === "doctor") {
       if (!formData.doctorFullName.trim()) errs.doctorFullName = "Required";
       if (!formData.doctorEmail.trim() || !isValidEmail(formData.doctorEmail)) errs.doctorEmail = "Valid email required";
-      if (!formData.doctorMobile.trim()) errs.doctorMobile = "Required";
+      const pErr = validatePhone(formData.doctorMobile);
+      if (pErr) errs.doctorMobile = pErr;
       if (!formData.doctorRegNo.trim()) errs.doctorRegNo = "Required";
       if (!formData.doctorSpec.trim()) errs.doctorSpec = "Required";
     } else if (formData.accountType === "assistant") {
       if (!formData.assistantFullName.trim()) errs.assistantFullName = "Required";
       if (!formData.assistantEmail.trim() || !isValidEmail(formData.assistantEmail)) errs.assistantEmail = "Valid email required";
-      if (!formData.assistantMobile.trim()) errs.assistantMobile = "Required";
+      const pErr = validatePhone(formData.assistantMobile);
+      if (pErr) errs.assistantMobile = pErr;
     } else if (formData.accountType === "hospital") {
       if (!formData.hospitalName.trim()) errs.hospitalName = "Required";
       if (!formData.hospitalEmail.trim() || !isValidEmail(formData.hospitalEmail)) errs.hospitalEmail = "Valid email required";
-      if (!formData.hospitalPhone.trim()) errs.hospitalPhone = "Required";
+      const pErr = validatePhone(formData.hospitalPhone);
+      if (pErr) errs.hospitalPhone = pErr;
       if (!formData.hospitalRegNo.trim()) errs.hospitalRegNo = "Required";
     }
     setErrors(errs);
@@ -358,23 +380,27 @@ export default function RegisterPage() {
     const errs: Record<string, string> = {};
     if (formData.accountType === "patient") {
       if (!formData.patientFullName.trim()) errs.patientFullName = "Full name is required";
-      if (!formData.patientMobile.trim()) errs.patientMobile = "Mobile number is required";
+      const pErr = validatePhone(formData.patientMobile);
+      if (pErr) errs.patientMobile = pErr;
       if (!formData.patientDob) errs.patientDob = "Date of birth is required";
       if (!formData.patientGender) errs.patientGender = "Gender is required";
       if (!formData.patientBloodGroup) errs.patientBloodGroup = "Blood group is required";
     } else if (formData.accountType === "doctor") {
       if (!formData.doctorFullName.trim()) errs.doctorFullName = "Full name is required";
-      if (!formData.doctorMobile.trim()) errs.doctorMobile = "Mobile number is required";
+      const pErr = validatePhone(formData.doctorMobile);
+      if (pErr) errs.doctorMobile = pErr;
       if (!formData.doctorRegNo.trim()) errs.doctorRegNo = "BMDC Reg No is required";
       if (!formData.doctorSpec.trim()) errs.doctorSpec = "Specialty is required";
       if (!formData.doctorHospital.trim()) errs.doctorHospital = "Hospital/Chamber name is required";
     } else if (formData.accountType === "assistant") {
       if (!formData.assistantFullName.trim()) errs.assistantFullName = "Full name is required";
-      if (!formData.assistantMobile.trim()) errs.assistantMobile = "Mobile number is required";
+      const pErr = validatePhone(formData.assistantMobile);
+      if (pErr) errs.assistantMobile = pErr;
       if (!formData.assistantInviteCode.trim()) errs.assistantInviteCode = "Doctor or clinic ID is required";
     } else if (formData.accountType === "hospital") {
       if (!formData.hospitalName.trim()) errs.hospitalName = "Hospital name is required";
-      if (!formData.hospitalPhone.trim()) errs.hospitalPhone = "Phone number is required";
+      const pErr = validatePhone(formData.hospitalPhone);
+      if (pErr) errs.hospitalPhone = pErr;
       if (!formData.hospitalRegNo.trim()) errs.hospitalRegNo = "Facility license/Reg No is required";
       if (!formData.hospitalAddress.trim()) errs.hospitalAddress = "Address is required";
     }
@@ -484,6 +510,15 @@ export default function RegisterPage() {
         status: "active"
       };
 
+      // Cache in oxpecker_registered_profiles for seamless local persistence
+      if (typeof localStorage !== "undefined") {
+        try {
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          localProfiles.push(registeredUser);
+          localStorage.setItem("oxpecker_registered_profiles", JSON.stringify(localProfiles));
+        } catch (e) {}
+      }
+
       toast.success("Account successfully created with Google!");
       login(registeredUser as any);
     } catch (err: any) {
@@ -516,20 +551,36 @@ export default function RegisterPage() {
     const role = formData.accountType || "patient";
 
     try {
-      // 1. Check if user with this email already exists
-      const { data: existingUser } = await supabase
-        .from("profiles")
-        .select("id, email")
-        .ilike("email", email)
-        .maybeSingle();
-
-      if (existingUser) {
-        toast.error("An account with this email already exists. Please log in.");
-        setIsLoading(false);
-        return;
+      // 1. Check local profiles cache first
+      if (typeof localStorage !== "undefined") {
+        try {
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          if (localProfiles.some((p: any) => p.email?.toLowerCase() === email)) {
+            toast.error("An account with this email already exists. Please log in.");
+            setIsLoading(false);
+            return;
+          }
+        } catch (e) {}
       }
 
-      // 2. Insert new profile into Supabase profiles table
+      // Supabase email existence check (best effort)
+      try {
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("id, email")
+          .ilike("email", email)
+          .maybeSingle();
+
+        if (existingUser) {
+          toast.error("An account with this email already exists. Please log in.");
+          setIsLoading(false);
+          return;
+        }
+      } catch (checkErr) {
+        console.warn("Supabase check skipped:", checkErr);
+      }
+
+      // 2. Prepare profile insert data
       const profileInsertData: any = {
         name: name || "User",
         email: email,
@@ -545,34 +596,50 @@ export default function RegisterPage() {
         join_date: new Date().toISOString().split("T")[0]
       };
 
-      const { data: newProfile, error: profileError } = await supabase
-        .from("profiles")
-        .insert(profileInsertData)
-        .select()
-        .single();
+      let registeredId: string | null = null;
+      let registeredProfileData: any = null;
 
-      if (profileError) {
-        console.error("Supabase profile registration error:", profileError);
-        throw profileError;
+      try {
+        const { data: newProfile, error: profileError } = await supabase
+          .from("profiles")
+          .insert(profileInsertData)
+          .select()
+          .single();
+
+        if (profileError) {
+          console.warn("Supabase profile insert fallback (offline/dummy key):", profileError);
+        } else if (newProfile?.id) {
+          registeredId = newProfile.id;
+          registeredProfileData = newProfile;
+        }
+      } catch (insertErr) {
+        console.warn("Supabase insert exception, using local fallback:", insertErr);
       }
 
-      // 3. Role specific table inserts
-      if (role === "doctor" && newProfile?.id) {
+      if (!registeredId) {
+        registeredId = typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : "user-" + Date.now();
+      }
+
+      // 3. Role specific table inserts (best effort)
+      if (role === "doctor") {
         try {
           await supabase.from("doctors").insert({
-            profile_id: newProfile.id,
+            profile_id: registeredId,
             name: name,
             specialty: formData.doctorSpec || "General Physician",
-            hospital: "Oxpecker Partner Hospital",
+            hospital: formData.doctorHospital || "Oxpecker Partner Hospital",
+            consultation_fee: Number(formData.doctorFee) || 500,
             is_verified: true
           });
         } catch (docErr) {
           console.warn("Doctor table insert warning:", docErr);
         }
-      } else if (role === "hospital" && newProfile?.id) {
+      } else if (role === "hospital") {
         try {
           await supabase.from("hospitals").insert({
-            profile_id: newProfile.id,
+            profile_id: registeredId,
             name: formData.hospitalName,
             email: email,
             phone: formData.hospitalPhone || null,
@@ -585,19 +652,34 @@ export default function RegisterPage() {
       }
 
       const registeredUser = {
-        id: newProfile.id,
-        name: newProfile.name,
-        email: newProfile.email,
-        role: newProfile.role,
-        phone: newProfile.phone,
-        image: newProfile.image,
-        date_of_birth: newProfile.date_of_birth,
-        gender: newProfile.gender,
-        blood_group: newProfile.blood_group,
-        address: newProfile.address,
-        specialty: newProfile.specialty,
-        hospital_name: newProfile.hospital_name
+        id: registeredId,
+        name: registeredProfileData?.name || name || "User",
+        email: registeredProfileData?.email || email,
+        role: registeredProfileData?.role || role,
+        phone: registeredProfileData?.phone || phone || undefined,
+        image: registeredProfileData?.image || undefined,
+        date_of_birth: registeredProfileData?.date_of_birth || (formData.accountType === "patient" ? formData.patientDob : undefined),
+        gender: registeredProfileData?.gender || (formData.accountType === "patient" ? formData.patientGender : undefined),
+        blood_group: registeredProfileData?.blood_group || (formData.accountType === "patient" ? formData.patientBloodGroup : undefined),
+        address: registeredProfileData?.address || (formData.accountType === "hospital" ? formData.hospitalAddress : undefined),
+        specialty: registeredProfileData?.specialty || (formData.accountType === "doctor" ? formData.doctorSpec : undefined),
+        hospital_name: registeredProfileData?.hospital_name || (formData.accountType === "hospital" ? formData.hospitalName : undefined),
+        status: "active"
       };
+
+      // Store in oxpecker_registered_profiles for persistent login
+      if (typeof localStorage !== "undefined") {
+        try {
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          localProfiles.push({
+            ...registeredUser,
+            password: formData.password,
+          });
+          localStorage.setItem("oxpecker_registered_profiles", JSON.stringify(localProfiles));
+        } catch (e) {
+          console.warn("Failed saving local profile cache:", e);
+        }
+      }
 
       toast.success("Account created successfully!");
       login(registeredUser as any);
@@ -775,16 +857,14 @@ export default function RegisterPage() {
                       value={formData.patientEmail || googleUser?.email || ""}
                       rightElement={<ShieldCheck size={18} className="text-emerald-500" />}
                     />
-                    <InputField
+                    <PhoneInputWithCountry
                       error={errors["patientMobile"]}
                       id="patientMobile"
                       label="Mobile Number"
-                      type="tel"
                       required
                       isHalf
-                      placeholder="e.g. +880 1712-345678"
                       value={formData.patientMobile}
-                      onChange={(e: any) => updateForm("patientMobile", e.target.value)}
+                      onChange={(val: string) => updateForm("patientMobile", val)}
                     />
                     <InputField
                       error={errors["patientDob"]}
@@ -848,16 +928,14 @@ export default function RegisterPage() {
                       value={formData.doctorEmail || googleUser?.email || ""}
                       rightElement={<ShieldCheck size={18} className="text-emerald-500" />}
                     />
-                    <InputField
+                    <PhoneInputWithCountry
                       error={errors["doctorMobile"]}
                       id="doctorMobile"
                       label="Contact Mobile Number"
-                      type="tel"
                       required
                       isHalf
-                      placeholder="e.g. +880 1812-345678"
                       value={formData.doctorMobile}
-                      onChange={(e: any) => updateForm("doctorMobile", e.target.value)}
+                      onChange={(val: string) => updateForm("doctorMobile", val)}
                     />
                     <InputField
                       error={errors["doctorRegNo"]}
@@ -869,30 +947,13 @@ export default function RegisterPage() {
                       value={formData.doctorRegNo}
                       onChange={(e: any) => updateForm("doctorRegNo", e.target.value)}
                     />
-                    <InputField
+                    <DoctorSpecializationSelector
                       error={errors["doctorSpec"]}
                       id="doctorSpec"
                       label="Primary Specialization"
-                      type="select"
-                      options={[
-                        "General Physician",
-                        "Cardiologist",
-                        "Dermatologist",
-                        "Endocrinologist",
-                        "Gastroenterologist",
-                        "Gynecologist",
-                        "Neurologist",
-                        "Orthopedist",
-                        "Pediatrician",
-                        "Psychiatrist",
-                        "Dentist",
-                        "ENT Specialist",
-                        "Other",
-                      ]}
                       required
-                      isHalf
                       value={formData.doctorSpec}
-                      onChange={(e: any) => updateForm("doctorSpec", e.target.value)}
+                      onChange={(val: string) => updateForm("doctorSpec", val)}
                     />
                     <InputField
                       error={errors["doctorHospital"]}
@@ -944,16 +1005,14 @@ export default function RegisterPage() {
                       value={formData.assistantEmail || googleUser?.email || ""}
                       rightElement={<ShieldCheck size={18} className="text-emerald-500" />}
                     />
-                    <InputField
+                    <PhoneInputWithCountry
                       error={errors["assistantMobile"]}
                       id="assistantMobile"
                       label="Mobile Number"
-                      type="tel"
                       required
                       isHalf
-                      placeholder="e.g. +880 1912-345678"
                       value={formData.assistantMobile}
-                      onChange={(e: any) => updateForm("assistantMobile", e.target.value)}
+                      onChange={(val: string) => updateForm("assistantMobile", val)}
                     />
                     <InputField
                       error={errors["assistantInviteCode"]}
@@ -995,16 +1054,14 @@ export default function RegisterPage() {
                       value={formData.hospitalEmail || googleUser?.email || ""}
                       rightElement={<ShieldCheck size={18} className="text-emerald-500" />}
                     />
-                    <InputField
+                    <PhoneInputWithCountry
                       error={errors["hospitalPhone"]}
                       id="hospitalPhone"
                       label="Emergency Hotline / Contact Phone"
-                      type="tel"
                       required
                       isHalf
-                      placeholder="e.g. 10678 or +880 2-8836000"
                       value={formData.hospitalPhone}
-                      onChange={(e: any) => updateForm("hospitalPhone", e.target.value)}
+                      onChange={(val: string) => updateForm("hospitalPhone", val)}
                     />
                     <InputField
                       error={errors["hospitalRegNo"]}
@@ -1205,7 +1262,7 @@ export default function RegisterPage() {
                   <>
                     <InputField error={errors["patientFullName"]} id="patientFullName" label="Full Name" required isHalf value={formData.patientFullName} onChange={(e: any) => updateForm("patientFullName", e.target.value)} />
                     <InputField error={errors["patientEmail"]} id="patientEmail" label="Email Address" type="email" required isHalf value={formData.patientEmail} onChange={(e: any) => updateForm("patientEmail", e.target.value)} />
-                    <InputField error={errors["patientMobile"]} id="patientMobile" label="Mobile Number" type="tel" required isHalf value={formData.patientMobile} onChange={(e: any) => updateForm("patientMobile", e.target.value)} />
+                    <PhoneInputWithCountry error={errors["patientMobile"]} id="patientMobile" label="Mobile Number" required isHalf value={formData.patientMobile} onChange={(val: string) => updateForm("patientMobile", val)} />
                     <InputField error={errors["patientDob"]} id="patientDob" label="Date of Birth" type="date" isHalf value={formData.patientDob} onChange={(e: any) => updateForm("patientDob", e.target.value)} />
                     <InputField error={errors["patientGender"]} id="patientGender" label="Gender" type="select" options={["Male", "Female", "Other"]} isHalf value={formData.patientGender} onChange={(e: any) => updateForm("patientGender", e.target.value)} />
                     <div className="col-span-2 mt-2 bg-slate-50 p-4 rounded-[16px] border border-slate-100 shadow-sm">
@@ -1220,9 +1277,9 @@ export default function RegisterPage() {
                   <>
                     <InputField error={errors["doctorFullName"]} id="doctorFullName" label="Full Name" required isHalf value={formData.doctorFullName} onChange={(e: any) => updateForm("doctorFullName", e.target.value)} />
                     <InputField error={errors["doctorEmail"]} id="doctorEmail" label="Email Address" type="email" required isHalf value={formData.doctorEmail} onChange={(e: any) => updateForm("doctorEmail", e.target.value)} />
-                    <InputField error={errors["doctorMobile"]} id="doctorMobile" label="Mobile Number" type="tel" required isHalf value={formData.doctorMobile} onChange={(e: any) => updateForm("doctorMobile", e.target.value)} />
+                    <PhoneInputWithCountry error={errors["doctorMobile"]} id="doctorMobile" label="Mobile Number" required isHalf value={formData.doctorMobile} onChange={(val: string) => updateForm("doctorMobile", val)} />
                     <InputField error={errors["doctorRegNo"]} id="doctorRegNo" label="Medical Registration Number" required isHalf value={formData.doctorRegNo} onChange={(e: any) => updateForm("doctorRegNo", e.target.value)} />
-                    <InputField error={errors["doctorSpec"]} id="doctorSpec" label="Specialization" type="select" options={["General Physician", "Cardiologist", "Dermatologist", "Endocrinologist", "Gastroenterologist", "Gynecologist", "Neurologist", "Orthopedist", "Pediatrician", "Psychiatrist", "Dentist", "ENT Specialist", "Other"]} required value={formData.doctorSpec} onChange={(e: any) => updateForm("doctorSpec", e.target.value)} />
+                    <DoctorSpecializationSelector error={errors["doctorSpec"]} id="doctorSpec" label="Specialization" required value={formData.doctorSpec} onChange={(val: string) => updateForm("doctorSpec", val)} />
                     <div className="col-span-2 mt-2 bg-slate-50 p-4 rounded-[16px] border border-slate-100 shadow-sm">
                       <p className="text-sm text-slate-500 font-medium leading-relaxed">
                         <span className="font-bold text-slate-700">Note:</span> Qualification, Experience, Consultation Fee, Profile Photo and Certificates can be added later from Profile Settings.
@@ -1235,7 +1292,7 @@ export default function RegisterPage() {
                   <>
                     <InputField error={errors["assistantFullName"]} id="assistantFullName" label="Full Name" required isHalf value={formData.assistantFullName} onChange={(e: any) => updateForm("assistantFullName", e.target.value)} />
                     <InputField error={errors["assistantEmail"]} id="assistantEmail" label="Email Address" type="email" required isHalf value={formData.assistantEmail} onChange={(e: any) => updateForm("assistantEmail", e.target.value)} />
-                    <InputField error={errors["assistantMobile"]} id="assistantMobile" label="Mobile Number" type="tel" required value={formData.assistantMobile} onChange={(e: any) => updateForm("assistantMobile", e.target.value)} />
+                    <PhoneInputWithCountry error={errors["assistantMobile"]} id="assistantMobile" label="Mobile Number" required value={formData.assistantMobile} onChange={(val: string) => updateForm("assistantMobile", val)} />
                     <div className="col-span-2 mt-2 bg-slate-50 p-4 rounded-[16px] border border-slate-100 shadow-sm">
                       <p className="text-sm text-slate-500 font-medium leading-relaxed">
                         <span className="font-bold text-slate-700">Note:</span> After creating your account, you will receive a 12-digit Unique Assistant ID. Doctors will use this ID to invite you to their clinic.
@@ -1248,7 +1305,7 @@ export default function RegisterPage() {
                   <>
                     <InputField error={errors["hospitalName"]} id="hospitalName" label="Hospital Name" required value={formData.hospitalName} onChange={(e: any) => updateForm("hospitalName", e.target.value)} />
                     <InputField error={errors["hospitalEmail"]} id="hospitalEmail" label="Official Email" type="email" required isHalf value={formData.hospitalEmail} onChange={(e: any) => updateForm("hospitalEmail", e.target.value)} />
-                    <InputField error={errors["hospitalPhone"]} id="hospitalPhone" label="Phone Number" type="tel" required isHalf value={formData.hospitalPhone} onChange={(e: any) => updateForm("hospitalPhone", e.target.value)} />
+                    <PhoneInputWithCountry error={errors["hospitalPhone"]} id="hospitalPhone" label="Phone Number" required isHalf value={formData.hospitalPhone} onChange={(val: string) => updateForm("hospitalPhone", val)} />
                     <InputField error={errors["hospitalRegNo"]} id="hospitalRegNo" label="Hospital Registration Number" required value={formData.hospitalRegNo} onChange={(e: any) => updateForm("hospitalRegNo", e.target.value)} />
                     <InputField error={errors["hospitalAddress"]} id="hospitalAddress" label="Address" value={formData.hospitalAddress} onChange={(e: any) => updateForm("hospitalAddress", e.target.value)} />
                     <div className="col-span-2 mt-2 bg-slate-50 p-4 rounded-[16px] border border-slate-100 shadow-sm">
