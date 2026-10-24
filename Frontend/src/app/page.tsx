@@ -15,7 +15,7 @@ const FinalCTASection = dynamic(() => import("@/components/landing/FinalCTASecti
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden w-full selection:bg-white selection:text-slate-900">
+    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden w-full selection:bg-sky-600 selection:text-white">
       <HomeRedirector />
       <Navbar />
 
