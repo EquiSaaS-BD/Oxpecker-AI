@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         const whisperUrl = `${rawEndpoint}/openai/deployments/${deployment}/audio/transcriptions?api-version=2024-02-01`;
 
         const azureFormData = new FormData();
-        const audioBlob = new Blob([fileBuffer], { type: fileMime });
+        const audioBlob = new Blob([new Uint8Array(fileBuffer)], { type: fileMime });
         azureFormData.append('file', audioBlob, fileName);
         azureFormData.append('model', 'whisper-1');
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             Authorization: assemblyApiKey,
             'Content-Type': 'application/octet-stream',
           },
-          body: fileBuffer,
+          body: new Uint8Array(fileBuffer),
         });
 
         if (!uploadRes.ok) {

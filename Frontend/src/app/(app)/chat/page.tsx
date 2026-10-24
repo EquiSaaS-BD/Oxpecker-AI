@@ -159,7 +159,7 @@ function ChatContent() {
       }
 
       const apiMessages = [
-        ...existingMessages.map(m => ({
+        ...existingMessages.filter((message) => !message.sensitive).map(m => ({
           role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
           content: m.content,
         })),
@@ -314,13 +314,14 @@ function ChatContent() {
       id: Date.now().toString(),
       role: 'user',
       content: userMsgContent,
+      sensitive: analysisType === "prescription",
     };
     if (activeThreadId) addMessageToThread(activeThreadId, userMsg);
     setIsTyping(true);
 
     const botMsgId = (Date.now() + 1).toString();
     if (activeThreadId) {
-      addMessageToThread(activeThreadId, { id: botMsgId, role: 'bot', content: '' });
+      addMessageToThread(activeThreadId, { id: botMsgId, role: 'bot', content: '', sensitive: analysisType === "prescription" });
     }
 
     try {
@@ -347,7 +348,9 @@ function ChatContent() {
       }
 
       const data = await response.json();
-      const analysisContent = data.analysis || 'Analysis could not be completed.';
+      const analysisContent = analysisType === "prescription"
+        ? `${data.analysis || 'Transcription could not be completed.'}\n\nOriginal image and editable transcription: [My Reports](/reports). OCR text is removed from local chat history; the saved account record remains available there until you delete it.`
+        : data.analysis || 'Analysis could not be completed.';
       parseStructuredBlocks(analysisContent);
 
       if (activeThreadId) {

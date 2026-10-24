@@ -45,7 +45,7 @@ const RedCrescent = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
 
 // Official WhatsApp Brand SVG Icon
 const WhatsAppIcon = ({ className = "w-2.5 h-2.5" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" title="Available on WhatsApp">
+  <svg viewBox="0 0 24 24" className={className} fill="none" role="img" aria-label="Available on WhatsApp">
     <path
       fill="#25D366"
       d="M17.472 14.382c-.301-.15-1.782-.879-2.058-.98-.276-.1-.477-.15-.678.15-.201.3-.778.98-.954 1.18-.176.201-.352.226-.653.075-1.579-.79-2.617-1.411-3.664-3.21-.276-.475.276-.44.79-1.468.087-.175.044-.326-.022-.476-.065-.15-.678-1.632-.929-2.234-.244-.587-.492-.507-.678-.516l-.578-.01c-.201 0-.527.075-.803.376s-1.054 1.03-1.054 2.512 1.079 2.913 1.23 3.114c.15.201 2.123 3.242 5.144 4.547 2.158.932 2.999.938 4.067.781 1.153-.17 2.502-1.023 2.854-2.01.352-.986.352-1.832.247-2.01-.106-.178-.306-.279-.607-.43z"

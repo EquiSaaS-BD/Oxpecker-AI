@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   CreditCard, Camera, ScanFace, ClipboardCheck, ChevronRight,
   ChevronLeft, Plus, X, AlertTriangle, CheckCircle2, Loader2,
@@ -28,7 +29,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const STEPS: { key: VerificationStep; label: string; icon: React.ElementType }[] = [
+const STEPS: { key: VerificationStep; label: string; icon: LucideIcon }[] = [
   { key: "identity", label: "পরিচয়", icon: CreditCard },
   { key: "photo", label: "ছবি", icon: Camera },
   { key: "face", label: "ভেরিফাই", icon: ScanFace },

@@ -1,11 +1,14 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { FileText, Download, Eye, File, Calendar, User, Search, Filter, Stethoscope, FlaskConical, Receipt, X, Activity, Pill, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
+import { PrescriptionReview } from "@/components/prescription/PrescriptionReview";
 
 const mockReports = [
   { id: 1, title: "Complete Blood Count (CBC)", date: "10 Jul 2026", doctor: "Dr. Sarah Rahman", type: "Lab Result", size: "2.4 MB" },
@@ -26,6 +29,36 @@ export default function ReportsPage(props: any) {
   const [selectedReport, setSelectedReport] = useState<typeof mockReports[0] | null>(null);
   const [savedDocuments, setSavedDocuments] = useState<any[]>([]);
   const [savedDocumentsLoading, setSavedDocumentsLoading] = useState(true);
+  const [savedDocumentImages, setSavedDocumentImages] = useState<Record<string, string>>({});
+  const [loadingDocumentImages, setLoadingDocumentImages] = useState<Record<string, boolean>>({});
+  const documentImageUrls = useRef<Record<string, string>>({});
+
+  useEffect(() => () => {
+    Object.values(documentImageUrls.current).forEach((url) => URL.revokeObjectURL(url));
+  }, []);
+
+  const loadSavedDocumentImage = async (id: string) => {
+    if (documentImageUrls.current[id] || loadingDocumentImages[id]) return;
+    setLoadingDocumentImages((current) => ({ ...current, [id]: true }));
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.access_token) throw new Error("Sign in to view the original image.");
+      const response = await fetch(`/api/medical-documents?image=${encodeURIComponent(id)}`, {
+        headers: { Authorization: `Bearer ${data.session.access_token}` },
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || "Could not load the original image.");
+      }
+      const imageUrl = URL.createObjectURL(await response.blob());
+      documentImageUrls.current[id] = imageUrl;
+      setSavedDocumentImages((current) => ({ ...current, [id]: imageUrl }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load the original image.");
+    } finally {
+      setLoadingDocumentImages((current) => ({ ...current, [id]: false }));
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -67,6 +100,15 @@ export default function ReportsPage(props: any) {
       return;
     }
     setSavedDocuments((documents) => documents.filter((document) => document.id !== id));
+    if (documentImageUrls.current[id]) {
+      URL.revokeObjectURL(documentImageUrls.current[id]);
+      delete documentImageUrls.current[id];
+      setSavedDocumentImages((images) => {
+        const next = { ...images };
+        delete next[id];
+        return next;
+      });
+    }
     toast.success("Saved medical document deleted.");
   };
 
@@ -162,20 +204,30 @@ export default function ReportsPage(props: any) {
           ) : (
             <div className="space-y-3">
               {savedDocuments.map((document) => (
-                <details key={document.id} className="bg-white rounded-2xl border border-slate-200 p-4">
+                <details key={document.id} onToggle={(event) => { if (event.currentTarget.open && document.kind === "prescription") void loadSavedDocumentImage(document.id); }} className="bg-white rounded-2xl border border-slate-200 p-4">
                   <summary className="cursor-pointer flex flex-wrap items-center justify-between gap-3">
                     <span className="font-bold text-slate-900">{document.kind === "report" ? "Medical report" : "Prescription"}: {document.originalName}</span>
                     <span className="text-xs text-slate-500">{new Date(document.createdAt).toLocaleString()}</span>
                   </summary>
-                  <pre className="whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 rounded-xl p-4 mt-4 max-h-96 overflow-auto font-sans">{document.analysis}</pre>
-                  {document.medicineComparisons?.length > 0 && (
+                  {document.kind === "prescription" ? (
+                    <div className="mt-4">
+                      {loadingDocumentImages[document.id] && !savedDocumentImages[document.id] && <p className="text-sm text-slate-500 mb-2">Loading encrypted original image…</p>}
+                      {parsePrescriptionTranscription(document.analysis)
+                        ? <PrescriptionReview documentId={document.id} initialTranscription={parsePrescriptionTranscription(document.analysis)!} imageUrl={savedDocumentImages[document.id] || null} onSaved={(updated) => setSavedDocuments((documents) => documents.map((item) => item.id === document.id ? { ...item, ...updated } : item))} />
+                        : <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                            {savedDocumentImages[document.id] && <Image src={savedDocumentImages[document.id]} alt="Original prescription for manual verification" width={1200} height={1600} unoptimized className="w-full h-auto max-h-[680px] object-contain rounded-xl bg-slate-50" />}
+                            <pre className="whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 rounded-xl p-4 max-h-96 overflow-auto font-sans">{document.analysis}</pre>
+                          </div>}
+                    </div>
+                  ) : <pre className="whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 rounded-xl p-4 mt-4 max-h-96 overflow-auto font-sans">{document.analysis}</pre>}
+                  {document.kind === "prescription" && parsePrescriptionTranscription(document.analysis)?.userReview?.verifiedAgainstImage && (
                     <div className="mt-4 rounded-xl border border-emerald-100 p-4">
-                      <p className="font-bold text-slate-800 mb-2">Saved price comparison · {document.priceSnapshot?.source} · {document.priceSnapshot?.generatedAt}</p>
-                      {document.medicineComparisons.map((comparison: any, index: number) => (
+                      <p className="font-bold text-slate-800 mb-2">{document.priceSnapshot?.freshness === "recent" ? "Saved price comparison" : "Historical snapshot comparison · current prices unverified"} · {document.priceSnapshot?.source} · {document.priceSnapshot?.generatedAt} · {document.priceSnapshot?.ageDays ?? "unknown"} days old</p>
+                      {document.medicineComparisons?.length ? document.medicineComparisons.map((comparison: any, index: number) => (
                         <div key={index} className="text-sm text-slate-700 py-2 border-t border-slate-100">
-                          <p>{comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Unidentified medicine"}: {comparison.comparablePrices?.length ? comparison.comparablePrices.map((alternative: any) => `${alternative.brandName} ৳${alternative.price}/${alternative.priceBasis}`).join(" · ") : "No exact-package match"}</p>
+                          <p>{comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Unidentified medicine"}: {comparison.comparablePrices?.length ? comparison.comparablePrices.map((alternative: any) => `${document.priceSnapshot?.freshness === "recent" ? "" : "Historical "}${alternative.brandName} ৳${alternative.price}/${alternative.priceBasis}`).join(" · ") : "No exact-package match"}</p>
                         </div>
-                      ))}
+                      )) : <p className="text-sm text-slate-600">No exact-pack price comparison was available in the saved snapshot.</p>}
                     </div>
                   )}
                   <div className="flex justify-between items-center mt-3 text-xs text-slate-500">

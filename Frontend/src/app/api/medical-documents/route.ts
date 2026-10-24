@@ -1,10 +1,36 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { decryptDocumentText, getMedicalDocumentUserId } from '@/lib/medical-document-server';
+import { decryptDocumentBytes, decryptDocumentText, getMedicalDocumentUserId, updatePrescriptionTranscription } from '@/lib/medical-document-server';
+
+export async function PATCH(request: Request) {
+  return updatePrescriptionTranscription(request);
+}
 
 export async function GET(request: Request) {
   const ownerId = await getMedicalDocumentUserId(request);
   if (!ownerId) return NextResponse.json({ error: 'Sign in to view saved medical documents.' }, { status: 401 });
+
+  const imageId = new URL(request.url).searchParams.get('image');
+  if (imageId) {
+    const document = await prisma.medicalDocument.findFirst({
+      where: { id: imageId, ownerId },
+      select: { image: true, mimeType: true },
+    });
+    if (!document) return NextResponse.json({ error: 'Medical document not found.' }, { status: 404 });
+    try {
+      const image = decryptDocumentBytes(document.image);
+      return new Response(new Uint8Array(image), {
+        headers: {
+          'Content-Type': document.mimeType,
+          'Content-Disposition': 'inline; filename="medical-document"',
+          'Cache-Control': 'private, no-store',
+          'X-Content-Type-Options': 'nosniff',
+        },
+      });
+    } catch {
+      return NextResponse.json({ error: 'Medical document decryption is unavailable.' }, { status: 503 });
+    }
+  }
 
   const documents = await prisma.medicalDocument.findMany({
     where: { ownerId },

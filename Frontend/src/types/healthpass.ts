@@ -10,6 +10,7 @@ export interface HealthPassCard {
   patient_name: string;
   english_name?: string;
   patient_image: string | null;
+  photo_url?: string | null;
   date_of_birth: string;
   gender: string;
   blood_group: string; // e.g. A+, O+, B-, etc.
@@ -40,7 +41,7 @@ export interface HealthPassCard {
   marital_status?: "Single" | "Married" | "Divorced" | "Widowed";
   last_doctor_visit?: string;
   organ_donor?: boolean;
-  diabetic_status?: "None" | "Type-1" | "Type-2" | "Pre-diabetic";
+  diabetic_status?: "None" | "Type-1" | "Type-2" | "Pre-diabetic" | "Gestational";
   has_pacemaker?: boolean;
   hypertension?: boolean;
 
@@ -72,7 +73,7 @@ export interface HealthPassCard {
 export interface ChronicCondition {
   name: string;
   since: string; // Year or date string
-  status: "active" | "controlled" | "resolved";
+  status: "active" | "controlled" | "resolved" | "monitored" | "stable" | "critical" | "rehabilitating";
   severity?: "mild" | "moderate" | "severe";
 }
 
@@ -96,11 +97,11 @@ export interface DiagnosticParameter {
 export interface DiagnosticReport {
   id: string;
   title: string;
-  category: "Pathology" | "Radiology" | "Cardiology" | "Biochemistry";
+  category: "Pathology" | "Radiology" | "Cardiology" | "Biochemistry" | "Ultrasound" | "Immunology" | "Hematology" | "Nephrology" | "Gastroenterology" | "Pulmonology" | "Neurology" | "Orthopedics" | "Endocrinology";
   date: string;
   hospital: string;
   lab_ref: string;
-  status: "Normal" | "Elevated" | "Critical";
+  status: "Normal" | "Elevated" | "Critical" | "Abnormal";
   summary: string;
   parameters?: DiagnosticParameter[];
   doctor_notes?: string;

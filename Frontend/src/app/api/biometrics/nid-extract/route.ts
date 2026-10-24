@@ -73,8 +73,8 @@ export async function POST(req: NextRequest) {
     let parsedNameBn = "মো. রফিক ইসলাম";
     let parsedDob = "1995-03-15";
     let parsedBlood = "A+";
-    let parsedZila = "Dhaka";
-    let parsedPostCode = "1205";
+    const parsedZila = "Dhaka";
+    const parsedPostCode = "1205";
     let extractedPhoto = image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300";
 
     // If an image was passed (data URL or base64)

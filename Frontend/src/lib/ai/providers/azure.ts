@@ -4,7 +4,7 @@
  * Uses native fetch() against Azure OpenAI endpoints with stream support.
  */
 
-import { ChatMessage, ChatCompletionResponse, HealthCheckResult, AIProvider } from '../gateway';
+import type { ChatMessage, ChatCompletionResponse, HealthCheckResult, AIProvider } from '../gateway';
 
 export interface AzureProviderConfig {
   apiKey: string;

@@ -128,7 +128,9 @@ export function comparePrescriptionPrices(parsed: unknown) {
       baselinePrice,
       baselinePriceBasis: baselineDetails?.basis ?? null,
       comparablePrices: alternatives,
-      status: alternatives.length ? "matched" : "no-exact-package-match",
+      status: metadata.freshness === "recent"
+        ? alternatives.length ? "matched" : "no-exact-package-match"
+        : alternatives.length ? "historical-snapshot-match" : "no-exact-package-match",
     };
   });
 

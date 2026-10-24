@@ -1,3 +1,5 @@
+import { AzureOpenAIProvider } from './providers/azure';
+
 /**
  * @module gateway
  * @description Multi-provider AI gateway for Oxpecker AI.
@@ -305,7 +307,6 @@ export class AIGateway {
  * Factory creating an AIGateway standardized on Azure OpenAI.
  */
 export function createDefaultGateway(): AIGateway {
-  const { AzureOpenAIProvider } = require('./providers/azure');
   return new AIGateway([
     {
       name: 'azure',

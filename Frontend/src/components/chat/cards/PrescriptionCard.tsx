@@ -7,14 +7,29 @@ interface PrescriptionData {
   patientName?: string;
   doctorName?: string;
   date?: string;
+  prescriptionDate?: string | null;
+  imageQuality?: { status?: string; reasons?: string[] };
+  uncertainFields?: string[];
+  rawOcrText?: string | null;
+  manualReviewRequired?: boolean;
   medicines?: {
-    name: string;
+    name?: string | null;
+    brandName?: string | null;
     generic?: string;
-    strength?: string;
+    genericName?: string | null;
+    strength?: string | null;
+    dosageForm?: string | null;
+    packageSize?: string | null;
+    dose?: string | null;
     dosage?: string;
     frequency?: string;
-    duration?: string;
-    instructions?: string;
+    duration?: string | null;
+    route?: string | null;
+    instructions?: string | null;
+    instructionsTranscribed?: string | null;
+    confidence?: string;
+    fieldConfidence?: Record<string, string>;
+    evidence?: string | null;
     estimatedPrice?: number;
   }[];
   diagnosis?: string;
@@ -38,12 +53,25 @@ export function PrescriptionCard({ data }: { data: PrescriptionData }) {
           <Pill size={18} />
           <span className="font-bold text-[15px]">Prescription Analysis</span>
         </div>
-        {data.date && (
-          <span className="text-[12px] bg-sky-100 text-sky-800 px-2.5 py-1 rounded-lg font-semibold">{data.date}</span>
+        {(data.prescriptionDate || data.date) && (
+          <span className="text-[12px] bg-sky-100 text-sky-800 px-2.5 py-1 rounded-lg font-semibold">{data.prescriptionDate || data.date}</span>
         )}
       </div>
 
       <div className="p-5 space-y-4">
+        {(data.manualReviewRequired || data.imageQuality?.status === "partially_readable" || data.imageQuality?.status === "unreadable") && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900">
+            <p className="font-bold">OCR draft — clinician or pharmacist must verify every field.</p>
+            {data.imageQuality?.status && <p className="mt-1">Image readability: {data.imageQuality.status.replaceAll("_", " ")}{data.imageQuality.reasons?.length ? ` · ${data.imageQuality.reasons.join(", ")}` : ""}</p>}
+            {data.uncertainFields?.length ? <p className="mt-1">Needs review: {data.uncertainFields.join(" · ")}</p> : null}
+          </div>
+        )}
+        {data.rawOcrText && (
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <p className="text-xs font-bold text-slate-600 mb-1">Raw OCR text — verify against the original</p>
+            <pre className="whitespace-pre-wrap text-sm text-slate-800 font-sans">{data.rawOcrText}</pre>
+          </div>
+        )}
         {/* Patient & Doctor */}
         {(data.patientName || data.doctorName) && (
           <div className="flex gap-4 text-[13px]">
@@ -78,20 +106,46 @@ export function PrescriptionCard({ data }: { data: PrescriptionData }) {
                 <div key={i} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-slate-800 text-[14px]">{med.name} {med.strength && <span className="text-slate-500 font-medium">{med.strength}</span>}</p>
-                      {med.generic && <p className="text-[12px] text-slate-500 italic">{med.generic}</p>}
+                      <p className="font-bold text-slate-800 text-[14px]">{med.brandName || med.name || "ওষুধের নাম পড়া যায়নি"} {(med.strength || med.dosageForm) && <span className="text-slate-500 font-medium">{[med.strength, med.dosageForm].filter(Boolean).join(" · ")}</span>}</p>
+                      {(med.genericName || med.generic) && <p className="text-[12px] text-slate-500 italic">{med.genericName || med.generic}</p>}
+                      {med.confidence && <p className="text-[11px] text-amber-700 mt-1">Visual reading confidence: {med.confidence} (not calibrated)</p>}
                     </div>
                     {med.estimatedPrice !== undefined && (
                       <span className="text-[13px] font-bold text-emerald-600 shrink-0">৳{med.estimatedPrice}</span>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[12px] text-slate-500">
-                    {med.dosage && <span className="flex items-center gap-1"><Pill size={11} /> {med.dosage}</span>}
+                    {(med.dose || med.dosage) && <span className="flex items-center gap-1"><Pill size={11} /> {med.dose || med.dosage}</span>}
                     {med.frequency && <span className="flex items-center gap-1"><Clock size={11} /> {med.frequency}</span>}
                     {med.duration && <span>Duration: {med.duration}</span>}
+                    {med.route && <span>Route: {med.route}</span>}
                   </div>
-                  {med.instructions && (
-                    <p className="text-[11px] text-blue-600 bg-blue-50 px-2 py-1 rounded-md mt-2 font-medium">{med.instructions}</p>
+                  {(med.instructionsTranscribed || med.instructions) && (
+                    <p className="text-[11px] text-blue-600 bg-blue-50 px-2 py-1 rounded-md mt-2 font-medium">{med.instructionsTranscribed || med.instructions}</p>
+                  )}
+                  {med.evidence && <p className="text-[11px] text-slate-500 mt-2">Visible text: “{med.evidence}”</p>}
+                  {med.fieldConfidence && (
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-3 border-t border-slate-200 pt-2">
+                      {([
+                        ["brandName", "Brand"], ["genericName", "Generic as written"], ["strength", "Strength"],
+                        ["dosageForm", "Form"], ["packageSize", "Package"], ["dose", "Dose"], ["frequency", "Frequency"],
+                        ["duration", "Duration"], ["route", "Route"], ["instructionsTranscribed", "Instructions"],
+                      ] as const).map(([field, label]) => {
+                        const values: Record<string, string | null | undefined> = {
+                          brandName: med.brandName, genericName: med.genericName, strength: med.strength,
+                          dosageForm: med.dosageForm, packageSize: med.packageSize, dose: med.dose, frequency: med.frequency,
+                          duration: med.duration, route: med.route,
+                          instructionsTranscribed: med.instructionsTranscribed,
+                        };
+                        const value = values[field];
+                        const confidence = med.fieldConfidence?.[field] || "uncertain";
+                        return <div key={field} className="text-[11px]">
+                          <span className="text-slate-500">{label}: </span>
+                          <span className="text-slate-800">{value || "পড়া যায়নি"}</span>
+                          <span className="text-amber-700"> · {confidence}</span>
+                        </div>;
+                      })}
+                    </div>
                   )}
                 </div>
               ))}

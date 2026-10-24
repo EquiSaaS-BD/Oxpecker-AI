@@ -1,35 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import Script from "next/script";
 import { SEO_CONFIG, generateRootJsonLd } from "@/config/seo";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
-
-const hindSiliguri = Hind_Siliguri({
-  subsets: ["bengali", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-bengali",
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   themeColor: "#0284c7",
@@ -117,19 +91,12 @@ export default function RootLayout({
     <html
       lang="bn"
       translate="no"
-      className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${hindSiliguri.variable}`}
       suppressHydrationWarning
     >
       <head>
         <meta name="geo.region" content={SEO_CONFIG.targetRegion} />
         <meta name="geo.position" content={`${SEO_CONFIG.geoCoordinates.latitude};${SEO_CONFIG.geoCoordinates.longitude}`} />
         <meta name="ICBM" content={`${SEO_CONFIG.geoCoordinates.latitude}, ${SEO_CONFIG.geoCoordinates.longitude}`} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <Script
           id="oxpecker-schema"
           type="application/ld+json"

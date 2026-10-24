@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
+import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
+import { PrescriptionReview } from "@/components/prescription/PrescriptionReview";
 
 const CATEGORIES = [
   { id: "All", name: "All", icon: Pill, color: "text-slate-500", bg: "bg-slate-100" },
@@ -49,6 +51,13 @@ export default function MedicinesPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const scanTranscription = scanResult?.analysis ? parsePrescriptionTranscription(scanResult.analysis) : null;
+  const scanReviewedAgainstImage = scanTranscription?.userReview?.verifiedAgainstImage === true;
+
+  useEffect(() => {
+    if (!uploadedImage?.startsWith("blob:")) return;
+    return () => URL.revokeObjectURL(uploadedImage);
+  }, [uploadedImage]);
   
 
   const fetchMedicines = useCallback(async (pageNum: number, isNewSearch: boolean = false) => {
@@ -268,22 +277,40 @@ export default function MedicinesPage() {
                   <CheckCircle2 size={24} className="text-white" />
                 </div>
                 <div>
-                  <h2 className="text-[20px] font-bold text-[#065f46]">Prescription Analyzed</h2>
-                  <p className="text-[14px] font-medium text-[#047857]">Saved privately · Reference: <strong>{scanResult.documentId}</strong></p>
+                  <h2 className="text-[20px] font-bold text-[#065f46]">Prescription transcription draft</h2>
+                  <p className="text-[14px] font-medium text-[#047857]">Saved privately · Reference: <strong>{scanResult.documentId}</strong> · Verify each field against the original before use.</p>
                 </div>
               </div>
 
-              <pre className="bg-white rounded-2xl p-5 mb-6 whitespace-pre-wrap text-sm text-slate-700 max-h-96 overflow-auto font-sans">{scanResult.analysis}</pre>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
+                {uploadedImage && (
+                  <figure className="bg-white rounded-2xl border border-emerald-100 p-3">
+                    <figcaption className="text-sm font-bold text-slate-700 mb-2">Original prescription — compare each field with this image</figcaption>
+                    <Image src={uploadedImage} alt="Original uploaded prescription for manual comparison" width={1200} height={1600} unoptimized className="w-full h-auto max-h-[680px] object-contain rounded-xl bg-slate-50" />
+                  </figure>
+                )}
+                <div>
+                  {(() => {
+                    const transcription = parsePrescriptionTranscription(scanResult.analysis || "");
+                    return transcription
+                      ? <PrescriptionReview documentId={scanResult.documentId} initialTranscription={transcription} onSaved={(updated) => setScanResult((current: any) => ({ ...current, ...updated }))} />
+                      : <pre className="bg-white rounded-2xl p-5 whitespace-pre-wrap text-sm text-slate-700 max-h-96 overflow-auto font-sans">{scanResult.analysis}</pre>;
+                  })()}
+                </div>
+              </div>
               
+              {!scanReviewedAgainstImage ? (
+                <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">মূল ছবির সঙ্গে OCR লেখা মিলিয়ে সংশোধন সংরক্ষণ করলে exact-pack historical price comparison দেখানো হবে।</p>
+              ) : <>
               <h3 className="text-[16px] font-bold text-[#065f46] mb-4 flex items-center gap-2">
                 <TrendingDown size={18} /> Exact-formulation catalog price matches
               </h3>
-              <p className="text-xs text-slate-600 mb-4">Source: {scanResult.priceSnapshot?.source || "catalog snapshot"}; generated {scanResult.priceSnapshot?.generatedAt || "date unavailable"} ({scanResult.priceSnapshot?.ageDays ?? "unknown"} days old, {scanResult.priceSnapshot?.freshness || "freshness unknown"}). Matches require the same generic, strength, dosage form, and package size.</p>
+              <p className="text-xs text-slate-600 mb-4">Source: {scanResult.priceSnapshot?.source || "catalog snapshot"}; generated {scanResult.priceSnapshot?.generatedAt || "date unavailable"} ({scanResult.priceSnapshot?.ageDays ?? "unknown"} days old, {scanResult.priceSnapshot?.freshness || "freshness unknown"}). Matches require the same generic, strength, dosage form, and package size. {scanResult.priceSnapshot?.freshness !== "recent" && "Prices and savings below are historical snapshot values; today's prices are unverified."}</p>
               {(scanResult.medicineComparisons || []).map((comparison: any, medicineIndex: number) => (
                 <div key={medicineIndex} className="bg-white rounded-xl p-4 mb-3 border border-emerald-100">
                   <p className="font-bold text-slate-900 mb-2">Prescription entry: {comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Medicine not identified"} · {comparison.prescribed?.strength || "strength unreadable"}</p>
                   {comparison.baselinePrice !== null && comparison.baselinePrice !== undefined && (
-                    <p className="text-sm text-slate-700 mb-3">Catalog price for the prescribed brand: ৳ {comparison.baselinePrice.toFixed(2)} / {comparison.baselinePriceBasis}</p>
+                    <p className="text-sm text-slate-700 mb-3">{scanResult.priceSnapshot?.freshness === "recent" ? "Catalog price" : "Historical snapshot price"} for the prescribed brand: ৳ {comparison.baselinePrice.toFixed(2)} / {comparison.baselinePriceBasis}</p>
                   )}
                   {(comparison.comparablePrices || []).map((alternative: any, alternativeIndex: number) => (
                     <div key={alternativeIndex} className="py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
@@ -292,17 +319,18 @@ export default function MedicinesPage() {
                         <p className="text-xs text-slate-500">{alternative.generic} · {alternative.strength} · {alternative.dosageForm} · {alternative.packageSize}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-extrabold text-sky-700">৳ {alternative.price.toFixed(2)} / {alternative.priceBasis}</p>
-                        {alternative.savings !== null && <p className="text-xs text-emerald-700">৳ {alternative.savings.toFixed(2)} lower per {alternative.priceBasis}</p>}
+                        <p className="font-extrabold text-sky-700">{scanResult.priceSnapshot?.freshness === "recent" ? "" : "Historical "}৳ {alternative.price.toFixed(2)} / {alternative.priceBasis}</p>
+                        {alternative.savings !== null && <p className="text-xs text-emerald-700">৳ {alternative.savings.toFixed(2)} lower per {alternative.priceBasis} in this snapshot</p>}
                       </div>
                     </div>
                   ))}
-                  {!comparison.comparablePrices?.length && <p className="text-sm text-slate-600 border-t border-slate-100 pt-3">No exact-pack equivalent was found for the extracted details.</p>}
+                  {!comparison.comparablePrices?.length && <p className="text-sm text-slate-600 border-t border-slate-100 pt-3">{comparison.status === "price-snapshot-unavailable" ? "Current price and equivalent alternatives could not be verified from this dated snapshot." : comparison.status === "insufficient-extracted-details" ? "The scan did not identify enough details for a safe exact-pack comparison." : "No exact-pack equivalent was found in this catalog."}</p>}
                 </div>
               ))}
               {!(scanResult.medicineComparisons || []).some((comparison: any) => comparison.comparablePrices?.length) && (
-                <p className="text-sm text-slate-600">No exact-pack equivalent was found. Confirm unclear medicine and package details with a pharmacist before substituting.</p>
+                <p className="text-sm text-slate-600">{scanResult.priceSnapshot?.freshness === "recent" ? "No exact-pack equivalent was found. Confirm unclear medicine and package details with a pharmacist before substituting." : "No exact-pack match with a listed price was found in this dated snapshot; current prices could not be verified."}</p>
               )}
+              </>}
             </div>
           </div>
         )}
@@ -317,7 +345,7 @@ export default function MedicinesPage() {
               Browse {totalCount > 0 ? totalCount.toLocaleString() : 'thousands of'} commonly prescribed medicines grouped by their primary usage.
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              Prices from {priceSnapshot?.source || "the bundled catalog"}; generated {priceSnapshot?.generatedAt || "date unavailable"} ({priceSnapshot?.ageDays ?? "unknown"} days old, {priceSnapshot?.freshness || "freshness unknown"}). Displayed price is per unit where recorded.
+              {priceSnapshot?.freshness === "recent" ? "Catalog prices" : "Historical catalog snapshot; current prices unverified"} from {priceSnapshot?.source || "the bundled catalog"}; generated {priceSnapshot?.generatedAt || "date unavailable"} ({priceSnapshot?.ageDays ?? "unknown"} days old, {priceSnapshot?.freshness || "freshness unknown"}). Prices are historical when the snapshot is stale and are per unit where recorded.
             </p>
           </div>
         </div>
@@ -418,7 +446,7 @@ export default function MedicinesPage() {
                           </div>
                           
                           <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-100">
-                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">{typeof med.price === "number" ? `৳${med.price.toFixed(2)} / ${med.priceBasis || "unit"}` : "Price unavailable"}</span>
+                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">{typeof med.price === "number" ? `${priceSnapshot?.freshness === "recent" ? "" : "Historical "}৳${med.price.toFixed(2)} / ${med.priceBasis || "unit"}` : "Price unavailable"}</span>
                             <button 
                               type="button"
                               onClick={(e) => {

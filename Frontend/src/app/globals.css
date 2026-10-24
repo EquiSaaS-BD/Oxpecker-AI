@@ -1,12 +1,11 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-bengali: "Hind Siliguri", var(--font-bengali), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-sans: var(--font-sans), "Inter", "Hind Siliguri", var(--font-bengali), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: var(--font-display), "Plus Jakarta Sans", "Hind Siliguri", var(--font-bengali), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-bengali: "Nirmala UI", "Noto Sans Bengali", "Vrinda", sans-serif;
+  --font-sans: "Inter", "Nirmala UI", "Noto Sans Bengali", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Nirmala UI", "Noto Sans Bengali", var(--font-sans), sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
   --color-primary: #0284c7; /* Clinical Sky Blue - Oxpecker Brand */
   --color-primary-foreground: #ffffff;
