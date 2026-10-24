@@ -345,3 +345,21 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(39, 151, 222, 0.25) transparent;
 }
+
+
+/* =========================================
+   GLOBAL MEDICAL SELECTION HIGHLIGHT
+   High visibility, crystal-clear white text on deep sky blue
+   ========================================= */
+*::selection,
+::selection {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+*::-moz-selection,
+::-moz-selection {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}

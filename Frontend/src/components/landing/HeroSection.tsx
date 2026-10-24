@@ -6,7 +6,7 @@ import { HeroLocationDropdown } from "./HeroLocationDropdown";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Search,
   MessageSquare,
@@ -37,6 +37,68 @@ const POPULAR_SPECIALTIES = [
   { name: "Orthopedics", bnName: "অর্থোপেডিকস", href: "/doctors?specialty=Orthopedics" },
 ];
 
+// ============================================
+// Staggered Reveal Animation Variants
+// ============================================
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const badgeVariants: Variants = {
+  hidden: { opacity: 0, y: -14, scale: 0.94 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 380, damping: 26 },
+  },
+};
+
+const headlineVariants: Variants = {
+  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const paragraphVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const searchCardVariants: Variants = {
+  hidden: { opacity: 0, y: 28, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 280, damping: 24 },
+  },
+};
+
+const chipsVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
 export function HeroSection() {
   const { t, lang: language } = useLanguage();
   const router = useRouter();
@@ -65,25 +127,28 @@ export function HeroSection() {
       {/* Ambient background */}
       <Hero3DBackground />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Trust Signal */}
-        <div className="flex items-center justify-start mb-6">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        {/* Trust Signal / Top Badge with live pulsing dot */}
+        <motion.div variants={badgeVariants} className="flex items-center justify-start mb-6">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs backdrop-blur-xs">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
             </span>
             <span>{t("Your Personal AI Healthcare Assistant", "আপনার ব্যক্তিগত এআই স্বাস্থ্য সহকারী")}</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Main Headline */}
+        {/* Main Headline & Subtitle */}
         <div className="text-left mb-8 max-w-3xl">
           <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] mb-5"
+            variants={headlineVariants}
+            className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] mb-4"
           >
             {language === "bn" ? (
               <>
@@ -99,10 +164,8 @@ export function HeroSection() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-            className="text-base sm:text-lg md:text-xl text-slate-600 leading-relaxed font-normal max-w-2xl"
+            variants={paragraphVariants}
+            className="text-sm sm:text-base md:text-[15.5px] text-slate-500 leading-relaxed font-normal max-w-xl mb-2 tracking-normal"
           >
             {t(
               "Get instant AI-powered health guidance, symptom analysis, prescription understanding, doctor recommendations, and medicine intelligence — all in one secure platform.",
@@ -113,9 +176,7 @@ export function HeroSection() {
 
         {/* AI-First Search Box */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          variants={searchCardVariants}
           className="w-full glass-panel spatial-shadow-lg rounded-3xl p-3 sm:p-4 text-left relative z-20 border border-slate-200/80"
         >
           {/* Search Tabs */}
@@ -169,13 +230,13 @@ export function HeroSection() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={language === "bn" ? currentTab.bnPlaceholder : currentTab.placeholder}
-                className="w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-500 outline-none bg-transparent h-10"
+                className="w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent h-10"
               />
             </div>
 
             <button
               type="submit"
-              className="h-11 px-6 btn-clay rounded-2xl text-sm font-bold flex items-center justify-center gap-1.5 shrink-0"
+              className="h-11 px-6 btn-clay rounded-2xl text-sm font-bold flex items-center justify-center gap-1.5 shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
               <span>{t("Search", "খুঁজুন")}</span>
               <ArrowRight size={16} />
@@ -185,9 +246,7 @@ export function HeroSection() {
 
         {/* Popular Specialty Tags */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.4 }}
+          variants={chipsVariants}
           className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
         >
           <span className="text-slate-500 font-semibold">{t("Explore by specialty:", "বিশেষজ্ঞ বিভাগ খুঁজুন:")}</span>
@@ -204,9 +263,7 @@ export function HeroSection() {
 
         {/* Service summary */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.5 }}
+          variants={chipsVariants}
           className="mt-10 pt-6 border-t border-slate-200/80 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-4xl text-left"
         >
           <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
@@ -250,7 +307,7 @@ export function HeroSection() {
             </div>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
