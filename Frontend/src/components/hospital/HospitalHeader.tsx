@@ -40,7 +40,7 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 lg:px-6 shrink-0 z-30">
+    <header className="h-16 sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.03)] supports-[backdrop-filter]:bg-white/75 transition-all">
       {/* Left: Mobile menu + Official Brand Logo + Search */}
       <div className="flex items-center gap-3 flex-1">
         <button
@@ -57,7 +57,7 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
           <span className="text-sm font-black text-slate-800 tracking-tight">Hospital Portal</span>
         </Link>
 
-        {/* Search */}
+        {/* Search with subtle frosted styling */}
         <div className="relative max-w-md flex-1 hidden sm:block">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
@@ -65,7 +65,7 @@ export function HospitalHeader({ onMenuClick }: HospitalHeaderProps) {
             placeholder="Search doctors, beds, patients..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all"
+            className="w-full h-10 pl-9 pr-4 bg-slate-100/60 hover:bg-slate-100/90 focus:bg-white border border-slate-200/80 rounded-xl text-sm text-slate-700 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 backdrop-blur-xs transition-all shadow-2xs"
           />
         </div>
       </div>

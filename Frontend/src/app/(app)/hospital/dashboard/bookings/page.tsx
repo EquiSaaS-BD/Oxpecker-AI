@@ -26,6 +26,7 @@ import {
   AlertTriangle,
   Layers,
   Filter,
+  ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,6 +47,7 @@ import {
   searchNationalPatientRegistry,
 } from "@/lib/hospital-hms";
 import { CustomSelect, type CustomSelectOption } from "@/components/hospital/CustomSelect";
+import { BookingTableRowSkeleton } from "@/components/hospital/Skeleton";
 
 export default function BookingManagementPage() {
   const router = useRouter();
@@ -54,6 +56,10 @@ export default function BookingManagementPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [wardFilter, setWardFilter] = useState<string>("All");
+
+  // Pagination State (50 patients per page)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 50;
 
   // New Booking Modal State
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
@@ -76,6 +82,8 @@ export default function BookingManagementPage() {
   const [attendingDoctor, setAttendingDoctor] = useState("Prof. Dr. Anisur Rahman");
   const [diagnosis, setDiagnosis] = useState("");
 
+  const [isLoading, setIsLoading] = useState(true);
+
   // Load Data on Mount
   const refreshAll = () => {
     setBookings(getHospitalBookings());
@@ -84,7 +92,14 @@ export default function BookingManagementPage() {
 
   useEffect(() => {
     refreshAll();
+    const timer = setTimeout(() => setIsLoading(false), 200);
+    return () => clearTimeout(timer);
   }, []);
+
+  // Reset page to 1 whenever search, category, or ward filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, wardFilter]);
 
   // Vacant beds list
   const vacantBeds = useMemo(() => beds.filter((b) => b.status === "Vacant"), [beds]);
@@ -94,54 +109,52 @@ export default function BookingManagementPage() {
   );
   const calculatedTotalAmount = (currentBedObj ? currentBedObj.price : 5000) * (durationDays || 1);
 
-  // Search & Ward Filter applied
-  const matchesSearch = (b: BedBooking) => {
-    const matchesWard =
-      wardFilter === "All" ||
-      b.bed_category.toLowerCase().includes(wardFilter.toLowerCase());
-    if (!matchesWard) return false;
-
-    if (!search.trim()) return true;
-    const q = search.toLowerCase().trim();
-    return (
-      b.id.toLowerCase().includes(q) ||
-      b.patient_name.toLowerCase().includes(q) ||
-      b.patient_phone.includes(q) ||
-      b.bed_id.toLowerCase().includes(q) ||
-      b.bed_category.toLowerCase().includes(q) ||
-      (b.diagnosis || "").toLowerCase().includes(q) ||
-      b.attending_doctor.toLowerCase().includes(q)
-    );
-  };
-
-  // Grouped Bookings by Category / Box
-  const checkedInBookings = useMemo(
-    () => bookings.filter((b) => b.booking_status === "Checked-In" && matchesSearch(b)),
-    [bookings, search, wardFilter]
-  );
-
-  const pendingBookings = useMemo(
-    () => bookings.filter((b) => b.booking_status === "Pending" && matchesSearch(b)),
-    [bookings, search, wardFilter]
-  );
-
-  const confirmedBookings = useMemo(
-    () => bookings.filter((b) => b.booking_status === "Confirmed" && matchesSearch(b)),
-    [bookings, search, wardFilter]
-  );
-
-  const completedBookings = useMemo(
-    () => bookings.filter((b) => b.booking_status === "Completed" && matchesSearch(b)),
-    [bookings, search, wardFilter]
-  );
-
-  // KPIs
+  // Global KPIs across full dataset
   const totalCount = bookings.length;
+  const checkedInCount = bookings.filter((b) => b.booking_status === "Checked-In").length;
   const pendingCount = bookings.filter((b) => b.booking_status === "Pending").length;
   const confirmedCount = bookings.filter((b) => b.booking_status === "Confirmed").length;
-  const checkedInCount = bookings.filter((b) => b.booking_status === "Checked-In").length;
   const completedCount = bookings.filter((b) => b.booking_status === "Completed").length;
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.paid_amount || 0), 0);
+
+  // Filtered Bookings for the Unified Table
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((b) => {
+      // 1. Category Switcher Filter
+      if (statusFilter !== "All" && b.booking_status !== statusFilter) {
+        return false;
+      }
+
+      // 2. Ward Filter
+      if (wardFilter !== "All" && !b.bed_category.toLowerCase().includes(wardFilter.toLowerCase())) {
+        return false;
+      }
+
+      // 3. Search Filter
+      if (search.trim()) {
+        const q = search.toLowerCase().trim();
+        return (
+          b.id.toLowerCase().includes(q) ||
+          b.patient_name.toLowerCase().includes(q) ||
+          b.patient_phone.includes(q) ||
+          (b.patient_nid || "").includes(q) ||
+          b.bed_id.toLowerCase().includes(q) ||
+          b.bed_category.toLowerCase().includes(q) ||
+          (b.diagnosis || "").toLowerCase().includes(q) ||
+          b.attending_doctor.toLowerCase().includes(q)
+        );
+      }
+
+      return true;
+    });
+  }, [bookings, statusFilter, wardFilter, search]);
+
+  // Pagination calculations (50 patients per page)
+  const totalPages = Math.ceil(filteredBookings.length / pageSize) || 1;
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredBookings.slice(start, start + pageSize);
+  }, [filteredBookings, currentPage, pageSize]);
 
   // Popup Category Filter Options
   const categoryOptions: CustomSelectOption<string>[] = [
@@ -149,7 +162,7 @@ export default function BookingManagementPage() {
     { value: "Checked-In", label: "Active Inpatients (Ward)", count: checkedInCount, dotColor: "bg-purple-500" },
     { value: "Pending", label: "Incoming Review (Pending)", count: pendingCount, dotColor: "bg-amber-500" },
     { value: "Confirmed", label: "Confirmed Scheduled", count: confirmedCount, dotColor: "bg-emerald-500" },
-    { value: "Completed", label: "Settled Discharges", count: completedCount, dotColor: "bg-slate-500" },
+    { value: "Completed", label: "Settled Discharges", count: completedCount, dotColor: "bg-blue-500" },
   ];
 
   // Popup Ward Filter Options
@@ -164,7 +177,7 @@ export default function BookingManagementPage() {
     { value: "HDU", label: "HDU Step-Down" },
   ];
 
-  // Open Full Page directly
+  // Navigation to Full Dossier Page
   const handleNavigateToBooking = (bookingId: string) => {
     router.push(`/hospital/dashboard/bookings/${bookingId}`);
   };
@@ -192,7 +205,7 @@ export default function BookingManagementPage() {
     toast.success(`Imported verified HealthPass data for ${patient.english_name || patient.patient_name}`);
   };
 
-  // Create New Reservation
+  // Create New Reservation Submit
   const handleCreateBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentBedObj) {
@@ -273,10 +286,15 @@ export default function BookingManagementPage() {
         </div>
       </div>
 
-      {/* 2. Top Metrics Summary */}
+      {/* 2. Top Metrics Summary (Clickable to switch Category) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+        <button
+          onClick={() => setStatusFilter("Checked-In")}
+          className={`text-left bg-white rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            statusFilter === "Checked-In" ? "border-purple-500 ring-2 ring-purple-100 bg-purple-50/20" : "border-slate-200/80 hover:border-purple-300"
+          }`}
+        >
+          <div className="flex items-center justify-between w-full">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
               Active Inpatients
             </span>
@@ -288,10 +306,15 @@ export default function BookingManagementPage() {
             <h3 className="text-3xl font-black text-purple-700">{checkedInCount}</h3>
             <p className="text-[11px] font-bold text-purple-600 mt-0.5">Checked-In In Ward</p>
           </div>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+        <button
+          onClick={() => setStatusFilter("Pending")}
+          className={`text-left bg-white rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            statusFilter === "Pending" ? "border-amber-500 ring-2 ring-amber-100 bg-amber-50/20" : "border-slate-200/80 hover:border-amber-300"
+          }`}
+        >
+          <div className="flex items-center justify-between w-full">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
               Pending Approvals
             </span>
@@ -303,10 +326,15 @@ export default function BookingManagementPage() {
             <h3 className="text-3xl font-black text-amber-700">{pendingCount}</h3>
             <p className="text-[11px] font-bold text-amber-600 mt-0.5">Needs Bed Allocation</p>
           </div>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+        <button
+          onClick={() => setStatusFilter("Confirmed")}
+          className={`text-left bg-white rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            statusFilter === "Confirmed" ? "border-emerald-500 ring-2 ring-emerald-100 bg-emerald-50/20" : "border-slate-200/80 hover:border-emerald-300"
+          }`}
+        >
+          <div className="flex items-center justify-between w-full">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
               Confirmed Scheduled
             </span>
@@ -318,25 +346,30 @@ export default function BookingManagementPage() {
             <h3 className="text-3xl font-black text-emerald-700">{confirmedCount}</h3>
             <p className="text-[11px] font-bold text-emerald-600 mt-0.5">Upcoming Arrivals</p>
           </div>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
+        <button
+          onClick={() => setStatusFilter("Completed")}
+          className={`text-left bg-white rounded-2xl border p-5 shadow-xs flex flex-col justify-between transition-all cursor-pointer ${
+            statusFilter === "Completed" ? "border-blue-500 ring-2 ring-blue-100 bg-blue-50/20" : "border-slate-200/80 hover:border-blue-300"
+          }`}
+        >
+          <div className="flex items-center justify-between w-full">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
               Settled Discharges
             </span>
-            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
               <Receipt size={16} />
             </div>
           </div>
           <div className="mt-3">
             <h3 className="text-3xl font-black text-slate-900">{completedCount}</h3>
-            <p className="text-[11px] font-bold text-slate-500 mt-0.5">BDT {totalRevenue.toLocaleString()} Billed</p>
+            <p className="text-[11px] font-bold text-blue-600 mt-0.5">BDT {totalRevenue.toLocaleString()} Billed</p>
           </div>
-        </div>
+        </button>
       </div>
 
-      {/* 3. Global Search & Quick Filter Toolbar with Popup Dropdowns */}
+      {/* 3. Global Search & Popup Category Toolbar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -374,487 +407,331 @@ export default function BookingManagementPage() {
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 4. CATEGORY 1: ACTIVE INPATIENTS (CHECKED-IN WARD SUITES) */}
-      {/* ========================================================================= */}
-      {(statusFilter === "All" || statusFilter === "Checked-In") && (
-      <div className="bg-white rounded-2xl border-2 border-purple-200/80 shadow-xs overflow-hidden">
-        {/* Section Header Banner */}
-        <div className="p-5 bg-gradient-to-r from-purple-50/80 via-white to-purple-50/40 border-b border-purple-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
-              <BedDouble size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-900">
-                  1. Active Inpatients (Checked-In Ward Suites)
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider">
-                  ● Checked-In
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Patients currently occupying ward suites. Click Complete & Settle to open the dedicated full clearance page.
-              </p>
-            </div>
-          </div>
-
-          <span className="text-xs font-bold px-3 py-1 rounded-lg bg-white border border-purple-200 text-purple-900 shrink-0">
-            {checkedInBookings.length} Active in Hospital
-          </span>
-        </div>
-
-        {/* Checked-In Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-purple-50/40 border-b border-purple-100 text-slate-500 uppercase font-black text-[10px] tracking-wider">
-                <th className="py-3 px-5">Booking ID & Date</th>
-                <th className="py-3 px-5">Patient Information</th>
-                <th className="py-3 px-5">Allocated Suite</th>
-                <th className="py-3 px-5">Stay Duration</th>
-                <th className="py-3 px-5">Payment & Advance Deposit</th>
-                <th className="py-3 px-5">Status</th>
-                <th className="py-3 px-5 text-right">Quick Pipeline Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {checkedInBookings.map((b) => (
-                <tr
-                  key={b.id}
-                  onClick={() => handleNavigateToBooking(b.id)}
-                  className="hover:bg-purple-50/40 transition-colors group cursor-pointer font-medium"
-                >
-                  <td className="py-4 px-5">
-                    <span className="font-mono font-bold text-slate-900 block text-xs">{b.id}</span>
-                    <span className="text-[11px] text-slate-400">{b.created_at}</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
-                        {b.patient_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{b.patient_name}</p>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Phone size={11} className="text-slate-400" /> {b.patient_phone}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-black text-purple-900 bg-purple-100 px-2 py-0.5 rounded text-xs">
-                        {b.bed_id}
-                      </span>
-                      <span className="font-bold text-slate-800 text-xs">{b.bed_category}</span>
-                    </div>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      BDT {b.bed_daily_rate.toLocaleString()} / day
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-bold text-slate-800 block text-xs">{b.check_in_date}</span>
-                    <span className="text-[11px] text-purple-700 font-semibold">{b.duration_days} Days Admitted</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-black text-slate-900 block text-xs">
-                      BDT {b.total_amount.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
-                      Deposit Paid (BDT {b.paid_amount.toLocaleString()})
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-800 border border-purple-200">
-                      ● Checked-In
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 px-3.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                      >
-                        <CheckCircle2 size={13} /> Complete & Settle
-                      </button>
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 w-8 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
-                        title="Open Full Page Dossier"
-                      >
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {checkedInBookings.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    No active inpatients currently checked-in under this filter.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* 4. Category Switcher Segmented Tabs (Seamless in-page view switcher) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+        {[
+          { key: "All", label: "All Records", count: totalCount, dot: "bg-slate-400" },
+          { key: "Checked-In", label: "Active Inpatients", count: checkedInCount, dot: "bg-purple-600" },
+          { key: "Pending", label: "Incoming Review", count: pendingCount, dot: "bg-amber-500" },
+          { key: "Confirmed", label: "Confirmed Upcoming", count: confirmedCount, dot: "bg-emerald-600" },
+          { key: "Completed", label: "Settled Discharges", count: completedCount, dot: "bg-blue-600" },
+        ].map((tab) => {
+          const isActive = statusFilter === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`h-10 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                isActive
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${tab.dot}`} />
+              <span>{tab.label}</span>
+              <span
+                className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      )}
 
-      {/* ========================================================================= */}
-      {/* 5. CATEGORY 2: PENDING APPROVAL REQUESTS */}
-      {/* ========================================================================= */}
-      {(statusFilter === "All" || statusFilter === "Pending") && (
-      <div className="bg-white rounded-2xl border-2 border-amber-200/80 shadow-xs overflow-hidden">
-        <div className="p-5 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/40 border-b border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
-              <Clock size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-900">
-                  2. Incoming Bed Reservations (Pending Review)
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider">
-                  ● Pending
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                New online requests from patient portal awaiting staff bed allocation and approval.
-              </p>
-            </div>
+      {/* 5. Unified Inpatient Data Table (Single-Line, Separate Blue & Yellow Columns) */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        {/* Table Header Bar */}
+        <div className="p-4 bg-slate-50/70 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-sm text-slate-900">
+              {statusFilter === "All"
+                ? "Unified Inpatient & Booking Registry"
+                : statusFilter === "Checked-In"
+                ? "Active Inpatients Occupying Ward Suites"
+                : statusFilter === "Pending"
+                ? "Incoming Bed Reservations (Pending Review)"
+                : statusFilter === "Confirmed"
+                ? "Confirmed Scheduled Inpatient Arrivals"
+                : "Settled Inpatient Records & Final Discharges"}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+              {filteredBookings.length} {filteredBookings.length === 1 ? "Record" : "Records"}
+            </span>
           </div>
 
-          <span className="text-xs font-bold px-3 py-1 rounded-lg bg-white border border-amber-200 text-amber-900 shrink-0">
-            {pendingBookings.length} Pending Approval
-          </span>
+          <div className="text-xs text-slate-500 font-medium">
+            Showing 50 patients per page • Real-time database sync
+          </div>
         </div>
 
+        {/* The Master Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-amber-50/40 border-b border-amber-100 text-slate-500 uppercase font-black text-[10px] tracking-wider">
-                <th className="py-3 px-5">Booking ID & Date</th>
-                <th className="py-3 px-5">Patient Information</th>
-                <th className="py-3 px-5">Requested Suite</th>
-                <th className="py-3 px-5">Check-In Date</th>
-                <th className="py-3 px-5">Tariff & Advance</th>
-                <th className="py-3 px-5">Status</th>
-                <th className="py-3 px-5 text-right">Quick Pipeline Action</th>
+              <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-500 uppercase font-bold text-[10px] tracking-wider whitespace-nowrap">
+                <th className="py-3.5 px-4">Booking Ref</th>
+                <th className="py-3.5 px-4">Check-In Date</th>
+                <th className="py-3.5 px-4">Patient Name</th>
+                <th className="py-3.5 px-4">Contact Phone</th>
+                <th className="py-3.5 px-4">Allocated Suite</th>
+                <th className="py-3.5 px-4">Duration</th>
+                <th className="py-3.5 px-4">Total Billed</th>
+                {/* User Explicit Request: Deposit/Completed in Blue column */}
+                <th className="py-3.5 px-4 text-blue-700 bg-blue-50/40">Paid / Deposit</th>
+                {/* User Explicit Request: Unpaid/Due in Yellow/Amber column */}
+                <th className="py-3.5 px-4 text-amber-700 bg-amber-50/40">Pending Due</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-4 text-right">Quick Pipeline Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {pendingBookings.map((b) => (
-                <tr
-                  key={b.id}
-                  onClick={() => handleNavigateToBooking(b.id)}
-                  className="hover:bg-amber-50/40 transition-colors group cursor-pointer font-medium"
-                >
-                  <td className="py-4 px-5">
-                    <span className="font-mono font-bold text-slate-900 block text-xs">{b.id}</span>
-                    <span className="text-[11px] text-slate-400">{b.created_at}</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
-                        {b.patient_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{b.patient_name}</p>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Phone size={11} className="text-slate-400" /> {b.patient_phone}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-bold text-slate-900">{b.bed_category}</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">Bed Code: {b.bed_id}</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-bold text-slate-800">{b.check_in_date}</span>
-                    <span className="text-[11px] text-slate-400 block">{b.duration_days} Days Stay</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-black text-slate-900 block">BDT {b.total_amount.toLocaleString()}</span>
-                    <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-bold">
-                      {b.payment_status}
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
-                      ● Pending Review
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                      >
-                        <UserCheck size={13} /> Review & Approve
-                      </button>
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 w-8 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
-                        title="Open Full Page Dossier"
-                      >
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {pendingBookings.length === 0 && (
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {isLoading ? (
+                <>
+                  <BookingTableRowSkeleton />
+                  <BookingTableRowSkeleton />
+                  <BookingTableRowSkeleton />
+                  <BookingTableRowSkeleton />
+                  <BookingTableRowSkeleton />
+                </>
+              ) : paginatedBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    No pending online reservations at this time.
+                  <td colSpan={11} className="py-12 text-center text-slate-400 text-sm">
+                    No inpatient booking records match the selected category or filters.
                   </td>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      )}
+              ) : (
+                paginatedBookings.map((b) => {
+                  const due = Math.max(0, b.total_amount - b.paid_amount);
 
-      {/* ========================================================================= */}
-      {/* 6. CATEGORY 3: CONFIRMED UPCOMING ARRIVALS */}
-      {/* ========================================================================= */}
-      {(statusFilter === "All" || statusFilter === "Confirmed") && (
-      <div className="bg-white rounded-2xl border-2 border-emerald-200/80 shadow-xs overflow-hidden">
-        <div className="p-5 bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/40 border-b border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-              <UserCheck size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-900">
-                  3. Confirmed Upcoming Arrivals (Scheduled Pre-Bookings)
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider">
-                  ● Confirmed
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Pre-allocated suites ready for patient check-in upon hospital arrival.
-              </p>
-            </div>
-          </div>
-
-          <span className="text-xs font-bold px-3 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-900 shrink-0">
-            {confirmedBookings.length} Scheduled
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-emerald-50/40 border-b border-emerald-100 text-slate-500 uppercase font-black text-[10px] tracking-wider">
-                <th className="py-3 px-5">Booking ID</th>
-                <th className="py-3 px-5">Patient Information</th>
-                <th className="py-3 px-5">Reserved Suite</th>
-                <th className="py-3 px-5">Arrival Date</th>
-                <th className="py-3 px-5">Deposit Paid</th>
-                <th className="py-3 px-5">Status</th>
-                <th className="py-3 px-5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {confirmedBookings.map((b) => (
-                <tr
-                  key={b.id}
-                  onClick={() => handleNavigateToBooking(b.id)}
-                  className="hover:bg-emerald-50/40 transition-colors group cursor-pointer font-medium"
-                >
-                  <td className="py-4 px-5">
-                    <span className="font-mono font-bold text-slate-900 block text-xs">{b.id}</span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
-                        {b.patient_name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{b.patient_name}</p>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Phone size={11} className="text-slate-400" /> {b.patient_phone}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded text-xs border border-emerald-200">
-                      {b.bed_id}
-                    </span>
-                    <span className="font-bold text-slate-800 ml-2">{b.bed_category}</span>
-                  </td>
-
-                  <td className="py-4 px-5 font-bold text-slate-900">{b.check_in_date}</td>
-
-                  <td className="py-4 px-5 font-black text-emerald-700">
-                    BDT {b.paid_amount.toLocaleString()}
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      ● Confirmed
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 px-3.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                      >
-                        <UserCheck size={13} /> Check-In Patient
-                      </button>
-                      <button
-                        onClick={() => handleNavigateToBooking(b.id)}
-                        className="h-8 w-8 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
-                      >
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {confirmedBookings.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    No confirmed upcoming arrivals scheduled.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 7. CATEGORY 4: COMPLETED & SETTLED DISCHARGES */}
-      {/* ========================================================================= */}
-      {(statusFilter === "All" || statusFilter === "Completed") && (
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-        <div className="p-5 bg-slate-50 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-800 text-white flex items-center justify-center shadow-xs">
-              <CheckCircle2 size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-slate-900">
-                  4. Completed Inpatient Admissions & Settled Records
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider">
-                  ● Completed
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Archived records of discharged patients with full financial clearance and invoice copies.
-              </p>
-            </div>
-          </div>
-
-          <span className="text-xs font-bold px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 shrink-0">
-            {completedBookings.length} Settled
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-500 uppercase font-black text-[10px] tracking-wider">
-                <th className="py-3 px-5">Booking ID</th>
-                <th className="py-3 px-5">Patient Name</th>
-                <th className="py-3 px-5">Suite Stayed</th>
-                <th className="py-3 px-5">Admit Date</th>
-                <th className="py-3 px-5">Total Billed & Paid</th>
-                <th className="py-3 px-5">Clearance Status</th>
-                <th className="py-3 px-5 text-right">Dossier Link</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {completedBookings.map((b) => (
-                <tr
-                  key={b.id}
-                  onClick={() => handleNavigateToBooking(b.id)}
-                  className="hover:bg-slate-50 transition-colors group cursor-pointer font-medium"
-                >
-                  <td className="py-4 px-5 font-mono font-bold text-slate-900">{b.id}</td>
-
-                  <td className="py-4 px-5">
-                    <p className="font-bold text-slate-900 text-sm">{b.patient_name}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{b.patient_phone}</p>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">
-                      {b.bed_id}
-                    </span>
-                    <span className="text-slate-500 text-xs ml-2">{b.bed_category}</span>
-                  </td>
-
-                  <td className="py-4 px-5 text-slate-600">{b.check_in_date}</td>
-
-                  <td className="py-4 px-5 font-black text-slate-900">
-                    BDT {b.paid_amount.toLocaleString()}
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      ● Fully Paid
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5 text-right" onClick={(e) => e.stopPropagation()}>
-                    <button
+                  return (
+                    <tr
+                      key={b.id}
                       onClick={() => handleNavigateToBooking(b.id)}
-                      className="h-8 px-3 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer"
+                      className="hover:bg-slate-50/80 transition-colors group cursor-pointer whitespace-nowrap"
                     >
-                      <Receipt size={13} /> View Invoice
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {/* 1. Booking ID */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-bold text-slate-900 block text-xs">
+                          {b.id}
+                        </span>
+                      </td>
 
-              {completedBookings.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    No completed booking records yet.
-                  </td>
-                </tr>
+                      {/* 2. Check-In Date */}
+                      <td className="py-3.5 px-4 text-slate-700 text-xs">
+                        {b.check_in_date}
+                      </td>
+
+                      {/* 3. Patient Name */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
+                            {b.patient_name.charAt(0)}
+                          </div>
+                          <span className="font-bold text-slate-900 text-xs">
+                            {b.patient_name}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 4. Contact Phone */}
+                      <td className="py-3.5 px-4 font-mono text-slate-600 text-xs">
+                        {b.patient_phone}
+                      </td>
+
+                      {/* 5. Allocated Suite */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-black text-purple-900 bg-purple-50 px-2 py-0.5 rounded text-[11px] border border-purple-200">
+                            {b.bed_id}
+                          </span>
+                          <span className="font-semibold text-slate-700 text-xs">
+                            {b.bed_category}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 6. Stay Duration */}
+                      <td className="py-3.5 px-4 font-bold text-slate-800 text-xs">
+                        {b.duration_days} Days
+                      </td>
+
+                      {/* 7. Total Billed Amount */}
+                      <td className="py-3.5 px-4 font-extrabold text-slate-900 text-xs">
+                        ৳ {b.total_amount.toLocaleString()}
+                      </td>
+
+                      {/* 8. Paid / Deposit Amount (BLUE as requested) */}
+                      <td className="py-3.5 px-4 bg-blue-50/20">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
+                          ৳ {b.paid_amount.toLocaleString()} Paid
+                        </span>
+                      </td>
+
+                      {/* 9. Pending Due Amount (YELLOW / AMBER as requested) */}
+                      <td className="py-3.5 px-4 bg-amber-50/20">
+                        {due > 0 ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-amber-800 bg-amber-50 border border-amber-300">
+                            ৳ {due.toLocaleString()} Due
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200">
+                            ৳ 0 (Settled)
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 10. Status Badge */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            b.booking_status === "Checked-In"
+                              ? "bg-purple-50 text-purple-700 border border-purple-200"
+                              : b.booking_status === "Pending"
+                              ? "bg-amber-50 text-amber-700 border border-amber-300"
+                              : b.booking_status === "Confirmed"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : "bg-blue-50 text-blue-700 border border-blue-200"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              b.booking_status === "Checked-In"
+                                ? "bg-purple-600"
+                                : b.booking_status === "Pending"
+                                ? "bg-amber-500"
+                                : b.booking_status === "Confirmed"
+                                ? "bg-emerald-600"
+                                : "bg-blue-600"
+                            }`}
+                          />
+                          {b.booking_status}
+                        </span>
+                      </td>
+
+                      {/* 11. Quick Pipeline Action */}
+                      <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {b.booking_status === "Checked-In" && (
+                            <button
+                              onClick={() => handleNavigateToBooking(b.id)}
+                              className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            >
+                              <CheckCircle2 size={13} /> Complete & Settle
+                            </button>
+                          )}
+
+                          {b.booking_status === "Pending" && (
+                            <button
+                              onClick={() => handleNavigateToBooking(b.id)}
+                              className="h-8 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            >
+                              <Clock size={13} /> Review & Allocate
+                            </button>
+                          )}
+
+                          {b.booking_status === "Confirmed" && (
+                            <button
+                              onClick={() => handleNavigateToBooking(b.id)}
+                              className="h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            >
+                              <UserCheck size={13} /> Check In Bed
+                            </button>
+                          )}
+
+                          {b.booking_status === "Completed" && (
+                            <button
+                              onClick={() => handleNavigateToBooking(b.id)}
+                              className="h-8 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            >
+                              <Receipt size={13} /> View Clearance
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleNavigateToBooking(b.id)}
+                            className="h-8 w-8 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Open Full Page Dossier"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
-      </div>
-      )}
 
-      {/* 8. MODAL: CREATE NEW RESERVATION */}
+        {/* 6. Professional Pagination Footer (50 Patients Per Page) */}
+        {filteredBookings.length > 0 && (
+          <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-500 font-semibold">
+              Showing{" "}
+              <span className="text-slate-900 font-black">
+                {(currentPage - 1) * pageSize + 1}
+              </span>{" "}
+              to{" "}
+              <span className="text-slate-900 font-black">
+                {Math.min(currentPage * pageSize, filteredBookings.length)}
+              </span>{" "}
+              of{" "}
+              <span className="text-slate-900 font-black">{filteredBookings.length}</span>{" "}
+              patient bookings
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-1.5">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className={`h-9 px-3 rounded-xl border text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                  currentPage === 1
+                    ? "border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50"
+                    : "border-slate-200 text-slate-700 hover:bg-white bg-white shadow-2xs"
+                }`}
+              >
+                <ChevronLeft size={14} /> Previous
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                const isActive = pageNum === currentPage;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`h-9 min-w-9 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className={`h-9 px-3 rounded-xl border text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                  currentPage === totalPages
+                    ? "border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50"
+                    : "border-slate-200 text-slate-700 hover:bg-white bg-white shadow-2xs"
+                }`}
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 7. MODAL: CREATE NEW INPATIENT RESERVATION */}
       <AnimatePresence>
         {isNewBookingModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -49,6 +50,9 @@
   }
 
   /* Bengali Typography: Hind Siliguri for flawless Bengali rendering */
+  .font-hind, [data-font="hind"] {
+    font-family: "Hind Siliguri", var(--font-bengali), var(--font-sans), sans-serif !important;
+  }
   [lang="bn"], .font-bengali, :lang(bn), .chat-bubble, .prose {
     font-family: "Hind Siliguri", var(--font-bengali), var(--font-sans), sans-serif;
     font-feature-settings: normal;
@@ -248,6 +252,26 @@
   }
 }
 
+
+@keyframes shimmer-smooth {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(241, 245, 249, 0.95) 0%,
+    rgba(226, 232, 240, 0.75) 50%,
+    rgba(241, 245, 249, 0.95) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-smooth 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(200%); }

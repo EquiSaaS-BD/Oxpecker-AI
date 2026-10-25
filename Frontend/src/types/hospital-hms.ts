@@ -101,7 +101,7 @@ export interface InpatientAdmission {
 export interface BillItem {
   id: string;
   description: string;
-  category: "Bed Charges" | "Physician Fee" | "Medications" | "Diagnostics" | "Nursing & Service";
+  category: "Bed Charges" | "Physician Fee" | "Medications" | "Diagnostics" | "Nursing & Service" | string;
   quantity: number;
   unitPrice: number;
   total: number;
@@ -131,6 +131,10 @@ export interface HospitalBill {
   payment_status: "Paid" | "Pending" | "Partial";
   payment_method?: string;
   transaction_ref?: string;
+  bank_name?: string;
+  bank_account_no?: string;
+  bank_trx_id?: string;
+  concession_reason?: string;
   created_at: string;
 }
 
@@ -150,3 +154,71 @@ export interface HospitalDoctor {
   status: "Active" | "On-Duty" | "In Surgery" | "On Leave";
   created_at?: string;
 }
+
+// ====== Custom Hospital Billing Theme, Watermark & Letterhead Configuration ======
+
+export type HospitalThemeStyle = "singapore" | "apollo" | "royal" | "minimal";
+
+export interface HospitalThemeConfig {
+  hospital_name: string;
+  hospital_tagline: string;
+  hospital_address: string;
+  hospital_hotline: string;
+  hospital_phone: string;
+  hospital_email: string;
+  license_no: string;
+  tax_bin: string;
+  logo_url?: string;
+  theme_style: HospitalThemeStyle;
+  watermark_text: string;
+  watermark_opacity: number;
+  watermark_enabled: boolean;
+  stamp_text: string;
+  stamp_color: string;
+  stamp_enabled: boolean;
+}
+
+// ====== Hospital Financial Transactions Ledger ======
+
+export interface HospitalTransactionRecord {
+  id: string;
+  invoice_id: string;
+  patient_name: string;
+  patient_phone: string;
+  smart_card_uid?: string;
+  amount: number;
+  gross_amount?: number;
+  discount_amount?: number;
+  payment_method: string;
+  transaction_type: "Admission Deposit" | "Discharge Clearance" | "Diagnostic Lab" | "OPD Consultation" | "Emergency Triage";
+  status: "Settled" | "Pending" | "Refunded";
+  reference_no: string;
+  bank_name?: string;
+  bank_trx_id?: string;
+  cashier_name: string;
+  created_at: string;
+  notes?: string;
+}
+
+
+
+// ====== Hospital Multi-Bank Accounts Directory ======
+
+export interface HospitalBankAccount {
+  id: string;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
+  branch_name: string;
+  routing_number?: string;
+  category: "MFS" | "Commercial Bank" | "Card POS" | "Cash Counter";
+  badge_color?: string;
+}
+
+export type ConcessionPolicyReason =
+  | "Standard Clinical Concession"
+  | "Hospital Authority Discretionary Waiver"
+  | "Corporate / TPA Insurance Co-Pay Waiver"
+  | "Zakat / Social Welfare Fund Subsidy"
+  | "Freedom Fighter / Healthcare Worker Benefit"
+  | "None / Full Tariff Applicable";
