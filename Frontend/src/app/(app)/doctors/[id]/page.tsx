@@ -3,19 +3,67 @@
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Star, MapPin, Award, CheckCircle2, Languages, Clock, Hospital, GraduationCap, FileText, CalendarDays, AlertCircle, BadgeCheck } from "lucide-react";
-import { mockDoctors, DoctorProfile } from "@/lib/mockData";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Clock,
+  Building,
+  GraduationCap,
+  FileText,
+  CalendarDays,
+  ShieldCheck,
+  CheckCircle2,
+  Stethoscope,
+  Phone,
+  Share2,
+  HeartPulse,
+  Award,
+  Sparkles,
+  Activity,
+  ArrowRight,
+  Check,
+} from "lucide-react";
+import { mockDoctors, type DoctorProfile } from "@/lib/mockData";
 import { useAuth } from "@/context/AuthContext";
-import { BookingModal } from "@/components/doctors/BookingModal";
 import { GoogleMap } from "@/components/shared/GoogleMap";
+import { toast, Toaster } from "sonner";
 
 export default function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
-  const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
-  const [activeMapIndex, setActiveMapIndex] = useState<number | null>(0);
   const { user } = useAuth();
   const isGuest = !user;
+
+  const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [selectedChamberIndex, setSelectedChamberIndex] = useState(0);
+
+  useEffect(() => {
+    const rawId = resolvedParams.id;
+    // Match directly, or with doc- prefix, or stripping doc-
+    let doc = mockDoctors.find(
+      (d) =>
+        d.id === rawId ||
+        d.id === `doc-${rawId}` ||
+        d.id.replace("doc-", "") === rawId
+    );
+
+    // Fallback to first doctor if invalid ID provided so page never hangs
+    if (!doc && mockDoctors.length > 0) {
+      doc = mockDoctors[0];
+    }
+
+    if (doc) {
+      setDoctor(doc);
+    }
+
+    const timer = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, [resolvedParams.id]);
 
   const handleBookingClick = () => {
     if (isGuest) {
@@ -25,349 +73,498 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
     }
   };
 
-  const [isLoading, setIsLoading] = useState(true);
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      toast.success("Doctor profile link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
-  useEffect(() => {
-    const doc = mockDoctors.find(d => d.id === resolvedParams.id);
-    if (doc) setDoctor(doc);
-    // Simulate loading for skeleton
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, [resolvedParams.id]);
-
-  if (!doctor || isLoading) {
+  if (isLoading || !doctor) {
     return (
-      <div className="h-full overflow-y-auto bg-[#F8FAFC] pb-32 font-sans">
-        {/* Skeleton: Sticky Nav */}
-        <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-40">
-          <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center">
-            <div className="w-32 h-5 bg-slate-200 animate-pulse rounded-lg"></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center animate-pulse">
+            <Stethoscope size={28} />
           </div>
-        </div>
-
-        {/* Skeleton: Profile Header */}
-        <div className="bg-white border-b border-slate-200">
-          <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row gap-8 items-center py-12">
-            {/* Avatar */}
-            <div className="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full bg-slate-200 animate-pulse shrink-0"></div>
-            
-            {/* Header Details */}
-            <div className="flex-1 flex flex-col items-center md:items-start gap-4 w-full">
-              {/* Badges */}
-              <div className="flex gap-3">
-                <div className="w-28 h-8 bg-slate-100 animate-pulse rounded-full"></div>
-                <div className="w-32 h-8 bg-slate-100 animate-pulse rounded-full"></div>
-                <div className="w-36 h-8 bg-slate-100 animate-pulse rounded-full hidden sm:block"></div>
-              </div>
-              {/* Name */}
-              <div className="w-72 h-10 bg-slate-200 animate-pulse rounded-xl"></div>
-              {/* Title */}
-              <div className="w-48 h-6 bg-slate-100 animate-pulse rounded-lg"></div>
-              {/* Hospital */}
-              <div className="w-56 h-5 bg-slate-100 animate-pulse rounded-lg"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Skeleton: Content */}
-        <div className="max-w-[1280px] mx-auto mt-12 px-6 flex flex-col lg:flex-row gap-12">
-          {/* Left Column */}
-          <div className="w-full lg:w-[65%] space-y-10">
-            {/* About */}
-            <div>
-              <div className="w-36 h-6 bg-slate-200 animate-pulse rounded-lg mb-4"></div>
-              <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-3">
-                <div className="w-full h-4 bg-slate-100 animate-pulse rounded"></div>
-                <div className="w-full h-4 bg-slate-100 animate-pulse rounded"></div>
-                <div className="w-3/4 h-4 bg-slate-100 animate-pulse rounded"></div>
-              </div>
-            </div>
-
-            {/* Chambers */}
-            <div>
-              <div className="w-48 h-6 bg-slate-200 animate-pulse rounded-lg mb-4"></div>
-              <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-5">
-                {[1, 2].map(i => (
-                  <div key={i} className="flex flex-col gap-3 pb-5 border-b border-slate-100 last:border-0 last:pb-0">
-                    <div className="w-48 h-5 bg-slate-200 animate-pulse rounded-lg"></div>
-                    <div className="w-64 h-4 bg-slate-100 animate-pulse rounded"></div>
-                    <div className="flex gap-3">
-                      <div className="w-28 h-8 bg-slate-50 animate-pulse rounded-md border border-slate-200"></div>
-                      <div className="w-36 h-8 bg-slate-50 animate-pulse rounded-md border border-slate-200"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Education */}
-            <div>
-              <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-lg mb-4"></div>
-              <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-4">
-                {[1, 2].map(i => (
-                  <div key={i} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                    <div className="space-y-2">
-                      <div className="w-40 h-5 bg-slate-200 animate-pulse rounded"></div>
-                      <div className="w-56 h-4 bg-slate-100 animate-pulse rounded"></div>
-                    </div>
-                    <div className="w-20 h-5 bg-green-100 animate-pulse rounded-full"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="w-full lg:w-[35%] space-y-10">
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-2">
-                <div className="w-12 h-8 bg-slate-200 animate-pulse rounded-lg"></div>
-                <div className="w-16 h-4 bg-slate-100 animate-pulse rounded"></div>
-              </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-2">
-                <div className="w-12 h-8 bg-slate-200 animate-pulse rounded-lg"></div>
-                <div className="w-16 h-4 bg-slate-100 animate-pulse rounded"></div>
-              </div>
-            </div>
-
-            {/* Map */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <div className="w-36 h-5 bg-slate-200 animate-pulse rounded-lg mb-3"></div>
-              <div className="w-48 h-4 bg-slate-100 animate-pulse rounded mb-1"></div>
-              <div className="w-32 h-4 bg-slate-100 animate-pulse rounded mb-4"></div>
-              <div className="w-full h-[240px] bg-slate-100 animate-pulse rounded-lg"></div>
-            </div>
-          </div>
+          <p className="text-sm font-bold text-slate-500">Loading Doctor Profile...</p>
         </div>
       </div>
     );
   }
 
+  const initials = doctor.name
+    .replace(/Prof\.|Dr\.|Professor/gi, "")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("") || "DR";
+
   return (
-    <div className="h-full overflow-y-auto bg-[#F8FAFC] pb-32 font-sans relative">
-      
-      {/* Sticky Navigation */}
-      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-40 shadow-sm shadow-slate-100/50">
-        <div className="max-w-[1280px] mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
-          <button 
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-[#64748B] hover:text-[#0F172A] font-bold text-[16px] transition-colors"
-          >
-            <ArrowLeft size={20} /> <span className="hidden sm:inline">Back to Search</span><span className="sm:hidden">Back</span>
-          </button>
-          
-          {/* Desktop Nav Booking Button */}
-          <div className="hidden md:block">
-            <button 
-              onClick={handleBookingClick}
-              className="h-[48px] bg-sky-600 hover:bg-[#0052cc] text-white rounded-xl flex items-center justify-between gap-4 pl-5 pr-1.5 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 group overflow-hidden border border-primary/20 hover:-translate-y-0.5"
+    <div className="min-h-screen bg-slate-50/70 pb-24 font-sans text-slate-900">
+      <Toaster position="top-right" richColors />
+
+      {/* Top Glass Navigation Bar */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/doctors")}
+              className="h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <span className="font-bold text-[15px] tracking-wide">Book Appointment</span>
-              <div className="bg-white/20 backdrop-blur-md border border-white/20 text-slate-900 h-[38px] px-4 rounded-lg flex items-center justify-center gap-1 font-[900] text-[16px]">
-                <span>৳</span>{doctor.fee}
-              </div>
+              <ArrowLeft size={16} />
+              <span>Back to Directory</span>
+            </button>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-medium">
+              <span>/</span>
+              <span className="text-slate-600 truncate max-w-[200px]">{doctor.name}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={handleShare}
+              className="h-9 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              {copied ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
+              <span className="hidden sm:inline">{copied ? "Copied" : "Share"}</span>
+            </button>
+
+            <button
+              onClick={handleBookingClick}
+              className="h-10 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-xs hover:shadow cursor-pointer"
+            >
+              <CalendarDays size={16} />
+              <span>Book Appointment</span>
+              <span className="bg-sky-500/80 px-2 py-0.5 rounded-md text-[11px] font-black text-white ml-1">
+                ৳ {doctor.fee.toLocaleString()}
+              </span>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* PROFILE HEADER */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row gap-8 items-center py-12 relative">
-          
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            <div className="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full overflow-hidden border border-slate-200 bg-slate-50 z-10 relative">
-              <Image src={doctor.image} alt={doctor.name} fill sizes="140px" className="object-cover" />
+      {/* Hero Doctor Profile Banner Card */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
+            
+            {/* Doctor Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden border-2 border-slate-200 bg-sky-50 shadow-md flex items-center justify-center relative">
+                {!imageError && doctor.image ? (
+                  <Image
+                    src={doctor.image}
+                    alt={doctor.name}
+                    fill
+                    sizes="144px"
+                    className="object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <span className="font-black text-sky-700 text-3xl tracking-widest">{initials}</span>
+                )}
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-xs border border-slate-200">
+                <CheckCircle2 size={24} className="text-emerald-500 fill-emerald-50" />
+              </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 z-20 bg-white rounded-full p-0.5">
-              <CheckCircle2 size={24} className="text-[#22C55E] fill-white" />
+
+            {/* Header Details */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
+                <span className="px-3 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Stethoscope size={13} />
+                  {doctor.specialty}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center gap-1.5">
+                  <ShieldCheck size={14} />
+                  {doctor.bmdc_reg}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                  {doctor.availability}
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                {doctor.name}
+              </h1>
+
+              <p className="text-sm sm:text-base font-bold text-sky-700 mt-1">
+                {doctor.title}
+              </p>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                {doctor.department}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-3 text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <Building size={16} className="text-slate-400 shrink-0" />
+                  <span className="font-semibold text-slate-800">{doctor.hospital}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80">
+                  <Star size={14} className="fill-amber-500 text-amber-500" />
+                  <span>{doctor.rating}</span>
+                  <span className="text-slate-500 font-normal">({doctor.reviews} verified patient reviews)</span>
+                </div>
+              </div>
             </div>
           </div>
-          
-          {/* Header Details */}
-          <div className="flex-1 text-center md:text-left flex flex-col justify-center h-full items-center md:items-start w-full">
-            
-            <h1 className="text-[32px] md:text-[48px] leading-[1.2] font-[800] text-[#0F172A] mb-3 tracking-tight text-center md:text-left">
-              {doctor.name}
-              {doctor.verified && <BadgeCheck size={32} className="inline-block ml-1.5 text-blue-500 fill-blue-50 align-middle -mt-1.5" />}
-            </h1>
 
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
-              <span className="bg-sky-600/10 text-sky-600 font-bold text-[14px] px-4 py-1.5 rounded-full uppercase tracking-wider">
-                {doctor.specialty}
-              </span>
+          {/* Clinical Performance Metric Badges Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-slate-100">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 text-center">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Experience</span>
+              <strong className="text-lg sm:text-xl font-black text-slate-900">{doctor.experienceYears}+ Years</strong>
+              <span className="text-[10px] text-slate-500 block">Clinical & OPD</span>
             </div>
-            
-            <p className="text-[20px] md:text-[22px] text-[#64748B] font-medium mb-2">
-              {doctor.title}
-            </p>
-            <p className="text-[18px] text-[#0F172A] font-medium flex items-center justify-center md:justify-start gap-2 mb-4">
-              <Hospital size={20} className="text-[#64748B]" /> {doctor.hospital}
-            </p>
-            
-            {/* Rating moved down here */}
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-6">
-              <span className="flex items-center gap-1.5 text-[#F59E0B] text-[15px] font-bold bg-[#F59E0B]/10 px-4 py-2 rounded-full">
-                <Star size={18} className="fill-[#F59E0B]" /> {doctor.rating} ({doctor.reviews} Reviews)
-              </span>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 text-center">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Patients Served</span>
+              <strong className="text-lg sm:text-xl font-black text-sky-700">12,000+</strong>
+              <span className="text-[10px] text-slate-500 block">Treated Cases</span>
             </div>
-            
-            {/* Mobile Book Now Button (Hidden on Desktop) */}
-            <div className="md:hidden mt-6 w-full">
-              <button 
-                onClick={handleBookingClick}
-                className="w-full h-[56px] bg-sky-600 hover:bg-[#0052cc] text-white rounded-xl flex items-center justify-between gap-6 pl-6 pr-1.5 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/40 group overflow-hidden border border-primary/20"
-              >
-                <span className="font-bold text-[16px] tracking-wide">Book Appointment</span>
-                <div className="bg-white/20 backdrop-blur-md border border-white/20 text-slate-900 h-[44px] px-5 rounded-lg flex items-center justify-center gap-1 font-[900] text-[18px]">
-                  <span>৳</span>{doctor.fee}
-                </div>
-              </button>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 text-center">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">BMDC Verified</span>
+              <strong className="text-lg sm:text-xl font-black text-emerald-700">{doctor.qualifications.length} Degrees</strong>
+              <span className="text-[10px] text-slate-500 block">Post-Grad Registered</span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 text-center">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Satisfaction</span>
+              <strong className="text-lg sm:text-xl font-black text-amber-600">99.4%</strong>
+              <span className="text-[10px] text-slate-500 block">Patient Recommended</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PROFILE CONTENT (2 Columns) */}
-      <div className="max-w-[1280px] mx-auto mt-12 px-6 flex flex-col lg:flex-row gap-12">
+      {/* Main Two-Column Content Layout */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Column: 65% */}
-        <div className="w-full lg:w-[65%] space-y-[48px]">
-          
-          {/* About Doctor */}
-          <section>
-            <h2 className="text-[20px] font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <FileText className="text-sky-600" size={20} /> About Doctor
-            </h2>
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <p className="text-slate-600 text-[15px] leading-relaxed">
-                {doctor.about}
+        {/* Left Column (8 cols): Bio, Chambers, Qualifications, Procedures */}
+        <div className="lg:col-span-8 space-y-6">
+
+          {/* Section 1: About Doctor */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <FileText size={18} />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">Clinical Biography & Profile</h2>
+                <p className="text-xs text-slate-500">Overview of specialist expertise, qualifications, and patient care approach</p>
+              </div>
+            </div>
+
+            <div className="mt-4 text-sm leading-relaxed text-slate-700 space-y-3 font-normal">
+              <p>{doctor.about}</p>
+              <p>
+                As an accredited specialist, {doctor.name} provides comprehensive diagnostic evaluation, rational pharmaceutical prescription management, pre-admission workup, and outpatient follow-ups. All consultations synchronize automatically with the patient&apos;s Universal Health Pass, ensuring full emergency continuity.
               </p>
             </div>
-          </section>
 
-          {/* Chambers & Schedule */}
-          {doctor.chambers && doctor.chambers.length > 0 && (
-            <section>
-              <h2 className="text-[20px] font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <CalendarDays className="text-sky-600" size={20} /> Chambers & Schedule
-              </h2>
-              <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col gap-6">
-                {doctor.chambers.map((chamber, idx) => (
-                  <div key={idx} className="flex flex-col gap-2 pb-6 border-b border-slate-100 last:border-0 last:pb-0">
-                    
-                    <div 
-                      className="cursor-pointer group flex flex-col gap-2 p-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors"
-                      onClick={() => setActiveMapIndex(activeMapIndex === idx ? null : idx)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-sky-600 transition-colors">{chamber.name}</h3>
-                        <span className="text-[12px] font-bold text-sky-600 bg-sky-600/10 px-3 py-1 rounded-full whitespace-nowrap">
-                          {activeMapIndex === idx ? "Hide Map" : "View Map"}
-                        </span>
-                      </div>
-                      
-                      <p className="text-[14px] text-slate-500 flex items-center gap-1.5">
-                        <MapPin size={16} /> {chamber.address}
-                      </p>
-                      
-                      <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                        <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-md group-hover:border-primary/30 transition-colors">
-                          <Clock size={14} className="text-slate-500" />
-                          <span className="text-[13px] font-medium text-slate-700">{chamber.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-md group-hover:border-primary/30 transition-colors">
-                          <CalendarDays size={14} className="text-slate-500" />
-                          <span className="text-[13px] font-medium text-slate-700">{chamber.days}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Conditional Map Render for this specific chamber */}
-                    {activeMapIndex === idx && (
-                      <div className="mt-4 pt-4 border-t border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="h-[300px] w-full rounded-xl overflow-hidden shadow-inner border border-slate-200">
-                          <GoogleMap 
-                            lat={doctor.mapLocation?.lat || 23.8052} 
-                            lng={doctor.mapLocation?.lng || 90.3639} 
-                            title={`${chamber.name} Location`}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                  </div>
+            {/* Special Clinical Interests */}
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2.5">
+                Clinical Focus & Treated Procedures:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {doctor.specialtiesList.map((proc, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-sky-50 text-slate-800 hover:text-sky-800 border border-slate-200/80 text-xs font-semibold transition-colors"
+                  >
+                    {proc}
+                  </span>
                 ))}
               </div>
-            </section>
-          )}
-
-          {/* Education & Qualifications */}
-          <section>
-            <h2 className="text-[20px] font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <GraduationCap className="text-sky-600" size={20} /> Education
-            </h2>
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-              <div className="flex flex-col gap-4">
-                {doctor.qualifications.map((qual, idx) => (
-                  <div key={idx} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                    <div>
-                      <h3 className="text-[15px] font-bold text-slate-900 mb-0.5">{qual.degree}</h3>
-                      <p className="text-[13px] text-slate-500">{qual.institute}, {qual.year}</p>
-                    </div>
-                    {qual.verified && (
-                      <div className="flex items-center gap-1 mt-2 md:mt-0 text-emerald-600">
-                        <CheckCircle2 size={16} className="fill-emerald-500 text-white" />
-                        <span className="text-[12px] font-bold uppercase tracking-wider">Verified</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-        </div>
-
-        {/* Right Column: 35% */}
-        <div className="w-full lg:w-[35%] space-y-[48px]">
-          
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-              <span className="text-[28px] font-bold text-sky-600 mb-0.5">{doctor.experienceYears}+</span>
-              <span className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Years Exp</span>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-              <span className="text-[28px] font-bold text-slate-900 mb-0.5">{doctor.reviews}</span>
-              <span className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Patients</span>
             </div>
           </div>
 
-          {/* Location Map */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h2 className="text-[16px] font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <MapPin className="text-sky-600" size={18} /> Practice Location
-            </h2>
-            <p className="text-slate-900 font-medium text-[14px] mb-0.5">{doctor.hospital}</p>
-            <p className="text-slate-500 text-[13px] mb-4">{doctor.location}</p>
-            
-            <div className="w-full h-[260px] rounded-xl overflow-hidden border border-slate-200 shadow-inner">
-              <GoogleMap 
-                lat={doctor.mapLocation?.lat || 23.8052} 
-                lng={doctor.mapLocation?.lng || 90.3639} 
-                title={`${doctor.hospital} - Practice Location`}
+          {/* Section 2: OPD Chambers & Visiting Schedule */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <CalendarDays size={18} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900 tracking-tight">OPD Chambers & Visiting Hours</h2>
+                  <p className="text-xs text-slate-500">Consultation suites and outpatient schedule</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                {doctor.chambers.length} Chambers Available
+              </span>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {doctor.chambers.map((chamber, idx) => {
+                const isSelected = selectedChamberIndex === idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`rounded-2xl border p-5 transition-all ${
+                      isSelected
+                        ? "border-sky-500 bg-sky-50/30 ring-1 ring-sky-500/20"
+                        : "border-slate-200/90 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-base text-slate-900">{chamber.name}</h3>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                            {chamber.room || "Room 201"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-1">
+                          <MapPin size={13} className="text-rose-500 shrink-0" />
+                          <span>{chamber.address}</span>
+                        </p>
+                      </div>
+
+                      <div className="text-left sm:text-right shrink-0">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Consultation Fee</span>
+                        <strong className="text-base font-black text-slate-900">৳ {doctor.fee.toLocaleString()}</strong>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-slate-100 text-xs">
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <Clock size={14} className="text-sky-600 shrink-0" />
+                        <div>
+                          <span className="font-bold text-slate-900">{chamber.days}</span>
+                          <span className="block text-slate-500">{chamber.time}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <Phone size={14} className="text-emerald-600 shrink-0" />
+                        <div>
+                          <span className="font-bold text-slate-900">Direct Helpline:</span>
+                          <span className="block text-slate-500">{chamber.phone || "+880 1711-000000"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedChamberIndex(idx)}
+                        className={`text-xs font-bold cursor-pointer transition-colors ${
+                          isSelected ? "text-sky-700 underline" : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        {isSelected ? "✓ Selected Chamber" : "Select This Chamber"}
+                      </button>
+
+                      <Link
+                        href={`/doctors/${doctor.id}/book?chamber=${encodeURIComponent(chamber.name)}`}
+                        className="h-8 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>Book This Chamber</span>
+                        <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 3: Verified Medical Education & Degrees */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <GraduationCap size={18} />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">Education & Board Qualifications</h2>
+                <p className="text-xs text-slate-500">BMDC registered medical degrees and specialist diplomas</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {doctor.qualifications.map((qual, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200/80 gap-2"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0 mt-0.5">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">{qual.degree}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">{qual.institute}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-center pl-11 sm:pl-0">
+                    <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
+                      {qual.year}
+                    </span>
+                    {qual.verified && (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                        <CheckCircle2 size={13} className="text-emerald-600" />
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 4: Universal Health ID & Admission Continuity */}
+          <div className="bg-gradient-to-r from-sky-900 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-7 text-white shadow-md relative overflow-hidden">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <Activity size={16} />
+                <span>Zero Duplicate Tests Guarantee</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight">
+                Universal Health ID & 1-Second Emergency Continuity
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-xl leading-relaxed">
+                When you consult {doctor.name}, your digital prescription, vitals, allergy profile, and lab results are automatically archived to your Oxpecker Universal Health Pass. If admission or ICU is needed, hospital wards receive your verified history instantaneously.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link
+                  href="/hospital/dashboard/health-pass"
+                  className="h-9 px-4 rounded-xl bg-white text-slate-900 font-bold text-xs flex items-center gap-1.5 hover:bg-slate-100 transition-colors"
+                >
+                  <span>Explore Universal Health Pass</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Column (4 cols): Sticky Booking Card, Map & Hospital Info */}
+        <div className="lg:col-span-4 space-y-6">
+
+          {/* Card 1: Fast Appointment Booking */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs sticky top-20">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                  Consultation Fee
+                </span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl font-black text-slate-900">৳ {doctor.fee.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400 font-medium">/ OPD Visit</span>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                {doctor.availability}
+              </span>
+            </div>
+
+            {/* Fee Policy Details */}
+            <div className="mt-4 space-y-2 text-xs">
+              <div className="flex justify-between items-center py-1 border-b border-slate-50 text-slate-600">
+                <span>New OPD Consultation:</span>
+                <strong className="text-slate-900 font-bold">৳ {doctor.fee.toLocaleString()}</strong>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50 text-slate-600">
+                <span>Follow-up (within 14 days):</span>
+                <strong className="text-slate-900 font-bold">৳ {doctor.followUpFee.toLocaleString()}</strong>
+              </div>
+              <div className="flex justify-between items-center py-1 text-slate-600">
+                <span>Lab Report Review (7 days):</span>
+                <strong className="text-emerald-600 font-bold">FREE</strong>
+              </div>
+            </div>
+
+            {/* Next Available Slot */}
+            <div className="mt-5 p-3.5 rounded-2xl bg-sky-50/60 border border-sky-100 text-xs">
+              <div className="flex items-center gap-2 text-sky-800 font-bold mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Next Available Slot:</span>
+              </div>
+              <p className="text-slate-700 font-semibold pl-4">
+                Today at 05:30 PM (Chamber Suite 201)
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="mt-5 space-y-2.5">
+              <button
+                onClick={handleBookingClick}
+                className="w-full h-12 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm cursor-pointer"
+              >
+                <CalendarDays size={18} />
+                <span>Book OPD Appointment</span>
+              </button>
+
+              <button
+                onClick={() => router.push("/chat")}
+                className="w-full h-10 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer"
+              >
+                <Stethoscope size={15} className="text-sky-600" />
+                <span>AI Clinical Consultation First</span>
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-400 text-center mt-3">
+              100% Free Cancellation up to 2 hours before appointment
+            </p>
+          </div>
+
+          {/* Card 2: Hospital Location & Interactive Map */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+              <MapPin size={18} className="text-rose-500" />
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">Hospital Location</h3>
+                <p className="text-[11px] text-slate-500">{doctor.hospital}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mt-3 font-medium">
+              {doctor.chambers[0]?.address || doctor.location}
+            </p>
+
+            <div className="mt-3.5 h-[220px] w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner">
+              <GoogleMap
+                lat={doctor.mapLocation.lat}
+                lng={doctor.mapLocation.lng}
+                title={`${doctor.name} - ${doctor.hospital}`}
                 className="h-full w-full"
               />
             </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Emergency Hotline:</span>
+              <strong className="text-slate-900 font-bold">+880 1711-098765</strong>
+            </div>
           </div>
-          
+
+          {/* Card 3: Oxpecker Safety & Quality Guarantee */}
+          <div className="bg-slate-50 rounded-3xl border border-slate-200/90 p-5 space-y-2.5 text-xs text-slate-600">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <span>Oxpecker Medical Quality Guarantee</span>
+            </div>
+            <ul className="space-y-1.5 pl-6 list-disc text-slate-500 text-[11px]">
+              <li>BMDC License strictly verified & attested</li>
+              <li>Auto-synced to Universal Health Pass</li>
+              <li>No duplicate diagnostic charges</li>
+            </ul>
+          </div>
+
         </div>
       </div>
-
-      {/* Removed Bottom Booking Bar in favor of Top Right CTA */}
     </div>
   );
 }

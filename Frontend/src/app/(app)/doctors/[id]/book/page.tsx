@@ -42,7 +42,9 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   }, [user]);
 
   useEffect(() => {
-    const doc = mockDoctors.find(d => d.id === resolvedParams.id);
+    const rawId = resolvedParams.id;
+    let doc = mockDoctors.find(function(d) { return d.id === rawId || d.id === ("doc-" + rawId) || d.id.replace("doc-", "") === rawId; });
+    if (!doc && mockDoctors.length > 0) doc = mockDoctors[0];
     if (doc) setDoctor(doc);
   }, [resolvedParams.id]);
 

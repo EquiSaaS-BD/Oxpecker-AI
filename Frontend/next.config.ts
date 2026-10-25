@@ -37,6 +37,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'bwipjs-api.metafloor.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'labaid.com.bd',
+      },
     ],
   },
   async headers() {
