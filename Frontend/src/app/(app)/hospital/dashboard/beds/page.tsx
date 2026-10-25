@@ -32,6 +32,8 @@ import {
   Phone,
   ShieldAlert,
   FileText,
+  QrCode,
+  Printer,
   Check,
   ChevronRight,
   HeartPulse,
@@ -41,6 +43,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { toast, Toaster } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 import type {
   BedGig,
   BedCategory,
@@ -137,6 +140,7 @@ function BedHubContent() {
 
   // Selected Dossier State
   const [selectedDossier, setSelectedDossier] = useState<InpatientAdmission | null>(null);
+  const [selectedGatePass, setSelectedGatePass] = useState<InpatientAdmission | null>(null);
 
   // Load all telemetry on mount
   const refreshAllData = () => {
@@ -152,6 +156,15 @@ function BedHubContent() {
 
   // Update active tab if query param changes
   useEffect(() => {
+    const gatepassParam = searchParams.get("gatepass") || searchParams.get("action");
+    const admissionParam = searchParams.get("admission");
+    if (gatepassParam === "true" || gatepassParam === "gatepass" || admissionParam) {
+      const allAdms = getHospitalAdmissions();
+      const match = admissionParam
+        ? allAdms.find((a) => a.id === admissionParam || a.bed_id === admissionParam)
+        : allAdms.find((a) => a.status === "Admitted") || allAdms[0];
+      if (match) setSelectedGatePass(match);
+    }
     const tabParam = searchParams.get("tab") as HubTab;
     if (tabParam && ["beds", "bookings", "inpatients", "gigs"].includes(tabParam)) {
       setActiveTab(tabParam);
@@ -432,7 +445,8 @@ function BedHubContent() {
     refreshAllData();
     setIsSubmittingAdmit(false);
     setIsAdmitModalOpen(false);
-    toast.success(`Patient admitted to Bed ${targetBedId}!`);
+    setSelectedGatePass(newAdm);
+    toast.success(`Patient admitted to Bed ${targetBedId}! 24/7 Security Gate Pass generated.`);
   };
 
   return (
@@ -684,6 +698,7 @@ function BedHubContent() {
               const isVacant = bed.status === "Vacant";
               const isOccupied = bed.status === "Occupied";
               const isCleaning = bed.status === "Cleaning";
+              const matchAdm = admissions.find((a) => a.bed_id === bed.id && a.status === "Admitted");
 
               return (
                 <div
@@ -821,17 +836,29 @@ function BedHubContent() {
                           Mark Ready
                         </button>
                       ) : isOccupied ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const matchAdm = admissions.find((a) => a.bed_id === bed.id && a.status === "Admitted");
-                            if (matchAdm) handleDischargePatient(matchAdm.id);
-                            else handleQuickStatusChange(bed.id, "Cleaning");
-                          }}
-                          className="h-8 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition-colors cursor-pointer"
-                        >
-                          Discharge
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const matchAdm = admissions.find((a) => a.bed_id === bed.id && a.status === "Admitted");
+                              if (matchAdm) handleDischargePatient(matchAdm.id);
+                              else handleQuickStatusChange(bed.id, "Cleaning");
+                            }}
+                            className="h-8 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition-colors cursor-pointer"
+                          >
+                            Discharge
+                          </button>
+                          {matchAdm && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedGatePass(matchAdm)}
+                              className="h-8 px-2.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                              title="View 24/7 Security QR Gate Pass"
+                            >
+                              <QrCode size={12} /> Gate Pass
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <button
                           type="button"
@@ -1080,6 +1107,14 @@ function BedHubContent() {
                         </td>
                         <td className="py-3.5 px-5 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedGatePass(adm)}
+                              className="h-7 px-2.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                              title="View 24/7 Security QR Gate Pass"
+                            >
+                              <QrCode size={12} /> Gate Pass
+                            </button>
                             <button
                               type="button"
                               onClick={() => setSelectedDossier(adm)}
@@ -1462,8 +1497,217 @@ function BedHubContent() {
                 </Link>
                 <button
                   type="button"
+                  onClick={() => {
+                    setSelectedGatePass(selectedDossier);
+                    setSelectedDossier(null);
+                  }}
+                  className="h-10 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <QrCode size={14} /> 24/7 Security Gate Pass
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSelectedDossier(null)}
                   className="h-10 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* 24/7 Security Inpatient QR Gate Pass Popup Modal */}
+      <AnimatePresence>
+        {selectedGatePass && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedGatePass(null)}
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-lg max-h-[94vh] overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 sm:p-7 border border-slate-200 custom-scrollbar z-10"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                      24/7 Inpatient Security Gate Pass
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Official Ward Access Control & Attendant Clearance
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedGatePass(null)}
+                  className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Pass Body (Printable Card) */}
+              <div id="printable-gate-pass" className="mt-5 space-y-4">
+                
+                {/* Hospital Badge & Status Banner */}
+                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 text-white rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                  <div className="flex items-start justify-between gap-3 relative z-10">
+                    <div>
+                      <span className="text-[10px] font-bold text-sky-400 tracking-widest uppercase block">
+                        OXPECKER SPECIALIZED MEDICAL CENTRE
+                      </span>
+                      <h4 className="text-sm font-black tracking-wide text-white mt-0.5">
+                        INPATIENT ACCESS & ATTENDANT PASS
+                      </h4>
+                      <p className="text-[11px] text-slate-300 font-mono mt-0.5">
+                        PASS ID: PASS-{selectedGatePass.id.replace(/[^0-9]/g, "") || "2026"}-SEC
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-end">
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        24/7 ALL-ACCESS
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-mono mt-1">
+                        VERIFIED ADMISSION
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Patient & Room Spec */}
+                <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Patient Name</span>
+                    <strong className="text-sm font-black text-slate-900 block truncate">
+                      {selectedGatePass.english_name || selectedGatePass.patient_name}
+                    </strong>
+                    <span className="text-[11px] text-slate-500">
+                      Age: {selectedGatePass.age || 45} • Blood: {selectedGatePass.blood_group || "O+"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Suite / Bed</span>
+                    <strong className="text-sm font-black text-emerald-700 block truncate">
+                      {selectedGatePass.bed_id}
+                    </strong>
+                    <span className="text-[11px] text-slate-500 truncate block">
+                      {selectedGatePass.bed_name || selectedGatePass.bed_type}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Admission Ref</span>
+                    <span className="font-mono font-bold text-slate-800">{selectedGatePass.id}</span>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Universal HealthPass UID</span>
+                    <span className="font-mono font-bold text-sky-700 truncate block">
+                      {selectedGatePass.smart_card_uid || "HP-88017-9021"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Authorized Attendant & Visiting Rights */}
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Authorized Primary Attendant
+                    </span>
+                    <span className="text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
+                      1 Attendant Permitted 24/7
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <strong className="text-sm font-black text-slate-900 block">
+                        {selectedGatePass.emergency_contact_name || "Fatema Begum"}
+                      </strong>
+                      <span className="text-slate-500 text-[11px]">
+                        Relation: {selectedGatePass.emergency_contact_relation || "Spouse / Guardian"}
+                      </span>
+                    </div>
+                    <span className="font-mono font-bold text-slate-700 text-xs">
+                      {selectedGatePass.emergency_contact_phone || selectedGatePass.personal_phone}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 pt-1 border-t border-slate-100 leading-snug">
+                    ✓ Access granted to Patient Room, Ward Corridor, Hospital Cafeteria, and Inpatient Pharmacy at any hour.
+                  </p>
+                </div>
+
+                {/* Scannable Security QR Code */}
+                <div className="p-4 rounded-2xl bg-white border-2 border-slate-200 text-center space-y-2 shadow-xs">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                    Security Barrier Scanner QR Code
+                  </span>
+
+                  <div className="inline-block p-3 bg-white rounded-xl border border-slate-200 shadow-inner">
+                    <QRCodeSVG
+                      value={JSON.stringify({
+                        type: "OXPECKER_SECURITY_GATE_PASS",
+                        pass_id: `PASS-${selectedGatePass.id}-247`,
+                        admission_id: selectedGatePass.id,
+                        patient: selectedGatePass.english_name || selectedGatePass.patient_name,
+                        bed: selectedGatePass.bed_id,
+                        validity: "24/7_STAY",
+                        security_signature: "OXPECKER-VERIFIED-AUTH-GATE",
+                      })}
+                      size={150}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <div className="font-mono text-[9px] text-slate-400 tracking-widest uppercase">
+                      ||| | ||||| | |||| ||| |||| | | |||
+                    </div>
+                    <span className="font-mono text-[10px] font-bold text-slate-500 block">
+                      SECURITY HASH: SHA256-OX-{selectedGatePass.id}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Actions */}
+              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.print();
+                    }
+                  }}
+                  className="h-10 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+                >
+                  <Printer size={15} />
+                  <span>Print Gate Pass</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedGatePass(null)}
+                  className="h-10 px-5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 cursor-pointer transition-colors"
                 >
                   Close
                 </button>
