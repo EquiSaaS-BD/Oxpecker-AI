@@ -133,9 +133,12 @@ function LoginForm() {
       }
 
       // Automatically determine user role from database
-      const resolvedRole: UserRole = (dbProfile?.role as UserRole) || (queryRole as UserRole) || "patient";
+      const resolvedRole: UserRole = 
+        (dbProfile?.role as UserRole) || 
+        (queryRole as UserRole) || 
+        (lowerEmail.includes("admin") ? "admin" : lowerEmail.includes("doctor") ? "doctor" : lowerEmail.includes("hospital") ? "hospital" : "patient");
       const userId = dbProfile?.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "user-" + Date.now());
-      const userName = dbProfile?.name || email.split("@")[0] || "User";
+      const userName = dbProfile?.name || (resolvedRole === "admin" ? "System Administrator" : email.split("@")[0] || "User");
 
       const userSession = {
         id: userId,
