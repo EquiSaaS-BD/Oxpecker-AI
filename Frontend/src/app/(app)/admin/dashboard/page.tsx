@@ -1,5 +1,6 @@
-import { AdvancedVisualizations } from "@/components/admin/AdvancedVisualizations";
 "use client";
+
+import { AdvancedVisualizations } from "@/components/admin/AdvancedVisualizations";
 
 import { motion } from "framer-motion";
 import { Users, DollarSign, BrainCircuit, Activity, TrendingUp, Calendar, AlertCircle, ArrowUpRight, ArrowDownRight } from "lucide-react";
