@@ -5,6 +5,15 @@ Oxpecker AI is built to solve fragmented medical records, inefficient serial man
 
 ---
 
+
+## ⚡ High-Performance AI Inference: Nebius Token Factory & NVIDIA Nemotron
+
+Oxpecker AI utilizes **Nebius Token Factory** high-performance inference cloud paired with **NVIDIA's Llama-3.1-Nemotron-70B-Instruct** model to achieve ultra-fast, hallucination-resistant clinical reasoning and emergency triage:
+- **Inference Cloud:** Nebius Token Factory (`https://api.tokenfactory.nebius.com/v1`)
+- **Foundational Model:** `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF`
+- **Clinical Alignment:** Grounded with Contextual RAG on 9,600+ validated cases and Directorate General of Health Services (DGHS) Bangladesh clinical guidelines.
+- **Latency & Streaming:** Sub-second serverless token generation delivered through Next.js edge stream adapters.
+
 ## 🏗️ System Architecture
 
 ```mermaid
