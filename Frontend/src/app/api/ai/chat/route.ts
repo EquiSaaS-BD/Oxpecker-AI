@@ -678,7 +678,39 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
+        // ============================================
+    // Provider Attempt 0: Nebius Token Factory (NVIDIA Nemotron 70B / Llama-3.1-Nemotron)
+    // Hackathon Sponsor Tier: Nebius x NVIDIA Global AI Infrastructure
     // ============================================
+    const nebiusKey = process.env.NEBIUS_API_KEY;
+    if (nebiusKey && nebiusKey.trim().length > 5) {
+      try {
+        const nebiusBaseUrl = (process.env.NEBIUS_BASE_URL || 'https://api.tokenfactory.nebius.com/v1').replace(/\/+$/, '');
+        const nebiusModel = process.env.NEBIUS_MODEL || 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF';
+        const stream = await streamFromOpenAIEndpoint(
+          `${nebiusBaseUrl}/chat/completions`,
+          { 'Authorization': `Bearer ${nebiusKey.trim()}` },
+          {
+            model: nebiusModel,
+            messages: fullMessages,
+            temperature: 0.3,
+            max_tokens: 3000,
+          }
+        );
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-AI-Provider': 'Nebius-NVIDIA-Nemotron-70B',
+          },
+        });
+      } catch (err: any) {
+        console.warn('[Oxpecker AI] Nebius Token Factory (NVIDIA Nemotron) streaming error, falling back to Azure:', err.message || err);
+      }
+    }
+
+// ============================================
     // Provider Attempt 1: Microsoft Azure OpenAI (Native Azure Subscription)
     // ============================================
     if (process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT) {
