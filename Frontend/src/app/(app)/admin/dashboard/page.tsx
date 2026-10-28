@@ -1,3 +1,4 @@
+import { AdvancedVisualizations } from "@/components/admin/AdvancedVisualizations";
 "use client";
 
 import { motion } from "framer-motion";
@@ -52,6 +53,9 @@ export default function AdminDashboardPage() {
       >
         <StatsBento />
       </motion.div>
+
+      {/* D3.js, Chart.js, Grafana Visual Suite */}
+      <AdvancedVisualizations />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
