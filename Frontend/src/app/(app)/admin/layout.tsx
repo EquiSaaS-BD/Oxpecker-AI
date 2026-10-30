@@ -13,14 +13,14 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-full w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
-      <Toaster theme="light" position="top-right" />
+    <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
+      <Toaster theme="light" position="top-right" richColors closeButton />
       
       {/* Sidebar Navigation */}
       <AdminSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
+      {/* Main Content Area with Subtle Ambient Glow */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100/60">
         <AdminHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="flex-1 overflow-y-auto custom-scrollbar relative p-4 sm:p-6 lg:p-8">

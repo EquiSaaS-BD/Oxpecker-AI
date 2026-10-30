@@ -16,17 +16,17 @@ export function AdminPageHeader({ title, description, icon, action }: AdminPageH
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex items-center gap-3"
+        className="flex items-center gap-3.5"
       >
         {icon && (
-          <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-300 flex items-center justify-center text-emerald-400 shadow-sm">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-600 shadow-sm shrink-0">
             {icon}
           </div>
         )}
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">{title}</h1>
           {description && (
-            <p className="text-sm font-medium text-slate-500 mt-1">{description}</p>
+            <p className="text-sm font-medium text-slate-600 mt-1">{description}</p>
           )}
         </div>
       </motion.div>
