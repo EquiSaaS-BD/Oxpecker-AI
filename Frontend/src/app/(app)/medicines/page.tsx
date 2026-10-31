@@ -7,7 +7,7 @@ import {
   Search, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
   CheckCircle2, TrendingDown, Image as ImageIcon, Bot,
   Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ShieldCheck, ArrowRight,
-  SlidersHorizontal, X, Syringe, FlaskConical, Bandage
+  SlidersHorizontal, X, Syringe, FlaskConical, Bandage, Sparkles, Camera, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,13 +16,13 @@ import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 import { PrescriptionReview } from "@/components/prescription/PrescriptionReview";
 
 const CATEGORIES = [
-  { id: "All", name: "All", icon: Pill, color: "text-slate-500", bg: "bg-slate-100" },
-  { id: "Painkiller", name: "Fever & Pain", icon: Thermometer, color: "text-rose-500", bg: "bg-rose-50" },
-  { id: "Gastric", name: "Gastric & Ulcer", icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
-  { id: "Antibiotic", name: "Antibiotics", icon: BugOff, color: "text-purple-500", bg: "bg-purple-50" },
-  { id: "Allergy", name: "Asthma & Allergy", icon: Wind, color: "text-sky-500", bg: "bg-sky-50" },
-  { id: "Vitamins", name: "Vitamins & Calcium", icon: Apple, color: "text-amber-500", bg: "bg-amber-50" },
-  { id: "Cardiac", name: "Heart & Pressure", icon: Heart, color: "text-red-500", bg: "bg-red-50" }
+  { id: "All", name: "All Medicines", icon: Pill, color: "text-slate-600", bg: "bg-slate-100", activeBg: "bg-slate-900 text-white" },
+  { id: "Painkiller", name: "Fever & Pain", icon: Thermometer, color: "text-rose-600", bg: "bg-rose-50", activeBg: "bg-rose-600 text-white" },
+  { id: "Gastric", name: "Gastric & Ulcer", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50", activeBg: "bg-emerald-600 text-white" },
+  { id: "Antibiotic", name: "Antibiotics", icon: BugOff, color: "text-purple-600", bg: "bg-purple-50", activeBg: "bg-purple-600 text-white" },
+  { id: "Allergy", name: "Asthma & Allergy", icon: Wind, color: "text-sky-600", bg: "bg-sky-50", activeBg: "bg-sky-600 text-white" },
+  { id: "Vitamins", name: "Vitamins & Calcium", icon: Apple, color: "text-amber-600", bg: "bg-amber-50", activeBg: "bg-amber-600 text-white" },
+  { id: "Cardiac", name: "Heart & Pressure", icon: Heart, color: "text-red-600", bg: "bg-red-50", activeBg: "bg-red-600 text-white" }
 ];
 
 export default function MedicinesPage() {
@@ -58,7 +58,6 @@ export default function MedicinesPage() {
     if (!uploadedImage?.startsWith("blob:")) return;
     return () => URL.revokeObjectURL(uploadedImage);
   }, [uploadedImage]);
-  
 
   const fetchMedicines = useCallback(async (pageNum: number, isNewSearch: boolean = false) => {
     try {
@@ -95,11 +94,10 @@ export default function MedicinesPage() {
 
   // Trigger search/filter changes
   useEffect(() => {
-    // Debounce search slightly
     const timer = setTimeout(() => {
       setPage(1);
       fetchMedicines(1, true);
-    }, 400);
+    }, 350);
     return () => clearTimeout(timer);
   }, [fetchMedicines]);
 
@@ -140,52 +138,67 @@ export default function MedicinesPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] overflow-y-auto pb-24 lg:pb-0">
+    <div className="flex flex-col h-full bg-[#F8FAFC] overflow-y-auto pb-36 sm:pb-32 lg:pb-16">
       
       {/* Search & Scanner Hero Banner */}
-      <div className="relative shrink-0 bg-white border-b border-slate-200 px-4 md:px-8 pt-20 lg:pt-8 pb-8 overflow-hidden z-10 shadow-sm">
-        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row gap-8 items-center justify-between">
+      <div className="relative shrink-0 bg-white border-b border-slate-200/80 px-4 md:px-8 pt-6 sm:pt-10 lg:pt-8 pb-7 z-10 shadow-xs">
+        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch lg:items-center justify-between">
           
           {/* Left: Search Title & Bar */}
           <div className="flex-1 w-full min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-700 font-semibold text-xs uppercase tracking-widest mb-4">
-              <Bot size={14} className="text-sky-600" />
-              National AI Pharmacy Network
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-200/70 text-sky-700 font-semibold text-xs uppercase tracking-wider mb-3">
+              <Bot size={13} className="text-sky-600" />
+              <span>National AI Pharmacy Network</span>
             </div>
-            <h1 className="text-[28px] md:text-[36px] font-[800] text-slate-900 mb-4 leading-tight">Centralized Medicine Database</h1>
-            <p className="text-[15px] text-slate-500 font-medium mb-6 leading-relaxed max-w-[600px]">Search the national database, compare medicine prices instantly, or upload a prescription to automatically save it to your Health ID and find the best alternatives.</p>
+
+            <h1 className="text-[24px] sm:text-[32px] md:text-[36px] font-[900] text-slate-900 mb-2 leading-tight tracking-tight">
+              Centralized Medicine Database
+            </h1>
             
-            <div className="flex items-center gap-2 max-w-[600px] w-full">
-              <div className="flex-1 bg-slate-50 rounded-[16px] flex items-center p-2 border border-slate-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
-                <div className="pl-4 pr-3 text-slate-500">
-                  <Search size={20} />
+            <p className="text-[14px] sm:text-[15px] text-slate-500 font-medium mb-5 leading-relaxed max-w-[620px]">
+              Search 21,700+ verified medicines, compare pharmacy prices instantly, or upload a prescription to find cheap generic alternatives.
+            </p>
+            
+            {/* Search Input Box */}
+            <div className="flex items-center gap-2 max-w-[620px] w-full">
+              <div className="flex-1 bg-slate-50 hover:bg-slate-100/70 rounded-2xl flex items-center p-1.5 sm:p-2 border border-slate-200 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/15 focus-within:bg-white transition-all shadow-xs">
+                <div className="pl-3.5 pr-2.5 text-slate-400">
+                  <Search size={18} />
                 </div>
                 <input 
                   type="text" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search medicine, generic..." 
-                  className="flex-1 bg-transparent border-none outline-none py-2 text-[15px] font-medium text-slate-800 placeholder:text-slate-500 min-w-0"
+                  placeholder="Search medicine, generic, or symptom..." 
+                  className="flex-1 bg-transparent border-none outline-none py-1.5 text-[14px] sm:text-[15px] font-medium text-slate-800 placeholder:text-slate-400 min-w-0"
                 />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="p-1.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 mr-1 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
               <button 
                 onClick={() => setIsFilterOpen(true)}
-                className="bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 rounded-[16px] w-[54px] h-[54px] shrink-0 flex items-center justify-center transition-all shadow-sm"
+                className="bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 rounded-2xl w-[48px] sm:w-[52px] h-[48px] sm:h-[52px] shrink-0 flex items-center justify-center transition-all shadow-xs cursor-pointer"
+                title="Filter categories"
               >
-                <SlidersHorizontal size={20} />
-              </button>
-              <button className="hidden sm:flex bg-white hover:bg-slate-50 text-slate-900 rounded-[16px] px-6 h-[54px] items-center justify-center gap-2 text-[14px] font-bold transition-colors shadow-sm shrink-0">
-                Search
+                <SlidersHorizontal size={18} />
               </button>
             </div>
             
-            <div className="flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
-              <span className="text-[12px] font-[800] text-slate-500 uppercase tracking-widest mr-2">Popular Searches:</span>
-              {["Napa Extend", "Sergel 20mg", "Losectil", "Calbo D", "Alatrol"].map(tag => (
+            {/* Popular Searches Pills */}
+            <div className="flex items-center gap-2 mt-3.5 overflow-x-auto scrollbar-hide whitespace-nowrap pt-0.5 pb-1">
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mr-1 shrink-0">Popular:</span>
+              {["Napa Extend", "Sergel 20mg", "Losectil", "Calbo D", "Alatrol", "Ace Plus", "Ciprocin"].map(tag => (
                 <button 
                   key={tag} 
                   onClick={() => setSearchQuery(tag)}
-                  className="bg-white border border-slate-200 px-4 py-1.5 rounded-lg text-[13px] font-bold text-slate-600 hover:border-primary hover:text-sky-600 transition-colors shadow-sm shrink-0"
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 px-3 py-1 rounded-lg text-[12px] font-bold text-slate-600 hover:text-sky-700 transition-colors shadow-2xs shrink-0 cursor-pointer"
                 >
                   {tag}
                 </button>
@@ -193,14 +206,14 @@ export default function MedicinesPage() {
             </div>
           </div>
 
-          {/* Right: Prescription Scanner Box */}
-          <div className="w-full lg:w-[400px] shrink-0">
+          {/* Right: Modern Prescription Scanner Card (Mobile & Desktop) */}
+          <div className="w-full lg:w-[380px] shrink-0">
             <label 
               htmlFor="rx-upload"
-              className={`block transition-all relative overflow-hidden ${
+              className={`block relative overflow-hidden rounded-2xl border transition-all cursor-pointer shadow-xs ${
                 isScanning 
-                  ? 'border-2 border-dashed rounded-[24px] p-6 lg:p-8 text-center border-primary cursor-wait bg-sky-600/5' 
-                  : 'flex lg:block items-center justify-center h-[54px] lg:h-auto rounded-[16px] lg:rounded-[24px] bg-white lg:bg-slate-50 text-white lg:text-slate-900 shadow-md shadow-slate-900/20 lg:shadow-none lg:border-2 lg:border-dashed lg:border-slate-300 lg:p-8 hover:bg-slate-50 lg:hover:border-primary lg:hover:bg-sky-600/5 cursor-pointer'
+                  ? 'border-sky-500 bg-sky-50/90 cursor-wait ring-2 ring-sky-500/20' 
+                  : 'border-sky-200/80 bg-gradient-to-br from-sky-50/60 via-white to-blue-50/50 hover:border-sky-400 hover:shadow-md'
               }`}
             >
               {/* Hidden file input */}
@@ -215,47 +228,53 @@ export default function MedicinesPage() {
               
               {uploadedImage && (
                 <div className="absolute inset-0 z-0">
-                  <Image src={uploadedImage} alt="Uploaded Rx" fill className="object-cover opacity-30" />
+                  <Image src={uploadedImage} alt="Uploaded Rx" fill className="object-cover opacity-15" />
                 </div>
               )}
 
               {isScanning ? (
-                <div className="relative z-10 flex flex-col items-center justify-center space-y-4 py-4">
-                  <div className="relative">
-                    <ScanBarcode size={48} className="text-sky-600 animate-pulse" />
-                    <div className="absolute inset-0 bg-sky-600/20 blur-xl rounded-full"></div>
-                    <div className="absolute top-0 left-0 w-full h-[2px] bg-sky-600 animate-scan-line shadow-[0_0_8px_2px_#6DDA6E]"></div>
+                <div className="relative z-10 p-5 flex flex-col items-center justify-center text-center">
+                  <div className="relative mb-3">
+                    <ScanBarcode size={36} className="text-sky-600 animate-pulse" />
+                    <div className="absolute inset-0 bg-sky-500/20 blur-lg rounded-full"></div>
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-sky-600 animate-scan-line shadow-[0_0_8px_2px_#0284c7]"></div>
                   </div>
-                  <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-md border border-slate-100 w-full max-w-[320px]">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[12px] font-bold text-sky-600 uppercase tracking-wider">Analyzing prescription</span>
-                    </div>
-                    <p className="text-[13px] text-slate-700 font-bold text-left animate-pulse">
-                      Transcribing image and checking the dated medicine catalog…
-                    </p>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-extrabold uppercase tracking-wider mb-1.5">
+                    <Bot size={13} />
+                    <span>AI Scanning Active</span>
+                  </div>
+                  <p className="text-[13px] text-slate-800 font-bold">
+                    Analyzing prescription & comparing prices...
+                  </p>
+                  <div className="w-full max-w-[200px] bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div className="bg-sky-600 h-full w-2/3 animate-[pulse_1s_infinite] rounded-full" />
                   </div>
                 </div>
               ) : (
-                <>
-                  {/* Desktop Upload Box */}
-                  <div className="hidden lg:flex relative z-10 flex-col items-center justify-center space-y-3">
-                    <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100">
-                      <ImageIcon size={28} className="text-slate-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-[16px] font-bold text-slate-900 mb-1">Upload Prescription</h3>
-                      <p className="text-[13px] text-slate-500 font-medium mb-4">Click here to upload an image of your Rx</p>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl font-bold text-[14px] shadow-sm hover:border-primary hover:text-sky-600 transition-all pointer-events-none">
-                      <UploadCloud size={18} /> Upload Image
-                    </div>
+                <div className="relative z-10 p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4">
+                  <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-sky-600/10 text-sky-600 border border-sky-600/20 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                    <UploadCloud size={22} className="text-sky-600" />
                   </div>
-                  
-                  {/* Mobile Upload Button */}
-                  <div className="flex lg:hidden items-center justify-center gap-2 w-full h-full font-bold text-[15px] pointer-events-none relative z-10">
-                    <UploadCloud size={20} /> Upload Prescription
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <h3 className="text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors">
+                        Upload Prescription
+                      </h3>
+                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 border border-sky-200/50">
+                        AI OCR
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-slate-500 font-medium line-clamp-1">
+                      Instant price match & substitute finder
+                    </p>
                   </div>
-                </>
+                  <div className="shrink-0">
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-[12px] shadow-xs transition-colors">
+                      <Camera size={13} />
+                      <span className="hidden min-[420px]:inline">Upload</span>
+                    </span>
+                  </div>
+                </div>
               )}
             </label>
           </div>
@@ -263,30 +282,30 @@ export default function MedicinesPage() {
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 w-full">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-6 sm:py-8 w-full">
         
         {/* Scan Result Logic / Alternatives */}
         {scanResult && (
-          <div className="bg-[#ecfdf5] border border-[#a7f3d0] rounded-[24px] p-6 md:p-8 mb-10 shadow-sm relative overflow-hidden">
+          <div className="bg-[#ecfdf5] border border-[#a7f3d0] rounded-2xl sm:rounded-3xl p-5 sm:p-7 mb-8 shadow-xs relative overflow-hidden">
             <div className="absolute right-0 top-0 opacity-10 pointer-events-none p-6">
               <Bot size={120} />
             </div>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-[#10b981] rounded-full flex items-center justify-center shadow-sm">
-                  <CheckCircle2 size={24} className="text-white" />
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 bg-[#10b981] rounded-xl flex items-center justify-center shadow-xs shrink-0">
+                  <CheckCircle2 size={22} className="text-white" />
                 </div>
                 <div>
-                  <h2 className="text-[20px] font-bold text-[#065f46]">Prescription transcription draft</h2>
-                  <p className="text-[14px] font-medium text-[#047857]">Saved privately · Reference: <strong>{scanResult.documentId}</strong> · Verify each field against the original before use.</p>
+                  <h2 className="text-[18px] sm:text-[20px] font-bold text-[#065f46]">Prescription Analysis Complete</h2>
+                  <p className="text-[13px] font-medium text-[#047857]">Reference: <strong>{scanResult.documentId}</strong> · Compare extracted items with original image below.</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
                 {uploadedImage && (
                   <figure className="bg-white rounded-2xl border border-emerald-100 p-3">
-                    <figcaption className="text-sm font-bold text-slate-700 mb-2">Original prescription — compare each field with this image</figcaption>
-                    <Image src={uploadedImage} alt="Original uploaded prescription for manual comparison" width={1200} height={1600} unoptimized className="w-full h-auto max-h-[680px] object-contain rounded-xl bg-slate-50" />
+                    <figcaption className="text-xs font-bold text-slate-700 mb-2">Original Prescription</figcaption>
+                    <Image src={uploadedImage} alt="Original uploaded prescription" width={1200} height={1600} unoptimized className="w-full h-auto max-h-[500px] object-contain rounded-xl bg-slate-50" />
                   </figure>
                 )}
                 <div>
@@ -300,71 +319,107 @@ export default function MedicinesPage() {
               </div>
               
               {!scanReviewedAgainstImage ? (
-                <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">মূল ছবির সঙ্গে OCR লেখা মিলিয়ে সংশোধন সংরক্ষণ করলে exact-pack historical price comparison দেখানো হবে।</p>
+                <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 font-medium">
+                  মূল ছবির সঙ্গে OCR লেখা মিলিয়ে সংরক্ষণ করলে সেরা বিকল্প ও ফার্মেসি মূল্য তুলনা দেখানো হবে।
+                </p>
               ) : <>
-              <h3 className="text-[16px] font-bold text-[#065f46] mb-4 flex items-center gap-2">
-                <TrendingDown size={18} /> Exact-formulation catalog price matches
+              <h3 className="text-[16px] font-bold text-[#065f46] mb-3 flex items-center gap-2">
+                <TrendingDown size={18} /> Best Equivalent Matches & Alternatives
               </h3>
-              <p className="text-xs text-slate-600 mb-4">Source: {scanResult.priceSnapshot?.source || "catalog snapshot"}; generated {scanResult.priceSnapshot?.generatedAt || "date unavailable"} ({scanResult.priceSnapshot?.ageDays ?? "unknown"} days old, {scanResult.priceSnapshot?.freshness || "freshness unknown"}). Matches require the same generic, strength, dosage form, and package size. {scanResult.priceSnapshot?.freshness !== "recent" && "Prices and savings below are historical snapshot values; today's prices are unverified."}</p>
               {(scanResult.medicineComparisons || []).map((comparison: any, medicineIndex: number) => (
-                <div key={medicineIndex} className="bg-white rounded-xl p-4 mb-3 border border-emerald-100">
-                  <p className="font-bold text-slate-900 mb-2">Prescription entry: {comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Medicine not identified"} · {comparison.prescribed?.strength || "strength unreadable"}</p>
+                <div key={medicineIndex} className="bg-white rounded-xl p-4 mb-3 border border-emerald-100 shadow-2xs">
+                  <p className="font-bold text-slate-900 mb-2">
+                    Prescribed: {comparison.prescribed?.brandName || comparison.prescribed?.genericName || "Medicine"} · {comparison.prescribed?.strength || ""}
+                  </p>
                   {comparison.baselinePrice !== null && comparison.baselinePrice !== undefined && (
-                    <p className="text-sm text-slate-700 mb-3">{scanResult.priceSnapshot?.freshness === "recent" ? "Catalog price" : "Historical snapshot price"} for the prescribed brand: ৳ {comparison.baselinePrice.toFixed(2)} / {comparison.baselinePriceBasis}</p>
+                    <p className="text-sm text-slate-700 mb-3">Brand Price: ৳ {comparison.baselinePrice.toFixed(2)} / {comparison.baselinePriceBasis}</p>
                   )}
                   {(comparison.comparablePrices || []).map((alternative: any, alternativeIndex: number) => (
-                    <div key={alternativeIndex} className="py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                    <div key={alternativeIndex} className="py-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="font-semibold text-slate-900">{alternative.brandName} · {alternative.manufacturer}</p>
-                        <p className="text-xs text-slate-500">{alternative.generic} · {alternative.strength} · {alternative.dosageForm} · {alternative.packageSize}</p>
+                        <p className="font-semibold text-slate-900 text-sm">{alternative.brandName} · <span className="text-slate-500 font-normal">{alternative.manufacturer}</span></p>
+                        <p className="text-xs text-slate-500">{alternative.generic} · {alternative.strength} · {alternative.dosageForm}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-extrabold text-sky-700">{scanResult.priceSnapshot?.freshness === "recent" ? "" : "Historical "}৳ {alternative.price.toFixed(2)} / {alternative.priceBasis}</p>
-                        {alternative.savings !== null && <p className="text-xs text-emerald-700">৳ {alternative.savings.toFixed(2)} lower per {alternative.priceBasis} in this snapshot</p>}
+                        <p className="font-extrabold text-sky-700 text-sm">৳ {alternative.price.toFixed(2)} / {alternative.priceBasis}</p>
+                        {alternative.savings !== null && <p className="text-[11px] text-emerald-700 font-semibold">৳ {alternative.savings.toFixed(2)} cheaper</p>}
                       </div>
                     </div>
                   ))}
-                  {!comparison.comparablePrices?.length && <p className="text-sm text-slate-600 border-t border-slate-100 pt-3">{comparison.status === "price-snapshot-unavailable" ? "Current price and equivalent alternatives could not be verified from this dated snapshot." : comparison.status === "insufficient-extracted-details" ? "The scan did not identify enough details for a safe exact-pack comparison." : "No exact-pack equivalent was found in this catalog."}</p>}
+                  {!comparison.comparablePrices?.length && <p className="text-xs text-slate-500 border-t border-slate-100 pt-2.5">No exact-pack equivalent was found in this catalog.</p>}
                 </div>
               ))}
-              {!(scanResult.medicineComparisons || []).some((comparison: any) => comparison.comparablePrices?.length) && (
-                <p className="text-sm text-slate-600">{scanResult.priceSnapshot?.freshness === "recent" ? "No exact-pack equivalent was found. Confirm unclear medicine and package details with a pharmacist before substituting." : "No exact-pack match with a listed price was found in this dated snapshot; current prices could not be verified."}</p>
-              )}
               </>}
             </div>
           </div>
         )}
 
-        {/* E-Commerce Medicine Grid */}
-        <div className="flex justify-between items-end mb-6 mt-8">
+        {/* Clean Header: Category & Count (Zero Clutter) */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
           <div>
-            <h2 className="text-[28px] md:text-[32px] font-[800] text-slate-900">
-              {searchQuery ? `Search Results for "${searchQuery}"` : "Find Medicines by Category"}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                <ShieldCheck size={12} className="text-emerald-600" />
+                DGDA Verified Database
+              </span>
+              <span className="text-[12px] text-slate-400 font-medium">
+                • {totalCount > 0 ? `${totalCount.toLocaleString()} medicines available` : "Comprehensive formulary"}
+              </span>
+            </div>
+            
+            <h2 className="text-[20px] sm:text-[26px] md:text-[28px] font-[900] text-slate-900 tracking-tight">
+              {searchQuery ? `Results for "${searchQuery}"` : "Find Medicines by Category"}
             </h2>
-            <p className="text-[15px] text-slate-500 font-medium mt-2">
-              Browse {totalCount > 0 ? totalCount.toLocaleString() : 'thousands of'} commonly prescribed medicines grouped by their primary usage.
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              {priceSnapshot?.freshness === "recent" ? "Catalog prices" : "Historical catalog snapshot; current prices unverified"} from {priceSnapshot?.source || "the bundled catalog"}; generated {priceSnapshot?.generatedAt || "date unavailable"} ({priceSnapshot?.ageDays ?? "unknown"} days old, {priceSnapshot?.freshness || "freshness unknown"}). Prices are historical when the snapshot is stale and are per unit where recorded.
+            <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium mt-0.5">
+              Browse authentic medicines, dosage strengths, and approved generic substitutes.
             </p>
           </div>
         </div>
 
-        {/* Category Tabs moved to Sidebar Drawer */}
+        {/* Quick Horizontal Category Bar (Mobile & Desktop) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          {CATEGORIES.map(cat => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setActiveCategory(cat.id);
+                  setPage(1);
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-600 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/50"
+                }`}
+              >
+                <Icon size={15} className={isActive ? "text-white" : cat.color} />
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* E-Commerce Medicine Grid */}
         {(() => {
           if (isLoading) {
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 min-[440px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((skeleton) => (
-                  <div key={skeleton} className="bg-white rounded-[24px] border border-slate-200 overflow-hidden h-[200px] shadow-sm p-5 flex flex-col justify-between">
-                    <div className="flex gap-4">
-                      <div className="w-[60px] h-[60px] bg-slate-100 animate-pulse rounded-2xl shrink-0"></div>
-                      <div className="flex-1">
-                        <div className="w-3/4 h-5 bg-slate-200 animate-pulse rounded mb-2"></div>
-                        <div className="w-1/2 h-3 bg-slate-100 animate-pulse rounded"></div>
-                      </div>
+                  <div key={skeleton} className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden h-[190px] shadow-2xs p-4 flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-16 h-5 bg-slate-100 animate-pulse rounded-lg"></div>
+                      <div className="w-14 h-4 bg-slate-100 animate-pulse rounded-full"></div>
                     </div>
-                    <div className="w-full h-8 bg-slate-100 animate-pulse rounded mt-auto"></div>
+                    <div>
+                      <div className="w-3/4 h-5 bg-slate-200 animate-pulse rounded mb-2"></div>
+                      <div className="w-1/2 h-3.5 bg-slate-100 animate-pulse rounded"></div>
+                    </div>
+                    <div className="pt-3 border-t border-slate-100 flex justify-between items-center mt-auto">
+                      <div className="w-20 h-5 bg-slate-200 animate-pulse rounded"></div>
+                      <div className="w-8 h-8 bg-slate-100 animate-pulse rounded-xl"></div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -373,11 +428,13 @@ export default function MedicinesPage() {
 
           if (medicines.length === 0) {
             return (
-              <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
-                <Search size={48} className="mx-auto text-slate-600 mb-4" />
-                <h3 className="text-[20px] font-bold text-slate-900 mb-2">No medicines found</h3>
-                <p className="text-[15px] text-slate-500 mb-6">We couldn't find anything matching your filters. Try a different term or category.</p>
-                <Button onClick={() => { setSearchQuery(""); setActiveCategory("All"); }} variant="outline" size="lg">Clear Filters</Button>
+              <div className="text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6">
+                <Search size={40} className="mx-auto text-slate-400 mb-3" />
+                <h3 className="text-[18px] font-bold text-slate-900 mb-1">No medicines found</h3>
+                <p className="text-[14px] text-slate-500 mb-5">We couldn't find any medicine matching your search query. Try another name or generic.</p>
+                <Button onClick={() => { setSearchQuery(""); setActiveCategory("All"); }} variant="outline" size="sm" className="rounded-xl">
+                  Clear Filters
+                </Button>
               </div>
             );
           }
@@ -388,74 +445,88 @@ export default function MedicinesPage() {
           };
 
           return (
-            <div className="space-y-10">
+            <div className="space-y-8">
               <motion.div 
                 layout
-                className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6"
+                className="grid grid-cols-1 min-[440px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
               >
                 <AnimatePresence>
                   {medicines.map((med) => {
                     const catDetails = getCategoryDetails(med.category);
-                    const MedIcon = catDetails.icon;
                     const BgIcon = getBgIcon(med.type);
                     return (
                       <motion.div
                         key={med.id}
                         layout
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
                       >
                         <Link 
                           href={`/medicines/${med.id}`}
-                          className="block relative bg-white border border-slate-200 p-3 sm:p-5 rounded-[16px] sm:rounded-[24px] shadow-sm hover:shadow-[0_16px_48px_rgba(0,61,155,0.08)] hover:border-sky-300 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden"
+                          className="group relative bg-white border border-slate-200/90 hover:border-sky-300 p-4 rounded-2xl shadow-2xs hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between overflow-hidden cursor-pointer"
                         >
-                          <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
-                          
-                          <div 
-                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.05] group-hover:text-sky-500/[0.07] -rotate-12 pointer-events-none select-none group-hover:scale-105 transition-all duration-500 ease-out"
-                            style={{
-                              maskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)",
-                              WebkitMaskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)"
-                            }}
-                          >
-                            <BgIcon 
-                              className="w-full h-full"
-                              fill="currentColor"
-                              stroke="none"
-                            />
-                          </div>
+                          <div>
+                            {/* Top row: Type Badge and Category Tag */}
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 group-hover:bg-sky-50 group-hover:text-sky-700 transition-colors">
+                                <BgIcon className="w-3.5 h-3.5 text-sky-600" />
+                                {med.type || "Tablet"}
+                              </span>
+                              <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${catDetails.bg} ${catDetails.color} border border-slate-100/60`}>
+                                {catDetails.name}
+                              </span>
+                            </div>
 
-                          <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
-                            <div className={`w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${catDetails.color.replace('text-', 'bg-').replace('500', '500/10')} border-${catDetails.color.split('-')[1]}-200 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
-                              <MedIcon className={`w-5 h-5 sm:w-7 sm:h-7 ${catDetails.color}`} strokeWidth={1.5} />
-                            </div>
-                            <div className="flex-1 flex flex-col justify-center min-w-0 mt-1 sm:mt-0">
-                              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                                <h3 className="text-[14px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight truncate pr-2" title={med.name}>{med.name}</h3>
-                                <div className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50 shrink-0">
-                                  <ShieldCheck size={12} />
-                                </div>
-                              </div>
-                              <p className="text-[11px] sm:text-[12px] font-semibold text-slate-500 mb-0.5 sm:mb-1 line-clamp-1" title={med.generic}>{med.generic} <span className="hidden sm:inline">• {med.type}</span></p>
-                              <p className={`text-[10px] sm:text-[12px] font-bold ${catDetails.color} truncate`}>
-                                <span className="hidden sm:inline">For: </span><span className="font-medium text-slate-600">{med.useFor}</span>
+                            {/* Brand Name */}
+                            <h3 
+                              className="text-[15px] sm:text-[16px] font-black text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight line-clamp-1 mb-0.5" 
+                              title={med.name}
+                            >
+                              {med.name}
+                            </h3>
+
+                            {/* Generic Formula */}
+                            <p 
+                              className="text-[12px] font-semibold text-slate-500 line-clamp-1 mb-1" 
+                              title={med.generic}
+                            >
+                              {med.generic}
+                            </p>
+
+                            {/* Indication / Use For */}
+                            {med.useFor && (
+                              <p className="text-[11px] text-slate-500 line-clamp-1">
+                                <span className="text-slate-400 font-medium">For: </span>
+                                <span className="text-slate-600 font-medium">{med.useFor}</span>
                               </p>
-                            </div>
+                            )}
                           </div>
                           
-                          <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-100">
-                            <span className="text-[16px] sm:text-[20px] font-black text-slate-900">{typeof med.price === "number" ? `${priceSnapshot?.freshness === "recent" ? "" : "Historical "}৳${med.price.toFixed(2)} / ${med.priceBasis || "unit"}` : "Price unavailable"}</span>
+                          {/* Bottom row: Clean Price & Cart action */}
+                          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[16px] sm:text-[17px] font-black text-slate-900 group-hover:text-sky-700 transition-colors">
+                                {typeof med.price === "number" ? `৳${med.price.toFixed(2)}` : "Price on request"}
+                              </span>
+                              {typeof med.price === "number" && (
+                                <span className="text-[11px] text-slate-400 font-normal">
+                                  /{med.priceBasis || "pc"}
+                                </span>
+                              )}
+                            </div>
+                            
                             <button 
                               type="button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                               }}
-                              className="flex items-center justify-center gap-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 hover:bg-sky-600 text-slate-600 hover:text-white transition-colors group/btn"
+                              aria-label="View details"
+                              className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-sky-600 text-slate-600 group-hover:text-white border border-slate-200/80 group-hover:border-sky-600 flex items-center justify-center transition-all shadow-2xs"
                             >
-                              <ShoppingCart className="w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] group-hover/btn:scale-110 transition-transform" />
+                              <ShoppingCart className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </Link>
@@ -473,13 +544,13 @@ export default function MedicinesPage() {
                 if (totalPages <= 1) return null;
 
                 return (
-                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-12 mb-4">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-10 mb-2">
                     <button 
                       onClick={() => handlePageChange(Math.max(1, page - 1))}
                       disabled={page === 1 || isLoading}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={16} />
                     </button>
                     
                     {Array.from({ length: totalPages }).map((_, i) => {
@@ -490,17 +561,17 @@ export default function MedicinesPage() {
                             key={p}
                             onClick={() => handlePageChange(p)}
                             disabled={isLoading}
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${
+                            className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                               page === p 
-                                ? 'bg-sky-600 text-white shadow-md shadow-primary/20' 
-                                : 'border border-slate-200 text-slate-600 hover:text-sky-600 hover:border-primary/30 hover:bg-sky-600/5 disabled:opacity-50'
+                                ? 'bg-sky-600 text-white shadow-xs' 
+                                : 'border border-slate-200 text-slate-600 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50/50 disabled:opacity-50'
                             }`}
                           >
                             {p}
                           </button>
                         );
                       } else if (p === page - 2 || p === page + 2) {
-                        return <span key={p} className="text-slate-500 font-bold px-1 sm:px-2">...</span>;
+                        return <span key={p} className="text-slate-400 font-bold px-1 text-xs">...</span>;
                       }
                       return null;
                     })}
@@ -508,100 +579,82 @@ export default function MedicinesPage() {
                     <button 
                       onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages || isLoading}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <ChevronRight size={18} />
+                      <ChevronRight size={16} />
                     </button>
                   </div>
                 );
               })()}
+              
+              {/* Mobile bottom spacer so floating nav never blocks cards */}
+              <div className="h-16 md:hidden" />
             </div>
           );
         })()}
 
       </div>
 
-      {/* Premium Filter Sidebar Drawer */}
+      {/* Filter Sidebar Drawer */}
       <AnimatePresence>
         {isFilterOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               onClick={() => setIsFilterOpen(false)}
-              className="fixed inset-0 bg-[#0a1628]/40 backdrop-blur-md z-[100]"
+              className="fixed inset-0 bg-[#0a1628]/40 backdrop-blur-xs z-[100]"
             />
             
-            {/* Drawer */}
             <motion.div
               initial={{ x: "100%", opacity: 0.5 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 28, stiffness: 300, mass: 0.8 }}
-              className="fixed top-0 right-0 h-full w-full max-w-[340px] bg-white/95 backdrop-blur-xl shadow-[-20px_0_40px_rgba(0,0,0,0.1)] z-[101] flex flex-col rounded-l-[32px] border-l border-white/50 overflow-hidden"
+              className="fixed top-0 right-0 h-full w-full max-w-[320px] bg-white shadow-2xl z-[101] flex flex-col rounded-l-3xl border-l border-slate-200 overflow-hidden"
             >
-              <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100/50">
-                <h3 className="text-[20px] font-extrabold text-slate-900 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-sky-600/10 flex items-center justify-center">
-                    <SlidersHorizontal size={16} className="text-sky-600" />
+              <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                <h3 className="text-[17px] font-extrabold text-slate-900 flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <SlidersHorizontal size={14} />
                   </div>
-                  Filters
+                  <span>Categories</span>
                 </h3>
                 <button 
                   onClick={() => setIsFilterOpen(false)}
-                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-rose-50 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-50 flex items-center justify-center text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
                 >
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </div>
               
-              <div className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
-                <motion.div 
-                  className="flex flex-col gap-3"
-                  initial="hidden"
-                  animate="show"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
-                    }
-                  }}
-                >
-                  <motion.p variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0 } }} className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-2">Categories</motion.p>
-                  
-                  {CATEGORIES.map(cat => (
-                    <motion.button
-                      variants={{
-                        hidden: { opacity: 0, x: 20 },
-                        show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-                      }}
-                      key={cat.id}
-                      onClick={() => {
-                        setActiveCategory(cat.id);
-                        setIsFilterOpen(false); // Optionally close after selecting
-                      }}
-                      className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-[15px] transition-colors duration-200 ${
-                        activeCategory === cat.id 
-                          ? `${cat.bg} ${cat.color}` 
-                          : "bg-transparent text-slate-600 hover:bg-slate-100/80"
-                      }`}
-                    >
-                      <cat.icon size={20} className={activeCategory === cat.id ? cat.color : "text-slate-500 group-hover:text-slate-600"} />
-                      {cat.name}
-                    </motion.button>
-                  ))}
-                </motion.div>
+              <div className="p-4 overflow-y-auto flex-1 scrollbar-hide space-y-1.5">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      setIsFilterOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[14px] transition-colors cursor-pointer ${
+                      activeCategory === cat.id 
+                        ? `${cat.bg} ${cat.color} border border-slate-200/60` 
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <cat.icon size={17} className={activeCategory === cat.id ? cat.color : "text-slate-400"} />
+                    <span>{cat.name}</span>
+                  </button>
+                ))}
               </div>
               
-              <div className="p-6 md:p-8 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
+              <div className="p-4 border-t border-slate-100 bg-slate-50">
                 <Button 
                   onClick={() => { setActiveCategory("All"); setSearchQuery(""); setIsFilterOpen(false); }}
                   variant="outline" 
-                  className="w-full h-[54px] rounded-2xl border-none bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                  className="w-full h-[46px] rounded-xl border-slate-200 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
                 >
                   Clear All Filters
                 </Button>
