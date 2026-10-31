@@ -59,20 +59,51 @@ interface DoctorContextType {
 
 // Initial Mock Data
 const initialPatients: Patient[] = [
-  { id: "K 10 23 45", name: "Kamal Hossain", age: 45, gender: "Male", type: "Appointment", date: "2026-10-24T09:30:00", status: "Completed", diagnosis: "Hypertension Stage 1", assistant: "Kamrul Hasan", paymentStatus: "Paid", avatar: "K" },
-  { id: "A 10 24 67", name: "Ayesha Siddiqua", age: 28, gender: "Female", type: "Walk-in", date: "2026-10-24T10:15:00", status: "Waiting", diagnosis: "Severe Migraine", assistant: "Aisha Begum", paymentStatus: "Pending", avatar: "A" },
-  { id: "R 10 25 89", name: "Rahim Uddin", age: 52, gender: "Male", type: "Online", date: "2026-10-24T11:00:00", status: "In Progress", diagnosis: "Post-surgery follow up", assistant: "System", paymentStatus: "Paid", avatar: "R" },
-  { id: "N 10 26 12", name: "Nusrat Jahan", age: 34, gender: "Female", type: "Appointment", date: "2026-10-23T16:30:00", status: "Completed", diagnosis: "Viral Fever", assistant: "Kamrul Hasan", paymentStatus: "Paid", avatar: "N" },
-  { id: "A 10 27 34", name: "Abdul Matin", age: 60, gender: "Male", type: "Appointment", date: "2026-10-22T09:00:00", status: "Completed", diagnosis: "Diabetes Type 2", assistant: "System", paymentStatus: "Paid", avatar: "A" },
+  { id: "R 10 25 89", name: "Rahim Uddin", age: 51, gender: "Male", type: "Appointment", date: "2026-10-24T10:00:00", status: "In Progress", diagnosis: "Type-2 Diabetes Mellitus with Essential Hypertension", assistant: "Kamrul Hasan", paymentStatus: "Paid", avatar: "R" },
+  { id: "K 10 23 45", name: "Kamal Hossain", age: 58, gender: "Male", type: "Appointment", date: "2026-10-24T09:30:00", status: "Completed", diagnosis: "Hypertension Stage 1 & Mild Exertional Dyspnea", assistant: "Kamrul Hasan", paymentStatus: "Paid", avatar: "K" },
+  { id: "F 10 24 67", name: "Fatema Begum", age: 32, gender: "Female", type: "Walk-in", date: "2026-10-24T10:15:00", status: "Waiting", diagnosis: "Post-natal Review & Iron Deficiency Anemia", assistant: "Aisha Begum", paymentStatus: "Paid", avatar: "F" },
+  { id: "N 10 26 12", name: "Nasima Akter", age: 34, gender: "Female", type: "Appointment", date: "2026-10-23T16:30:00", status: "Completed", diagnosis: "Post-Dengue Asthenia & Myalgia", assistant: "Kamrul Hasan", paymentStatus: "Paid", avatar: "N" },
+  { id: "A 10 27 34", name: "Abdul Matin", age: 60, gender: "Male", type: "Appointment", date: "2026-10-22T09:00:00", status: "Completed", diagnosis: "Ischemic Heart Disease & Unstable Angina Follow-up", assistant: "System", paymentStatus: "Paid", avatar: "A" },
 ];
 
 const initialTestReports: Record<string, any[]> = {
-  "K 10 23 45": [
-    { id: "TR-001", date: "2026-10-15", name: "Complete Blood Count (CBC)", status: "Reviewed", summary: "Normal values. Slight decrease in RBC." },
-    { id: "TR-002", date: "2026-10-16", name: "Lipid Profile", status: "Pending Review", summary: "High cholesterol detected. LDL is elevated." }
-  ],
   "R 10 25 89": [
-    { id: "TR-003", date: "2026-09-20", name: "Chest X-Ray", status: "Reviewed", summary: "Clear lung fields, no abnormalities." }
+    { id: "TR-001", date: "2026-10-15", name: "Complete Blood Count (CBC)", status: "Reviewed", summary: "Hb: 14.2 g/dL, Platelets: 245K/µL, WBC: 7.4K/µL. Normal morphology." },
+    { id: "TR-002", date: "2026-10-14", name: "12-Lead Diagnostic ECG", status: "Reviewed", summary: "Normal Sinus Rhythm. Heart rate 74 bpm. No acute ischemia or ST-T changes." },
+    { id: "TR-003", date: "2026-10-14", name: "FBS & HbA1c Glycated Hemoglobin", status: "Reviewed", summary: "FBS: 6.1 mmol/L (110 mg/dL), HbA1c: 6.8%. Satisfactory glycemic control." },
+    { id: "TR-004", date: "2026-09-20", name: "Digital Chest X-Ray (PA View)", status: "Reviewed", summary: "Clear lung fields, normal cardiothoracic ratio (<0.50), no pleural effusion." }
+  ],
+  "K 10 23 45": [
+    { id: "TR-005", date: "2026-10-15", name: "Complete Blood Count (CBC)", status: "Reviewed", summary: "Normal values. Slight decrease in RBC." },
+    { id: "TR-006", date: "2026-10-16", name: "Lipid Profile", status: "Reviewed", summary: "Total Cholesterol 210 mg/dL. Moderate hyperlipidemia." }
+  ],
+  "F 10 24 67": [
+    { id: "TR-007", date: "2026-10-18", name: "Serum Ferritin & Iron Profile", status: "Reviewed", summary: "Low serum ferritin (14 ng/mL). Mild iron deficiency anemia." }
+  ]
+};
+
+const initialPrescriptions: Record<string, any[]> = {
+  "R 10 25 89": [
+    {
+      id: "RX-1004",
+      date: "24 Oct, 2026",
+      diagnosis: "Type-2 Diabetes Mellitus with Essential Hypertension",
+      chiefComplaint: "Mild chest tightness on brisk walking, routine quarterly diabetic surveillance.",
+      physicalExam: "BP: 128/82 mmHg, Pulse: 74 bpm, Heart: S1+S2 audible, no murmurs. Lungs: Clear.",
+      vitals: { bp: "128/82", pulse: "74", temp: "98.4", weight: "68.5", bmi: "24.1", spo2: "99", bloodSugar: "110" },
+      medicines: [
+        { id: 1, name: "Tab. Metformin HCl", type: "Tablet", dosageM: "1", dosageN: "0", dosageE: "1", frequency: "1 + 0 + 1", duration: "90 Days", notes: "Take immediately after meals" },
+        { id: 2, name: "Tab. Amlodipine Besylate 5mg", type: "Tablet", dosageM: "1", dosageN: "0", dosageE: "0", frequency: "1 + 0 + 0", duration: "90 Days", notes: "Take in the morning with water" },
+        { id: 3, name: "Cap. Cholecalciferol 2000 IU", type: "Capsule", dosageM: "0", dosageN: "1", dosageE: "0", frequency: "0 + 1 + 0", duration: "60 Days", notes: "Take after lunch" }
+      ],
+      investigationsList: [
+        "Fasting Blood Glucose (Target 5.5 - 6.5 mmol/L)",
+        "HbA1c Glycated Hemoglobin after 3 months",
+        "Serum Creatinine & eGFR"
+      ],
+      advice: "Low sodium DASH diet (< 2g/day). 30 mins moderate brisk walking 5 days a week. Avoid processed sugar.",
+      followUp: "After 3 months with repeat HbA1c & Creatinine report"
+    }
   ]
 };
 
@@ -143,7 +174,7 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   };  
   const [activityLog, setActivityLog] = useState(initialActivityLog);
   const [testReports, setTestReports] = useState<Record<string, any[]>>(initialTestReports);
-  const [patientPrescriptions, setPatientPrescriptions] = useState<Record<string, any[]>>({});
+  const [patientPrescriptions, setPatientPrescriptions] = useState<Record<string, any[]>>(initialPrescriptions);
 
   const handleNextPatient = () => {
     if (queue.length === 0) {

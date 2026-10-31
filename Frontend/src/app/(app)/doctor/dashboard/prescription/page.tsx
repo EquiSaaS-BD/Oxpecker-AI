@@ -7,10 +7,11 @@ import { toast } from "sonner";
 
 // Mock Data for Prescription History
 const MOCK_HISTORY = [
-  { id: "RX-1004", patientName: "Patient", date: "24 July, 2026", diagnosis: "Viral Fever & Fatigue", age: 24, gender: "Male" },
-  { id: "RX-1003", patientName: "Nafisa Akter", date: "23 July, 2026", diagnosis: "Migraine & Sleep Deprivation", age: 28, gender: "Female" },
-  { id: "RX-1002", patientName: "Karim Uddin", date: "22 July, 2026", diagnosis: "Gastric Ulcer", age: 45, gender: "Male" },
-  { id: "RX-1001", patientName: "Sumaiya Rahman", date: "20 July, 2026", diagnosis: "Seasonal Asthma", age: 32, gender: "Female" },
+  { id: "RX-1005", patientName: "Rahim Uddin", date: "24 Oct, 2026", diagnosis: "Type-2 Diabetes Mellitus with Essential Hypertension", age: 51, gender: "Male" },
+  { id: "RX-1004", patientName: "Fatema Begum", date: "24 Oct, 2026", diagnosis: "Post-natal Review & Iron Deficiency Anemia", age: 32, gender: "Female" },
+  { id: "RX-1003", patientName: "Kamal Hossain", date: "23 Oct, 2026", diagnosis: "Essential Hypertension Stage 1 & Mild Dyspnea", age: 58, gender: "Male" },
+  { id: "RX-1002", patientName: "Nasima Akter", date: "22 Oct, 2026", diagnosis: "Post-Dengue Asthenia & Myalgia", age: 34, gender: "Female" },
+  { id: "RX-1001", patientName: "Abdul Matin", date: "20 Oct, 2026", diagnosis: "Ischemic Heart Disease Follow-up", age: 60, gender: "Male" },
 ];
 
 export default function PrescriptionsPage() {

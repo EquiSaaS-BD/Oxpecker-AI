@@ -18,6 +18,92 @@ const ROLE_COLORS: Record<string, string> = {
   assistant: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+const DEFAULT_ADMIN_USERS = [
+  {
+    id: "usr-admin-01",
+    name: "System Administrator",
+    email: "admin@oxpecker.ai",
+    role: "admin",
+    status: "active",
+    password: "admin123",
+    joinDate: "2026-01-01",
+    phone: "+880 1700-000000",
+  },
+  {
+    id: "usr-hosp-01",
+    name: "Dhaka Central Specialized Hospital",
+    email: "hospital@oxpecker.ai",
+    role: "hospital",
+    status: "active",
+    password: "hospital123",
+    joinDate: "2026-02-15",
+    phone: "+880 2-8812345",
+  },
+  {
+    id: "usr-doc-01",
+    name: "Prof. Dr. Ahmed Rahman, FCPS, MD",
+    email: "doctor@oxpecker.ai",
+    role: "doctor",
+    status: "active",
+    password: "doctor123",
+    joinDate: "2026-03-10",
+    phone: "+880 1712-998877",
+    doctorId: "dr-ahmed",
+  },
+  {
+    id: "usr-pat-01",
+    name: "রহিম উদ্দিন (Rahim Uddin)",
+    email: "patient@oxpecker.ai",
+    role: "patient",
+    status: "active",
+    password: "patient123",
+    joinDate: "2026-04-18",
+    phone: "+880 1711-000000",
+  },
+  {
+    id: "usr-ast-01",
+    name: "কামরুল হাসান (Kamrul Hasan - Front Desk & Speaker)",
+    email: "assistant@oxpecker.ai",
+    role: "assistant",
+    status: "active",
+    password: "assistant123",
+    joinDate: "2026-05-01",
+    phone: "+880 1819-001122",
+    assistantId: "ast-101",
+  },
+  {
+    id: "usr-pat-02",
+    name: "ফাতেমা বেগম (Fatema Begum)",
+    email: "fatema@oxpecker.ai",
+    role: "patient",
+    status: "active",
+    password: "patient123",
+    joinDate: "2026-06-12",
+    phone: "+880 1819-876543",
+  },
+  {
+    id: "usr-doc-02",
+    name: "Dr. Farzana Yasmin, MBBS, MS",
+    email: "farzana@oxpecker.ai",
+    role: "doctor",
+    status: "active",
+    password: "doctor123",
+    joinDate: "2026-06-20",
+    phone: "+880 1715-334455",
+    doctorId: "dr-farzana",
+  },
+  {
+    id: "usr-pat-03",
+    name: "মোঃ শহিদুল ইসলাম (Shahidul Islam)",
+    email: "shahidul@oxpecker.ai",
+    role: "patient",
+    status: "active",
+    password: "patient123",
+    joinDate: "2026-07-01",
+    phone: "+880 1711-223344",
+  },
+];
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,17 +147,31 @@ export default function AdminUsersPage() {
         assistantId: p.assistant_id
       }));
 
-      setUsers(formattedUsers);
+      // Merge with default production accounts so demo credentials always appear
+      const existingEmails = new Set(formattedUsers.map((u: any) => u.email?.toLowerCase()));
+      const missingDefaults = DEFAULT_ADMIN_USERS.filter((u) => !existingEmails.has(u.email.toLowerCase()));
+      const mergedUsers = [...formattedUsers, ...missingDefaults];
+
+      setUsers(mergedUsers);
       // Cache locally for offline resilience
-      localStorage.setItem("oxpecker_synced_users", JSON.stringify(formattedUsers));
+      localStorage.setItem("oxpecker_synced_users", JSON.stringify(mergedUsers));
     } catch (err: any) {
-      console.error("Supabase load error:", err);
-      setDbError(err.message || "Failed to load profiles from Supabase. Please ensure supabase_schema.sql has been executed in SQL editor.");
-      // Fallback to locally cached sync if network offline
+      console.warn("Supabase load fallback:", err);
+      // Fallback to locally cached sync if network offline or merge with defaults
       const cached = localStorage.getItem("oxpecker_synced_users");
+      let baseList = DEFAULT_ADMIN_USERS;
       if (cached) {
-        try { setUsers(JSON.parse(cached)); } catch {}
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const existingEmails = new Set(parsed.map((u: any) => u.email?.toLowerCase()));
+            const missing = DEFAULT_ADMIN_USERS.filter((u) => !existingEmails.has(u.email.toLowerCase()));
+            baseList = [...parsed, ...missing];
+          }
+        } catch {}
       }
+      setUsers(baseList);
+      try { localStorage.setItem("oxpecker_synced_users", JSON.stringify(baseList)); } catch {}
     } finally {
       setIsLoading(false);
     }

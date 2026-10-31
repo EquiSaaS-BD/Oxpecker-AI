@@ -210,47 +210,55 @@ export const chatSessions: ChatSession[] = [
 
 // ====== DASHBOARD DATA ======
 export const userProfile: UserProfile = {
-  name: "রহিম উদ্দিন",
-  age: 45,
-  bloodGroup: "O+",
+  name: "রহিম উদ্দিন (Rahim Uddin)",
+  age: 51,
+  bloodGroup: "A+",
   status: "stable",
-  height: "৫' ৮\"",
-  weight: "৭২ কেজি",
-  image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300&h=300&fit=crop",
+  height: "৫' ৭\"",
+  weight: "৬৮.৫ কেজি",
+  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
 };
 
 export const healthScore: HealthScore = {
-  score: 85,
-  label: "চমৎকার",
-  trend: 2,
-  trendLabel: "গত সপ্তাহের তুলনায় +২ পয়েন্ট উন্নতি হয়েছে।",
+  score: 88,
+  label: "চমৎকার ও স্থিতিশীল",
+  trend: 4,
+  trendLabel: "নিয়মিত রক্তচাপ ও ব্লাড সুগার নিয়ন্ত্রণের ফলে +৪ পয়েন্ট উন্নতি হয়েছে।",
 };
 
 export const medicineReminders: MedicineReminder[] = [
   {
     id: "rem-1",
-    name: "Napa Extra",
+    name: "Metformin HCl 500mg",
     time: "সকাল ৮:০০",
-    dosage: "১টি বড়ি",
+    dosage: "১টি ট্যাবলেট (খাবারের পর)",
     taken: true,
     overdue: false,
   },
   {
     id: "rem-2",
-    name: "Losartan 50mg",
+    name: "Amlodipine 5mg",
+    time: "সকাল ৮:৩০",
+    dosage: "১টি ট্যাবলেট (পানির সাথে)",
+    taken: true,
+    overdue: false,
+  },
+  {
+    id: "rem-3",
+    name: "Vitamin D3 2000 IU",
     time: "দুপুর ২:০০",
-    dosage: "বাকেয়া",
+    dosage: "১টি ক্যাপসুল (খাবারের পর)",
     taken: false,
-    overdue: true,
+    overdue: false,
   },
 ];
 
 export const upcomingAppointment: Appointment = {
   id: "apt-1",
-  doctorName: "ডাঃ শফিকুর রহমান",
-  specialty: "কার্ডিওলজিস্ট",
-  date: new Date("2026-07-12"),
-  time: "বিকাল ৪:৩০",
+  doctorName: "প্রফেসর ডাঃ আহমেদ রহমান (FCPS, MD)",
+  specialty: "সিনিয়র কনসালটেন্ট - কার্ডিওলজি",
+  date: new Date("2026-10-28T10:30:00"),
+  time: "সকাল ১০:৩০",
   type: "offline",
 };
 

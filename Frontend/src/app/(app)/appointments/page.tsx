@@ -15,28 +15,29 @@ const mockDoctorAppointments = [
   {
     type: "doctor" as const,
     id: "AP-8942-01",
-    doctorName: "Dr. Farzana Alam",
-    doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
-    specialty: "Gynecologist",
-    hospitalName: "Labaid Specialized Hospital",
+    doctorName: "Prof. Dr. Ahmed Rahman, FCPS, MD",
+    doctorImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop",
+    specialty: "Senior Consultant - Interventional Cardiology",
+    hospitalName: "National Heart Foundation & Research Institute",
     hospitalLogo: "/images/Oxpecker_icon.png",
-    address: "House 6, Road 4, Dhanmondi, Dhaka",
-    date: "24 Nov, 2026",
+    address: "Plot-4, Section-2, Mirpur, Dhaka 1216",
+    date: "28 Oct, 2026",
     time: "10:30 AM",
-    patientName: "Patient Profile",
-    age: "28",
-    guardianName: "Md. Hasan",
-    phone: "017XXXXXXXX",
-    fee: 1050,
-    advancePaid: 0,
+    patientName: "রহিম উদ্দিন (Rahim Uddin)",
+    age: "51",
+    guardianName: "Fatema Begum (Wife)",
+    phone: "+880 1711-000000",
+    fee: 1200,
+    advancePaid: 1200,
     status: "Confirmed" as const
   }
 ];
 
 const mockHistoryAppointments = [
-  { id: "AP-8120", doctor: "Dr. Ahmed Hossain", specialty: "Cardiologist", date: "15 Oct, 2026", time: "05:00 PM", status: "Completed", fee: 1200 },
-  { id: "AP-7052", doctor: "Dr. Salma Begum", specialty: "Dermatologist", date: "02 Sep, 2026", time: "11:30 AM", status: "Cancelled", fee: 800 },
-  { id: "AP-6401", doctor: "Dr. Farzana Alam", specialty: "Gynecologist", date: "10 Aug, 2026", time: "10:00 AM", status: "Completed", fee: 1000 },
+  { id: "AP-8120", doctor: "Prof. Dr. Ahmed Rahman", specialty: "Interventional Cardiologist", hospital: "Square Hospital Ltd.", date: "15 Oct, 2026", time: "05:00 PM", status: "Completed", fee: 1200 },
+  { id: "AP-7840", doctor: "Prof. Dr. Aminul Rahman", specialty: "Endocrinologist & Diabetologist", hospital: "BIRDEM Hospital", date: "14 Sep, 2026", time: "11:30 AM", status: "Completed", fee: 1500 },
+  { id: "AP-7052", doctor: "Dr. Nusrat Jahan", specialty: "Internal Medicine Specialist", hospital: "Dhaka Medical College Hospital", date: "20 Jul, 2026", time: "10:00 AM", status: "Completed", fee: 800 },
+  { id: "AP-6401", doctor: "Dr. Farzana Yasmin", specialty: "Laparoscopic Surgeon", hospital: "Labaid Specialized Hospital", date: "10 May, 2026", time: "04:30 PM", status: "Completed", fee: 1000 },
 ];
 
 export default function AppointmentsPage() {

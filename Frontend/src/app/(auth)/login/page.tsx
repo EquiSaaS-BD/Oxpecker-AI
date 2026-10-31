@@ -52,12 +52,13 @@ function LoginForm() {
     }
   }, [isLoading, isAuthenticated, role, router]);
 
-  const fillDemo = (roleType: 'admin' | 'doctor' | 'hospital' | 'patient') => {
+  const fillDemo = (roleType: 'admin' | 'doctor' | 'hospital' | 'patient' | 'assistant') => {
     const creds = {
       admin: { email: 'admin@oxpecker.ai', pass: 'admin123' },
       doctor: { email: 'doctor@oxpecker.ai', pass: 'doctor123' },
       hospital: { email: 'hospital@oxpecker.ai', pass: 'hospital123' },
       patient: { email: 'patient@oxpecker.ai', pass: 'patient123' },
+      assistant: { email: 'assistant@oxpecker.ai', pass: 'assistant123' },
     }[roleType];
     setEmail(creds.email);
     setPassword(creds.pass);
@@ -76,17 +77,19 @@ function LoginForm() {
       const isTestDoc = lowerEmail.includes('doctor');
       const isTestHosp = lowerEmail.includes('hospital');
       const isTestPatient = lowerEmail.includes('patient');
+      const isTestAssistant = lowerEmail.includes('assistant');
 
       let resolvedRole: UserRole = (queryRole as UserRole) || 'patient';
       if (isTestAdmin) resolvedRole = 'admin';
       else if (isTestDoc) resolvedRole = 'doctor';
       else if (isTestHosp) resolvedRole = 'hospital';
       else if (isTestPatient) resolvedRole = 'patient';
+      else if (isTestAssistant) resolvedRole = 'assistant';
 
       let dbProfile: any = null;
 
       // Only query remote database if it is not an instant test account
-      if (!isTestAdmin && !isTestDoc && !isTestHosp && !isTestPatient) {
+      if (!isTestAdmin && !isTestDoc && !isTestHosp && !isTestPatient && !isTestAssistant) {
         try {
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500));
           const queryPromise = supabase.from('profiles').select('*').ilike('email', lowerEmail).maybeSingle();
@@ -100,12 +103,20 @@ function LoginForm() {
         }
       }
 
-      const userId = dbProfile?.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now());
+      const userId = dbProfile?.id || (
+        isTestPatient ? 'user-001' :
+        isTestDoc ? 'dr-ahmed' :
+        isTestHosp ? 'hosp-001' :
+        isTestAssistant ? 'ast-101' :
+        (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now())
+      );
+
       const userName = dbProfile?.name || (
         resolvedRole === 'admin' ? 'System Administrator' :
-        resolvedRole === 'doctor' ? 'Dr. Ahmed (Specialist)' :
-        resolvedRole === 'hospital' ? 'Dhaka Medical Center' :
-        email.split('@')[0] || 'Patient'
+        resolvedRole === 'doctor' ? 'Prof. Dr. Ahmed Rahman, FCPS, MD' :
+        resolvedRole === 'hospital' ? 'Dhaka Central Specialized Hospital' :
+        resolvedRole === 'assistant' ? 'Kamrul Hasan (Front Desk & OPD)' :
+        'রহিম উদ্দিন (Rahim Uddin)'
       );
 
       const userSession = {
@@ -113,9 +124,23 @@ function LoginForm() {
         name: userName,
         email: dbProfile?.email || lowerEmail,
         role: resolvedRole,
-        phone: dbProfile?.phone || '+8801700000000',
-        specialty: dbProfile?.specialty || (resolvedRole === 'doctor' ? 'General Medicine & Triage' : undefined),
-        hospital_name: dbProfile?.hospital_name || (resolvedRole === 'hospital' ? 'Central Care Hospital' : undefined),
+        phone: dbProfile?.phone || (
+          isTestPatient ? '+880 1711-000000' :
+          isTestDoc ? '+880 1712-998877' :
+          isTestHosp ? '+880 2-8812345' :
+          isTestAssistant ? '+880 1819-001122' :
+          '+8801700000000'
+        ),
+        blood_group: isTestPatient ? 'A+' : undefined,
+        gender: isTestPatient ? 'Male' : undefined,
+        date_of_birth: isTestPatient ? '1974-04-12' : undefined,
+        image: isTestPatient ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300' : undefined,
+        specialty: dbProfile?.specialty || (resolvedRole === 'doctor' ? 'Senior Consultant - Interventional Cardiology' : undefined),
+        hospital_name: dbProfile?.hospital_name || (
+          resolvedRole === 'hospital' ? 'Dhaka Central Specialized Hospital & Heart Institute' :
+          resolvedRole === 'doctor' ? 'Dhaka Central Specialized Hospital' :
+          undefined
+        ),
         status: dbProfile?.status || 'active',
       };
 
@@ -406,6 +431,14 @@ function LoginForm() {
               >
                 <span>👤</span>
                 <span className="truncate">Patient Card</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemo('assistant')}
+                className="col-span-2 py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>📋</span>
+                <span className="truncate">Front Desk / Assistant (Speaker)</span>
               </button>
             </div>
           </div>
