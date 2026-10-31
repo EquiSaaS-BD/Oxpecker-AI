@@ -278,7 +278,7 @@ function ChatContent() {
     "Explain More", "Find Doctors", "Compare Medicines", "Book Appointment"
   ];
 
-  const handleFileUpload = async (file: File, analysisType: string, userPrompt?: string) => {
+  const handleFileUpload = async (file: File, analysisType: string, userPrompt?: string, previewUrl?: string) => {
     let documentAccessToken: string | null = null;
     if (analysisType === "prescription" || analysisType === "report") {
       try {
@@ -296,24 +296,22 @@ function ChatContent() {
       image: '/api/ai/analyze-image',
     };
 
-    const analysisLabels: Record<string, string> = {
-      prescription: 'Analyzing Prescription',
-      report: 'Analyzing Medical Report',
-      food: 'Analyzing Food & Nutrition',
-      image: 'Analyzing Medical Image',
-    };
-
     const endpoint = analysisEndpoints[analysisType] || analysisEndpoints.image;
-    const label = analysisLabels[analysisType] || 'Analyzing Image';
 
-    const userMsgContent = userPrompt && userPrompt.trim()
-      ? `Uploaded: **${file.name}** (${label})\n\n"${userPrompt.trim()}"`
-      : `Uploaded: **${file.name}** (${label})`;
+    const cleanPrompt = userPrompt?.trim() || "";
+    const isImage = file.type.startsWith("image/");
+    const effectivePreview = previewUrl || (isImage ? URL.createObjectURL(file) : undefined);
+    const sizeStr = file.size > 1024 * 1024 
+      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+      : `${Math.round(file.size / 1024)} KB`;
 
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: userMsgContent,
+      content: cleanPrompt,
+      imageUrl: effectivePreview,
+      imageName: file.name,
+      fileSize: sizeStr,
       sensitive: analysisType === "prescription",
     };
     if (activeThreadId) addMessageToThread(activeThreadId, userMsg);
@@ -424,7 +422,14 @@ function ChatContent() {
             <div className="flex flex-col space-y-2 mt-4 md:mt-8 pb-10">
               {messages.map((msg) => {
                 if (isTyping && msg.role === "bot" && msg.content === "") return null;
-                return <MessageBubble key={msg.id} role={msg.role} content={msg.content} />;
+                return <MessageBubble 
+                    key={msg.id} 
+                    role={msg.role} 
+                    content={msg.content} 
+                    imageUrl={msg.imageUrl}
+                    imageName={msg.imageName}
+                    fileSize={msg.fileSize}
+                  />;
               })}
               
               {isTyping && messages[messages.length - 1]?.content === "" && (

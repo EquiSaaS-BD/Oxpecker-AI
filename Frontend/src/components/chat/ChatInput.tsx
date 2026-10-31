@@ -41,7 +41,7 @@ export function ChatInput({
   onSelectMode 
 }: { 
   onSend: (text: string) => void;
-  onFileUpload?: (file: File, analysisType: string, userText?: string) => void;
+  onFileUpload?: (file: File, analysisType: string, userText?: string, previewUrl?: string) => void;
   selectedMode?: ChatMode | null;
   onSelectMode?: (mode: ChatMode | null) => void;
 }) {
@@ -52,6 +52,13 @@ export function ChatInput({
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(0);
   const [pendingAnalysisType, setPendingAnalysisType] = useState<string | null>(null);
+  const [attachedFile, setAttachedFile] = useState<{
+    file: File;
+    previewUrl: string;
+    analysisType: string;
+    fileName: string;
+    fileSize: string;
+  } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,8 +137,26 @@ export function ChatInput({
   };
 
   const handleSend = () => {
+    if (attachedFile) {
+      if (onFileUpload) {
+        onFileUpload(
+          attachedFile.file,
+          attachedFile.analysisType,
+          text.trim() || undefined,
+          attachedFile.previewUrl
+        );
+      }
+      setAttachedFile(null);
+      setText("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
+      setShowMentionMenu(false);
+      return;
+    }
+
     if (text.trim() || selectedMode) {
-      onSend(text); // we can pass text and mode, or let page.tsx handle mode
+      onSend(text);
       setText("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -265,7 +290,8 @@ export function ChatInput({
           className="hidden" 
           onChange={(e) => {
             const file = e.target.files?.[0];
-            const currentText = text.trim();
+            if (!file) return;
+
             let effectiveType = pendingAnalysisType;
             if (!effectiveType) {
               const cat = selectedMode?.category || selectedMode?.id;
@@ -274,16 +300,24 @@ export function ChatInput({
               else if (cat === 'symptoms') effectiveType = 'report';
               else effectiveType = 'image';
             }
-            if (file && onFileUpload) {
-              onFileUpload(file, effectiveType, currentText || undefined);
-              setPendingAnalysisType(null);
-              setText("");
-            } else if (file) {
-              onSend(currentText ? `[Uploaded File: ${file.name}]\n\n${currentText}` : `[Uploaded File: ${file.name}]`);
-              setText("");
-            }
-            // Reset input
+
+            const isImg = file.type.startsWith("image/");
+            const previewUrl = isImg ? URL.createObjectURL(file) : "";
+            const sizeStr = file.size > 1024 * 1024 
+              ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+              : `${Math.round(file.size / 1024)} KB`;
+
+            setAttachedFile({
+              file,
+              previewUrl,
+              analysisType: effectiveType || 'image',
+              fileName: file.name,
+              fileSize: sizeStr,
+            });
+
+            setPendingAnalysisType(null);
             e.target.value = '';
+            textareaRef.current?.focus();
           }} 
           accept="image/*,.pdf,.doc,.docx"
         />
@@ -312,6 +346,50 @@ export function ChatInput({
 
           {/* Textarea Wrapper */}
           <div className="flex-1 flex flex-col justify-center mb-[2px] mt-[2px]">
+            {/* ChatGPT-Style Attached Image Preview Chip */}
+            <AnimatePresence>
+              {attachedFile && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                  className="mb-2 p-1.5 pr-3 rounded-2xl bg-slate-50 border border-slate-200/90 shadow-2xs flex items-center gap-2.5 w-fit"
+                >
+                  {attachedFile.previewUrl ? (
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shrink-0 relative">
+                      <img
+                        src={attachedFile.previewUrl}
+                        alt={attachedFile.fileName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
+                      <FileText size={20} />
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-800 truncate max-w-[170px] sm:max-w-[240px]">
+                      {attachedFile.fileName}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-semibold">
+                      {attachedFile.fileSize} • {attachedFile.analysisType === "prescription" ? "প্রেসক্রিপশন" : attachedFile.analysisType === "food" ? "খাবারের পুষ্টি" : attachedFile.analysisType === "report" ? "মেডিকেল রিপোর্ট" : "ইমেজ অ্যানালাইসিস"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (attachedFile.previewUrl) URL.revokeObjectURL(attachedFile.previewUrl);
+                      setAttachedFile(null);
+                    }}
+                    className="ml-1 w-6 h-6 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                    title="Remove attachment"
+                  >
+                    <X size={13} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Selected Mode Chip */}
             <AnimatePresence>
               {selectedMode && (

@@ -7,6 +7,9 @@ export type Message = {
   role: "user" | "bot";
   content: string;
   sensitive?: boolean;
+  imageUrl?: string;
+  imageName?: string;
+  fileSize?: string;
 };
 
 export type ChatThread = {
