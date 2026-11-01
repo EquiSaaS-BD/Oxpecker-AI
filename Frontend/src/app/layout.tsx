@@ -25,8 +25,7 @@ export const metadata: Metadata = {
   authors: [
     { name: SEO_CONFIG.brandName, url: SEO_CONFIG.primaryDomain },
     { name: SEO_CONFIG.agency.name, url: SEO_CONFIG.agency.url },
-    { name: SEO_CONFIG.agency.leadArchitect, url: SEO_CONFIG.agency.architectPortfolio }
-  ],
+      ],
   creator: SEO_CONFIG.brandName,
   publisher: SEO_CONFIG.agency.bdUrl,
   alternates: {

@@ -63,7 +63,7 @@ export function Footer() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-slate-900 text-lg sm:text-xl font-extrabold tracking-tight">
-                পরিচিত হাসপাতালের উদাহরণ
+                Featured Partner Hospitals
               </h3>
             </div>
             <Building2 size={24} className="text-slate-600 hidden sm:block" />
@@ -96,11 +96,11 @@ export function Footer() {
               className="h-16 sm:h-20 w-auto object-contain mb-2"
             />
             <p className="text-sm font-normal leading-relaxed text-slate-600 max-w-sm">
-              Oxpecker AI-এর লক্ষ্য হলো হাসপাতাল, ডাক্তার এবং রোগীদের স্বাস্থ্য তথ্য এক জায়গায় এনে চিকিৎসাসেবা সহজ ও দ্রুত করা।
+              Oxpecker AI is Bangladesh's centralized digital health network unifying hospitals, doctors, and patient records into an accessible, transparent ecosystem.
             </p>
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg w-fit">
               <ShieldCheck size={15} />
-              <span>রোগীর তথ্যের গোপনীয়তা ও সুরক্ষাকে অগ্রাধিকার দেওয়া হয়</span>
+              <span>Patient privacy, data encryption & security prioritized</span>
             </div>
             
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -109,7 +109,7 @@ export function Footer() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-100 transition-colors shadow-2xs"
               >
                 <PhoneCall size={14} className="text-sky-600" />
-                <span>স্বাস্থ্য বাতায়ন: 16263 (24/7)</span>
+                <span>National Health Helpline: 16263 (24/7)</span>
               </a>
               <a 
                 href="mailto:support@oxpecker.equisaas-bd.com" 
@@ -146,7 +146,7 @@ export function Footer() {
 
           {/* Clinical & Directory Links */}
           <div className="lg:col-span-4 space-y-4">
-            <h4 className="text-slate-900 font-bold text-sm tracking-wide">চিকিৎসাসেবা ও ডিরেক্টরি</h4>
+            <h4 className="text-slate-900 font-bold text-sm tracking-wide">Clinical Services & Directory</h4>
             <ul className="space-y-3">
               {CLINICAL_LINKS.map((link) => (
                 <li key={link.href}>
@@ -163,7 +163,7 @@ export function Footer() {
 
           {/* Platform & Transparency Links */}
           <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-slate-900 font-bold text-sm tracking-wide">প্ল্যাটফর্ম ও নিরাপত্তা</h4>
+            <h4 className="text-slate-900 font-bold text-sm tracking-wide">Platform & Security</h4>
             <ul className="space-y-3">
               {PLATFORM_LINKS.map((link) => (
                 <li key={link.href}>
@@ -204,16 +204,6 @@ export function Footer() {
               EquiSaaS BD
             </a>
             <span>)</span>
-            <span className="text-slate-600">|</span>
-            <span>Architected by</span>
-            <a 
-              href="https://kholipha-ahmmad-al-amin.me" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-slate-700 hover:text-sky-600 hover:underline font-bold"
-            >
-              Kholipha Ahmmad Al-Amin
-            </a>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
             {isYunet && (

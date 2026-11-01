@@ -27,9 +27,7 @@ export const SEO_CONFIG = {
     name: "EquiSaaS Agency",
     url: "https://equisaas.tech",
     bdUrl: "https://equisaas-bd.com",
-    leadArchitect: "Kholipha Ahmmad Al-Amin",
-    architectPortfolio: "https://kholipha-ahmmad-al-amin.me",
-  },
+          },
   keywords: [
     "National Centralized Hospital Server Bangladesh",
     "Universal Health ID UHID Bangladesh",
@@ -105,8 +103,7 @@ export function generateRootJsonLd() {
           "name": SEO_CONFIG.agency.name,
           "url": SEO_CONFIG.agency.url,
           "sameAs": [
-            SEO_CONFIG.agency.bdUrl,
-            SEO_CONFIG.agency.architectPortfolio
+            SEO_CONFIG.agency.bdUrl
           ]
         }
       },
@@ -123,9 +120,9 @@ export function generateRootJsonLd() {
           "priceCurrency": "BDT"
         },
         "author": {
-          "@type": "Person",
-          "name": SEO_CONFIG.agency.leadArchitect,
-          "url": SEO_CONFIG.agency.architectPortfolio
+          "@type": "Organization",
+          "name": SEO_CONFIG.brandName,
+          "url": SEO_CONFIG.primaryDomain
         },
         "aggregateRating": {
           "@type": "AggregateRating",

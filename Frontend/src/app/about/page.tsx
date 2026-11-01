@@ -70,7 +70,7 @@ export default function AboutPage() {
             EquiSaaS Agency
           </h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Oxpecker AI প্ল্যাটফর্মটি EquiSaaS Agency তৈরি ও পরিচালনা করছে। কারিগরি নেতৃত্বে আছেন Kholipha Ahmmad Al-Amin।
+            Oxpecker AI প্ল্যাটফর্মটি EquiSaaS Agency তৈরি ও পরিচালনা করছে।
           </p>
         </section>
 
