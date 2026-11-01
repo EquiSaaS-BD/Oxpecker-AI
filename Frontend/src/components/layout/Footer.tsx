@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useHackathon } from "@/context/HackathonContext";
 import Image from "next/image";
 import {
   MapPin,
@@ -38,6 +39,7 @@ const HOSPITAL_EXAMPLES = [
 ];
 
 export function Footer() {
+  const { isYunet } = useHackathon();
   const CLINICAL_LINKS = [
     { label: "AI Diagnostic Chat", href: "/chat" },
     { label: "Find Doctors", href: "/doctors" },
@@ -214,6 +216,7 @@ export function Footer() {
             </a>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+            {isYunet && (
             <a
               href="https://yunet-aignite26.devpost.com"
               target="_blank"
@@ -223,6 +226,7 @@ export function Footer() {
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
               <span>Built for Ostad Presents YUNet AIgnite Buildathon 2026</span>
             </a>
+            )}
             <p className="flex items-center gap-1.5 text-center text-xs text-slate-500 font-medium">
               Not a substitute for professional medical advice
               <Heart size={10} className="text-rose-500" />

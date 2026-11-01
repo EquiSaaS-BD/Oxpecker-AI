@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { useHackathon } from "@/context/HackathonContext";
 
 export interface MegaMenuItem {
   title: string;
@@ -49,10 +50,12 @@ type DesktopMenu = "services" | "use-cases" | "resources" | null;
 type MobileSection = Exclude<DesktopMenu, null>;
 
 export function MegaMenuNavbar({
+
   className,
   ...props
 }: MegaMenuNavbarProps) {
   const { t, lang: language } = useLanguage();
+  const { isYunet } = useHackathon();
   const { isAuthenticated, role } = useAuth();
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = React.useState<DesktopMenu>(null);
@@ -234,16 +237,19 @@ export function MegaMenuNavbar({
                 priority
               />
             </Link>
+            {isYunet && (
             <a
               href="https://yunet-aignite26.devpost.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-2xs shrink-0"
               title="Official Project for Ostad Presents YUNet AIgnite Buildathon 2026"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-              <span className="truncate max-w-[140px] sm:max-w-none">Built for YUNet AIgnite 2026</span>
+              <span className="hidden sm:inline">Built For Ostad Presents YUNet AIgnite Buildathon 2026</span>
+              <span className="sm:hidden">Built for YUNet 2026</span>
             </a>
+            )}
           </div>
 
           {/* Center Desktop Navigation */}

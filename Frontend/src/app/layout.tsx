@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { HackathonProvider } from "@/context/HackathonContext";
+import { BuildathonBanner } from "@/components/shared/BuildathonBanner";
 import Script from "next/script";
 import { SEO_CONFIG, generateRootJsonLd } from "@/config/seo";
 
@@ -119,11 +121,14 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="antialiased selection:bg-sky-500 selection:text-white" suppressHydrationWarning>
-        <LanguageProvider>
+        <HackathonProvider>
+          <LanguageProvider>
           <AuthProvider>
-            {children}
+            <BuildathonBanner />
+              {children}
           </AuthProvider>
         </LanguageProvider>
+        </HackathonProvider>
       </body>
     </html>
   );
