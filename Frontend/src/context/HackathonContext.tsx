@@ -18,38 +18,54 @@ export function HackathonProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      // 1. Immediately wipe any old localStorage to guarantee https://oxpecker.equisaas-bd.com is never polluted
-      localStorage.removeItem("oxpecker_hackathon_ref");
+    function checkYunet() {
+      try {
+        const href = window.location.href.toLowerCase();
+        const search = window.location.search.toLowerCase();
+        const pathname = window.location.pathname.toLowerCase();
 
-      const params = new URLSearchParams(window.location.search);
-      const refParam = params.get("ref")?.toLowerCase();
+        // 1. If URL has ref=yunet anywhere (case-insensitive, with/without slash/hash/params)
+        const hasYunetInUrl =
+          search.includes("ref=yunet") ||
+          href.includes("ref=yunet") ||
+          search.includes("event=yunet") ||
+          search.includes("hackathon=yunet") ||
+          pathname === "/yunet" ||
+          pathname.startsWith("/yunet/");
 
-      // 2. Strict check: If visiting https://oxpecker.equisaas-bd.com/?ref=yunet
-      if (refParam === "yunet") {
-        sessionStorage.setItem("oxpecker_session_yunet", "true");
-        setIsYunet(true);
-        return;
-      }
+        if (hasYunetInUrl) {
+          sessionStorage.setItem("oxpecker_session_yunet", "true");
+          setIsYunet(true);
+          return;
+        }
 
-      // 3. Strict check: If visiting root https://oxpecker.equisaas-bd.com without ?ref=yunet
-      // MUST NEVER show any pop up or sticker under any circumstances!
-      if (window.location.pathname === "/" && refParam !== "yunet") {
-        sessionStorage.removeItem("oxpecker_session_yunet");
+        // 2. If visiting clean root domain (e.g. https://oxpecker.equisaas-bd.com or /) without ref=yunet
+        // MUST NEVER show any pop up, sticker, or watermark under any circumstances!
+        if (pathname === "/" && !search.includes("ref=yunet") && !href.includes("ref=yunet")) {
+          sessionStorage.removeItem("oxpecker_session_yunet");
+          localStorage.removeItem("oxpecker_hackathon_ref");
+          setIsYunet(false);
+          return;
+        }
+
+        // 3. Sub-pages inside an active YUNet judge tab session
+        const isSessionActive = sessionStorage.getItem("oxpecker_session_yunet") === "true";
+        if (isSessionActive) {
+          setIsYunet(true);
+        } else {
+          setIsYunet(false);
+        }
+      } catch {
         setIsYunet(false);
-        return;
       }
-
-      // 4. For sub-pages within the same active tab session if and only if started via ?ref=yunet
-      const isSessionActive = sessionStorage.getItem("oxpecker_session_yunet") === "true";
-      if (isSessionActive) {
-        setIsYunet(true);
-      } else {
-        setIsYunet(false);
-      }
-    } catch {
-      setIsYunet(false);
     }
+
+    // Run on initial mount
+    checkYunet();
+
+    // Listen to history / navigation events
+    window.addEventListener("popstate", checkYunet);
+    return () => window.removeEventListener("popstate", checkYunet);
   }, []);
 
   const clearRef = () => {
