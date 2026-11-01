@@ -213,10 +213,21 @@ export function Footer() {
               Kholipha Ahmmad Al-Amin
             </a>
           </div>
-          <p className="flex items-center gap-1.5 text-center shrink-0">
-            Not a substitute for professional medical advice
-            <Heart size={10} className="text-rose-500" />
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+            <a
+              href="https://yunet-aignite26.devpost.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-800 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-2xs"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Built for Ostad Presents YUNet AIgnite Buildathon 2026</span>
+            </a>
+            <p className="flex items-center gap-1.5 text-center text-xs text-slate-500 font-medium">
+              Not a substitute for professional medical advice
+              <Heart size={10} className="text-rose-500" />
+            </p>
+          </div>
         </div>
       </div>
     </footer>

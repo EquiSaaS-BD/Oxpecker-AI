@@ -222,17 +222,29 @@ export function MegaMenuNavbar({
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="flex h-16 lg:h-20 items-center justify-between">
           
-          {/* Left Brand Logo */}
-          <Link href="/" className="relative z-10 flex shrink-0 items-center max-w-[125px] sm:max-w-none">
-            <Image
-              src="/images/Oxpecker_full_size.png"
-              alt="Oxpecker AI"
-              width={165}
-              height={50}
-              className="h-7 sm:h-9 lg:h-11 w-auto object-contain"
-              priority
-            />
-          </Link>
+          {/* Left Brand Logo & Hackathon Badge */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/" className="relative z-10 flex shrink-0 items-center max-w-[120px] sm:max-w-none">
+              <Image
+                src="/images/Oxpecker_full_size.png"
+                alt="Oxpecker AI"
+                width={165}
+                height={50}
+                className="h-7 sm:h-9 lg:h-11 w-auto object-contain"
+                priority
+              />
+            </Link>
+            <a
+              href="https://yunet-aignite26.devpost.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-2xs shrink-0"
+              title="Official Project for Ostad Presents YUNet AIgnite Buildathon 2026"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span className="truncate max-w-[140px] sm:max-w-none">Built for YUNet AIgnite 2026</span>
+            </a>
+          </div>
 
           {/* Center Desktop Navigation */}
           <nav aria-label="Primary navigation" className="hidden items-center md:flex">
