@@ -19,46 +19,43 @@ export function HackathonProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
 
     try {
+      // 1. Immediately wipe any old localStorage to guarantee https://oxpecker.equisaas-bd.com is never polluted
+      localStorage.removeItem("oxpecker_hackathon_ref");
+
       const params = new URLSearchParams(window.location.search);
-      
-      // Explicit reset trigger if user wants to test non-branded view
-      if (params.get("clear_ref") === "1" || params.get("reset_event") === "1") {
-        localStorage.removeItem("oxpecker_hackathon_ref");
-        sessionStorage.removeItem("oxpecker_hackathon_ref");
+      const refParam = params.get("ref")?.toLowerCase();
+
+      // 2. Strict check: If visiting https://oxpecker.equisaas-bd.com/?ref=yunet
+      if (refParam === "yunet") {
+        sessionStorage.setItem("oxpecker_session_yunet", "true");
+        setIsYunet(true);
+        return;
+      }
+
+      // 3. Strict check: If visiting root https://oxpecker.equisaas-bd.com without ?ref=yunet
+      // MUST NEVER show any pop up or sticker under any circumstances!
+      if (window.location.pathname === "/" && refParam !== "yunet") {
+        sessionStorage.removeItem("oxpecker_session_yunet");
         setIsYunet(false);
         return;
       }
 
-      const refParam = params.get("ref")?.toLowerCase();
-      const eventParam = params.get("event")?.toLowerCase();
-      const hackathonParam = params.get("hackathon")?.toLowerCase();
-
-      const isTriggered =
-        refParam === "yunet" ||
-        eventParam === "yunet" ||
-        hackathonParam === "yunet" ||
-        window.location.pathname.startsWith("/yunet") ||
-        window.location.hostname.includes("yunet");
-
-      if (isTriggered) {
-        localStorage.setItem("oxpecker_hackathon_ref", "yunet");
-        sessionStorage.setItem("oxpecker_hackathon_ref", "yunet");
+      // 4. For sub-pages within the same active tab session if and only if started via ?ref=yunet
+      const isSessionActive = sessionStorage.getItem("oxpecker_session_yunet") === "true";
+      if (isSessionActive) {
         setIsYunet(true);
       } else {
-        const stored =
-          localStorage.getItem("oxpecker_hackathon_ref") ||
-          sessionStorage.getItem("oxpecker_hackathon_ref");
-        if (stored === "yunet") {
-          setIsYunet(true);
-        }
+        setIsYunet(false);
       }
-    } catch {}
+    } catch {
+      setIsYunet(false);
+    }
   }, []);
 
   const clearRef = () => {
     try {
       localStorage.removeItem("oxpecker_hackathon_ref");
-      sessionStorage.removeItem("oxpecker_hackathon_ref");
+      sessionStorage.removeItem("oxpecker_session_yunet");
       setIsYunet(false);
     } catch {}
   };
