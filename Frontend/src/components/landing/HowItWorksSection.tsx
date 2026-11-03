@@ -67,17 +67,6 @@ export function HowItWorksSection() {
         
         {/* Header with pill badge */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-100/80 border border-sky-200 text-xs font-bold text-sky-800 mb-4 shadow-2xs"
-          >
-            
-            <span>{t("Visual Process Pipeline • 4-Step Patient Journey", "৪-ধাপের ভিজ্যুয়াল স্বাস্থ্যসেবা যাত্রা")}</span>
-          </motion.div>
-
           <motion.h2 
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}

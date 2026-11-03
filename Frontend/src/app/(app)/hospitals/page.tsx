@@ -90,10 +90,6 @@ export default function HospitalsDirectory() {
         <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
           
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 font-semibold text-[10px] uppercase tracking-wider mb-1">
-              <Building2 size={12} className="text-emerald-600" />
-              Centralized Network Node
-            </div>
             <h1 className="font-[800] text-[24px] text-slate-900 leading-tight">Hospitals & Live ERs</h1>
             <p className="text-[14px] text-slate-500 font-medium">Real-time hospital seat updates and fast emergency profiles.</p>
           </div>

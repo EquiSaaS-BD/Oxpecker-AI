@@ -8,7 +8,6 @@ import {
   HeartPulse, Network,
   Database,
   ArrowRight,
-  Zap,
   Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,17 +54,6 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
       
       {/* Section Header */}
       <div className="text-center mb-14 lg:mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 mb-3"
-        >
-          <Zap size={13} className="text-amber-500 fill-amber-500" />
-          <span>{t("Ecosystem Architecture • সমন্বিত প্রযুক্তি", "সমন্বিত স্বাস্থ্য আর্কিটেকচার")}</span>
-        </motion.div>
-
         <motion.h2
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}

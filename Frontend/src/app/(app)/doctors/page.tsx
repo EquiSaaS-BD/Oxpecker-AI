@@ -197,11 +197,6 @@ export default function DoctorsPage() {
 
         <div className="w-full max-w-[1280px] px-[20px] md:px-[32px] lg:px-[48px] flex flex-col items-center text-center relative z-10">
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 font-semibold text-xs uppercase tracking-widest mb-6">
-            <ShieldCheck size={14} className="text-emerald-600" />
-            BMDC Verified & Connected
-          </div>
-
           <h1 className="text-[36px] md:text-[48px] font-[800] text-slate-900 mb-4 leading-tight tracking-[-0.04em]">
             National <span className="text-sky-600">Specialist Network</span>
           </h1>

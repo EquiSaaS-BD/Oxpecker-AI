@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   Search, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
   CheckCircle2, TrendingDown, Image as ImageIcon, Bot,
-  Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ShieldCheck, ArrowRight,
+  Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ArrowRight,
   SlidersHorizontal, X, Syringe, FlaskConical, Bandage, Sparkles, Camera, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -146,11 +146,6 @@ export default function MedicinesPage() {
           
           {/* Left: Search Title & Bar */}
           <div className="flex-1 w-full min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-200/70 text-sky-700 font-semibold text-xs uppercase tracking-wider mb-3">
-              <Bot size={13} className="text-sky-600" />
-              <span>National AI Pharmacy Network</span>
-            </div>
-
             <h1 className="text-[24px] sm:text-[32px] md:text-[36px] font-[900] text-slate-900 mb-2 leading-tight tracking-tight">
               Centralized Medicine Database
             </h1>
@@ -357,16 +352,6 @@ export default function MedicinesPage() {
         {/* Clean Header: Category & Count (Zero Clutter) */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                <ShieldCheck size={12} className="text-emerald-600" />
-                DGDA Verified Database
-              </span>
-              <span className="text-[12px] text-slate-400 font-medium">
-                • {totalCount > 0 ? `${totalCount.toLocaleString()} medicines available` : "Comprehensive formulary"}
-              </span>
-            </div>
-            
             <h2 className="text-[20px] sm:text-[26px] md:text-[28px] font-[900] text-slate-900 tracking-tight">
               {searchQuery ? `Results for "${searchQuery}"` : "Find Medicines by Category"}
             </h2>
