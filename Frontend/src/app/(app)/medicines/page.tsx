@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { requestMedicalDocumentConsent } from "@/lib/medical-document-client";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 import { PrescriptionReview } from "@/components/prescription/PrescriptionReview";
+import { MedicineDetailsModal } from "@/components/medicines/MedicineDetailsModal";
 
 const CATEGORIES = [
   { id: "All", name: "All Medicines", icon: Pill, color: "text-slate-600", bg: "bg-slate-100", activeBg: "bg-slate-900 text-white" },
@@ -31,6 +32,7 @@ export default function MedicinesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedMedicine, setSelectedMedicine] = useState<any>(null);
 
   const getBgIcon = (type: string) => {
     if (!type) return Pill;
@@ -438,6 +440,7 @@ export default function MedicinesPage() {
                 <AnimatePresence>
                   {medicines.map((med) => {
                     const catDetails = getCategoryDetails(med.category);
+                    const MedIcon = catDetails.icon;
                     const BgIcon = getBgIcon(med.type);
                     return (
                       <motion.div
@@ -448,73 +451,60 @@ export default function MedicinesPage() {
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Link 
-                          href={`/medicines/${med.id}`}
-                          className="group relative bg-white border border-slate-200/90 hover:border-sky-300 p-4 rounded-2xl shadow-2xs hover:shadow-md transition-all duration-200 h-full flex flex-col justify-between overflow-hidden cursor-pointer"
+                        <div 
+                          onClick={() => setSelectedMedicine(med)}
+                          className="block relative bg-white border border-slate-200/90 p-4 sm:p-5 rounded-[20px] shadow-sm hover:shadow-[0_16px_40px_rgba(0,61,155,0.08)] hover:border-sky-300 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden"
                         >
-                          <div>
-                            {/* Top row: Type Badge and Category Tag */}
-                            <div className="flex items-center justify-between gap-2 mb-2.5">
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 group-hover:bg-sky-50 group-hover:text-sky-700 transition-colors">
-                                <BgIcon className="w-3.5 h-3.5 text-sky-600" />
-                                {med.type || "Tablet"}
-                              </span>
-                              <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${catDetails.bg} ${catDetails.color} border border-slate-100/60`}>
-                                {catDetails.name}
-                              </span>
+                          <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
+                          
+                          <BgIcon 
+                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-28 sm:h-28 text-slate-700/50 -rotate-12 pointer-events-none group-hover:scale-110 group-hover:rotate-0 transition-transform duration-500 opacity-[0.05]" 
+                            strokeWidth={1}
+                          />
+
+                          <div className="relative z-10 flex flex-row gap-3.5 items-start">
+                            <div className={`w-[44px] h-[44px] sm:w-[54px] sm:h-[54px] shrink-0 rounded-2xl flex flex-col items-center justify-center ${catDetails.bg} border border-slate-100 group-hover:scale-105 transition-transform duration-300 shadow-xs`}>
+                              <MedIcon className={`w-6 h-6 ${catDetails.color}`} strokeWidth={1.75} />
                             </div>
-
-                            {/* Brand Name */}
-                            <h3 
-                              className="text-[15px] sm:text-[16px] font-black text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight line-clamp-1 mb-0.5" 
-                              title={med.name}
-                            >
-                              {med.name}
-                            </h3>
-
-                            {/* Generic Formula */}
-                            <p 
-                              className="text-[12px] font-semibold text-slate-500 line-clamp-1 mb-1" 
-                              title={med.generic}
-                            >
-                              {med.generic}
-                            </p>
-
-                            {/* Indication / Use For */}
-                            {med.useFor && (
-                              <p className="text-[11px] text-slate-500 line-clamp-1">
-                                <span className="text-slate-400 font-medium">For: </span>
-                                <span className="text-slate-600 font-medium">{med.useFor}</span>
+                            <div className="flex-1 flex flex-col justify-center min-w-0">
+                              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight truncate pr-1" title={med.name}>
+                                {med.name} {med.strength ? <span className="text-xs font-semibold text-slate-500 font-sans">({med.strength})</span> : null}
+                              </h3>
+                              <p className="text-[12px] font-semibold text-slate-500 mb-0.5 line-clamp-1" title={med.generic}>
+                                {med.generic} <span className="text-slate-400 font-normal">• {med.type}</span>
                               </p>
-                            )}
+                              <p className="text-[11px] font-medium text-slate-400 truncate">
+                                {med.company || "Pharmaceuticals"}
+                              </p>
+                            </div>
                           </div>
                           
-                          {/* Bottom row: Clean Price & Cart action */}
-                          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[16px] sm:text-[17px] font-black text-slate-900 group-hover:text-sky-700 transition-colors">
-                                {typeof med.price === "number" ? `৳${med.price.toFixed(2)}` : "Price on request"}
+                          <div className="relative z-10 flex items-center justify-between pt-3 mt-3.5 border-t border-slate-100">
+                            <div>
+                              <span className="text-[16px] sm:text-[19px] font-black text-slate-900">
+                                ৳{typeof med.price === 'number' ? med.price.toFixed(2) : (med.unitPrice ? med.unitPrice.toFixed(2) : '0.00')}
                               </span>
-                              {typeof med.price === "number" && (
-                                <span className="text-[11px] text-slate-400 font-normal">
-                                  /{med.priceBasis || "pc"}
-                                </span>
-                              )}
+                              <span className="text-[11px] text-slate-500 font-medium ml-1">
+                                / {med.priceBasis || "unit"}
+                              </span>
                             </div>
-                            
-                            <button 
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              aria-label="View details"
-                              className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-sky-600 text-slate-600 group-hover:text-white border border-slate-200/80 group-hover:border-sky-600 flex items-center justify-center transition-all shadow-2xs"
-                            >
-                              <ShoppingCart className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-bold text-sky-600 group-hover:text-sky-700 bg-sky-50 group-hover:bg-sky-100/80 px-2.5 py-1 rounded-lg transition-colors">
+                                Details
+                              </span>
+                              <button 
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 hover:bg-sky-600 text-slate-600 hover:text-white transition-colors"
+                                title="Add to cart"
+                              >
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
-                        </Link>
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -661,6 +651,11 @@ export default function MedicinesPage() {
           animation: scan-line 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
       `}} />
+      <MedicineDetailsModal
+        medicine={selectedMedicine}
+        onClose={() => setSelectedMedicine(null)}
+        onSelectAlternative={(alt) => setSelectedMedicine(alt)}
+      />
     </div>
   );
 }

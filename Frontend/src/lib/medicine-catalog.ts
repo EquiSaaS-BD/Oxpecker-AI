@@ -10,6 +10,8 @@ type CatalogMedicine = {
   manufacturer?: string;
   package_container?: string;
   package_size?: string;
+  type?: string;
+  slug?: string;
 };
 
 let cachedCatalog: { generatedAt: string | null; data: CatalogMedicine[] } | null = null;
@@ -139,4 +141,20 @@ export function comparePrescriptionPrices(parsed: unknown) {
 
 export function getCatalogMedicines() {
   return loadCatalog();
+}
+
+export function getMedicineById(id: string | number) {
+  const catalog = loadCatalog();
+  const idStr = String(id).trim().toLowerCase();
+  return catalog.data.find(m => String(m.id).toLowerCase() === idStr || String(m.slug || '').toLowerCase() === idStr) || null;
+}
+
+export function getGenericAlternatives(genericName: string, excludeId: string | number, limit: number = 6) {
+  const catalog = loadCatalog();
+  const normalizedGen = normalized(genericName);
+  if (!normalizedGen) return [];
+  const idStr = String(excludeId);
+  return catalog.data
+    .filter(m => String(m.id) !== idStr && normalized(m.generic_name) === normalizedGen)
+    .slice(0, limit);
 }
