@@ -52,18 +52,6 @@ function LoginForm() {
     }
   }, [isLoading, isAuthenticated, role, router]);
 
-  const fillDemo = (roleType: 'admin' | 'doctor' | 'hospital' | 'patient' | 'assistant') => {
-    const creds = {
-      admin: { email: 'admin@oxpecker.ai', pass: 'admin123' },
-      doctor: { email: 'doctor@oxpecker.ai', pass: 'doctor123' },
-      hospital: { email: 'hospital@oxpecker.ai', pass: 'hospital123' },
-      patient: { email: 'patient@oxpecker.ai', pass: 'patient123' },
-      assistant: { email: 'assistant@oxpecker.ai', pass: 'assistant123' },
-    }[roleType];
-    setEmail(creds.email);
-    setPassword(creds.pass);
-    toast.info(`Filled ${roleType.toUpperCase()} test credentials. Click Sign In!`);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -387,61 +375,6 @@ function LoginForm() {
               )}
             </button>
           </form>
-
-          
-          {/* Quick Demo Test Accounts for Judges */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Judge & Test Logins (1-Click)
-              </span>
-              <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                Active
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => fillDemo('admin')}
-                className="py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>👑</span>
-                <span className="truncate">Admin Portal</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('hospital')}
-                className="py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🏥</span>
-                <span className="truncate">Hospital Beds</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('doctor')}
-                className="py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🩺</span>
-                <span className="truncate">Doctor Portal</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('patient')}
-                className="py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>👤</span>
-                <span className="truncate">Patient Card</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('assistant')}
-                className="col-span-2 py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-left transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <span>📋</span>
-                <span className="truncate">Front Desk / Assistant (Speaker)</span>
-              </button>
-            </div>
-          </div>
 
           <div className="mt-7 pt-5 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-500 font-medium">
