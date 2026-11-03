@@ -16,7 +16,6 @@ import {
   MapPin,
   CheckCircle2,
   ArrowRight,
-  ShieldAlert,
   Activity
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -168,8 +167,8 @@ export function HeroSection() {
             className="text-sm sm:text-base md:text-[15.5px] text-slate-500 leading-relaxed font-normal max-w-xl mb-2 tracking-normal"
           >
             {t(
-              "Get instant AI-powered health guidance, symptom analysis, prescription understanding, doctor recommendations, and medicine intelligence — all in one secure platform.",
-              "তাৎক্ষণিক এআই স্বাস্থ্য পরামর্শ, লক্ষণ বিশ্লেষণ, প্রেসক্রিপশন ব্যাখ্যা, ডাক্তার সন্ধান এবং ওষুধের নির্ভরযোগ্য তথ্য — সবকিছু এক নিরাপদ প্ল্যাটফর্মে।"
+              "Get instant AI-powered health guidance, symptom analysis, prescription understanding, doctor recommendations, and medicine intelligence - all in one secure platform.",
+              "তাৎক্ষণিক এআই স্বাস্থ্য পরামর্শ, লক্ষণ বিশ্লেষণ, প্রেসক্রিপশন ব্যাখ্যা, ডাক্তার সন্ধান এবং ওষুধের নির্ভরযোগ্য তথ্য - সবকিছু এক নিরাপদ প্ল্যাটফর্মে।"
             )}
           </motion.p>
         </div>

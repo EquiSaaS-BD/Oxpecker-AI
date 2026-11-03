@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Stethoscope, FileText, ShieldAlert, Bot, Activity, ArrowRight, HeartPulse, CheckCircle2 } from "lucide-react";
+import { Stethoscope, FileText, Bot, Activity, ArrowRight, HeartPulse, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 
@@ -22,7 +22,7 @@ export function AIIntelligenceSuite() {
             className="space-y-6"
           >
             <div className="flex items-center gap-2 text-rose-700 text-xs font-bold uppercase tracking-wider">
-              <ShieldAlert size={16} />
+              <HeartPulse size={16} />
               <span>{t("Emergency Health Profile", "জরুরি চিকিৎসা প্রোফাইল")}</span>
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -71,7 +71,7 @@ export function AIIntelligenceSuite() {
               <div className="flex items-center justify-between border-b border-rose-200/70 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold">
-                    <ShieldAlert size={20} />
+                    <HeartPulse size={20} />
                   </div>
                   <div>
                     <span className="text-[10px] font-extrabold uppercase text-rose-700 tracking-wider block">Emergency Profile Preview</span>
@@ -85,7 +85,7 @@ export function AIIntelligenceSuite() {
 
               <div className="space-y-3 text-xs">
                 <div className="p-3 bg-white/90 rounded-xl border border-rose-200 flex items-start gap-2.5">
-                  <ShieldAlert size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                  <HeartPulse size={16} className="text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-rose-900 font-bold block">Medicine Allergy:</strong>
                     <span className="text-slate-700 font-medium">Penicillin: sample record of a previous severe reaction. Confirm details before treatment.</span>

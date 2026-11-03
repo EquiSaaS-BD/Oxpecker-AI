@@ -11,7 +11,6 @@ import {
   Loader2,
   Navigation,
   Building2,
-  Sparkles,
   Map,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -428,7 +427,7 @@ export function HeroLocationDropdown({
                     </span>
                   </div>
                 </div>
-                <Sparkles size={14} className="text-amber-500 shrink-0" />
+                
               </button>
 
               {/* Live Search Input with API */}

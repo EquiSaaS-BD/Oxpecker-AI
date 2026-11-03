@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Lock, ShieldCheck, Key, Server } from "lucide-react";
+import { Lock, CheckCircle2, Key, Server } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
 import { generateFaqJsonLd } from "@/config/seo";
@@ -109,7 +109,7 @@ export function SecurityAndFAQ() {
 
             <div className="space-y-3 pt-2">
               {[
-                { icon: ShieldCheck, title: t("Role-Based Access Planned", "দায়িত্বভিত্তিক প্রবেশাধিকার পরিকল্পিত") },
+                { icon: CheckCircle2, title: t("Role-Based Access Planned", "দায়িত্বভিত্তিক প্রবেশাধিকার পরিকল্পিত") },
                 { icon: Server, title: t("Reviewable Logs Planned", "পর্যালোচনাযোগ্য লগ পরিকল্পিত") },
                 { icon: Key, title: t("Security Testing Required", "নিরাপত্তা পরীক্ষা প্রয়োজন") }
               ].map((item, i) => (

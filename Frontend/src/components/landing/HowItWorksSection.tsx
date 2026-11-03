@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserPlus, Database, ShieldAlert, HeartPulse, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { UserPlus, Database, HeartPulse, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function HowItWorksSection() {
@@ -35,7 +35,7 @@ export function HowItWorksSection() {
     {
       stepNumber: "03",
       badge: t("24/7 Emergency Guard", "জরুরি সুরক্ষা"),
-      icon: ShieldAlert,
+      icon: HeartPulse,
       title: t("Emergency Support", "জরুরি মুহূর্তে সহায়তা"),
       desc: t("Dynamic QR code and biometric matcher help ER doctors retrieve life-saving vitals in seconds.", "জরুরি মুহূর্তে কথা বলতে না পারলেও QR কোড বা ফটো স্ক্যানে ডাক্তার তাৎক্ষণিক রক্তের গ্রুপ ও হিস্ট্রি দেখতে পাবেন।"),
       color: "rose",
@@ -74,7 +74,7 @@ export function HowItWorksSection() {
             transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-100/80 border border-sky-200 text-xs font-bold text-sky-800 mb-4 shadow-2xs"
           >
-            <Sparkles size={13} className="text-sky-600 animate-pulse" />
+            
             <span>{t("Visual Process Pipeline • 4-Step Patient Journey", "৪-ধাপের ভিজ্যুয়াল স্বাস্থ্যসেবা যাত্রা")}</span>
           </motion.div>
 

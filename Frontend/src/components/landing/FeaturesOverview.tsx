@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
-import { ShieldCheck, HeartPulse, Microscope, Activity, Bot, Clock, Lock, Building2 } from "lucide-react";
+import { CheckCircle2, HeartPulse, Microscope, Activity, Bot, Clock, Lock, Building2 } from "lucide-react";
 
 export function FeaturesOverview() {
   const { t } = useLanguage();
@@ -41,7 +41,7 @@ export function FeaturesOverview() {
   const whyChooseUs = [
     { icon: Clock, title: t("24/7 Instant Support", "২৪/৭ ইনস্ট্যান্ট সাপোর্ট") },
     { icon: Lock, title: t("Secure Medical Data", "সুরক্ষিত ডেটা") },
-    { icon: ShieldCheck, title: t("DGDA Verified", "DGDA ভেরিফাইড") },
+    { icon: CheckCircle2, title: t("DGDA Verified", "DGDA ভেরিফাইড") },
     { icon: HeartPulse, title: t("Personalized Guidance", "পার্সোনালাইজড গাইডেন্স") },
   ];
 

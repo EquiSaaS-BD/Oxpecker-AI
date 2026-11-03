@@ -5,11 +5,9 @@ import { motion, Variants } from "framer-motion";
 import {
   MessageSquare,
   Building2,
-  ShieldAlert,
-  Network,
+  HeartPulse, Network,
   Database,
   ArrowRight,
-  Sparkles,
   Zap,
   Activity
 } from "lucide-react";
@@ -148,7 +146,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
 
           <div className="relative z-10">
             <div className="w-13 h-13 rounded-2xl bg-rose-600 text-white flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
-              <ShieldAlert size={26} />
+              <HeartPulse size={26} />
             </div>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-700 block mb-1">
               {t("Life-Saving Triage", "জরুরি মুহূর্তে")}
@@ -231,7 +229,7 @@ export function WhyUsBento({ className }: WhyUsBentoProps) {
 
           <div className="mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs font-bold relative z-10">
             <span className="text-slate-500 flex items-center gap-1.5">
-              <Sparkles size={14} className="text-sky-500" />
+              
               {t("Trained on 9,600+ DGHS/WHO Clinical Cases", "১৫০টি রোগের ৯,৬০০+ ক্লিনিক্যাল কেস")}
             </span>
             <Link href="/chat?category=symptoms" className="text-sky-600 hover:text-sky-700 font-extrabold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
