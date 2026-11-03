@@ -71,7 +71,7 @@ export async function GET(
       slug: med.slug || '',
       category,
       useFor: getUseFor(category, med.generic_name || '', monograph?.indication),
-      image: '/images/medicine-box.png',
+      image: null,
       monograph: monograph ? {
         id: monograph.id,
         name: monograph.name,
