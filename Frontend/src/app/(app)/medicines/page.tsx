@@ -17,7 +17,7 @@ import { PrescriptionReview } from "@/components/prescription/PrescriptionReview
 import { MedicineDetailsModal } from "@/components/medicines/MedicineDetailsModal";
 
 const CATEGORIES = [
-  { id: "All", name: "All Medicines", icon: Pill, color: "text-slate-600", bg: "bg-slate-100", activeBg: "bg-slate-900 text-white", badgeStyle: "text-slate-700 bg-slate-100/90 border-slate-200/80", badgeLabel: "ALL MEDICINES" },
+  { id: "All", name: "All Medicines", icon: Pill, color: "text-slate-600", bg: "bg-slate-100", activeBg: "bg-slate-900 text-white", badgeStyle: "text-slate-700 bg-slate-100/90 border-slate-200/80", badgeLabel: "THERAPEUTIC" },
   { id: "Painkiller", name: "Fever & Pain", icon: Thermometer, color: "text-rose-600", bg: "bg-rose-50", activeBg: "bg-rose-600 text-white", badgeStyle: "text-[#e11d48] bg-[#FFF1F2] border-[#FFE4E6]", badgeLabel: "FEVER & PAIN" },
   { id: "Gastric", name: "Gastric & Ulcer", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50", activeBg: "bg-emerald-600 text-white", badgeStyle: "text-[#059669] bg-[#ECFDF5] border-[#D1FAE5]", badgeLabel: "GASTRIC & ULCER" },
   { id: "Antibiotic", name: "Antibiotics", icon: BugOff, color: "text-purple-600", bg: "bg-purple-50", activeBg: "bg-purple-600 text-white", badgeStyle: "text-[#9333ea] bg-[#FAF5FF] border-[#F3E8FF]", badgeLabel: "ANTIBIOTICS" },
@@ -479,7 +479,7 @@ export default function MedicinesPage() {
                               className="text-[12px] sm:text-[13px] font-semibold text-slate-500 truncate mb-1" 
                               title={med.generic}
                             >
-                              {med.generic}
+                              {med.generic}{med.strength ? ` • ${med.strength}` : ""}
                             </p>
                             <p className="text-[12px] sm:text-[13px] font-medium truncate mb-4">
                               <span className="text-purple-600 font-bold">For: </span>

@@ -168,8 +168,8 @@ export function HealthPassSearchEngine({
       const safeDefault = Array.isArray(defaultCards) && defaultCards.length > 0 ? defaultCards : INITIAL_HEALTH_CARDS;
       setCardList(Array.isArray(safeDefault) ? safeDefault : []);
       setDataSource("registry");
-      if (!selectedCard && safeDefault.length > 0) {
-        setSelectedCard(safeDefault[0]);
+      if (safeDefault.length > 0) {
+        setSelectedCard((prev) => prev || safeDefault[0]);
       }
       return;
     }
@@ -2329,7 +2329,6 @@ export function HealthPassSearchEngine({
                       }`}
                     >
                       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md mb-2 bg-slate-100">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={card.photo_url ?? card.patient_image ?? undefined}
                           alt={card.patient_name}
@@ -2462,7 +2461,6 @@ export function HealthPassSearchEngine({
                           {visualProbeImage && (
                             <div className="text-center">
                               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-indigo-400/60 shadow-md bg-slate-800">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={visualProbeImage}
                                   alt="Probe"
@@ -2484,7 +2482,6 @@ export function HealthPassSearchEngine({
 
                           <div className="text-center">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-md bg-slate-800">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={top.card.photo_url ?? top.card.patient_image ?? undefined}
                                 alt="Registry"
@@ -2556,7 +2553,6 @@ export function HealthPassSearchEngine({
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={c.card.photo_url ?? c.card.patient_image ?? undefined} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">

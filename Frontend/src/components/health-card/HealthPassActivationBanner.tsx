@@ -11,12 +11,12 @@ export function HealthPassActivationBanner() {
   const { user } = useAuth();
   const [isActivated, setIsActivated] = useState(true);
 
-  const checkStatus = () => {
-    if (!user) return;
-    setIsActivated(isHealthPassActivated(user.id));
-  };
-
   useEffect(() => {
+    const checkStatus = () => {
+      if (!user) return;
+      setIsActivated(isHealthPassActivated(user.id));
+    };
+
     checkStatus();
 
     const handleStatusChanged = () => {

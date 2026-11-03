@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { 
   ArrowLeft, 
   Pill, 
   FlaskConical, 
-  Syringe, 
-  Bandage, 
   Building2, 
   FileCheck2, 
   Share2, 
@@ -23,14 +20,15 @@ import {
   Layers, 
   Sparkles,
   Globe,
-  QrCode,
   CheckCircle2,
-  BookmarkPlus,
-  Maximize2
+  Maximize2,
+  X,
+  Beaker,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export type Language = "en" | "bn" | "ar";
+export type Language = "en" | "bn" | "ar" | "hi";
 
 interface Translations {
   backToMedicines: string;
@@ -47,10 +45,13 @@ interface Translations {
   pharmacologyMechanism: string;
   dosageGuidelines: string;
   administrationInstructions: string;
+  interactionTitle: string;
   sideEffects: string;
   contraindications: string;
   pregnancyLactation: string;
   precautionsWarnings: string;
+  overdoseTitle: string;
+  reconstitutionTitle: string;
   storageInstructions: string;
   databaseSpecs: string;
   databaseSpecsSub: string;
@@ -76,6 +77,7 @@ interface Translations {
   chemicalStructureTitle: string;
   languageSelectTitle: string;
   languageSelectSub: string;
+  translatingLabel: string;
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -92,13 +94,16 @@ const TRANSLATIONS: Record<Language, Translations> = {
     aToZSub: "Directly compiled from Directorate General of Drug Administration (DGDA) & official pharmacopeia monographs.",
     indicationsApprovedUses: "Indications & Approved Clinical Uses",
     pharmacologyMechanism: "Pharmacology & Mechanism of Action",
-    dosageGuidelines: "Dosage & Usage Guidelines",
+    dosageGuidelines: "Dosage & Administration Guidelines",
     administrationInstructions: "Administration Instructions (Before / After Meals)",
+    interactionTitle: "Drug Interactions",
     sideEffects: "Documented Side Effects & Adverse Reactions",
     contraindications: "Contraindications & Who Should Not Take",
     pregnancyLactation: "Pregnancy & Lactation Safety",
     precautionsWarnings: "Special Precautions & Warnings",
-    storageInstructions: "Storage Instructions",
+    overdoseTitle: "Overdose Effects & Emergency Management",
+    reconstitutionTitle: "Suspension Reconstitution / Mixing Procedure",
+    storageInstructions: "Storage Conditions & Handling",
     databaseSpecs: "Official Database Specifications",
     databaseSpecsSub: "Official regulatory record from the Bangladesh National Medicine Database.",
     brandName: "Brand Name",
@@ -122,7 +127,8 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialPhotoTitle: "Official Registered Packaging Photo",
     chemicalStructureTitle: "Chemical Molecular Structure",
     languageSelectTitle: "Translate Page Language / ভাষা পরিবর্তন",
-    languageSelectSub: "Switch between English (Default), Bengali, and Arabic for clinical guidelines and monographs."
+    languageSelectSub: "Switch between English (Default), Bengali, Arabic, or Hindi for complete clinical guidelines.",
+    translatingLabel: "Translating clinical monograph..."
   },
   bn: {
     backToMedicines: "ওষুধের তালিকায় ফিরে যান",
@@ -133,17 +139,20 @@ const TRANSLATIONS: Record<Language, Translations> = {
     govtApprovedPrice: "সরকারি নির্ধারিত খুচরা মূল্য",
     inStock: "নিবন্ধিত ফার্মেসিতে মজুদ রয়েছে",
     primaryIndication: "প্রাথমিক নির্দেশিত রোগ",
-    aToZGuidelines: "A to Z বিস্তারিত ব্যবহার নির্দেশিকা",
-    aToZSub: "ওষুধ প্রশাসন অধিদপ্তর (DGDA) ও ফার্মাকোপিয়া মনোগ্রাফ থেকে সরাসরি সংগৃহীত তথ্য।",
-    indicationsApprovedUses: "চিকিৎসায় ব্যবহার ও রোগ নিরাময়",
-    pharmacologyMechanism: "কার্যপদ্ধতি ও ফার্মাকোলজি",
-    dosageGuidelines: "সেবনমাত্রা ও নিয়ম",
+    aToZGuidelines: "A to Z বিস্তারিত ব্যবহার ও সেবন নির্দেশিকা",
+    aToZSub: "ওষুধ প্রশাসন অধিদপ্তর (DGDA) ও অফিশিয়াল ফার্মাকোপিয়া মনোগ্রাফ থেকে সরাসরি সংগৃহীত তথ্য।",
+    indicationsApprovedUses: "নির্দেশনা ও চিকিৎসায় ব্যবহার (Indications)",
+    pharmacologyMechanism: "ফার্মাকোলজি ও কার্যপদ্ধতি (Pharmacology)",
+    dosageGuidelines: "মাত্রা ও সেবনবিধি (Dosage & Administration)",
     administrationInstructions: "সেবনের সঠিক নিয়ম (খাবারের আগে/পরে)",
-    sideEffects: "সম্ভাব্য পার্শ্বপ্রতিক্রিয়া",
-    contraindications: "কাদের সেবন নিষেধ",
-    pregnancyLactation: "গর্ভাবস্থা ও স্তন্যদানকালে ব্যবহার",
-    precautionsWarnings: "বিশেষ সতর্কতা ও পরামর্শ",
-    storageInstructions: "সংরক্ষণ নির্দেশিকা",
+    interactionTitle: "ওষুধের মিথস্ক্রিয়া (Drug Interactions)",
+    sideEffects: "সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects)",
+    contraindications: "প্রতিনির্দেশনা ও কাদের সেবন নিষেধ (Contraindications)",
+    pregnancyLactation: "গর্ভাবস্থা ও স্তন্যদানকালে ব্যবহার (Pregnancy & Lactation)",
+    precautionsWarnings: "সতর্কতা ও বিশেষ পরামর্শ (Precautions & Warnings)",
+    overdoseTitle: "মাত্রাধিক্যতা ও করণীয় (Overdose Effects)",
+    reconstitutionTitle: "সাসপেনশন তৈরির নিয়ম / পুনর্গঠন প্রণালী (Reconstitution)",
+    storageInstructions: "সংরক্ষণ নির্দেশিকা (Storage Conditions)",
     databaseSpecs: "অফিশিয়াল ডেটাবেস স্পেসিফিকেশন",
     databaseSpecsSub: "বাংলাদেশ জাতীয় ওষুধ ডাটাবেসের অফিশিয়াল রেকর্ড।",
     brandName: "বাণিজ্যিক নাম",
@@ -167,7 +176,8 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialPhotoTitle: "রেজিস্টার্ড অফিশিয়াল প্যাকেজিং ছবি",
     chemicalStructureTitle: "রাসায়নিক আণবিক সংকেত ও গঠন",
     languageSelectTitle: "পৃষ্ঠার ভাষা পরিবর্তন করুন / Language",
-    languageSelectSub: "ইংরেজি, বাংলা অথবা আরবি ভাষায় ক্লিনিকাল গাইডলাইন ও প্রেসক্রিপশন নির্দেশিকা পড়ুন।"
+    languageSelectSub: "ইংরেজি (ডিফল্ট), বাংলা, আরবি অথবা হিন্দি ভাষায় সম্পূর্ণ ক্লিনিকাল গাইডলাইন পড়ুন।",
+    translatingLabel: "বাংলায় অনুবাদ করা হচ্ছে..."
   },
   ar: {
     backToMedicines: "العودة إلى الأدوية",
@@ -184,10 +194,13 @@ const TRANSLATIONS: Record<Language, Translations> = {
     pharmacologyMechanism: "علم الأدوية وآلية العمل في الجسم",
     dosageGuidelines: "إرشادات الجرعة وطريقة الاستعمال",
     administrationInstructions: "تعليمات تناول الدواء (قبل أو بعد الطعام)",
+    interactionTitle: "التفاعلات الدوائية",
     sideEffects: "الآثار الجانبية الموثقة",
     contraindications: "موانع الاستعمال ومحاذير الاستخدام",
     pregnancyLactation: "سلامة الاستخدام أثناء الحمل والرضاعة",
     precautionsWarnings: "تحذيرات واحتياطات هامة",
+    overdoseTitle: "آثار الجرعة الزائدة",
+    reconstitutionTitle: "طريقة تحضير المعلق الدوائي",
     storageInstructions: "تعليمات الحفظ والتخزين",
     databaseSpecs: "المواصفات الرسمية المسجلة",
     databaseSpecsSub: "بيانات موثقة من السجل الدوائي الوطني المعتمد.",
@@ -212,7 +225,57 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialPhotoTitle: "الصورة الرسمية المعتمدة لعبوة الدواء",
     chemicalStructureTitle: "التركيب الجزيئي الكيميائي للمادة الفعالة",
     languageSelectTitle: "ترجمة لغة الصفحة / Language",
-    languageSelectSub: "التبديل بين اللغة الإنجليزية واللغة العربية والبنغالية لقراءة الدليل الطبي الكامل."
+    languageSelectSub: "التبديل بين اللغة الإنجليزية والبنغالية والعربية والهندية لقراءة الدليل الطبي الكامل.",
+    translatingLabel: "جاري ترجمة البيانات الطبية..."
+  },
+  hi: {
+    backToMedicines: "दवाइयों की सूची पर वापस जाएं",
+    officialPrescribingInfo: "आधिकारिक चिकित्सा जानकारी",
+    share: "শেयर करें",
+    copied: "कॉपी हो गया!",
+    dgdaVerified: "DGDA द्वारा सत्यापित दवा",
+    govtApprovedPrice: "सरकार द्वारा निर्धारित खुदरा मूल्य",
+    inStock: "पंजीकृत फार्मेसियों में उपलब्ध",
+    primaryIndication: "प्राथमिक चिकित्सीय उपयोग",
+    aToZGuidelines: "A से Z संपूर्ण उपयोग एवं खुराक दिशानिर्देश",
+    aToZSub: "औषधि प्रशासन निदेशालय (DGDA) और आधिकारिक फार्माकोपिया मोनोग्राफ से संकलित।",
+    indicationsApprovedUses: "संकेत और अनुमोदित चिकित्सीय उपयोग",
+    pharmacologyMechanism: "फार्माकोलॉजी और कार्य प्रणाली",
+    dosageGuidelines: "खुराक और सेवन विधि",
+    administrationInstructions: "सेवन के निर्देश (भोजन से पहले / बाद में)",
+    interactionTitle: "दवा পারस्परिक क्रिया (Drug Interactions)",
+    sideEffects: "संभावित दुष्प्रभाव (Side Effects)",
+    contraindications: "निषेध (किसे नहीं लेनी चाहिए)",
+    pregnancyLactation: "गर्भावस्था और स्तनपान में सुरक्षा",
+    precautionsWarnings: "विशेष सावधानियां और चेतावनियां",
+    overdoseTitle: "अधिक मात्रा (Overdose) के प्रभाव",
+    reconstitutionTitle: "सस्पेंशन तैयार करने की विधि",
+    storageInstructions: "भंडारण निर्देश (Storage)",
+    databaseSpecs: "आधिकारिक डेटाबेस विवरण",
+    databaseSpecsSub: "राष्ट्रीय औषधि डेटाबेस का आधिकारिक रिकॉर्ड।",
+    brandName: "ब्रांड का नाम",
+    genericName: "जेनेरिक सक्रिय तत्व",
+    strength: "क्षमता / मात्रा",
+    dosageForm: "खुराक का रूप",
+    manufacturer: "निर्माता कंपनी",
+    packagingDetails: "पैकेजिंग विवरण",
+    verifiedGuarantee: "सत्यापित जानकारी की गारंटी: प्रदर्शित सभी दवा विवरण, मूल्य और मोनोग्राफ आधिकारिक DGDA रिकॉर्ड से सत्यापित हैं।",
+    affordableAlternatives: "समान जेनेरिक के किफायती विकल्प",
+    affordableAlternativesSub: "समान सक्रिय तत्व और क्षमता वाली अन्य विश्वसनीय ब्रांड की दवाएं।",
+    viewDetails: "विवरण देखें",
+    available: "उपलब्ध",
+    rxOnly: "प्रिस्क्रिप्शन दवा (Rx Only)",
+    loadingText: "सत्यापित रिकॉर्ड लोड हो रहे हैं...",
+    notFoundTitle: "दवा का रिकॉर्ड नहीं मिला",
+    notFoundDesc: "राष्ट्रीय डेटाबेस में अनुरोधित दवा नहीं मिली।",
+    returnBtn: "दवा डेटाबेस पर लौटें",
+    packagingView: "आधिकारिक फार्मास्युटिकल पैकेजिंग",
+    officialCarton: "प्रमाणित कंटेनर और पैकेजिंग प्रस्तुति",
+    officialPhotoTitle: "आधिकारिक पंजीकृत पैकेजिंग फोटो",
+    chemicalStructureTitle: "रासायनिक आणविक संरचना",
+    languageSelectTitle: "पेज की भाषा बदलें / Translate Language",
+    languageSelectSub: "अंग्रेजी, बंगाली, अरबी या हिंदी में संपूर्ण चिकित्सीय दिशानिर्देश पढ़ें।",
+    translatingLabel: "अनुवाद किया जा रहा है..."
   }
 };
 
@@ -228,8 +291,100 @@ export default function MedicineDetailClient({
   const [copied, setCopied] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>("en");
   const [viewPhotoZoom, setViewPhotoZoom] = useState(false);
+  const [activePackIndex, setActivePackIndex] = useState(0);
+  const [translatedData, setTranslatedData] = useState<Record<string, Record<string, string>>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const t = useMemo(() => TRANSLATIONS[currentLang] || TRANSLATIONS.en, [currentLang]);
+
+  const monograph = medicine?.monograph;
+  const monographBn = useMemo(() => medicine?.monographBn || {}, [medicine?.monographBn]);
+
+  // Trigger full-content translation when user switches to bn, ar, or hi
+  useEffect(() => {
+    if (!medicine || currentLang === "en") return;
+    if (translatedData[currentLang]) return;
+
+    const fieldsToTranslate: Record<string, string> = {};
+    const monoKeys = [
+      "indication_description",
+      "pharmacology",
+      "dosage",
+      "administration",
+      "interaction",
+      "contraindications",
+      "side_effects",
+      "pregnancy_and_lactation",
+      "precautions",
+      "overdose_effects",
+      "reconstitution",
+      "storage_conditions",
+    ];
+
+    for (const key of monoKeys) {
+      // If language is Bengali and we already have the official MedEx Bengali monograph for this key, use it directly!
+      if (currentLang === "bn" && monographBn[key]) {
+        continue;
+      }
+      if (monograph?.[key]) {
+        fieldsToTranslate[key] = monograph[key];
+      }
+    }
+
+    if (medicine.useFor) fieldsToTranslate.useFor = medicine.useFor;
+    if (medicine.type) fieldsToTranslate.type = medicine.type;
+    if (medicine.packageContainer) fieldsToTranslate.packageContainer = medicine.packageContainer;
+
+    if (Object.keys(fieldsToTranslate).length === 0) {
+      if (currentLang === "bn") {
+        setTranslatedData(prev => ({ ...prev, bn: { ...monographBn } }));
+      }
+      return;
+    }
+
+    let isMounted = true;
+    setIsTranslating(true);
+    fetch("/api/medicines/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        medicineId: medicine.id,
+        targetLang: currentLang,
+        fields: fieldsToTranslate,
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        const apiTranslated = data?.translated || {};
+        const merged = currentLang === "bn" 
+          ? { ...apiTranslated, ...monographBn } 
+          : apiTranslated;
+        setTranslatedData(prev => ({ ...prev, [currentLang]: merged }));
+      })
+      .catch(() => {
+        if (isMounted && currentLang === "bn") {
+          setTranslatedData(prev => ({ ...prev, bn: { ...monographBn } }));
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsTranslating(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentLang, medicine, monograph, monographBn, translatedData]);
+
+  // Helper to get localized clinical field (instant MedEx BN monograph or neural translation)
+  const getLocalizedField = (key: string, defaultVal?: string): string => {
+    const fallback = defaultVal ?? monograph?.[key] ?? "";
+    if (currentLang === "en" || !fallback) return fallback;
+    if (currentLang === "bn" && monographBn[key]) {
+      return monographBn[key];
+    }
+    return translatedData[currentLang]?.[key] || fallback;
+  };
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -254,9 +409,12 @@ export default function MedicineDetailClient({
     );
   }
 
-  const monograph = medicine.monograph;
   const manufacturerAsset = medicine.manufacturerAsset;
-  const officialPackaging = medicine.officialPackagingImage;
+  const packList: string[] = Array.isArray(medicine.packagingImages) && medicine.packagingImages.length > 0
+    ? medicine.packagingImages
+    : (medicine.officialPackagingImage ? [medicine.officialPackagingImage] : []);
+  const activePackImage = packList[activePackIndex] || packList[0] || null;
+  const officialDosageIcon = medicine.officialDosageIcon;
   const chemicalStructure = medicine.chemicalStructure;
 
   const isSyrupOrLiquid = (medicine.type || "").toLowerCase().includes("syrup") || 
@@ -308,15 +466,15 @@ export default function MedicineDetailClient({
         <div className="bg-gradient-to-r from-sky-50 via-white to-indigo-50/50 border-2 border-sky-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="w-11 h-11 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Globe size={22} className="animate-[pulse_3s_infinite]" />
+              <Globe size={22} className={isTranslating ? "animate-spin" : ""} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
                   {t.languageSelectTitle}
                 </span>
                 <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/80">
-                  Instant Translation
+                  {isTranslating ? t.translatingLabel : "Full Monograph Translator"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
@@ -326,44 +484,57 @@ export default function MedicineDetailClient({
           </div>
 
           {/* Interactive Language Buttons */}
-          <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200/90 shadow-2xs w-full md:w-auto justify-center gap-1">
+          <div className="flex flex-wrap items-center bg-white p-1 rounded-xl border border-slate-200/90 shadow-2xs w-full md:w-auto justify-center gap-1">
             <button
               type="button"
               onClick={() => setCurrentLang("en")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
                 currentLang === "en"
                   ? "bg-slate-900 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               <span className="text-sm">🇺🇸</span>
-              <span>English (Default)</span>
+              <span>English</span>
             </button>
 
             <button
               type="button"
               onClick={() => setCurrentLang("bn")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
                 currentLang === "bn"
                   ? "bg-sky-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-sky-600 hover:bg-slate-100"
               }`}
             >
               <span className="text-sm">🇧🇩</span>
-              <span>বাংলা (Bengali)</span>
+              <span>বাংলা</span>
             </button>
 
             <button
               type="button"
               onClick={() => setCurrentLang("ar")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
                 currentLang === "ar"
                   ? "bg-emerald-700 text-white shadow-xs"
                   : "text-slate-600 hover:text-emerald-700 hover:bg-slate-100"
               }`}
             >
               <span className="text-sm">🇸🇦</span>
-              <span>العربية (Arabic)</span>
+              <span>العربية</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentLang("hi")}
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                currentLang === "hi"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-indigo-600 hover:bg-slate-100"
+              }`}
+            >
+              <span className="text-sm">🇮🇳</span>
+              <span>हिन्दी</span>
             </button>
           </div>
         </div>
@@ -388,30 +559,53 @@ export default function MedicineDetailClient({
 
               {/* Packaging Visualizer: Real Photo OR Official Pharmaceutical Presentation */}
               <div className="relative w-full py-2 flex flex-col items-center justify-center">
-                {officialPackaging ? (
+                {activePackImage ? (
                   /* Real Packaging Photo from Official Database */
-                  <div className="relative group/photo flex flex-col items-center">
-                    <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-2xl bg-white border border-slate-200 p-2 shadow-md overflow-hidden flex items-center justify-center">
+                  <div className="relative group/photo flex flex-col items-center w-full">
+                    <div 
+                      onClick={() => setViewPhotoZoom(true)}
+                      className="relative w-full max-w-[270px] h-56 sm:h-64 rounded-2xl bg-white border border-slate-200 p-3 shadow-md overflow-hidden flex items-center justify-center cursor-zoom-in"
+                    >
                       <img 
-                        src={officialPackaging} 
+                        src={activePackImage} 
                         alt={`${medicine.name} Official Packaging`}
                         className="max-w-full max-h-full object-contain group-hover/photo:scale-105 transition-transform duration-300"
                       />
                       <button 
-                        onClick={() => setViewPhotoZoom(true)}
-                        className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/60 text-white hover:bg-black transition-colors"
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setViewPhotoZoom(true); }}
+                        className="absolute bottom-2.5 right-2.5 p-2 rounded-xl bg-slate-900/75 text-white hover:bg-slate-900 transition-colors cursor-pointer shadow-xs"
                         title="View Full Resolution"
                       >
                         <Maximize2 size={14} />
                       </button>
                     </div>
-                    <span className="text-[11px] font-bold text-slate-600 mt-2 flex items-center gap-1">
+
+                    {/* Multi-photo thumbnail selector if multiple official pack images exist */}
+                    {packList.length > 1 && (
+                      <div className="flex items-center gap-2 mt-3">
+                        {packList.map((imgUrl, idx) => (
+                          <button
+                            key={imgUrl}
+                            type="button"
+                            onClick={() => setActivePackIndex(idx)}
+                            className={`w-12 h-12 rounded-xl border p-1 bg-white overflow-hidden transition-all cursor-pointer ${
+                              activePackIndex === idx ? "border-sky-600 ring-2 ring-sky-500/20" : "border-slate-200 opacity-70 hover:opacity-100"
+                            }`}
+                          >
+                            <img src={imgUrl} alt="" className="w-full h-full object-contain" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <span className="text-[11px] font-bold text-slate-600 mt-2.5 flex items-center gap-1">
                       <CheckCircle2 size={13} className="text-emerald-600" />
                       {t.officialPhotoTitle}
                     </span>
                   </div>
                 ) : (
-                  /* Authentic Pharmaceutical Packaging Container Visualizer */
+                  /* Authentic Pharmaceutical Packaging Container Visualizer with Official Dosage Icon & Manufacturer Logo */
                   <div className="w-full flex flex-col items-center">
                     {isSyrupOrLiquid ? (
                       /* Amber Suspension/Syrup Presentation */
@@ -419,37 +613,50 @@ export default function MedicineDetailClient({
                         {/* Amber Bottle */}
                         <div className="w-24 sm:w-28 h-48 sm:h-52 rounded-2xl bg-gradient-to-r from-amber-950 via-amber-800 to-amber-950 p-2 flex flex-col justify-between shadow-lg border border-amber-900/80 relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-7 rounded-t-md bg-gradient-to-b from-slate-100 to-slate-300 border border-slate-400 shadow-xs" />
-                          <div className="mt-5 mb-2 bg-white rounded-lg p-2 flex flex-col justify-between h-32 border border-slate-200 shadow-xs text-center">
+                          <div className="mt-5 mb-2 bg-white rounded-lg p-2 flex flex-col justify-between h-34 border border-slate-200 shadow-xs text-center">
                             <div>
-                              <span className="text-[8px] font-black text-rose-600 tracking-wider uppercase block">Rx Only</span>
+                              <div className="flex items-center justify-between px-0.5 mb-0.5">
+                                <span className="text-[7px] font-black text-rose-600 uppercase">Rx</span>
+                                {officialDosageIcon && (
+                                  <img src={officialDosageIcon} alt="" className="w-3.5 h-3.5 object-contain" />
+                                )}
+                              </div>
                               <h4 className="text-[13px] sm:text-[14px] font-black text-slate-900 leading-tight truncate">{medicine.name}</h4>
                               <p className="text-[8px] font-bold text-sky-700 leading-tight truncate">{medicine.strength}</p>
                             </div>
                             <div className="border-t border-slate-100 pt-1">
                               <p className="text-[7px] text-slate-500 font-semibold truncate">{medicine.generic}</p>
-                              <p className="text-[7px] font-bold text-slate-700 truncate">{medicine.company}</p>
+                              <p className="text-[7px] font-bold text-emerald-800 truncate">{medicine.company}</p>
                             </div>
                           </div>
                         </div>
 
-                        {/* Matching Unit Carton Box */}
-                        <div className="w-28 sm:w-32 h-52 sm:h-56 rounded-2xl bg-gradient-to-br from-white via-slate-50 to-sky-50 border-2 border-sky-300/80 p-3 flex flex-col justify-between shadow-lg relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-500">
+                        {/* Matching Unit Carton Box with Official Brand & Manufacturer Insignia */}
+                        <div className="w-32 sm:w-36 h-52 sm:h-56 rounded-2xl bg-gradient-to-br from-white via-slate-50 to-sky-50 border-2 border-sky-300/80 p-3 flex flex-col justify-between shadow-lg relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-500">
                           <div className="absolute top-0 right-0 w-16 h-16 bg-sky-500/10 rounded-bl-full pointer-events-none" />
                           <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-[8px] font-black uppercase tracking-wider text-sky-700">{medicine.type || "Suspension"}</span>
-                              <span className="text-[8px] font-extrabold text-rose-600">Rx</span>
+                            <div className="flex items-center justify-between mb-1.5">
+                              {officialDosageIcon ? (
+                                <img src={officialDosageIcon} alt={medicine.type} className="w-5 h-5 object-contain" />
+                              ) : (
+                                <span className="text-[8px] font-black uppercase tracking-wider text-sky-700">{medicine.type || "Suspension"}</span>
+                              )}
+                              <span className="text-[8px] font-extrabold px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200">Rx</span>
                             </div>
-                            <h4 className="text-[15px] sm:text-[16px] font-black text-slate-900 leading-tight tracking-tight">{medicine.name}</h4>
+                            <h4 className="text-[16px] sm:text-[18px] font-black text-slate-900 leading-tight tracking-tight">{medicine.name}</h4>
                             <p className="text-[9px] font-bold text-sky-700 mt-0.5">{medicine.strength}</p>
                             <p className="text-[8px] text-slate-500 font-semibold leading-tight mt-1 line-clamp-2">{medicine.generic}</p>
                           </div>
-                          <div className="space-y-1 pt-2 border-t border-slate-200/80">
+                          <div className="space-y-1.5 pt-2 border-t border-slate-200/80">
+                            {manufacturerAsset?.logoUrl ? (
+                              <img src={manufacturerAsset.logoUrl} alt={medicine.company} className="h-5 object-contain" />
+                            ) : (
+                              <p className="text-[8px] font-bold text-slate-700 truncate">{medicine.company}</p>
+                            )}
                             <div className="flex items-center justify-between text-[8px] text-slate-400">
                               <span>DGDA Validated</span>
                               <ShieldCheck size={11} className="text-emerald-600" />
                             </div>
-                            <p className="text-[8px] font-bold text-slate-700 truncate">{medicine.company}</p>
                           </div>
                         </div>
                       </div>
@@ -460,21 +667,30 @@ export default function MedicineDetailClient({
                           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-sky-500 to-indigo-600" />
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-[9px] font-black uppercase tracking-wider text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">{medicine.type || "Tablet"}</span>
-                              <span className="text-[9px] font-black text-rose-600">Rx Only</span>
+                              <div className="flex items-center gap-1">
+                                {officialDosageIcon && (
+                                  <img src={officialDosageIcon} alt={medicine.type} className="w-4 h-4 object-contain" />
+                                )}
+                                <span className="text-[9px] font-black uppercase tracking-wider text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">{medicine.type || "Tablet"}</span>
+                              </div>
+                              <span className="text-[9px] font-black text-rose-600">Rx</span>
                             </div>
                             <h4 className="text-[17px] sm:text-[19px] font-black text-slate-900 leading-tight tracking-tight">{medicine.name}</h4>
                             <p className="text-[11px] font-bold text-sky-700 mt-0.5">{medicine.strength || "Standard"}</p>
                             <p className="text-[9px] text-slate-500 font-semibold leading-tight mt-1 line-clamp-2">{medicine.generic}</p>
                           </div>
-                          <div className="pt-2 border-t border-slate-200">
-                            <div className="flex items-center justify-between text-[9px] text-slate-500 mb-1">
+                          <div className="pt-2 border-t border-slate-200 space-y-1">
+                            {manufacturerAsset?.logoUrl ? (
+                              <img src={manufacturerAsset.logoUrl} alt={medicine.company} className="h-5 object-contain" />
+                            ) : (
+                              <p className="text-[9px] font-bold text-slate-800 truncate">{medicine.company}</p>
+                            )}
+                            <div className="flex items-center justify-between text-[9px] text-slate-500">
                               <span className="font-mono text-[8px]">DAR #{medicine.id}</span>
                               <span className="text-emerald-700 font-extrabold flex items-center gap-0.5">
-                                <CheckCircle2 size={10} /> GMP Certified
+                                <CheckCircle2 size={10} /> GMP
                               </span>
                             </div>
-                            <p className="text-[9px] font-bold text-slate-800 truncate">{medicine.company}</p>
                           </div>
                         </div>
 
@@ -488,42 +704,45 @@ export default function MedicineDetailClient({
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
 
-                    {/* Chemical Structure Diagram if available */}
-                    {chemicalStructure && (
-                      <div className="mt-3 w-full bg-white/90 rounded-xl p-2 border border-slate-200 text-center">
-                        <span className="text-[9px] font-bold text-slate-500 block mb-1">
-                          {t.chemicalStructureTitle} ({medicine.generic})
-                        </span>
-                        <img 
-                          src={chemicalStructure} 
-                          alt={`${medicine.generic} molecular structure`} 
-                          className="h-14 mx-auto object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                        />
-                      </div>
-                    )}
+                {/* Chemical Structure Diagram if available */}
+                {chemicalStructure && (
+                  <div className="mt-3 w-full bg-white/95 rounded-2xl p-2.5 border border-slate-200/90 text-center shadow-2xs">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-1">
+                      {t.chemicalStructureTitle} ({medicine.generic})
+                    </span>
+                    <img 
+                      src={chemicalStructure} 
+                      alt={`${medicine.generic} molecular structure`} 
+                      className="h-16 mx-auto object-contain opacity-90 hover:opacity-100 transition-opacity" 
+                    />
                   </div>
                 )}
               </div>
 
               {/* Bottom Container Info */}
               <div className="w-full text-center mt-3 pt-3 border-t border-slate-200/80">
-                <span className="inline-block px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-white text-slate-800 border border-slate-200 shadow-2xs">
-                  {medicine.type || "Medicine"} Packaging
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-white text-slate-800 border border-slate-200 shadow-2xs">
+                  {officialDosageIcon && (
+                    <img src={officialDosageIcon} alt="" className="w-3.5 h-3.5 object-contain" />
+                  )}
+                  <span>{getLocalizedField("type", medicine.type || "Medicine")}</span>
                 </span>
                 <p className="text-xs font-semibold text-slate-500 mt-1.5 truncate">
-                  {medicine.packageContainer || "Standard Pharmaceutical Unit Container"}
+                  {getLocalizedField("packageContainer", medicine.packageContainer || "Standard Pharmaceutical Unit Container")}
                 </p>
               </div>
 
             </div>
 
-            {/* Right: Core Medical Specifications (English Default) */}
+            {/* Right: Core Medical Specifications (English Default, Instantly Translatable) */}
             <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
               <div>
                 
                 {/* Badges Row */}
-                <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="flex flex-wrap items-center gap-2 mb-2.5">
                   <span className="px-2.5 py-0.5 rounded-lg text-xs font-extrabold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-200/80">
                     {medicine.drugType ? `${medicine.drugType} Medicine` : "Allopathic Medicine"}
                   </span>
@@ -535,13 +754,29 @@ export default function MedicineDetailClient({
                   </span>
                 </div>
 
-                {/* Medicine Title */}
-                <h1 className="text-3xl sm:text-4xl font-[900] text-slate-900 tracking-tight">
-                  {medicine.name}
-                </h1>
+                {/* Official Dosage Icon + Medicine Brand Title */}
+                <div className="flex items-center gap-3">
+                  {officialDosageIcon && (
+                    <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200/80 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                      <img 
+                        src={officialDosageIcon} 
+                        alt={medicine.type} 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h1 className="text-3xl sm:text-4xl font-[900] text-slate-900 tracking-tight leading-tight">
+                      {medicine.name}
+                    </h1>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      {getLocalizedField("type", medicine.type)} {medicine.strength ? `• ${medicine.strength}` : ""}
+                    </p>
+                  </div>
+                </div>
                 
                 {/* Generic Active Molecule & Strength */}
-                <p className="text-base sm:text-lg font-bold text-sky-700 mt-1">
+                <p className="text-base sm:text-lg font-bold text-sky-700 mt-2">
                   {medicine.generic} {medicine.strength && <span className="text-slate-600 font-semibold">• {medicine.strength}</span>}
                 </p>
 
@@ -549,7 +784,7 @@ export default function MedicineDetailClient({
                 <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {manufacturerAsset?.logoUrl ? (
-                      <div className="w-16 h-10 rounded-xl bg-white border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                      <div className="w-20 h-11 rounded-xl bg-white border border-slate-200/90 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
                         <img 
                           src={manufacturerAsset.logoUrl} 
                           alt={manufacturerAsset.name} 
@@ -557,8 +792,8 @@ export default function MedicineDetailClient({
                         />
                       </div>
                     ) : (
-                      <div className="w-10 h-10 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">
-                        <Building2 size={20} />
+                      <div className="w-11 h-11 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 font-black text-sm border border-sky-200">
+                        {(medicine.company || "RX").slice(0, 2).toUpperCase()}
                       </div>
                     )}
                     <div>
@@ -590,7 +825,7 @@ export default function MedicineDetailClient({
                         {t.primaryIndication}
                       </span>
                       <p className="text-sm font-bold text-slate-800 mt-0.5">
-                        {medicine.useFor}
+                        {getLocalizedField("useFor", medicine.useFor)}
                       </p>
                     </div>
                   </div>
@@ -623,7 +858,7 @@ export default function MedicineDetailClient({
                 {medicine.packageContainer && (
                   <div className="pt-2.5 border-t border-slate-200 text-xs text-slate-600 flex items-center justify-between font-medium">
                     <span className="font-bold text-slate-700">{t.packagingDetails}:</span>
-                    <span>{medicine.packageContainer}</span>
+                    <span>{getLocalizedField("packageContainer", medicine.packageContainer)}</span>
                   </div>
                 )}
               </div>
@@ -636,134 +871,184 @@ export default function MedicineDetailClient({
         {/* Clinical Use Cases & Official Monographs (A to Z) */}
         {monograph && (
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2 text-sky-600 mb-1">
-                <Sparkles size={18} />
-                <span className="text-xs font-black tracking-wider uppercase">Pharmacopeia Monograph</span>
+            <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 text-sky-600 mb-1">
+                  <Sparkles size={18} />
+                  <span className="text-xs font-black tracking-wider uppercase">
+                    DGDA & Pharmacopeia Monograph ({currentLang.toUpperCase()})
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {t.aToZGuidelines}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                  {t.aToZSub}
+                </p>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {t.aToZGuidelines}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                {t.aToZSub}
-              </p>
+
+              {isTranslating && (
+                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-sky-50 text-sky-700 text-xs font-bold border border-sky-200 shrink-0">
+                  <div className="w-3.5 h-3.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+                  <span>{t.translatingLabel}</span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
               
               {/* Indications */}
-              {monograph.indication_description && (
+              {getLocalizedField("indication_description") && (
                 <div className="md:col-span-2 p-5 rounded-2xl bg-sky-50/40 border border-sky-100 space-y-2">
                   <div className="flex items-center gap-2 text-sky-900">
                     <FileCheck2 size={18} className="text-sky-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.indicationsApprovedUses}</h3>
                   </div>
                   <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.indication_description}
+                    {getLocalizedField("indication_description")}
                   </p>
                 </div>
               )}
 
               {/* Pharmacology */}
-              {monograph.pharmacology && (
+              {getLocalizedField("pharmacology") && (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <FlaskConical size={18} className="text-indigo-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.pharmacologyMechanism}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.pharmacology}
+                    {getLocalizedField("pharmacology")}
                   </p>
                 </div>
               )}
 
               {/* Dosage */}
-              {monograph.dosage && (
+              {getLocalizedField("dosage") && (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <Clock size={18} className="text-sky-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.dosageGuidelines}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.dosage}
+                    {getLocalizedField("dosage")}
+                  </p>
+                </div>
+              )}
+
+              {/* Reconstitution (if Powder for Suspension / Injection) */}
+              {getLocalizedField("reconstitution") && (
+                <div className="p-5 rounded-2xl bg-emerald-50/40 border border-emerald-100 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-900">
+                    <Beaker size={18} className="text-emerald-600" />
+                    <h3 className="text-sm font-black uppercase tracking-wider">{t.reconstitutionTitle}</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                    {getLocalizedField("reconstitution")}
                   </p>
                 </div>
               )}
 
               {/* Administration */}
-              {monograph.administration && (
+              {getLocalizedField("administration") && (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <Pill size={18} className="text-emerald-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.administrationInstructions}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.administration}
+                    {getLocalizedField("administration")}
+                  </p>
+                </div>
+              )}
+
+              {/* Drug Interactions */}
+              {getLocalizedField("interaction") && (
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-slate-900">
+                    <Activity size={18} className="text-purple-600" />
+                    <h3 className="text-sm font-black uppercase tracking-wider">{t.interactionTitle}</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                    {getLocalizedField("interaction")}
                   </p>
                 </div>
               )}
 
               {/* Side Effects */}
-              {monograph.side_effects && (
+              {getLocalizedField("side_effects") && (
                 <div className="p-5 rounded-2xl bg-rose-50/40 border border-rose-100 space-y-2">
                   <div className="flex items-center gap-2 text-rose-900">
                     <AlertTriangle size={18} className="text-rose-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.sideEffects}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.side_effects}
+                    {getLocalizedField("side_effects")}
                   </p>
                 </div>
               )}
 
               {/* Contraindications */}
-              {monograph.contraindications && (
+              {getLocalizedField("contraindications") && (
                 <div className="p-5 rounded-2xl bg-amber-50/40 border border-amber-100 space-y-2">
                   <div className="flex items-center gap-2 text-amber-900">
                     <ShieldCheck size={18} className="text-amber-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.contraindications}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.contraindications}
+                    {getLocalizedField("contraindications")}
                   </p>
                 </div>
               )}
 
               {/* Pregnancy & Lactation */}
-              {monograph.pregnancy_and_lactation && (
+              {getLocalizedField("pregnancy_and_lactation") && (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <HeartPulse size={18} className="text-pink-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.pregnancyLactation}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.pregnancy_and_lactation}
+                    {getLocalizedField("pregnancy_and_lactation")}
                   </p>
                 </div>
               )}
 
               {/* Precautions */}
-              {monograph.precautions && (
+              {getLocalizedField("precautions") && (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <Info size={18} className="text-blue-600" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.precautionsWarnings}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.precautions}
+                    {getLocalizedField("precautions")}
+                  </p>
+                </div>
+              )}
+
+              {/* Overdose Effects */}
+              {getLocalizedField("overdose_effects") && (
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2 text-slate-900">
+                    <AlertTriangle size={18} className="text-orange-600" />
+                    <h3 className="text-sm font-black uppercase tracking-wider">{t.overdoseTitle}</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                    {getLocalizedField("overdose_effects")}
                   </p>
                 </div>
               )}
 
               {/* Storage */}
-              {monograph.storage_conditions && (
+              {getLocalizedField("storage_conditions") && (
                 <div className="md:col-span-2 p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center gap-2 text-slate-900">
                     <Layers size={18} className="text-slate-700" />
                     <h3 className="text-sm font-black uppercase tracking-wider">{t.storageInstructions}</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                    {monograph.storage_conditions}
+                    {getLocalizedField("storage_conditions")}
                   </p>
                 </div>
               )}
@@ -798,7 +1083,7 @@ export default function MedicineDetailClient({
             </div>
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90">
               <span className="text-[11px] font-bold text-slate-400 block mb-0.5">{t.dosageForm}</span>
-              <span className="text-sm font-black text-slate-900">{medicine.type || "Tablet"}</span>
+              <span className="text-sm font-black text-slate-900">{getLocalizedField("type", medicine.type || "Tablet")}</span>
             </div>
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90">
               <span className="text-[11px] font-bold text-slate-400 block mb-0.5">{t.manufacturer}</span>
@@ -806,7 +1091,7 @@ export default function MedicineDetailClient({
             </div>
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90">
               <span className="text-[11px] font-bold text-slate-400 block mb-0.5">{t.packagingDetails}</span>
-              <span className="text-sm font-black text-slate-900">{medicine.packageContainer || "Blister Pack"}</span>
+              <span className="text-sm font-black text-slate-900">{getLocalizedField("packageContainer", medicine.packageContainer || "Blister Pack")}</span>
             </div>
           </div>
 
@@ -864,6 +1149,40 @@ export default function MedicineDetailClient({
         )}
 
       </div>
+
+      {/* Fullscreen High-Resolution Pack Image Zoom Modal */}
+      {viewPhotoZoom && activePackImage && (
+        <div 
+          onClick={() => setViewPhotoZoom(false)}
+          className="fixed inset-0 z-[200] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-3xl w-full bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200 flex flex-col items-center"
+          >
+            <div className="w-full flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-black text-slate-900">{medicine.name} ({medicine.strength})</h3>
+                <p className="text-xs font-semibold text-slate-500">{medicine.company} • {t.officialPhotoTitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewPhotoZoom(false)}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="w-full max-h-[70vh] flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50 p-4 border border-slate-100">
+              <img 
+                src={activePackImage} 
+                alt={medicine.name} 
+                className="max-w-full max-h-[65vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
- * Official Brand Assets & Manufacturer Logos for Bangladesh Pharmaceuticals
- * Directorate General of Drug Administration (DGDA) Verified Metadata
+ * Official Brand Assets, Manufacturer Logos, Dosage Icons & Live MedEx Resolver
+ * Directorate General of Drug Administration (DGDA) & MedEx Verified Metadata
  */
 
 export interface ManufacturerAsset {
@@ -11,6 +11,14 @@ export interface ManufacturerAsset {
   textColor: string;
   established?: number;
   origin?: string;
+}
+
+export interface LiveMedexBrandData {
+  packagingImages: string[];
+  dosageIcon: string | null;
+  chemicalStructure: string | null;
+  monographEn: Record<string, string>;
+  monographBn: Record<string, string>;
 }
 
 export const TOP_MANUFACTURERS: Record<string, ManufacturerAsset> = {
@@ -122,6 +130,15 @@ export const TOP_MANUFACTURERS: Record<string, ManufacturerAsset> = {
     established: 1968,
     origin: "Dhaka, Bangladesh"
   },
+  "advanced chemical": {
+    name: "Advanced Chemical Industries (ACI)",
+    shortName: "ACI",
+    logoUrl: "https://medex.com.bd/storage/images/company_logos/SSukJqe0TKV4AEAgYF1QeDcXuo5DlL.png",
+    badgeColor: "bg-[#c2410c]/10 border-[#c2410c]/30",
+    textColor: "text-[#c2410c]",
+    established: 1968,
+    origin: "Dhaka, Bangladesh"
+  },
   "opsonin": {
     name: "Opsonin Pharma Ltd.",
     shortName: "Opsonin",
@@ -155,20 +172,14 @@ export const TOP_MANUFACTURERS: Record<string, ManufacturerAsset> = {
 };
 
 /**
- * High-Resolution Packaging Images for Verified Pharmaceuticals
+ * High-Resolution Packaging Images for Verified Pharmaceuticals (Fallback Map)
  */
 export const VERIFIED_PACKAGING_IMAGES: Record<string, string> = {
-  // Napa 500mg Tablet (Beximco)
   "10452": "https://medex.com.bd/storage/images/packaging/napa-500-mg-tablet-95324450053-i1-jtmMTho0xPmKADM1kMTq.jpg",
-  // Napa Extend 665mg XR (Beximco)
   "10454": "https://medex.com.bd/storage/images/packaging/napa-extend-665-mg-xr-tablet-11628713397-9VpBTBDsf0.webp",
-  // Napa Extra 500mg + 65mg (Beximco)
   "10592": "https://medex.com.bd/storage/images/packaging/napa-extra-500-mg-tablet-46174620412-i1-S6ON0Cv84Db8DclIKRNt.webp",
-  // Napa IV Infusion (Beximco)
   "10461": "https://medex.com.bd/storage/images/packaging/napa-10-mg-injection-38629477289-i1-Juy8dxZo6zBkSIUwEmjB.png",
-  // Ciprocin 500mg
   "7483": "https://medex.com.bd/storage/images/packaging/bioxim-100-mg-suspension-12690574612-i1-KTb7UhMU0IQq4k8e0eXR.webp",
-  // Sergel 20mg (Square)
   "11540": "https://medex.com.bd/storage/images/packaging/dinovo-375-mg-tablet-25525146940-i1-m9u76H9wRL1MdRAFXW0U.jpg",
 };
 
@@ -181,6 +192,26 @@ export const CHEMICAL_STRUCTURES: Record<string, string> = {
   "paracetamol": "https://medex.com.bd/storage/res/g-res-860-paracetamol-chemical-structure-JLKHDuG7hxR2MserFZ27.svg",
 };
 
+/**
+ * Official MedEx Dosage Form Icons
+ */
+export function getOfficialDosageIcon(dosageForm?: string): string {
+  const f = (dosageForm || "").toLowerCase();
+  if (f.includes("capsule")) return "https://medex.com.bd/img/dosage-forms/capsule.png";
+  if (f.includes("syrup") || f.includes("suspension") || f.includes("liquid") || f.includes("solution")) {
+    return "https://medex.com.bd/img/dosage-forms/syrup-2.png";
+  }
+  if (f.includes("injection") || f.includes("infusion") || f.includes("iv")) {
+    return "https://medex.com.bd/img/dosage-forms/injection.png";
+  }
+  if (f.includes("drop")) return "https://medex.com.bd/img/dosage-forms/eye-drop.png";
+  if (f.includes("cream") || f.includes("gel")) return "https://medex.com.bd/img/dosage-forms/cream.png";
+  if (f.includes("ointment")) return "https://medex.com.bd/img/dosage-forms/ointment.png";
+  if (f.includes("inhaler") || f.includes("spray")) return "https://medex.com.bd/img/dosage-forms/inhaler.png";
+  if (f.includes("suppository")) return "https://medex.com.bd/img/dosage-forms/suppository.png";
+  return "https://medex.com.bd/img/dosage-forms/tablet.png";
+}
+
 export function getManufacturerAsset(companyName?: string): ManufacturerAsset | null {
   if (!companyName) return null;
   const lower = companyName.toLowerCase();
@@ -189,7 +220,13 @@ export function getManufacturerAsset(companyName?: string): ManufacturerAsset | 
       return asset;
     }
   }
-  return null;
+  return {
+    name: companyName,
+    shortName: companyName.split(" ")[0] || companyName,
+    badgeColor: "bg-sky-50 border-sky-200",
+    textColor: "text-sky-800",
+    origin: "Bangladesh"
+  };
 }
 
 export function getMedicinePackaging(medicineId: string | number, brandName?: string): string | null {
@@ -209,4 +246,188 @@ export function getChemicalStructure(genericName?: string): string | null {
     }
   }
   return null;
+}
+
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&rsquo;/gi, "'")
+    .replace(/&lsquo;/gi, "'")
+    .replace(/&rdquo;/gi, '"')
+    .replace(/&ldquo;/gi, '"')
+    .replace(/&deg;/gi, "°")
+    .replace(/&ordm;/gi, "º")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)));
+}
+
+function cleanAcBodyHtml(rawHtml: string): string {
+  const withBreaks = rawHtml
+    .replace(/<li[^>]*>/gi, "\n• ")
+    .replace(/<\/li>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<[^>]+>/g, "");
+  return decodeHtmlEntities(withBreaks)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function parseMedexSections(html: string, isBangla: boolean): Record<string, string> {
+  const result: Record<string, string> = {};
+  const regex = /<h3[^>]*>([^<]+)<\/h3>\s*<\/div>\s*<div class=["']ac-body["']>([\s\S]*?)<\/div>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const rawTitle = decodeHtmlEntities(match[1]).trim();
+    const bodyText = cleanAcBodyHtml(match[2]);
+    if (!bodyText) continue;
+
+    if (isBangla) {
+      if (rawTitle.includes("নির্দেশনা") && !rawTitle.includes("প্রতিনির্দেশনা")) {
+        result.indication_description = bodyText;
+      } else if (rawTitle.includes("ফার্মাকোলজি")) {
+        result.pharmacology = bodyText;
+      } else if (rawTitle.includes("মাত্রা ও সেবনবিধি")) {
+        result.dosage = bodyText;
+      } else if (rawTitle.includes("সেবনবিধি")) {
+        result.administration = bodyText;
+      } else if (rawTitle.includes("মিথষ্ক্রিয়া")) {
+        result.interaction = bodyText;
+      } else if (rawTitle.includes("প্রতিনির্দেশনা")) {
+        result.contraindications = bodyText;
+      } else if (rawTitle.includes("পার্শ্ব প্রতিক্রিয়া")) {
+        result.side_effects = bodyText;
+      } else if (rawTitle.includes("গর্ভাবস্থায়")) {
+        result.pregnancy_and_lactation = bodyText;
+      } else if (rawTitle.includes("সতর্কতা")) {
+        result.precautions = bodyText;
+      } else if (rawTitle.includes("মাত্রাধিক্যতা")) {
+        result.overdose_effects = bodyText;
+      } else if (rawTitle.includes("পুনর্গঠন")) {
+        result.reconstitution = bodyText;
+      } else if (rawTitle.includes("সংরক্ষণ")) {
+        result.storage_conditions = bodyText;
+      } else if (rawTitle.includes("থেরাপিউটিক ক্লাস")) {
+        result.therapeutic_class = bodyText;
+      }
+    } else {
+      const lower = rawTitle.toLowerCase();
+      if (lower.includes("indications")) {
+        result.indication_description = bodyText;
+      } else if (lower.includes("pharmacology")) {
+        result.pharmacology = bodyText;
+      } else if (lower.includes("dosage & administration") || lower === "dosage") {
+        result.dosage = bodyText;
+      } else if (lower === "administration") {
+        result.administration = bodyText;
+      } else if (lower.includes("interaction")) {
+        result.interaction = bodyText;
+      } else if (lower.includes("contraindications")) {
+        result.contraindications = bodyText;
+      } else if (lower.includes("side effects")) {
+        result.side_effects = bodyText;
+      } else if (lower.includes("pregnancy")) {
+        result.pregnancy_and_lactation = bodyText;
+      } else if (lower.includes("precautions")) {
+        result.precautions = bodyText;
+      } else if (lower.includes("overdose")) {
+        result.overdose_effects = bodyText;
+      } else if (lower.includes("reconstitution")) {
+        result.reconstitution = bodyText;
+      } else if (lower.includes("storage")) {
+        result.storage_conditions = bodyText;
+      } else if (lower.includes("therapeutic class")) {
+        result.therapeutic_class = bodyText;
+      }
+    }
+  }
+  return result;
+}
+
+const liveBrandCache = new Map<string, LiveMedexBrandData>();
+
+export async function fetchLiveMedexBrandData(medicineId: string | number): Promise<LiveMedexBrandData> {
+  const idStr = String(medicineId);
+  if (liveBrandCache.has(idStr)) {
+    return liveBrandCache.get(idStr)!;
+  }
+
+  const fallback: LiveMedexBrandData = {
+    packagingImages: VERIFIED_PACKAGING_IMAGES[idStr] ? [VERIFIED_PACKAGING_IMAGES[idStr]] : [],
+    dosageIcon: null,
+    chemicalStructure: null,
+    monographEn: {},
+    monographBn: {},
+  };
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch(`https://medex.com.bd/brands/${encodeURIComponent(idStr)}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      return fallback;
+    }
+
+    const html = await res.text();
+
+    // Extract packaging images
+    const packMatches = html.match(/https:\/\/medex\.com\.bd\/storage\/images\/packaging\/[A-Za-z0-9_.\-]+/g) || [];
+    const uniquePacks = Array.from(new Set(packMatches));
+    if (uniquePacks.length > 0) {
+      fallback.packagingImages = uniquePacks;
+    }
+
+    // Extract official dosage form icon
+    const dosageMatch = html.match(/https:\/\/medex\.com\.bd\/img\/dosage-forms\/[A-Za-z0-9_.\-]+/);
+    if (dosageMatch) {
+      fallback.dosageIcon = dosageMatch[0];
+    }
+
+    // Extract chemical structure SVG
+    const chemMatch = html.match(/https:\/\/medex\.com\.bd\/storage\/res\/[A-Za-z0-9_.\-]+/);
+    if (chemMatch) {
+      fallback.chemicalStructure = chemMatch[0];
+    }
+
+    // Parse English monograph sections
+    fallback.monographEn = parseMedexSections(html, false);
+
+    // Check for official Bengali monograph link
+    const bnLinkMatch = html.match(/https:\/\/medex\.com\.bd\/brands\/\d+\/[A-Za-z0-9_.\-]+\/bn/);
+    if (bnLinkMatch) {
+      try {
+        const bnController = new AbortController();
+        const bnTimer = setTimeout(() => bnController.abort(), 3500);
+        const bnRes = await fetch(bnLinkMatch[0], {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          },
+          signal: bnController.signal,
+        });
+        clearTimeout(bnTimer);
+        if (bnRes.ok) {
+          const bnHtml = await bnRes.text();
+          fallback.monographBn = parseMedexSections(bnHtml, true);
+        }
+      } catch {
+        // Ignore BN fetch timeout
+      }
+    }
+
+    liveBrandCache.set(idStr, fallback);
+    return fallback;
+  } catch {
+    return fallback;
+  }
 }

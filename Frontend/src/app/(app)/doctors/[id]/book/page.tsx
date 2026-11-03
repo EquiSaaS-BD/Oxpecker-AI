@@ -36,9 +36,9 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user?.name && !patientName) setPatientName(user.name);
-    if (user?.phone && !patientPhone) setPatientPhone(user.phone);
-    if (user?.gender && !patientGender) setPatientGender(user.gender);
+    if (user?.name) setPatientName((prev) => prev || user.name || "");
+    if (user?.phone) setPatientPhone((prev) => prev || user.phone || "");
+    if (user?.gender) setPatientGender((prev) => prev || user.gender || "Male");
   }, [user]);
 
   useEffect(() => {
