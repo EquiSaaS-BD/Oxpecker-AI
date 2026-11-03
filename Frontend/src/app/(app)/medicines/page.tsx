@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
-  Search, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
+  Search, ShieldCheck, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
   CheckCircle2, TrendingDown, Image as ImageIcon, Bot,
   Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ArrowRight,
   SlidersHorizontal, X, Syringe, FlaskConical, Bandage, Sparkles, Camera, Check
@@ -453,56 +453,53 @@ export default function MedicinesPage() {
                       >
                         <div 
                           onClick={() => setSelectedMedicine(med)}
-                          className="block relative bg-white border border-slate-200/90 p-4 sm:p-5 rounded-[20px] shadow-sm hover:shadow-[0_16px_40px_rgba(0,61,155,0.08)] hover:border-sky-300 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden"
+                          className="block relative bg-white border border-slate-200 p-3.5 sm:p-5 rounded-[16px] sm:rounded-[24px] shadow-sm hover:shadow-[0_16px_48px_rgba(0,61,155,0.08)] hover:border-sky-300 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden"
                         >
                           <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
                           
                           <BgIcon 
-                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-28 sm:h-28 text-slate-700/50 -rotate-12 pointer-events-none group-hover:scale-110 group-hover:rotate-0 transition-transform duration-500 opacity-[0.05]" 
+                            className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/20 -rotate-12 pointer-events-none select-none group-hover:scale-105 transition-all duration-500 ease-out" 
                             strokeWidth={1}
                           />
 
-                          <div className="relative z-10 flex flex-row gap-3.5 items-start">
-                            <div className={`w-[44px] h-[44px] sm:w-[54px] sm:h-[54px] shrink-0 rounded-2xl flex flex-col items-center justify-center ${catDetails.bg} border border-slate-100 group-hover:scale-105 transition-transform duration-300 shadow-xs`}>
-                              <MedIcon className={`w-6 h-6 ${catDetails.color}`} strokeWidth={1.75} />
+                          <div className="relative z-10 flex flex-row gap-3 sm:gap-4">
+                            <div className={`w-[42px] h-[42px] sm:w-[56px] sm:h-[56px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${catDetails.bg} border-slate-200/80 group-hover:scale-105 transition-transform duration-300 shadow-xs`}>
+                              <MedIcon className={`w-5 h-5 sm:w-7 sm:h-7 ${catDetails.color}`} strokeWidth={1.5} />
                             </div>
                             <div className="flex-1 flex flex-col justify-center min-w-0">
-                              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight truncate pr-1" title={med.name}>
-                                {med.name} {med.strength ? <span className="text-xs font-semibold text-slate-500 font-sans">({med.strength})</span> : null}
-                              </h3>
-                              <p className="text-[12px] font-semibold text-slate-500 mb-0.5 line-clamp-1" title={med.generic}>
+                              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                                <h3 className="text-[15px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors tracking-tight truncate pr-2" title={med.name}>
+                                  {med.name}
+                                </h3>
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50 shrink-0">
+                                  <ShieldCheck size={12} />
+                                </div>
+                              </div>
+                              <p className="text-[11px] sm:text-[12px] font-semibold text-slate-500 mb-0.5 sm:mb-1 line-clamp-1" title={med.generic}>
                                 {med.generic} <span className="text-slate-400 font-normal">• {med.type}</span>
                               </p>
-                              <p className="text-[11px] font-medium text-slate-400 truncate">
-                                {med.company || "Pharmaceuticals"}
-                              </p>
+                              {med.useFor && (
+                                <p className={`text-[11px] sm:text-[12px] font-bold ${catDetails.color} truncate`}>
+                                  <span>For: </span><span className="font-medium text-slate-600">{med.useFor}</span>
+                                </p>
+                              )}
                             </div>
                           </div>
                           
-                          <div className="relative z-10 flex items-center justify-between pt-3 mt-3.5 border-t border-slate-100">
-                            <div>
-                              <span className="text-[16px] sm:text-[19px] font-black text-slate-900">
-                                ৳{typeof med.price === 'number' ? med.price.toFixed(2) : (med.unitPrice ? med.unitPrice.toFixed(2) : '0.00')}
-                              </span>
-                              <span className="text-[11px] text-slate-500 font-medium ml-1">
-                                / {med.priceBasis || "unit"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-bold text-sky-600 group-hover:text-sky-700 bg-sky-50 group-hover:bg-sky-100/80 px-2.5 py-1 rounded-lg transition-colors">
-                                Details
-                              </span>
-                              <button 
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 hover:bg-sky-600 text-slate-600 hover:text-white transition-colors"
-                                title="Add to cart"
-                              >
-                                <ShoppingCart className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                          <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-100">
+                            <span className="text-[18px] sm:text-[22px] font-black text-slate-900">
+                              ৳{typeof med.price === 'number' ? med.price.toFixed(2) : (med.unitPrice ? med.unitPrice.toFixed(2) : '0.00')}
+                            </span>
+                            <button 
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="flex items-center justify-center gap-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 hover:bg-sky-600 text-slate-600 hover:text-white transition-colors group/btn shadow-2xs"
+                              title="Add to cart"
+                            >
+                              <ShoppingCart className="w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] group-hover/btn:scale-110 transition-transform" />
+                            </button>
                           </div>
                         </div>
                       </motion.div>
