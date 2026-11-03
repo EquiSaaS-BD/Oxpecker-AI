@@ -10,7 +10,6 @@ import {
   ShieldCheck,
 
   Building2,
-  Heart,
 } from "lucide-react";
 
 /* -- Inline brand SVGs (lucide-react doesn't ship brand icons reliably) -- */
@@ -187,23 +186,13 @@ export function Footer() {
             <span className="text-slate-600">|</span>
             <span>Crafted with precision by</span>
             <a 
-              href="https://equisaas.tech" 
+              href="https://equisaas-bd.com/" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-sky-600 hover:text-sky-700 hover:underline font-bold"
             >
-              EquiSaaS Agency
+              Oxpecker AI
             </a>
-            <span>(</span>
-            <a 
-              href="https://equisaas-bd.com" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-sky-600 hover:text-sky-700 hover:underline font-bold"
-            >
-              EquiSaaS BD
-            </a>
-            <span>)</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
             {isYunet && (
@@ -217,10 +206,7 @@ export function Footer() {
               <span>Built for Ostad Presents YUNet AIgnite Buildathon 2026</span>
             </a>
             )}
-            <p className="flex items-center gap-1.5 text-center text-xs text-slate-500 font-medium">
-              Not a substitute for professional medical advice
-              <Heart size={10} className="text-rose-500" />
-            </p>
+            
           </div>
         </div>
       </div>
