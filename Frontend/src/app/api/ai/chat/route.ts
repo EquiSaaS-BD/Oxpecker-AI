@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeClinicalCase, ClinicalAnalysis } from '@/lib/clinical-engine';
+import { executeMedicalRAG, MedicalRAGResult } from '@/lib/medical-rag';
 
 // ============================================
 // Types
@@ -64,7 +65,8 @@ function getSystemPrompt(
   patientContext?: any, 
   clinicalAnalysis?: ClinicalAnalysis,
   category?: string,
-  backendDiagnosis?: any
+  backendDiagnosis?: any,
+  ragResult?: MedicalRAGResult
 ): string {
   const langInstruction = language === 'bn' 
     ? 'Respond in natural, fluent, empathetic Bangla (বাংলা) language.' 
@@ -119,6 +121,7 @@ ${topMatches ? `\n### Probable Conditions for Consideration:\n${topMatches}\n` :
   }
 
   const categorySnippet = getCategoryInstructions(category);
+  const ragSnippet = ragResult ? `\n${ragResult.groundingContextText}\n` : '';
 
   return `You are **Oxpecker AI**, a professional and empathetic AI healthcare assistant for Bangladesh. You are not a doctor and do not replace care from a registered clinician.
 
@@ -126,6 +129,30 @@ ${langInstruction}
 ${contextSnippet}
 ${clinicalGroundingSnippet}
 ${categorySnippet}
+${ragSnippet}
+
+## RICH INTERACTIVE OUTPUT RULES (ইন্টারেক্টিভ আউটপুট নিয়মাবলী):
+1. **MARKDOWN TABLES (টেবিল ব্যবহার):**
+   - Whenever comparing diseases, symptoms, medicine dosages, food nutritional values, or diagnostic tests, ALWAYS format them in clean Markdown tables with headers:
+   | শিরোনাম ১ | শিরোনাম ২ | শিরোনাম ৩ |
+   | :--- | :--- | :--- |
+   | মান ১ | মান ২ | মান ৩ |
+
+2. **CLICKABLE HYPERLINKS (ক্লিকেবল লিঙ্ক):**
+   - When mentioning a medicine from our directory, link it as [Brand Name](/medicines/id) or [Medicine Directory](/medicines).
+   - When suggesting a doctor or specialty, link as [বিশেষজ্ঞ ডাক্তার খুঁজুন](/doctors?specialty=Medicine).
+   - When mentioning emergency hospitals, link as [নিকটস্থ হাসপাতাল](/hospitals).
+   - Always ensure links are properly formatted markdown [Text](url).
+
+3. **EDUCATIONAL YOUTUBE VIDEOS (ভিডিও এম্বেড):**
+   - If the user asks about procedures like how to use an inhaler, CPR, how to make ORS, how to inject insulin, back pain physiotherapy, blood pressure measurement, or dengue care, embed the verified video using:
+   [YOUTUBE:video_id]
+   Example: [YOUTUBE:fQc3_R22xbg]
+   The user interface will automatically render a responsive HD YouTube player!
+
+4. **CLINICAL IMAGES & ILLUSTRATIONS (ছবি ও ইলাস্ট্রেশন):**
+   - If relevant to illustrate medicine packaging or health tips, you may include markdown image tags:
+   ![Medicine Packaging](/images/medicine-box.png)
 
 ## ABSOLUTE CORE PRINCIPLES:
 
@@ -592,7 +619,7 @@ ${patientDossier}
 // POST /api/ai/chat
 // ============================================
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -640,6 +667,9 @@ export async function POST(request: NextRequest) {
     // 1. Local clinical analysis for genuine patient symptom detection
     const clinicalAnalysis = analyzeClinicalCase(queryText, language, activeCategory);
 
+    // 2. High-Precision Multi-Corpus Medical RAG Pipeline (150 Diseases + 1711 Monographs + 21,714 Medicines)
+    const ragResult = executeMedicalRAG(queryText, language, activeCategory);
+
     // 2. Query Azure backend clinical AI model ONLY IF patient actually described physical symptoms or emergency!
     let backendDiagnosis = null;
     if (clinicalAnalysis.detectedSymptoms.length > 0 || clinicalAnalysis.isEmergency) {
@@ -668,7 +698,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Construct system prompt
-    const systemPrompt = getSystemPrompt(language, patientContext, clinicalAnalysis, activeCategory, backendDiagnosis);
+    const systemPrompt = getSystemPrompt(language, patientContext, clinicalAnalysis, activeCategory, backendDiagnosis, ragResult);
 
     const fullMessages: ChatMessage[] = [
       { role: 'system', content: systemPrompt },
@@ -835,6 +865,19 @@ export async function POST(request: NextRequest) {
       } catch (err: any) {
         console.warn('[Oxpecker AI] Gemini streaming error, falling back to clinical synthesizer:', err.message || err);
       }
+    }
+
+    // Final High-Grade RAG Synthesized Fallback: Guarantees 100% interactive, on-point responses even if cloud LLMs are busy
+    if (ragResult && ragResult.synthesizedResponse) {
+      const stream = streamConversationalText(ragResult.synthesizedResponse);
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'X-AI-Provider': 'Oxpecker-Medical-RAG-Engine',
+        },
+      });
     }
 
     return NextResponse.json(

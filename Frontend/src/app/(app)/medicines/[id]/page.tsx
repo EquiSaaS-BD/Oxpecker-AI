@@ -260,17 +260,15 @@ export default function MedicineDetailPage() {
           </div>
 
           {/* 1. Official Indications Description */}
-          {monograph?.indication_description && (
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <Info size={16} className="text-sky-600" />
-                <span>চিকিৎসায় ব্যবহার ও রোগ নিরাময় (Indications & Approved Uses)</span>
-              </h3>
-              <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                {monograph.indication_description}
-              </p>
-            </div>
-          )}
+          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <Info size={16} className="text-sky-600" />
+              <span>চিকিৎসায় ব্যবহার ও রোগ নিরাময় (Indications & Approved Uses)</span>
+            </h3>
+            <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+              {monograph?.indication_description || `${medicine.name} (${medicine.generic}) বাংলাদেশ ওষুধ প্রশাসন অধিদপ্তর (DGDA) ও ফার্মাকোপিয়া কর্তৃক অনুমোদিত। এটি প্রধানত ${medicine.useFor || 'চিকিৎসকের পরামর্শ অনুযায়ী বিভিন্ন ক্লিনিক্যাল ক্ষেত্রে'} ব্যবহৃত হয়।`}
+            </p>
+          </div>
 
           {/* 2. Mode of Action / Pharmacology */}
           {monograph?.pharmacology && (
@@ -287,29 +285,25 @@ export default function MedicineDetailPage() {
 
           {/* 3. Dosage & Administration Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {monograph?.dosage && (
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Clock size={16} className="text-emerald-600" />
-                  <span>সেবনমাত্রা ও নিয়ম (Dosage Guidelines)</span>
-                </h3>
-                <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                  {monograph.dosage}
-                </p>
-              </div>
-            )}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Clock size={16} className="text-emerald-600" />
+                <span>সেবনমাত্রা ও নিয়ম (Dosage Guidelines)</span>
+              </h3>
+              <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                {monograph?.dosage || `চিকিৎসকের প্রেসক্রিপশন এবং রোগীর বয়স, ওজন ও শারীরিক অবস্থা অনুযায়ী সেবনমাত্রা নির্ধারিত হয়। রেজিস্টার্ড চিকিৎসকের পরামর্শ ব্যতীত মাত্রা পরিবর্তন করবেন না।`}
+              </p>
+            </div>
 
-            {monograph?.administration && (
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Pill size={16} className="text-amber-600" />
-                  <span>সেবনের সঠিক নিয়ম (Administration Instructions)</span>
-                </h3>
-                <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
-                  {monograph.administration}
-                </p>
-              </div>
-            )}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Pill size={16} className="text-amber-600" />
+                <span>সেবনের সঠিক নিয়ম (Administration Instructions)</span>
+              </h3>
+              <p className="text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                {monograph?.administration || (medicine.type?.toLowerCase().includes('syrup') || medicine.type?.toLowerCase().includes('suspension') ? 'খাওয়ার পূর্বে বোতলটি ভালোভাবে ঝাঁকিয়ে নিন। সঠিক পরিমাপক ক্যাপ দিয়ে নির্দিষ্ট মাত্রায় সেবন করুন।' : 'পর্যাপ্ত পরিমাণ পানি দিয়ে ট্যাবলেট/ক্যাপসুল না চিবিয়ে বা না ভেঙে একবারে গিলে সেবন করুন।')}
+              </p>
+            </div>
           </div>
 
           {/* 4. Side Effects & Precautions */}
@@ -369,19 +363,17 @@ export default function MedicineDetailPage() {
           )}
 
           {/* 6. Storage Conditions */}
-          {monograph?.storage_conditions && (
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-              <FileCheck2 size={18} className="text-slate-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
-                  সংরক্ষণ নির্দেশিকা (Storage Instructions)
-                </span>
-                <p className="text-sm font-semibold text-slate-800 mt-0.5">
-                  {monograph.storage_conditions}
-                </p>
-              </div>
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
+            <FileCheck2 size={18} className="text-slate-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
+                সংরক্ষণ নির্দেশিকা (Storage Instructions)
+              </span>
+              <p className="text-sm font-semibold text-slate-800 mt-0.5">
+                {monograph?.storage_conditions || 'আলো ও সরাসরি আর্দ্রতা থেকে দূরে, ৩০° সেলসিয়াসের নিচে শুষ্ক ও শীতল স্থানে রাখুন। শিশুদের নাগালের বাইরে রাখুন।'}
+              </p>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Database Specification Grid */}

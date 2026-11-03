@@ -1,0 +1,2359 @@
+[
+  {
+    "id": 1,
+    "name": "Dengue Fever",
+    "bengali_name": "ডেঙ্গু জ্বর",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "DGHS Bangladesh Dengue Guidelines 2023 / WHO",
+    "active_symptoms": [
+      "high_fever",
+      "severe_headache",
+      "retro_orbital_pain",
+      "vomiting",
+      "skin_rash_maculopapular",
+      "petechiae_bleeding_spots",
+      "severe_joint_pain_arthralgia"
+    ],
+    "active_symptoms_summary": "high_fever; petechiae_bleeding_spots; retro_orbital_pain; severe_headache; severe_joint_pain_arthralgia; skin_rash_maculopapular; vomiting"
+  },
+  {
+    "id": 2,
+    "name": "Chikungunya",
+    "bengali_name": "চিকুনগুনিয়া",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO South-East Asia Guidelines / DGHS",
+    "active_symptoms": [
+      "high_fever",
+      "extreme_fatigue",
+      "severe_joint_pain_arthralgia",
+      "joint_swelling_redness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; high_fever; joint_swelling_redness; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 3,
+    "name": "Malaria",
+    "bengali_name": "ম্যালেরিয়া",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "National Malaria Elimination Programme DGHS / WHO",
+    "active_symptoms": [
+      "high_fever",
+      "chills_rigors",
+      "night_sweats",
+      "severe_headache",
+      "nausea",
+      "vomiting"
+    ],
+    "active_symptoms_summary": "chills_rigors; high_fever; nausea; night_sweats; severe_headache; vomiting"
+  },
+  {
+    "id": 4,
+    "name": "Typhoid Fever",
+    "bengali_name": "টাইফয়েড জ্বর",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Guidelines / DGHS Clinical Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "loss_of_appetite",
+      "malaise_body_ache",
+      "abdominal_pain_cramps",
+      "watery_diarrhea"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; high_fever; loss_of_appetite; malaise_body_ache; watery_diarrhea"
+  },
+  {
+    "id": 5,
+    "name": "Paratyphoid",
+    "bengali_name": "প্যারাটাইফয়েড",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Communicable Disease Protocol",
+    "active_symptoms": [
+      "mild_fever",
+      "general_weakness",
+      "severe_headache",
+      "nausea",
+      "abdominal_pain_cramps"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; general_weakness; mild_fever; nausea; severe_headache"
+  },
+  {
+    "id": 6,
+    "name": "Cholera",
+    "bengali_name": "কলেরা",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "icddr,b Diarrhoeal Disease Protocol / WHO",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "low_blood_pressure_hypotension",
+      "cold_clammy_skin",
+      "vomiting",
+      "watery_diarrhea",
+      "excessive_thirst_polydipsia"
+    ],
+    "active_symptoms_summary": "cold_clammy_skin; excessive_thirst_polydipsia; extreme_fatigue; low_blood_pressure_hypotension; vomiting; watery_diarrhea"
+  },
+  {
+    "id": 7,
+    "name": "Nipah Virus Infection",
+    "bengali_name": "নিপাহ ভাইরাস",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "IEDCR Bangladesh Nipah Surveillance Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "severe_headache",
+      "confusion_altered_mental_state",
+      "dry_cough",
+      "shortness_of_breath"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; dry_cough; high_fever; severe_headache; shortness_of_breath"
+  },
+  {
+    "id": 8,
+    "name": "Kala-azar / Leishmaniasis",
+    "bengali_name": "কালাজ্বর",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "National Kala-azar Elimination Guidelines DGHS",
+    "active_symptoms": [
+      "mild_fever",
+      "night_sweats",
+      "loss_of_appetite",
+      "unexplained_weight_loss",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "loss_of_appetite; mild_fever; night_sweats; severe_fatigue_pale_look; unexplained_weight_loss"
+  },
+  {
+    "id": 9,
+    "name": "Filariasis / Elephantiasis",
+    "bengali_name": "ফাইলেরিয়া / গোদ রোগ",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "DGHS Filariasis Elimination Guidelines",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "malaise_body_ache",
+      "swelling_feet_ankles",
+      "calf_pain_swelling_one_leg"
+    ],
+    "active_symptoms_summary": "calf_pain_swelling_one_leg; extreme_fatigue; malaise_body_ache; mild_fever; swelling_feet_ankles"
+  },
+  {
+    "id": 10,
+    "name": "Tuberculosis (TB)",
+    "bengali_name": "যক্ষ্মা",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "National Tuberculosis Control Programme (NTP) DGHS",
+    "active_symptoms": [
+      "mild_fever",
+      "night_sweats",
+      "loss_of_appetite",
+      "unexplained_weight_loss",
+      "productive_cough_phlegm",
+      "coughing_blood_hemoptysis",
+      "retrosternal_chest_pain"
+    ],
+    "active_symptoms_summary": "coughing_blood_hemoptysis; loss_of_appetite; mild_fever; night_sweats; productive_cough_phlegm; retrosternal_chest_pain; unexplained_weight_loss"
+  },
+  {
+    "id": 11,
+    "name": "Rabies",
+    "bengali_name": "জলাতঙ্ক",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "DGHS Rabies Elimination Strategy / WHO",
+    "active_symptoms": [
+      "mild_fever",
+      "confusion_altered_mental_state",
+      "convulsions_seizures",
+      "insomnia_sleep_disturbance",
+      "severe_anxiety_panic",
+      "difficulty_swallowing"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; convulsions_seizures; difficulty_swallowing; insomnia_sleep_disturbance; mild_fever; severe_anxiety_panic"
+  },
+  {
+    "id": 12,
+    "name": "Tetanus",
+    "bengali_name": "ধনুষ্টঙ্কার",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Neonatal and Adult Tetanus Guidelines",
+    "active_symptoms": [
+      "high_fever",
+      "stiff_neck",
+      "convulsions_seizures",
+      "difficulty_swallowing",
+      "palpitations_rapid_heart"
+    ],
+    "active_symptoms_summary": "convulsions_seizures; difficulty_swallowing; high_fever; palpitations_rapid_heart; stiff_neck; sweating"
+  },
+  {
+    "id": 13,
+    "name": "Leptospirosis",
+    "bengali_name": "লেপ্টোস্পাইরোসিস",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Leptospirosis Diagnosis Guidelines",
+    "active_symptoms": [
+      "high_fever",
+      "chills_rigors",
+      "severe_headache",
+      "calf_pain_swelling_one_leg",
+      "nausea",
+      "vomiting",
+      "eye_redness_conjunctivitis"
+    ],
+    "active_symptoms_summary": "calf_pain_swelling_one_leg; chills_rigors; eye_redness_conjunctivitis; high_fever; nausea; severe_headache; vomiting"
+  },
+  {
+    "id": 14,
+    "name": "Scrub Typhus",
+    "bengali_name": "স্ক্রাব টাইফাস",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "CDC / DGHS Emerging Vector-Borne Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "chills_rigors",
+      "severe_headache",
+      "dry_cough",
+      "vomiting",
+      "skin_rash_maculopapular"
+    ],
+    "active_symptoms_summary": "chills_rigors; dry_cough; high_fever; severe_headache; skin_rash_maculopapular; vomiting"
+  },
+  {
+    "id": 15,
+    "name": "Japanese Encephalitis",
+    "bengali_name": "জাপানিজ এনসেফালাইটিস",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO JE Surveillance Standards / IEDCR",
+    "active_symptoms": [
+      "high_fever",
+      "extreme_fatigue",
+      "severe_headache",
+      "stiff_neck",
+      "confusion_altered_mental_state",
+      "convulsions_seizures",
+      "vomiting"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; convulsions_seizures; extreme_fatigue; high_fever; severe_headache; stiff_neck; vomiting"
+  },
+  {
+    "id": 16,
+    "name": "Anthrax",
+    "bengali_name": "তড়কা / অ্যানথ্রাক্স",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "IEDCR Bangladesh Anthrax Outbreak Protocol",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "severe_headache",
+      "nausea",
+      "blisters_fluid_filled",
+      "painful_pus_boil"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; extreme_fatigue; mild_fever; nausea; painful_pus_boil; severe_headache"
+  },
+  {
+    "id": 17,
+    "name": "Leprosy",
+    "bengali_name": "কুষ্ঠ রোগ",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "DGHS Leprosy Elimination Programme / WHO",
+    "active_symptoms": [
+      "general_weakness",
+      "numbness_tingling",
+      "dry_flaky_skin_plaques",
+      "depigmented_white_patches",
+      "patchy_hair_loss"
+    ],
+    "active_symptoms_summary": "depigmented_white_patches; dry_flaky_skin_plaques; general_weakness; numbness_tingling; patchy_hair_loss"
+  },
+  {
+    "id": 18,
+    "name": "Chickenpox",
+    "bengali_name": "জলবসন্ত",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus / CDC Varicella Clinical Data",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "severe_headache",
+      "intense_itching_pruritus",
+      "blisters_fluid_filled"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; extreme_fatigue; intense_itching_pruritus; loss_of_appetite; mild_fever; severe_headache"
+  },
+  {
+    "id": 19,
+    "name": "Measles",
+    "bengali_name": "হাম",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "EPI Bangladesh / WHO Measles Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "loss_of_appetite",
+      "dry_cough",
+      "sore_throat",
+      "runny_nose_rhinorrhea",
+      "skin_rash_maculopapular",
+      "eye_redness_conjunctivitis"
+    ],
+    "active_symptoms_summary": "dry_cough; eye_redness_conjunctivitis; high_fever; loss_of_appetite; runny_nose_rhinorrhea; skin_rash_maculopapular; sore_throat"
+  },
+  {
+    "id": 20,
+    "name": "Rubella / German Measles",
+    "bengali_name": "রুবেলা",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Congenital Rubella Guidelines",
+    "active_symptoms": [
+      "mild_fever",
+      "skin_rash_maculopapular",
+      "severe_joint_pain_arthralgia",
+      "eye_redness_conjunctivitis"
+    ],
+    "active_symptoms_summary": "eye_redness_conjunctivitis; mild_fever; severe_joint_pain_arthralgia; skin_rash_maculopapular"
+  },
+  {
+    "id": 21,
+    "name": "Mumps",
+    "bengali_name": "মাম্পস / গালফুলা",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "CDC / WHO Mumps Surveillance",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "malaise_body_ache",
+      "severe_headache",
+      "difficulty_swallowing"
+    ],
+    "active_symptoms_summary": "difficulty_swallowing; extreme_fatigue; loss_of_appetite; malaise_body_ache; mild_fever; severe_headache"
+  },
+  {
+    "id": 22,
+    "name": "Shingles / Herpes Zoster",
+    "bengali_name": "অগ্নিবাণ / হার্পিস জোস্টার",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Varicella Zoster Documentation",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "severe_headache",
+      "numbness_tingling",
+      "intense_itching_pruritus",
+      "painful_grouped_vesicles_along_nerve"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; intense_itching_pruritus; mild_fever; numbness_tingling; painful_grouped_vesicles_along_nerve; severe_headache"
+  },
+  {
+    "id": 23,
+    "name": "Herpes Simplex",
+    "bengali_name": "হার্পিস সিমপ্লেক্স",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO HSV Factsheet",
+    "active_symptoms": [
+      "mild_fever",
+      "sore_throat",
+      "intense_itching_pruritus",
+      "blisters_fluid_filled",
+      "painful_mouth_ulcers"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; intense_itching_pruritus; mild_fever; painful_mouth_ulcers; sore_throat"
+  },
+  {
+    "id": 24,
+    "name": "COVID-19",
+    "bengali_name": "করোনাভাইরাস ইনফেকশন",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "DGHS Bangladesh COVID-19 Clinical Management / WHO",
+    "active_symptoms": [
+      "high_fever",
+      "severe_headache",
+      "dry_cough",
+      "loss_of_smell_anosmia",
+      "loss_of_taste",
+      "watery_diarrhea"
+    ],
+    "active_symptoms_summary": "dry_cough; high_fever; loss_of_smell_anosmia; loss_of_taste; severe_headache; watery_diarrhea"
+  },
+  {
+    "id": 25,
+    "name": "Seasonal Influenza / Flu",
+    "bengali_name": "মৌসুমি ইনফ্লুয়েঞ্জা",
+    "category": "Infectious & Tropical",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Influenza Clinical Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "malaise_body_ache",
+      "dry_cough",
+      "sore_throat",
+      "runny_nose_rhinorrhea",
+      "nasal_congestion"
+    ],
+    "active_symptoms_summary": "dry_cough; high_fever; malaise_body_ache; nasal_congestion; runny_nose_rhinorrhea; sore_throat"
+  },
+  {
+    "id": 26,
+    "name": "Acute Watery Diarrhea",
+    "bengali_name": "তীব্র ডায়রিয়া",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "icddr,b Diarrhoea Clinical Manual",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "nausea",
+      "vomiting",
+      "abdominal_pain_cramps",
+      "watery_diarrhea",
+      "excessive_thirst_polydipsia"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; excessive_thirst_polydipsia; extreme_fatigue; nausea; vomiting; watery_diarrhea"
+  },
+  {
+    "id": 27,
+    "name": "Amoebic Dysentery",
+    "bengali_name": "আমাশয়",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Amoebiasis Guidelines",
+    "active_symptoms": [
+      "general_weakness",
+      "nausea",
+      "abdominal_pain_cramps",
+      "bloody_mucoid_diarrhea",
+      "painful_defecation"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; bloody_mucoid_diarrhea; general_weakness; nausea; painful_defecation"
+  },
+  {
+    "id": 28,
+    "name": "Bacillary Dysentery / Shigellosis",
+    "bengali_name": "রক্ত আমাশয়",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "icddr,b / WHO Shigella Protocol",
+    "active_symptoms": [
+      "high_fever",
+      "abdominal_pain_cramps",
+      "bloody_mucoid_diarrhea",
+      "painful_defecation"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; bloody_mucoid_diarrhea; high_fever; painful_defecation"
+  },
+  {
+    "id": 29,
+    "name": "Gastroenteritis / Food Poisoning",
+    "bengali_name": "ফুড পয়জনিং",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Foodborne Illness Overview",
+    "active_symptoms": [
+      "nausea",
+      "vomiting",
+      "abdominal_pain_cramps",
+      "watery_diarrhea"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; nausea; vomiting; watery_diarrhea"
+  },
+  {
+    "id": 30,
+    "name": "Gastritis / GERD",
+    "bengali_name": "গ্যাস্ট্রিক / এসিডিটি",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "American Gastroenterological Association (AGA)",
+    "active_symptoms": [
+      "loss_of_appetite",
+      "difficulty_swallowing",
+      "nausea",
+      "vomiting",
+      "epigastric_burning_pain",
+      "bloating_gas"
+    ],
+    "active_symptoms_summary": "bloating_gas; difficulty_swallowing; epigastric_burning_pain; loss_of_appetite; nausea; vomiting"
+  },
+  {
+    "id": 31,
+    "name": "Peptic Ulcer Disease",
+    "bengali_name": "পেপটিক আলসার",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "British Society of Gastroenterology",
+    "active_symptoms": [
+      "loss_of_appetite",
+      "nausea",
+      "epigastric_burning_pain",
+      "bloating_gas"
+    ],
+    "active_symptoms_summary": "bloating_gas; epigastric_burning_pain; loss_of_appetite; nausea"
+  },
+  {
+    "id": 32,
+    "name": "Hepatitis A",
+    "bengali_name": "হেপাটাইটিস এ",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Hepatitis A Factsheet",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "nausea",
+      "jaundice_yellow_eyes_skin",
+      "dark_yellow_urine",
+      "pale_clay_colored_stool"
+    ],
+    "active_symptoms_summary": "dark_yellow_urine; extreme_fatigue; jaundice_yellow_eyes_skin; loss_of_appetite; nausea; pale_clay_colored_stool"
+  },
+  {
+    "id": 33,
+    "name": "Hepatitis B",
+    "bengali_name": "হেপাটাইটিস বি",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Viral Hepatitis Guidelines / DGHS",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "nausea",
+      "right_upper_quadrant_pain",
+      "jaundice_yellow_eyes_skin",
+      "severe_joint_pain_arthralgia"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; jaundice_yellow_eyes_skin; nausea; right_upper_quadrant_pain; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 34,
+    "name": "Hepatitis C",
+    "bengali_name": "হেপাটাইটিস সি",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Guidelines on Hepatitis C",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "nausea",
+      "right_upper_quadrant_pain",
+      "jaundice_yellow_eyes_skin",
+      "dark_yellow_urine"
+    ],
+    "active_symptoms_summary": "dark_yellow_urine; extreme_fatigue; jaundice_yellow_eyes_skin; loss_of_appetite; nausea; right_upper_quadrant_pain"
+  },
+  {
+    "id": 35,
+    "name": "Hepatitis E",
+    "bengali_name": "হেপাটাইটিস ই",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Guidelines on Hepatitis E / icddr,b",
+    "active_symptoms": [
+      "mild_fever",
+      "nausea",
+      "vomiting",
+      "jaundice_yellow_eyes_skin",
+      "dark_yellow_urine"
+    ],
+    "active_symptoms_summary": "dark_yellow_urine; jaundice_yellow_eyes_skin; mild_fever; nausea; vomiting"
+  },
+  {
+    "id": 36,
+    "name": "Jaundice",
+    "bengali_name": "জন্ডিস",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Clinical Guide",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "jaundice_yellow_eyes_skin",
+      "dark_yellow_urine",
+      "pale_clay_colored_stool",
+      "intense_itching_pruritus"
+    ],
+    "active_symptoms_summary": "dark_yellow_urine; extreme_fatigue; intense_itching_pruritus; jaundice_yellow_eyes_skin; pale_clay_colored_stool"
+  },
+  {
+    "id": 37,
+    "name": "Fatty Liver Disease (NAFLD)",
+    "bengali_name": "ফ্যাটি লিভার",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "AASLD Practice Guidance",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "right_upper_quadrant_pain",
+      "weight_gain_sluggishness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; loss_of_appetite; right_upper_quadrant_pain; weight_gain_sluggishness"
+  },
+  {
+    "id": 38,
+    "name": "Liver Cirrhosis",
+    "bengali_name": "লিভার সিরোসিস",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "EASL Clinical Practice Guidelines",
+    "active_symptoms": [
+      "loss_of_appetite",
+      "swelling_feet_ankles",
+      "jaundice_yellow_eyes_skin",
+      "easy_bruising_bleeding"
+    ],
+    "active_symptoms_summary": "easy_bruising_bleeding; jaundice_yellow_eyes_skin; loss_of_appetite; swelling_feet_ankles"
+  },
+  {
+    "id": 39,
+    "name": "Cholecystitis",
+    "bengali_name": "পিত্তথলির প্রদাহ",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "Tokyo Guidelines for Acute Cholecystitis",
+    "active_symptoms": [
+      "high_fever",
+      "loss_of_appetite",
+      "nausea",
+      "vomiting",
+      "right_upper_quadrant_pain",
+      "jaundice_yellow_eyes_skin"
+    ],
+    "active_symptoms_summary": "high_fever; jaundice_yellow_eyes_skin; loss_of_appetite; nausea; right_upper_quadrant_pain; vomiting"
+  },
+  {
+    "id": 40,
+    "name": "Gallstones / Cholelithiasis",
+    "bengali_name": "পিত্তথলিতে পাথর",
+    "category": "Hepato-biliary",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Gallstones Overview",
+    "active_symptoms": [
+      "nausea",
+      "vomiting",
+      "right_upper_quadrant_pain",
+      "bloating_gas"
+    ],
+    "active_symptoms_summary": "bloating_gas; indigestion; nausea; right_upper_quadrant_pain; vomiting"
+  },
+  {
+    "id": 41,
+    "name": "Appendicitis",
+    "bengali_name": "অ্যাপেন্ডিসাইটিস",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "WSES Jerusalem Guidelines for Appendicitis",
+    "active_symptoms": [
+      "mild_fever",
+      "nausea",
+      "vomiting",
+      "right_lower_quadrant_pain",
+      "constipation"
+    ],
+    "active_symptoms_summary": "constipation; mild_fever; nausea; right_lower_quadrant_pain; vomiting"
+  },
+  {
+    "id": 42,
+    "name": "Irritable Bowel Syndrome (IBS)",
+    "bengali_name": "আইবিএস",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "Rome IV Diagnostic Criteria for IBS",
+    "active_symptoms": [
+      "abdominal_pain_cramps",
+      "constipation",
+      "bloating_gas",
+      "painful_defecation"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; bloating_gas; constipation; painful_defecation"
+  },
+  {
+    "id": 43,
+    "name": "Inflammatory Bowel Disease (IBD)",
+    "bengali_name": "অন্ত্রের প্রদাহ",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "ECCO Clinical Guidelines",
+    "active_symptoms": [
+      "loss_of_appetite",
+      "unexplained_weight_loss",
+      "abdominal_pain_cramps",
+      "bloody_mucoid_diarrhea"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; bloody_mucoid_diarrhea; loss_of_appetite; unexplained_weight_loss"
+  },
+  {
+    "id": 44,
+    "name": "Intestinal Worms / Helminthiasis",
+    "bengali_name": "পেটের কৃমি",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Soil-transmitted Helminthiases Protocol",
+    "active_symptoms": [
+      "unexplained_weight_loss",
+      "nausea",
+      "abdominal_pain_cramps",
+      "intense_itching_pruritus",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; intense_itching_pruritus; nausea; severe_fatigue_pale_look; unexplained_weight_loss"
+  },
+  {
+    "id": 45,
+    "name": "Hemorrhoids / Piles",
+    "bengali_name": "পাইলস বা অর্শ",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "ASCRS Clinical Practice Guidelines",
+    "active_symptoms": [
+      "constipation",
+      "painful_defecation",
+      "rectal_bleeding_bright_red",
+      "rectal_lump_swelling",
+      "intense_itching_pruritus"
+    ],
+    "active_symptoms_summary": "constipation; intense_itching_pruritus; painful_defecation; rectal_bleeding_bright_red; rectal_lump_swelling"
+  },
+  {
+    "id": 46,
+    "name": "Anal Fissure",
+    "bengali_name": "এনাল ফিশার / মলদ্বারে চিড়",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Anal Fissure Information",
+    "active_symptoms": [
+      "constipation",
+      "difficulty_passing_stool",
+      "painful_defecation",
+      "rectal_bleeding_bright_red"
+    ],
+    "active_symptoms_summary": "constipation; difficulty_passing_stool; painful_defecation; rectal_bleeding_bright_red"
+  },
+  {
+    "id": 47,
+    "name": "Anal Fistula",
+    "bengali_name": "ভগন্দর বা ফিস্টুলা",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "American Society of Colon and Rectal Surgeons",
+    "active_symptoms": [
+      "mild_fever",
+      "painful_defecation",
+      "rectal_lump_swelling",
+      "intense_itching_pruritus"
+    ],
+    "active_symptoms_summary": "intense_itching_pruritus; mild_fever; painful_defecation; rectal_lump_swelling"
+  },
+  {
+    "id": 48,
+    "name": "Pancreatitis",
+    "bengali_name": "অগ্ন্যাশয়ের প্রদাহ",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "IAP/APA Evidence-Based Guidelines",
+    "active_symptoms": [
+      "high_fever",
+      "nausea",
+      "persistent_severe_vomiting",
+      "epigastric_burning_pain"
+    ],
+    "active_symptoms_summary": "epigastric_burning_pain; high_fever; nausea; persistent_severe_vomiting"
+  },
+  {
+    "id": 49,
+    "name": "Constipation",
+    "bengali_name": "কোষ্ঠকাঠিন্য",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "AGA Guidelines on Constipation",
+    "active_symptoms": [
+      "constipation",
+      "bloating_gas",
+      "difficulty_passing_stool",
+      "painful_defecation"
+    ],
+    "active_symptoms_summary": "bloating_gas; constipation; difficulty_passing_stool; painful_defecation"
+  },
+  {
+    "id": 50,
+    "name": "Celiac Disease",
+    "bengali_name": "গ্লুটেন অ্যালার্জি",
+    "category": "Gastrointestinal",
+    "triage_level": "Moderate",
+    "clinical_reference": "ACG Clinical Guidelines for Celiac Disease",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "abdominal_pain_cramps",
+      "watery_diarrhea",
+      "bloating_gas"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; bloating_gas; extreme_fatigue; unexplained_weight_loss; watery_diarrhea"
+  },
+  {
+    "id": 51,
+    "name": "Common Cold",
+    "bengali_name": "সাধারণ সর্দি-কাশি",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "NICE Guidelines Common Cold / WHO",
+    "active_symptoms": [
+      "mild_fever",
+      "dry_cough",
+      "sore_throat",
+      "runny_nose_rhinorrhea",
+      "nasal_congestion",
+      "sneezing"
+    ],
+    "active_symptoms_summary": "dry_cough; mild_fever; mild_headache; nasal_congestion; runny_nose_rhinorrhea; sneezing; sore_throat"
+  },
+  {
+    "id": 52,
+    "name": "Pneumonia",
+    "bengali_name": "নিউমোনিয়া",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "BTS / WHO Guidelines for Community-Acquired Pneumonia",
+    "active_symptoms": [
+      "high_fever",
+      "chills_rigors",
+      "extreme_fatigue",
+      "productive_cough_phlegm",
+      "shortness_of_breath",
+      "retrosternal_chest_pain"
+    ],
+    "active_symptoms_summary": "chills_rigors; extreme_fatigue; high_fever; productive_cough_phlegm; retrosternal_chest_pain; shortness_of_breath"
+  },
+  {
+    "id": 53,
+    "name": "Bronchial Asthma",
+    "bengali_name": "হাঁপানি বা অ্যাজমা",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "GINA (Global Initiative for Asthma) Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "insomnia_sleep_disturbance",
+      "dry_cough",
+      "shortness_of_breath",
+      "wheezing_sound",
+      "chest_tightness"
+    ],
+    "active_symptoms_summary": "chest_tightness; dry_cough; extreme_fatigue; insomnia_sleep_disturbance; shortness_of_breath; wheezing_sound"
+  },
+  {
+    "id": 54,
+    "name": "Acute Bronchitis",
+    "bengali_name": "তীব্র ব্রঙ্কাইটিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "American Lung Association Clinical Protocol",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "productive_cough_phlegm",
+      "chest_tightness",
+      "sore_throat"
+    ],
+    "active_symptoms_summary": "chest_tightness; extreme_fatigue; mild_fever; productive_cough_phlegm; sore_throat"
+  },
+  {
+    "id": 55,
+    "name": "Chronic Obstructive Pulmonary Disease (COPD)",
+    "bengali_name": "সিওপিডি",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "GOLD (Global Initiative for Chronic Obstructive Lung Disease)",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "productive_cough_phlegm",
+      "wheezing_sound",
+      "chest_tightness",
+      "shortness_of_breath_on_exertion"
+    ],
+    "active_symptoms_summary": "chest_tightness; extreme_fatigue; productive_cough_phlegm; shortness_of_breath_on_exertion; wheezing_sound"
+  },
+  {
+    "id": 56,
+    "name": "Sinusitis",
+    "bengali_name": "সাইনোসাইটিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAO-HNS Clinical Practice Guideline",
+    "active_symptoms": [
+      "mild_fever",
+      "severe_headache",
+      "runny_nose_rhinorrhea",
+      "nasal_congestion",
+      "loss_of_smell_anosmia",
+      "facial_puffiness_edema"
+    ],
+    "active_symptoms_summary": "facial_puffiness_edema; loss_of_smell_anosmia; mild_fever; nasal_congestion; runny_nose_rhinorrhea; severe_headache"
+  },
+  {
+    "id": 57,
+    "name": "Tonsillitis",
+    "bengali_name": "টনসিলের প্রদাহ",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "Scottish Intercollegiate Guidelines Network (SIGN)",
+    "active_symptoms": [
+      "high_fever",
+      "severe_headache",
+      "sore_throat",
+      "difficulty_swallowing",
+      "bad_breath_halitosis"
+    ],
+    "active_symptoms_summary": "bad_breath_halitosis; difficulty_swallowing; high_fever; severe_headache; sore_throat"
+  },
+  {
+    "id": 58,
+    "name": "Pharyngitis / Sore Throat",
+    "bengali_name": "গলাব্যথা / ফ্যারিঞ্জাইটিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "Centor Criteria / CDC Guidelines",
+    "active_symptoms": [
+      "mild_fever",
+      "severe_headache",
+      "dry_cough",
+      "sore_throat",
+      "difficulty_swallowing"
+    ],
+    "active_symptoms_summary": "difficulty_swallowing; dry_cough; mild_fever; severe_headache; sore_throat"
+  },
+  {
+    "id": 59,
+    "name": "Laryngitis",
+    "bengali_name": "স্বরযন্ত্রের প্রদাহ",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Laryngitis Overview",
+    "active_symptoms": [
+      "dry_cough",
+      "sore_throat",
+      "difficulty_swallowing",
+      "hoarseness_of_voice"
+    ],
+    "active_symptoms_summary": "difficulty_swallowing; dry_cough; hoarseness_of_voice; sore_throat"
+  },
+  {
+    "id": 60,
+    "name": "Allergic Rhinitis",
+    "bengali_name": "অ্যালার্জিক রাইনাইটিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "ARIA Guidelines for Allergic Rhinitis",
+    "active_symptoms": [
+      "runny_nose_rhinorrhea",
+      "nasal_congestion",
+      "sneezing",
+      "loss_of_smell_anosmia",
+      "itchy_watery_eyes"
+    ],
+    "active_symptoms_summary": "itchy_watery_eyes; loss_of_smell_anosmia; nasal_congestion; runny_nose_rhinorrhea; sneezing"
+  },
+  {
+    "id": 61,
+    "name": "Pleural Effusion",
+    "bengali_name": "ফুসফুসে পানি জমা",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "British Thoracic Society (BTS) Pleural Disease",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "dry_cough",
+      "shortness_of_breath",
+      "retrosternal_chest_pain"
+    ],
+    "active_symptoms_summary": "dry_cough; extreme_fatigue; mild_fever; retrosternal_chest_pain; shortness_of_breath"
+  },
+  {
+    "id": 62,
+    "name": "Bronchiectasis",
+    "bengali_name": "ব্রঙ্কিয়েক্টেসিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "ERS Bronchiectasis Guidelines",
+    "active_symptoms": [
+      "productive_cough_phlegm",
+      "coughing_blood_hemoptysis",
+      "shortness_of_breath",
+      "wheezing_sound"
+    ],
+    "active_symptoms_summary": "coughing_blood_hemoptysis; productive_cough_phlegm; shortness_of_breath; wheezing_sound"
+  },
+  {
+    "id": 63,
+    "name": "Interstitial Lung Disease (ILD)",
+    "bengali_name": "আইএলডি",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "ATS/ERS Clinical Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "dry_cough",
+      "chest_tightness",
+      "shortness_of_breath_on_exertion",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; chest_tightness; dry_cough; extreme_fatigue; shortness_of_breath_on_exertion; unexplained_weight_loss"
+  },
+  {
+    "id": 64,
+    "name": "Occupational Lung Disease / Silicosis",
+    "bengali_name": "সিলিকোসিস",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Occupational Health Criteria",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "dry_cough",
+      "shortness_of_breath",
+      "chest_tightness"
+    ],
+    "active_symptoms_summary": "chest_tightness; dry_cough; extreme_fatigue; shortness_of_breath"
+  },
+  {
+    "id": 65,
+    "name": "Sleep Apnea",
+    "bengali_name": "ঘুমের মধ্যে শ্বাসকষ্ট",
+    "category": "Respiratory",
+    "triage_level": "Moderate",
+    "clinical_reference": "AASM Adult OSA Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "severe_headache",
+      "confusion_altered_mental_state",
+      "insomnia_sleep_disturbance",
+      "high_blood_pressure",
+      "weight_gain_sluggishness"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; extreme_fatigue; high_blood_pressure; insomnia_sleep_disturbance; severe_headache; weight_gain_sluggishness"
+  },
+  {
+    "id": 66,
+    "name": "Hypertension",
+    "bengali_name": "উচ্চ রক্তচাপ",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Hypertension Guidelines / ACC/AHA",
+    "active_symptoms": [
+      "severe_headache",
+      "dizziness_vertigo",
+      "palpitations_rapid_heart",
+      "high_blood_pressure"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; high_blood_pressure; palpitations_rapid_heart; severe_headache"
+  },
+  {
+    "id": 67,
+    "name": "Hypotension",
+    "bengali_name": "নিম্ন রক্তচাপ",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Hypotension Overview",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "dizziness_vertigo",
+      "low_blood_pressure_hypotension",
+      "cold_clammy_skin"
+    ],
+    "active_symptoms_summary": "blurred_vision; cold_clammy_skin; dizziness_vertigo; extreme_fatigue; low_blood_pressure_hypotension"
+  },
+  {
+    "id": 68,
+    "name": "Coronary Artery Disease (CAD)",
+    "bengali_name": "করোনারি হৃদরোগ",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "ESC Guidelines on Chronic Coronary Syndromes",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "retrosternal_chest_pain",
+      "radiating_left_arm_pain",
+      "palpitations_rapid_heart",
+      "shortness_of_breath_on_exertion",
+      "cold_clammy_skin"
+    ],
+    "active_symptoms_summary": "cold_clammy_skin; extreme_fatigue; palpitations_rapid_heart; radiating_left_arm_pain; retrosternal_chest_pain; shortness_of_breath_on_exertion"
+  },
+  {
+    "id": 69,
+    "name": "Angina Pectoris",
+    "bengali_name": "বুকে ব্যথা / অ্যানজাইনা",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA/ACC Stable Angina Guidelines",
+    "active_symptoms": [
+      "chest_tightness",
+      "retrosternal_chest_pain",
+      "radiating_left_arm_pain",
+      "shortness_of_breath_on_exertion",
+      "nausea"
+    ],
+    "active_symptoms_summary": "chest_tightness; nausea; radiating_left_arm_pain; retrosternal_chest_pain; shortness_of_breath_on_exertion"
+  },
+  {
+    "id": 70,
+    "name": "Myocardial Infarction / Heart Attack",
+    "bengali_name": "হার্ট অ্যাটাক",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "Fourth Universal Definition of Myocardial Infarction (ESC/ACC)",
+    "active_symptoms": [
+      "shortness_of_breath",
+      "retrosternal_chest_pain",
+      "radiating_left_arm_pain",
+      "cold_clammy_skin",
+      "nausea",
+      "vomiting"
+    ],
+    "active_symptoms_summary": "cold_clammy_skin; nausea; radiating_left_arm_pain; retrosternal_chest_pain; shortness_of_breath; vomiting"
+  },
+  {
+    "id": 71,
+    "name": "Congestive Heart Failure",
+    "bengali_name": "হার্ট ফেইলিউর",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "ESC Heart Failure Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "shortness_of_breath_on_exertion",
+      "orthopnea_breathless_lying_down",
+      "swelling_feet_ankles"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; orthopnea_breathless_lying_down; shortness_of_breath_on_exertion; swelling_feet_ankles"
+  },
+  {
+    "id": 72,
+    "name": "Rheumatic Heart Disease (RHD)",
+    "bengali_name": "বাতজ্বর জনিত হৃদরোগ",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Rheumatic Fever and RHD Strategy",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "retrosternal_chest_pain",
+      "palpitations_rapid_heart",
+      "shortness_of_breath_on_exertion"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; palpitations_rapid_heart; retrosternal_chest_pain; shortness_of_breath_on_exertion"
+  },
+  {
+    "id": 73,
+    "name": "Rheumatic Fever",
+    "bengali_name": "বাতজ্বর",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "Jones Criteria for Rheumatic Fever",
+    "active_symptoms": [
+      "high_fever",
+      "extreme_fatigue",
+      "retrosternal_chest_pain",
+      "palpitations_rapid_heart",
+      "severe_joint_pain_arthralgia",
+      "joint_swelling_redness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; high_fever; joint_swelling_redness; palpitations_rapid_heart; retrosternal_chest_pain; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 74,
+    "name": "Arrhythmia",
+    "bengali_name": "অনিয়মিত হৃদস্পন্দন",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA Arrhythmia Diagnostic Protocol",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "dizziness_vertigo",
+      "shortness_of_breath",
+      "retrosternal_chest_pain",
+      "palpitations_rapid_heart"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; extreme_fatigue; palpitations_rapid_heart; retrosternal_chest_pain; shortness_of_breath"
+  },
+  {
+    "id": 75,
+    "name": "Atherosclerosis",
+    "bengali_name": "রক্তনালীতে চর্বি জমা",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA Scientific Statement",
+    "active_symptoms": [
+      "dizziness_vertigo",
+      "retrosternal_chest_pain",
+      "shortness_of_breath_on_exertion",
+      "high_blood_pressure"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; high_blood_pressure; retrosternal_chest_pain; shortness_of_breath_on_exertion"
+  },
+  {
+    "id": 76,
+    "name": "Deep Vein Thrombosis (DVT)",
+    "bengali_name": "পায়ে রক্ত জমাট বাঁধা",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "Wells Score for DVT / NICE Guidelines",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "swelling_feet_ankles",
+      "calf_pain_swelling_one_leg"
+    ],
+    "active_symptoms_summary": "calf_pain_swelling_one_leg; extreme_fatigue; mild_fever; swelling_feet_ankles"
+  },
+  {
+    "id": 77,
+    "name": "Varicose Veins",
+    "bengali_name": "স্ফীত রক্তনালী",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "NICE Guidelines for Varicose Veins",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "swelling_feet_ankles",
+      "calf_pain_swelling_one_leg",
+      "visible_twisted_veins",
+      "intense_itching_pruritus"
+    ],
+    "active_symptoms_summary": "calf_pain_swelling_one_leg; extreme_fatigue; intense_itching_pruritus; swelling_feet_ankles; visible_twisted_veins"
+  },
+  {
+    "id": 78,
+    "name": "Peripheral Arterial Disease",
+    "bengali_name": "পেরিফেরাল আর্টারিয়াল ডিজিজ",
+    "category": "Cardiovascular",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA/ACC PAD Guidelines",
+    "active_symptoms": [
+      "numbness_tingling",
+      "cold_clammy_skin",
+      "calf_pain_swelling_one_leg"
+    ],
+    "active_symptoms_summary": "calf_pain_swelling_one_leg; cold_clammy_skin; difficulty_walking; numbness_tingling"
+  },
+  {
+    "id": 79,
+    "name": "Type 2 Diabetes Mellitus",
+    "bengali_name": "টাইপ-২ ডায়াবেটিস",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ADA Standards of Care in Diabetes",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "frequent_urination",
+      "excessive_thirst_polydipsia",
+      "excessive_hunger_polyphagia"
+    ],
+    "active_symptoms_summary": "blurred_vision; excessive_hunger_polyphagia; excessive_thirst_polydipsia; extreme_fatigue; frequent_urination"
+  },
+  {
+    "id": 80,
+    "name": "Type 1 Diabetes Mellitus",
+    "bengali_name": "টাইপ-১ ডায়াবেটিস",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ISPAD / ADA Guidelines",
+    "active_symptoms": [
+      "unexplained_weight_loss",
+      "vomiting",
+      "frequent_urination",
+      "excessive_thirst_polydipsia",
+      "excessive_hunger_polyphagia"
+    ],
+    "active_symptoms_summary": "blurred_vision; excessive_hunger_polyphagia; excessive_thirst_polydipsia; frequent_urination; unexplained_weight_loss; vomiting"
+  },
+  {
+    "id": 81,
+    "name": "Gestational Diabetes",
+    "bengali_name": "গর্ভকালীন ডায়াবেটিস",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "FIGO Gestational Diabetes Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "swelling_feet_ankles",
+      "frequent_urination",
+      "excessive_thirst_polydipsia"
+    ],
+    "active_symptoms_summary": "blurred_vision; excessive_thirst_polydipsia; extreme_fatigue; frequent_urination; swelling_feet_ankles"
+  },
+  {
+    "id": 82,
+    "name": "Hypothyroidism",
+    "bengali_name": "হাইপোথাইরয়েডিজম",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ATA / AACE Guidelines for Hypothyroidism",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "constipation",
+      "dry_flaky_skin_plaques",
+      "patchy_hair_loss",
+      "weight_gain_sluggishness",
+      "cold_intolerance"
+    ],
+    "active_symptoms_summary": "cold_intolerance; constipation; dry_flaky_skin_plaques; extreme_fatigue; patchy_hair_loss; weight_gain_sluggishness"
+  },
+  {
+    "id": 83,
+    "name": "Hyperthyroidism",
+    "bengali_name": "হাইপারথাইরয়েডিজম",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ATA Guidelines for Hyperthyroidism",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "tremors",
+      "insomnia_sleep_disturbance",
+      "palpitations_rapid_heart",
+      "frequent_urination",
+      "heat_intolerance_sweating"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; frequent_urination; heat_intolerance_sweating; insomnia_sleep_disturbance; palpitations_rapid_heart; tremors; unexplained_weight_loss"
+  },
+  {
+    "id": 84,
+    "name": "Goiter",
+    "bengali_name": "গলগণ্ড রোগ",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Iodine Deficiency / Goiter Protocol",
+    "active_symptoms": [
+      "shortness_of_breath",
+      "difficulty_swallowing",
+      "hoarseness_of_voice",
+      "neck_swelling_enlarged_thyroid"
+    ],
+    "active_symptoms_summary": "difficulty_swallowing; hoarseness_of_voice; neck_swelling_enlarged_thyroid; shortness_of_breath"
+  },
+  {
+    "id": 85,
+    "name": "Gout",
+    "bengali_name": "গাউট বা ইউরিক অ্যাসিডের বাত",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ACR Guidelines for Management of Gout",
+    "active_symptoms": [
+      "mild_fever",
+      "severe_joint_pain_arthralgia",
+      "joint_swelling_redness",
+      "morning_joint_stiffness",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; joint_swelling_redness; mild_fever; morning_joint_stiffness; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 86,
+    "name": "Hyperlipidemia / High Cholesterol",
+    "bengali_name": "রক্তে অতিরিক্ত চর্বি",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "ACC/AHA Cholesterol Guidelines",
+    "active_symptoms": [
+      "dizziness_vertigo",
+      "chest_tightness",
+      "high_blood_pressure",
+      "weight_gain_sluggishness"
+    ],
+    "active_symptoms_summary": "chest_tightness; dizziness_vertigo; high_blood_pressure; weight_gain_sluggishness"
+  },
+  {
+    "id": 87,
+    "name": "Obesity",
+    "bengali_name": "স্থূলতা বা অতিরিক্ত ওজন",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Obesity Factsheet",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "insomnia_sleep_disturbance",
+      "shortness_of_breath_on_exertion",
+      "high_blood_pressure",
+      "weight_gain_sluggishness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; high_blood_pressure; insomnia_sleep_disturbance; shortness_of_breath_on_exertion; weight_gain_sluggishness"
+  },
+  {
+    "id": 88,
+    "name": "Metabolic Syndrome",
+    "bengali_name": "মেটাবলিক সিন্ড্রোম",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "NCEP ATP III Criteria",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "high_blood_pressure",
+      "frequent_urination",
+      "excessive_thirst_polydipsia",
+      "weight_gain_sluggishness"
+    ],
+    "active_symptoms_summary": "blurred_vision; excessive_thirst_polydipsia; extreme_fatigue; frequent_urination; high_blood_pressure; weight_gain_sluggishness"
+  },
+  {
+    "id": 89,
+    "name": "Cushing's Syndrome",
+    "bengali_name": "কুশিং সিন্ড্রোম",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "Endocrine Society Clinical Practice Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "high_blood_pressure",
+      "facial_puffiness_edema",
+      "weight_gain_sluggishness",
+      "easy_bruising_bleeding"
+    ],
+    "active_symptoms_summary": "easy_bruising_bleeding; extreme_fatigue; facial_puffiness_edema; high_blood_pressure; weight_gain_sluggishness"
+  },
+  {
+    "id": 90,
+    "name": "Polycystic Ovary Syndrome (PCOS)",
+    "bengali_name": "পিসিওএস",
+    "category": "Endocrine",
+    "triage_level": "Moderate",
+    "clinical_reference": "Rotterdam Criteria / ESHRE Guidelines",
+    "active_symptoms": [
+      "persistent_low_mood",
+      "pustules_pimples",
+      "patchy_hair_loss",
+      "weight_gain_sluggishness",
+      "irregular_menstrual_cycles",
+      "excess_facial_body_hair"
+    ],
+    "active_symptoms_summary": "excess_facial_body_hair; irregular_menstrual_cycles; patchy_hair_loss; persistent_low_mood; pustules_pimples; weight_gain_sluggishness"
+  },
+  {
+    "id": 91,
+    "name": "Urinary Tract Infection (UTI)",
+    "bengali_name": "মূত্রনালীর ইনফেকশন",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "EAU Guidelines on Urological Infections",
+    "active_symptoms": [
+      "abdominal_pain_cramps",
+      "dark_yellow_urine",
+      "burning_pain_urination_dysuria",
+      "frequent_urination",
+      "urgency_to_urinate",
+      "blood_in_urine_hematuria"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; blood_in_urine_hematuria; burning_pain_urination_dysuria; dark_yellow_urine; frequent_urination; urgency_to_urinate"
+  },
+  {
+    "id": 92,
+    "name": "Kidney Stones / Nephrolithiasis",
+    "bengali_name": "কিডনিতে পাথর",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AUA/Endourological Society Guidelines",
+    "active_symptoms": [
+      "nausea",
+      "urgency_to_urinate",
+      "blood_in_urine_hematuria",
+      "severe_flank_loin_pain"
+    ],
+    "active_symptoms_summary": "blood_in_urine_hematuria; nausea; severe_flank_loin_pain; urgency_to_urinate"
+  },
+  {
+    "id": 93,
+    "name": "Chronic Kidney Disease (CKD)",
+    "bengali_name": "দীর্ঘস্থায়ী কিডনি রোগ",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "KDIGO Clinical Practice Guideline for CKD",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "loss_of_appetite",
+      "swelling_feet_ankles",
+      "nausea",
+      "decreased_urine_output_oliguria",
+      "facial_puffiness_edema",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "decreased_urine_output_oliguria; extreme_fatigue; facial_puffiness_edema; loss_of_appetite; nausea; severe_fatigue_pale_look; swelling_feet_ankles"
+  },
+  {
+    "id": 94,
+    "name": "Acute Kidney Injury (AKI)",
+    "bengali_name": "আকস্মিক কিডনি ফেইলিউর",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "KDIGO Clinical Practice Guideline for AKI",
+    "active_symptoms": [
+      "swelling_feet_ankles",
+      "nausea",
+      "vomiting",
+      "decreased_urine_output_oliguria",
+      "facial_puffiness_edema"
+    ],
+    "active_symptoms_summary": "decreased_urine_output_oliguria; facial_puffiness_edema; nausea; swelling_feet_ankles; vomiting"
+  },
+  {
+    "id": 95,
+    "name": "Glomerulonephritis",
+    "bengali_name": "গ্লোমেরুলোনেফ্রাইটিস",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "KDIGO Glomerular Diseases Guidelines",
+    "active_symptoms": [
+      "high_blood_pressure",
+      "blood_in_urine_hematuria",
+      "decreased_urine_output_oliguria",
+      "facial_puffiness_edema"
+    ],
+    "active_symptoms_summary": "blood_in_urine_hematuria; decreased_urine_output_oliguria; facial_puffiness_edema; high_blood_pressure"
+  },
+  {
+    "id": 96,
+    "name": "Nephrotic Syndrome",
+    "bengali_name": "নেফ্রোটিক সিন্ড্রোম",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "KDIGO Nephrotic Syndrome Protocol",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "swelling_feet_ankles",
+      "foamy_urine",
+      "facial_puffiness_edema"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; facial_puffiness_edema; foamy_urine; swelling_feet_ankles"
+  },
+  {
+    "id": 97,
+    "name": "Benign Prostatic Hyperplasia (BPH)",
+    "bengali_name": "প্রোস্টেট বৃদ্ধি",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "EAU Guidelines on Non-neurogenic Male LUTS",
+    "active_symptoms": [
+      "insomnia_sleep_disturbance",
+      "difficulty_passing_stool",
+      "frequent_urination",
+      "urgency_to_urinate",
+      "weak_urine_stream_dribbling"
+    ],
+    "active_symptoms_summary": "difficulty_passing_stool; frequent_urination; insomnia_sleep_disturbance; urgency_to_urinate; weak_urine_stream_dribbling"
+  },
+  {
+    "id": 98,
+    "name": "Prostatitis",
+    "bengali_name": "প্রোস্টেটের প্রদাহ",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "NIH Chronic Prostatitis Protocol",
+    "active_symptoms": [
+      "mild_fever",
+      "painful_defecation",
+      "burning_pain_urination_dysuria",
+      "frequent_urination",
+      "severe_flank_loin_pain",
+      "weak_urine_stream_dribbling"
+    ],
+    "active_symptoms_summary": "burning_pain_urination_dysuria; frequent_urination; mild_fever; painful_defecation; severe_flank_loin_pain; weak_urine_stream_dribbling"
+  },
+  {
+    "id": 99,
+    "name": "Hydronephrosis",
+    "bengali_name": "কিডনি ফুলে যাওয়া",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Hydronephrosis Guide",
+    "active_symptoms": [
+      "nausea",
+      "frequent_urination",
+      "blood_in_urine_hematuria",
+      "severe_flank_loin_pain",
+      "decreased_urine_output_oliguria"
+    ],
+    "active_symptoms_summary": "blood_in_urine_hematuria; decreased_urine_output_oliguria; frequent_urination; nausea; severe_flank_loin_pain"
+  },
+  {
+    "id": 100,
+    "name": "Bladder Infection / Cystitis",
+    "bengali_name": "মূত্রথলির ইনফেকশন",
+    "category": "Renal & Urological",
+    "triage_level": "Moderate",
+    "clinical_reference": "EAU Guidelines on Cystitis",
+    "active_symptoms": [
+      "abdominal_pain_cramps",
+      "dark_yellow_urine",
+      "burning_pain_urination_dysuria",
+      "frequent_urination",
+      "urgency_to_urinate",
+      "blood_in_urine_hematuria"
+    ],
+    "active_symptoms_summary": "abdominal_pain_cramps; blood_in_urine_hematuria; burning_pain_urination_dysuria; dark_yellow_urine; frequent_urination; urgency_to_urinate"
+  },
+  {
+    "id": 101,
+    "name": "Scabies",
+    "bengali_name": "খোসপাঁচড়া",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Scabies Strategy / DGHS Protocol",
+    "active_symptoms": [
+      "insomnia_sleep_disturbance",
+      "skin_rash_maculopapular",
+      "intense_itching_pruritus",
+      "blisters_fluid_filled",
+      "pustules_pimples"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; insomnia_sleep_disturbance; intense_itching_pruritus; pustules_pimples; skin_rash_maculopapular"
+  },
+  {
+    "id": 102,
+    "name": "Ringworm / Tinea / Fungal Infection",
+    "bengali_name": "দাদ বা ছত্রাক সংক্রমণ",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "CDC Fungal Diseases Guidelines",
+    "active_symptoms": [
+      "intense_itching_pruritus",
+      "circular_scaly_red_patches",
+      "red_raised_welts_urticaria"
+    ],
+    "active_symptoms_summary": "circular_scaly_red_patches; intense_itching_pruritus; red_raised_welts_urticaria"
+  },
+  {
+    "id": 103,
+    "name": "Eczema / Atopic Dermatitis",
+    "bengali_name": "একজিমা",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAD Guidelines of Care for Atopic Dermatitis",
+    "active_symptoms": [
+      "insomnia_sleep_disturbance",
+      "skin_rash_maculopapular",
+      "intense_itching_pruritus",
+      "dry_flaky_skin_plaques"
+    ],
+    "active_symptoms_summary": "dry_flaky_skin_plaques; insomnia_sleep_disturbance; intense_itching_pruritus; skin_rash_maculopapular"
+  },
+  {
+    "id": 104,
+    "name": "Psoriasis",
+    "bengali_name": "সোরিয়াসিস",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "Global Report on Psoriasis WHO",
+    "active_symptoms": [
+      "intense_itching_pruritus",
+      "circular_scaly_red_patches",
+      "dry_flaky_skin_plaques",
+      "severe_joint_pain_arthralgia"
+    ],
+    "active_symptoms_summary": "circular_scaly_red_patches; dry_flaky_skin_plaques; intense_itching_pruritus; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 105,
+    "name": "Acne Vulgaris",
+    "bengali_name": "ব্রণ",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAD Acne Management Guidelines",
+    "active_symptoms": [
+      "intense_itching_pruritus",
+      "pustules_pimples",
+      "dark_patches_face_melasma"
+    ],
+    "active_symptoms_summary": "dark_patches_face_melasma; intense_itching_pruritus; pustules_pimples"
+  },
+  {
+    "id": 106,
+    "name": "Urticaria / Hives",
+    "bengali_name": "আমবাত বা অ্যালার্জি",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "EAACI/GA2LEN/EDF/WAO Guideline for Urticaria",
+    "active_symptoms": [
+      "facial_puffiness_edema",
+      "intense_itching_pruritus",
+      "red_raised_welts_urticaria"
+    ],
+    "active_symptoms_summary": "burning_sensations; facial_puffiness_edema; intense_itching_pruritus; red_raised_welts_urticaria"
+  },
+  {
+    "id": 107,
+    "name": "Contact Dermatitis",
+    "bengali_name": "কন্টাক্ট ডার্মাটাইটিস",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "American Academy of Dermatology",
+    "active_symptoms": [
+      "intense_itching_pruritus",
+      "dry_flaky_skin_plaques",
+      "red_raised_welts_urticaria",
+      "blisters_fluid_filled"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; burning_sensations; dry_flaky_skin_plaques; intense_itching_pruritus; red_raised_welts_urticaria"
+  },
+  {
+    "id": 108,
+    "name": "Vitiligo",
+    "bengali_name": "শ্বেতী রোগ",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "Vitiligo Global Issues Consensus",
+    "active_symptoms": [
+      "depigmented_white_patches",
+      "patchy_hair_loss"
+    ],
+    "active_symptoms_summary": "depigmented_white_patches; patchy_hair_loss"
+  },
+  {
+    "id": 109,
+    "name": "Pityriasis Versicolor / Chhobi",
+    "bengali_name": "ছুলি রোগ",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Tinea Versicolor",
+    "active_symptoms": [
+      "intense_itching_pruritus",
+      "dry_flaky_skin_plaques",
+      "discolored_scaly_spots_chest_back"
+    ],
+    "active_symptoms_summary": "discolored_scaly_spots_chest_back; dry_flaky_skin_plaques; intense_itching_pruritus"
+  },
+  {
+    "id": 110,
+    "name": "Boils / Furuncles",
+    "bengali_name": "ফোড়া",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "IDSA Practice Guidelines for Skin Infections",
+    "active_symptoms": [
+      "mild_fever",
+      "general_weakness",
+      "red_raised_welts_urticaria",
+      "painful_pus_boil"
+    ],
+    "active_symptoms_summary": "general_weakness; mild_fever; painful_pus_boil; red_raised_welts_urticaria"
+  },
+  {
+    "id": 111,
+    "name": "Alopecia Areata",
+    "bengali_name": "চুল পড়া / টাক",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "National Alopecia Areata Foundation",
+    "active_symptoms": [
+      "persistent_low_mood",
+      "patchy_hair_loss"
+    ],
+    "active_symptoms_summary": "patchy_hair_loss; persistent_low_mood"
+  },
+  {
+    "id": 112,
+    "name": "Melasma",
+    "bengali_name": "মেছতা",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "British Association of Dermatologists",
+    "active_symptoms": [
+      "persistent_low_mood",
+      "dark_patches_face_melasma"
+    ],
+    "active_symptoms_summary": "dark_patches_face_melasma; persistent_low_mood"
+  },
+  {
+    "id": 113,
+    "name": "Impetigo",
+    "bengali_name": "ইমপেটিগো",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Guidelines on Paediatric Skin Infections",
+    "active_symptoms": [
+      "mild_fever",
+      "intense_itching_pruritus",
+      "blisters_fluid_filled",
+      "honey_colored_crusted_sores"
+    ],
+    "active_symptoms_summary": "blisters_fluid_filled; honey_colored_crusted_sores; intense_itching_pruritus; mild_fever"
+  },
+  {
+    "id": 114,
+    "name": "Heat Rash / Prickly Heat",
+    "bengali_name": "ঘামাচি",
+    "category": "Dermatological",
+    "triage_level": "Moderate",
+    "clinical_reference": "MedlinePlus Miliaria Overview",
+    "active_symptoms": [
+      "insomnia_sleep_disturbance",
+      "intense_itching_pruritus",
+      "prickly_red_heat_spots"
+    ],
+    "active_symptoms_summary": "insomnia_sleep_disturbance; intense_itching_pruritus; prickly_red_heat_spots"
+  },
+  {
+    "id": 115,
+    "name": "Osteoarthritis",
+    "bengali_name": "অস্টিওআর্থ্রাইটিস",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "OARSI Guidelines for Osteoarthritis",
+    "active_symptoms": [
+      "severe_joint_pain_arthralgia",
+      "joint_swelling_redness",
+      "morning_joint_stiffness",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; joint_swelling_redness; morning_joint_stiffness; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 116,
+    "name": "Rheumatoid Arthritis",
+    "bengali_name": "রিউমাটয়েড বাত",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "ACR/EULAR Classification Criteria",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "severe_joint_pain_arthralgia",
+      "joint_swelling_redness",
+      "morning_joint_stiffness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; joint_swelling_redness; mild_fever; morning_joint_stiffness; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 117,
+    "name": "Osteoporosis",
+    "bengali_name": "হাড়ের ক্ষয় রোগ",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "NOF Clinical Guidelines for Osteoporosis",
+    "active_symptoms": [
+      "lower_back_pain",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; difficulty_walking; lower_back_pain"
+  },
+  {
+    "id": 118,
+    "name": "Cervical Spondylosis",
+    "bengali_name": "ঘাড়ে ব্যথা বা স্পন্ডিলাইটিস",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAOS Cervical Spondylosis Guidelines",
+    "active_symptoms": [
+      "severe_headache",
+      "dizziness_vertigo",
+      "numbness_tingling",
+      "neck_pain_stiffness"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; neck_pain_stiffness; numbness_tingling; severe_headache"
+  },
+  {
+    "id": 119,
+    "name": "Lumbar Spondylosis",
+    "bengali_name": "কোমরে স্পন্ডিলাইটিস",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "NASS Clinical Guidelines for Lumbar Spine",
+    "active_symptoms": [
+      "numbness_tingling",
+      "morning_joint_stiffness",
+      "lower_back_pain",
+      "radiating_leg_pain_sciatica"
+    ],
+    "active_symptoms_summary": "lower_back_pain; morning_joint_stiffness; numbness_tingling; radiating_leg_pain_sciatica"
+  },
+  {
+    "id": 120,
+    "name": "Frozen Shoulder",
+    "bengali_name": "ফ্রোজেন শোল্ডার",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAOS Shoulder Clinical Guidelines",
+    "active_symptoms": [
+      "insomnia_sleep_disturbance",
+      "severe_joint_pain_arthralgia",
+      "frozen_shoulder_restricted_motion"
+    ],
+    "active_symptoms_summary": "frozen_shoulder_restricted_motion; insomnia_sleep_disturbance; severe_joint_pain_arthralgia"
+  },
+  {
+    "id": 121,
+    "name": "Sciatica",
+    "bengali_name": "সায়াটিকা",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "NICE Guidelines Low Back Pain and Sciatica",
+    "active_symptoms": [
+      "numbness_tingling",
+      "lower_back_pain",
+      "radiating_leg_pain_sciatica"
+    ],
+    "active_symptoms_summary": "difficulty_walking; lower_back_pain; numbness_tingling; radiating_leg_pain_sciatica"
+  },
+  {
+    "id": 122,
+    "name": "Ankylosing Spondylitis",
+    "bengali_name": "অ্যানকাইলোজিং স্পন্ডিলাইটিস",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "ASAS/EULAR Recommendations",
+    "active_symptoms": [
+      "mild_fever",
+      "extreme_fatigue",
+      "morning_joint_stiffness",
+      "neck_pain_stiffness",
+      "lower_back_pain",
+      "eye_redness_conjunctivitis"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; eye_redness_conjunctivitis; lower_back_pain; mild_fever; morning_joint_stiffness; neck_pain_stiffness"
+  },
+  {
+    "id": 123,
+    "name": "Rickets",
+    "bengali_name": "রিকেটস",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "Global Consensus on Nutritional Rickets",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "general_weakness",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; difficulty_walking; extreme_fatigue; general_weakness"
+  },
+  {
+    "id": 124,
+    "name": "Carpal Tunnel Syndrome",
+    "bengali_name": "কার্পাল টানেল সিন্ড্রোম",
+    "category": "Musculoskeletal",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAOS CTS Management Guidelines",
+    "active_symptoms": [
+      "numbness_tingling",
+      "insomnia_sleep_disturbance",
+      "wrist_pain_numb_fingers"
+    ],
+    "active_symptoms_summary": "insomnia_sleep_disturbance; numbness_tingling; wrist_pain_numb_fingers"
+  },
+  {
+    "id": 125,
+    "name": "Ischemic Stroke",
+    "bengali_name": "ইস্কেমিক স্ট্রোক",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA/ASA Early Management of Ischemic Stroke",
+    "active_symptoms": [
+      "dizziness_vertigo",
+      "confusion_altered_mental_state",
+      "facial_droop_weakness",
+      "one_sided_paralysis"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; dizziness_vertigo; facial_droop_weakness; one_sided_paralysis"
+  },
+  {
+    "id": 126,
+    "name": "Hemorrhagic Stroke",
+    "bengali_name": "মস্তিষ্কে রক্তক্ষরণ",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AHA/ASA Guidelines for Intracerebral Hemorrhage",
+    "active_symptoms": [
+      "severe_headache",
+      "stiff_neck",
+      "confusion_altered_mental_state",
+      "one_sided_paralysis",
+      "high_blood_pressure",
+      "vomiting"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; high_blood_pressure; one_sided_paralysis; severe_headache; stiff_neck; vomiting"
+  },
+  {
+    "id": 127,
+    "name": "Migraine",
+    "bengali_name": "মাইগ্রেন",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "International Headache Society (ICHD-3)",
+    "active_symptoms": [
+      "throbbing_headache",
+      "dizziness_vertigo",
+      "insomnia_sleep_disturbance",
+      "nausea",
+      "vomiting"
+    ],
+    "active_symptoms_summary": "blurred_vision; dizziness_vertigo; insomnia_sleep_disturbance; nausea; throbbing_headache; vomiting"
+  },
+  {
+    "id": 128,
+    "name": "Tension Headache",
+    "bengali_name": "টেনশন হেডেক",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "ICHD-3 Tension-Type Headache Diagnostic",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "insomnia_sleep_disturbance",
+      "severe_anxiety_panic",
+      "neck_pain_stiffness"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; insomnia_sleep_disturbance; mild_headache; neck_pain_stiffness; severe_anxiety_panic"
+  },
+  {
+    "id": 129,
+    "name": "Epilepsy / Seizures",
+    "bengali_name": "মৃগীরোগ / খিঁচুনি",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "ILAE Classification of Seizures / WHO",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "severe_headache",
+      "confusion_altered_mental_state",
+      "convulsions_seizures",
+      "numbness_tingling"
+    ],
+    "active_symptoms_summary": "confusion_altered_mental_state; convulsions_seizures; extreme_fatigue; numbness_tingling; severe_headache"
+  },
+  {
+    "id": 130,
+    "name": "Bell's Palsy",
+    "bengali_name": "বেলস পলসি",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAO-HNS Bell's Palsy Guideline",
+    "active_symptoms": [
+      "facial_droop_weakness",
+      "ear_pain",
+      "dry_gritty_eye_sensation"
+    ],
+    "active_symptoms_summary": "dry_gritty_eye_sensation; ear_pain; facial_droop_weakness"
+  },
+  {
+    "id": 131,
+    "name": "Parkinson's Disease",
+    "bengali_name": "পারকিনসন্স ডিজিজ",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "MDS Clinical Diagnostic Criteria for Parkinson's",
+    "active_symptoms": [
+      "general_weakness",
+      "tremors",
+      "persistent_low_mood",
+      "constipation",
+      "morning_joint_stiffness"
+    ],
+    "active_symptoms_summary": "constipation; general_weakness; morning_joint_stiffness; persistent_low_mood; tremors"
+  },
+  {
+    "id": 132,
+    "name": "Peripheral Neuropathy",
+    "bengali_name": "পেরিফেরাল নিউরোপ্যাথি",
+    "category": "Neurological",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAN Practice Parameter on Neuropathy",
+    "active_symptoms": [
+      "general_weakness",
+      "dizziness_vertigo",
+      "numbness_tingling",
+      "insomnia_sleep_disturbance",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; dizziness_vertigo; general_weakness; insomnia_sleep_disturbance; numbness_tingling"
+  },
+  {
+    "id": 133,
+    "name": "Major Depressive Disorder (Depression)",
+    "bengali_name": "বিষণ্ণতা",
+    "category": "Mental Health",
+    "triage_level": "Moderate",
+    "clinical_reference": "DSM-5-TR / WHO Mental Health Atlas",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "insomnia_sleep_disturbance",
+      "severe_anxiety_panic",
+      "persistent_low_mood"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; insomnia_sleep_disturbance; persistent_low_mood; severe_anxiety_panic; unexplained_weight_loss"
+  },
+  {
+    "id": 134,
+    "name": "Generalized Anxiety Disorder (GAD)",
+    "bengali_name": "উদ্বেগ বা দুশ্চিন্তা",
+    "category": "Mental Health",
+    "triage_level": "Moderate",
+    "clinical_reference": "NICE Guidelines for Generalized Anxiety",
+    "active_symptoms": [
+      "dizziness_vertigo",
+      "insomnia_sleep_disturbance",
+      "severe_anxiety_panic",
+      "dry_cough",
+      "palpitations_rapid_heart"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; dry_cough; insomnia_sleep_disturbance; palpitations_rapid_heart; severe_anxiety_panic"
+  },
+  {
+    "id": 135,
+    "name": "Insomnia",
+    "bengali_name": "অনিদ্রা",
+    "category": "Mental Health",
+    "triage_level": "Moderate",
+    "clinical_reference": "AASM Clinical Practice Guideline for Insomnia",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "dizziness_vertigo",
+      "insomnia_sleep_disturbance"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; extreme_fatigue; insomnia_sleep_disturbance; mild_headache"
+  },
+  {
+    "id": 136,
+    "name": "Iron Deficiency Anemia",
+    "bengali_name": "রক্তস্বল্পতা",
+    "category": "Hematology",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Guidelines on Nutritional Anemia / DGHS",
+    "active_symptoms": [
+      "dizziness_vertigo",
+      "shortness_of_breath_on_exertion",
+      "pale_conjunctiva_skin",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; pale_conjunctiva_skin; severe_fatigue_pale_look; shortness_of_breath_on_exertion"
+  },
+  {
+    "id": 137,
+    "name": "Thalassemia",
+    "bengali_name": "থ্যালাসেমিয়া",
+    "category": "Hematology",
+    "triage_level": "Moderate",
+    "clinical_reference": "TIF International Guidelines for Thalassemia",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "jaundice_yellow_eyes_skin",
+      "bone_pain_tenderness",
+      "pale_conjunctiva_skin",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; extreme_fatigue; jaundice_yellow_eyes_skin; pale_conjunctiva_skin; severe_fatigue_pale_look; unexplained_weight_loss"
+  },
+  {
+    "id": 138,
+    "name": "Vitamin D Deficiency",
+    "bengali_name": "ভিটামিন ডি-এর ঘাটতি",
+    "category": "Nutrition",
+    "triage_level": "Moderate",
+    "clinical_reference": "Endocrine Society Clinical Practice Guidelines",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "persistent_low_mood",
+      "severe_muscle_pain_myalgia",
+      "bone_pain_tenderness"
+    ],
+    "active_symptoms_summary": "bone_pain_tenderness; extreme_fatigue; persistent_low_mood; severe_muscle_pain_myalgia"
+  },
+  {
+    "id": 139,
+    "name": "Vitamin B12 Deficiency",
+    "bengali_name": "ভিটামিন বি১২-এর ঘাটতি",
+    "category": "Nutrition",
+    "triage_level": "Moderate",
+    "clinical_reference": "BSH Guidelines on Cobalamin / B12 Deficiency",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "dizziness_vertigo",
+      "numbness_tingling",
+      "painful_mouth_ulcers",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "dizziness_vertigo; extreme_fatigue; numbness_tingling; painful_mouth_ulcers; severe_fatigue_pale_look"
+  },
+  {
+    "id": 140,
+    "name": "Malnutrition",
+    "bengali_name": "অপুষ্টি",
+    "category": "Nutrition",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO Management of Severe Acute Malnutrition",
+    "active_symptoms": [
+      "extreme_fatigue",
+      "unexplained_weight_loss",
+      "swelling_feet_ankles",
+      "watery_diarrhea",
+      "severe_fatigue_pale_look"
+    ],
+    "active_symptoms_summary": "extreme_fatigue; severe_fatigue_pale_look; swelling_feet_ankles; unexplained_weight_loss; watery_diarrhea"
+  },
+  {
+    "id": 141,
+    "name": "Conjunctivitis / Pink Eye",
+    "bengali_name": "চোখ ওঠা",
+    "category": "Ophthalmology",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAO Preferred Practice Pattern for Conjunctivitis",
+    "active_symptoms": [
+      "eye_redness_conjunctivitis",
+      "eye_discharge_crusting",
+      "itchy_watery_eyes",
+      "dry_gritty_eye_sensation"
+    ],
+    "active_symptoms_summary": "blurred_vision; dry_gritty_eye_sensation; eye_discharge_crusting; eye_redness_conjunctivitis; itchy_watery_eyes"
+  },
+  {
+    "id": 142,
+    "name": "Cataract",
+    "bengali_name": "চোখের ছানি",
+    "category": "Ophthalmology",
+    "triage_level": "Moderate",
+    "clinical_reference": "ICO Guidelines for Cataract / WHO",
+    "active_symptoms": [
+      "cloudy_blurred_vision",
+      "eye_pain_halos_around_lights"
+    ],
+    "active_symptoms_summary": "cloudy_blurred_vision; eye_pain_halos_around_lights"
+  },
+  {
+    "id": 143,
+    "name": "Glaucoma",
+    "bengali_name": "গ্লুকোমা",
+    "category": "Ophthalmology",
+    "triage_level": "Moderate",
+    "clinical_reference": "EGS Terminology and Guidelines for Glaucoma",
+    "active_symptoms": [
+      "severe_headache",
+      "nausea",
+      "vomiting",
+      "eye_redness_conjunctivitis",
+      "cloudy_blurred_vision",
+      "eye_pain_halos_around_lights"
+    ],
+    "active_symptoms_summary": "cloudy_blurred_vision; eye_pain_halos_around_lights; eye_redness_conjunctivitis; nausea; severe_headache; vomiting"
+  },
+  {
+    "id": 144,
+    "name": "Dry Eye Syndrome",
+    "bengali_name": "ড্রাই আই সিন্ড্রোম",
+    "category": "Ophthalmology",
+    "triage_level": "Moderate",
+    "clinical_reference": "TFOS DEWS II Management Report",
+    "active_symptoms": [
+      "eye_redness_conjunctivitis",
+      "itchy_watery_eyes",
+      "dry_gritty_eye_sensation"
+    ],
+    "active_symptoms_summary": "blurred_vision; dry_gritty_eye_sensation; eye_redness_conjunctivitis; itchy_watery_eyes; mild_headache"
+  },
+  {
+    "id": 145,
+    "name": "Stye / Hordeolum",
+    "bengali_name": "চোখের অঞ্জনি",
+    "category": "Ophthalmology",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAO Stye Information",
+    "active_symptoms": [
+      "facial_puffiness_edema",
+      "eye_redness_conjunctivitis",
+      "itchy_watery_eyes",
+      "painful_eyelid_bump_stye"
+    ],
+    "active_symptoms_summary": "eye_redness_conjunctivitis; facial_puffiness_edema; itchy_watery_eyes; painful_eyelid_bump_stye"
+  },
+  {
+    "id": 146,
+    "name": "Otitis Media",
+    "bengali_name": "মধ্যকর্ণের ইনফেকশন",
+    "category": "ENT & Dental",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAP Clinical Practice Guideline Acute Otitis Media",
+    "active_symptoms": [
+      "high_fever",
+      "severe_headache",
+      "ear_pain",
+      "ear_discharge",
+      "hearing_impairment"
+    ],
+    "active_symptoms_summary": "ear_discharge; ear_pain; hearing_impairment; high_fever; severe_headache"
+  },
+  {
+    "id": 147,
+    "name": "Hearing Loss",
+    "bengali_name": "শ্রবণশক্তি হ্রাস",
+    "category": "ENT & Dental",
+    "triage_level": "Moderate",
+    "clinical_reference": "WHO World Report on Hearing",
+    "active_symptoms": [
+      "severe_anxiety_panic",
+      "ear_pain",
+      "hearing_impairment"
+    ],
+    "active_symptoms_summary": "ear_pain; hearing_impairment; severe_anxiety_panic"
+  },
+  {
+    "id": 148,
+    "name": "Dental Caries / Tooth Decay",
+    "bengali_name": "দাঁতের ক্ষয়",
+    "category": "ENT & Dental",
+    "triage_level": "Moderate",
+    "clinical_reference": "FDI World Dental Federation Guidelines",
+    "active_symptoms": [
+      "difficulty_swallowing",
+      "toothache_throbbing",
+      "sensitivity_hot_cold",
+      "bad_breath_halitosis"
+    ],
+    "active_symptoms_summary": "bad_breath_halitosis; difficulty_swallowing; sensitivity_hot_cold; toothache_throbbing"
+  },
+  {
+    "id": 149,
+    "name": "Gingivitis / Periodontitis",
+    "bengali_name": "মাড়ির প্রদাহ",
+    "category": "ENT & Dental",
+    "triage_level": "Moderate",
+    "clinical_reference": "AAP/EFP Classification of Periodontal Diseases",
+    "active_symptoms": [
+      "toothache_throbbing",
+      "bleeding_swollen_gums",
+      "painful_mouth_ulcers",
+      "bad_breath_halitosis"
+    ],
+    "active_symptoms_summary": "bad_breath_halitosis; bleeding_swollen_gums; painful_mouth_ulcers; toothache_throbbing"
+  },
+  {
+    "id": 150,
+    "name": "Aphthous Ulcer / Mouth Ulcers",
+    "bengali_name": "মুখে ঘা",
+    "category": "ENT & Dental",
+    "triage_level": "Moderate",
+    "clinical_reference": "British Dental Journal Guidelines",
+    "active_symptoms": [
+      "loss_of_appetite",
+      "difficulty_swallowing",
+      "bleeding_swollen_gums",
+      "painful_mouth_ulcers"
+    ],
+    "active_symptoms_summary": "bleeding_swollen_gums; difficulty_swallowing; loss_of_appetite; painful_mouth_ulcers"
+  }
+]
