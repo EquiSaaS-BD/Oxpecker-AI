@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import gsap from "gsap";
 import { 
   Menu, X, MessageSquare, Stethoscope, Building2, Pill, 
@@ -33,9 +33,9 @@ export interface AwwwardsNavProps {
 
 const DEFAULT_ITEMS: AwwwardsNavLink[] = [
   { label: "AI Chat", href: "/chat", icon: MessageSquare },
-  { label: "Rx Builder", href: "/doctor/dashboard/prescription/new", icon: FileText, badge: "Rx" },
+  { label: "Reports & Scans", href: "/reports", icon: FileText },
   { label: "Doctors", href: "/doctors", icon: Stethoscope },
-  { label: "Patients", href: "/doctor/dashboard/patients", icon: User },
+  { label: "Medicines", href: "/medicines", icon: Pill },
 ];
 
 const DEFAULT_COLUMNS: AwwwardsNavColumn[] = [
@@ -80,6 +80,7 @@ export function AwwwardsNav({
   className,
 }: AwwwardsNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
   const navTopRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<HTMLDivElement>(null);
@@ -173,9 +174,12 @@ export function AwwwardsNav({
     }
   };
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (href?: string) => {
     if (openRef.current) {
       toggle();
+    }
+    if (href) {
+      router.push(href);
     }
   };
 
@@ -213,7 +217,7 @@ export function AwwwardsNav({
                   <Link
                     key={link.label}
                     href={link.href}
-                    onClick={handleLinkClick}
+                    onClick={() => handleLinkClick(link.href)}
                     className={cn(
                       "group flex items-center justify-between py-2 px-2.5 rounded-lg text-[13px] font-semibold transition-all",
                       isActive 
@@ -271,21 +275,34 @@ export function AwwwardsNav({
         <div ref={navItemsRef} className="flex min-w-0 flex-[4] items-center gap-1 sm:gap-1.5 overflow-x-hidden">
           {items.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href) && item.href !== "/" || (item.href === "/" && pathname === "/");
+            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
             return (
               <Link
-                key={item.label}
+                key={item.href}
                 href={item.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleLinkClick(item.href);
+                }}
                 className={cn(
-                  "flex h-full flex-1 min-w-0 items-center justify-center gap-1 rounded-xl border px-1 sm:px-2 text-center text-[10px] sm:text-[13px] font-bold transition-all shrink-1",
+                  "flex h-full flex-1 min-w-0 items-center justify-center rounded-xl border transition-all shrink-1 active:scale-95 cursor-pointer",
                   isActive
                     ? "border-sky-300 bg-sky-50 text-sky-700 font-extrabold shadow-xs"
                     : "border-slate-200/80 bg-white/70 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50/80"
                 )}
+                title={item.label}
+                aria-label={item.label}
               >
-                {Icon && <Icon size={15} className={cn("shrink-0", isActive ? "text-sky-600" : "text-slate-500")} />}
-                <span className="block truncate max-w-[46px] sm:max-w-none text-center">{item.label}</span>
+                {Icon && (
+                  <Icon 
+                    className={cn(
+                      "w-5 h-5 shrink-0 transition-transform", 
+                      isActive ? "text-sky-600 scale-105" : "text-slate-500"
+                    )} 
+                    strokeWidth={isActive ? 2.4 : 2}
+                  />
+                )}
               </Link>
             );
           })}
