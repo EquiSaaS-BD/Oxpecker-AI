@@ -203,8 +203,8 @@ export function ChatInput({
   };
 
   return (
-    <div className="sticky bottom-0 w-full pb-4 sm:pb-6 pt-2 px-3 sm:px-4 md:px-8 bg-gradient-to-t from-white via-white/80 to-transparent z-40">
-      <div className="max-w-[900px] mx-auto relative flex flex-col items-center">
+    <div className="sticky bottom-0 w-full pb-2.5 sm:pb-4 pt-1 px-3 sm:px-4 md:px-6 bg-gradient-to-t from-white via-white/80 to-transparent z-40">
+      <div className="max-w-[780px] mx-auto relative flex flex-col items-center">
         
         {/* Floating Plus Menu */}
         <AnimatePresence>
@@ -325,7 +325,7 @@ export function ChatInput({
         {/* Input Container - Claude AI style: subtle, calm, and feather-light */}
         <div 
           onClick={() => textareaRef.current?.focus()}
-          className={`w-full flex items-end gap-1.5 sm:gap-2 rounded-2xl p-1.5 sm:p-2 min-h-[52px] sm:min-h-[56px] border transition-colors duration-150 cursor-text ${
+          className={`w-full flex items-center gap-1 sm:gap-1.5 rounded-2xl py-1 px-1.5 sm:py-1.5 sm:px-2 min-h-[42px] sm:min-h-[46px] border transition-colors duration-150 cursor-text ${
             isFocused
               ? "bg-white border-slate-400 ring-1 ring-slate-400/20 shadow-[0_2px_6px_rgba(0,0,0,0.04)]"
               : "bg-white border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:border-slate-300"
@@ -339,9 +339,9 @@ export function ChatInput({
               e.stopPropagation();
               setMenuOpen(!menuOpen);
             }}
-            className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] shrink-0 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-transparent transition-all duration-300 active:scale-95 mb-0.5 ml-0.5"
+            className="w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] shrink-0 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-transparent transition-all duration-300 active:scale-95"
           >
-            <Plus size={22} className={`transition-transform duration-300 ease-out ${menuOpen ? 'rotate-[135deg] text-[#2797de]' : ''}`} />
+            <Plus size={18} className={`transition-transform duration-300 ease-out ${menuOpen ? 'rotate-[135deg] text-[#2797de]' : ''}`} />
           </button>
 
           {/* Textarea Wrapper */}
@@ -458,13 +458,13 @@ export function ChatInput({
                 }
               }}
               placeholder={getDynamicPlaceholder()}
-              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[14px] sm:text-[15px] md:text-[16px] text-slate-800 placeholder:text-slate-400 placeholder:truncate placeholder:whitespace-nowrap py-2 px-2 sm:px-3 scrollbar-thin self-center leading-normal font-bengali"
+              className="w-full max-h-[200px] bg-transparent resize-none outline-none text-[13.5px] sm:text-[14.5px] md:text-[15px] text-slate-800 placeholder:text-slate-400 placeholder:truncate placeholder:whitespace-nowrap py-1.5 px-2 sm:px-2.5 scrollbar-thin self-center leading-normal font-bengali"
               rows={1}
             />
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1 shrink-0 mb-0.5 pr-0.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             {/* Voice Waveform (visible when listening) */}
             <VoiceWaveform isActive={isListening} />
             
@@ -479,9 +479,9 @@ export function ChatInput({
                 setPendingAnalysisType('image');
                 fileInputRef.current?.click();
               }}
-              className="hidden sm:flex w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              className="hidden sm:flex w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] rounded-full items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
             >
-              <Camera size={20} />
+              <Camera size={17} />
             </button>
             <button 
               onClick={(e) => {
@@ -489,19 +489,19 @@ export function ChatInput({
                 handleSend();
               }}
               disabled={!text.trim() && !selectedMode}
-              className={`w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center transition-all duration-200 ${
+              className={`w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] rounded-full flex items-center justify-center transition-all duration-200 ${
                 (text.trim() || selectedMode) 
                   ? "bg-[#2797de] text-white shadow-xs hover:bg-[#1f84c4] active:scale-95" 
                   : "bg-slate-100 text-slate-400"
               }`}
             >
-              <ArrowRight size={20} className={(text.trim() || selectedMode) ? "ml-0.5" : ""} strokeWidth={2.5} />
+              <ArrowRight size={17} className={(text.trim() || selectedMode) ? "ml-0.5" : ""} strokeWidth={2.5} />
             </button>
           </div>
         </div>
 
         {/* Disclaimer */}
-        <div className="text-center mt-2.5 pb-1 w-full">
+        <div className="text-center mt-1.5 pb-0.5 w-full">
           <p className="text-[11px] sm:text-[12px] text-slate-500 font-medium">
             AI can make mistakes. Verify important medical information.
           </p>
