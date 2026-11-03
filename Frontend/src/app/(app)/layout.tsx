@@ -122,8 +122,12 @@ export default function AppLayout({
             )}
 
             {/* Dynamic Page Content */}
-            <main className={`flex-1 overflow-y-auto custom-scrollbar relative ${!isSpecialRoute ? 'pt-14 lg:pt-0 2xl:pt-0 pb-16 md:pb-0' : ''}`}>
-              {!isSpecialRoute && <HealthPassActivationBanner />}
+            <main className={`flex-1 flex flex-col relative ${
+              pathname === "/chat"
+                ? "overflow-hidden pt-14 lg:pt-0 2xl:pt-0 pb-0"
+                : (!isSpecialRoute ? "overflow-y-auto custom-scrollbar pt-14 lg:pt-0 2xl:pt-0 pb-16 md:pb-0" : "")
+            }`}>
+              {!isSpecialRoute && pathname !== "/chat" && <HealthPassActivationBanner />}
               {children}
             </main>
           </div>

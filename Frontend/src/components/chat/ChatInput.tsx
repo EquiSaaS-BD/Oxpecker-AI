@@ -203,7 +203,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="sticky bottom-0 w-full pb-2.5 sm:pb-4 pt-1 px-3 sm:px-4 md:px-6 bg-gradient-to-t from-white via-white/80 to-transparent z-40">
+    <div className="shrink-0 w-full pb-2 sm:pb-3.5 pt-1 px-3 sm:px-4 md:px-6 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
       <div className="max-w-[780px] mx-auto relative flex flex-col items-center">
         
         {/* Floating Plus Menu */}
@@ -458,7 +458,8 @@ export function ChatInput({
                 }
               }}
               placeholder={getDynamicPlaceholder()}
-              className="w-full max-h-[200px] bg-transparent resize-none outline-none text-[13.5px] sm:text-[14.5px] md:text-[15px] text-slate-800 placeholder:text-slate-400 placeholder:truncate placeholder:whitespace-nowrap py-1.5 px-2 sm:px-2.5 scrollbar-thin self-center leading-normal font-bengali"
+              className="w-full max-h-[160px] bg-transparent resize-none outline-none text-[13.5px] sm:text-[14.5px] md:text-[15px] text-slate-800 placeholder:text-slate-400 placeholder:truncate placeholder:whitespace-nowrap py-1.5 px-2 sm:px-2.5 scrollbar-hide overflow-hidden self-center leading-normal font-bengali"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               rows={1}
             />
           </div>

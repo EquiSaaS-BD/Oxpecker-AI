@@ -413,7 +413,7 @@ function ChatContent() {
       </div>
 
       {/* Main Scrollable Area */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin pt-8 pb-4 relative z-10">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pt-4 sm:pt-8 pb-4 relative z-10">
         <div className="max-w-[900px] mx-auto w-full px-4 md:px-8">
           
           {messages.length === 0 ? (
