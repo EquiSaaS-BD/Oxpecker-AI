@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getMedicineById, getGenericAlternatives, getGenericMonograph, normalizePackageSize } from '@/lib/medicine-catalog';
+import { getManufacturerAsset, getMedicinePackaging, getChemicalStructure } from '@/lib/medicine-brand-assets';
 
 function determineCategory(genericName: string): string {
   const generic = (genericName || '').toLowerCase();
@@ -50,6 +51,10 @@ export async function GET(
     const price = Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : (Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null);
     const priceBasis = Number.isFinite(unitPrice) && unitPrice! > 0 ? 'unit' : (Number.isFinite(packagePrice) && packagePrice! > 0 ? 'package' : null);
 
+    const manufacturerAsset = getManufacturerAsset(med.manufacturer);
+    const officialImage = getMedicinePackaging(med.id, med.brand_name);
+    const chemicalStructure = getChemicalStructure(med.generic_name);
+
     const formattedMedicine = {
       id: med.id.toString(),
       name: med.brand_name || 'Unknown',
@@ -58,6 +63,7 @@ export async function GET(
       generic_name: med.generic_name || 'Unknown Generic',
       company: med.manufacturer || 'Unknown Manufacturer',
       manufacturer: med.manufacturer || 'Unknown Manufacturer',
+      manufacturerAsset,
       strength: med.strength || '',
       price,
       priceBasis,
@@ -71,7 +77,9 @@ export async function GET(
       slug: med.slug || '',
       category,
       useFor: getUseFor(category, med.generic_name || '', monograph?.indication),
-      image: null,
+      image: officialImage,
+      officialPackagingImage: officialImage,
+      chemicalStructure,
       monograph: monograph ? {
         id: monograph.id,
         name: monograph.name,
@@ -114,11 +122,10 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: formattedMedicine,
-      alternatives
+      alternatives,
     });
-
   } catch (error) {
-    console.error('[Medicine Detail API] Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Error fetching medicine details:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

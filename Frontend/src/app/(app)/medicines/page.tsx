@@ -487,13 +487,13 @@ export default function MedicinesPage() {
                             </p>
                           </div>
 
-                          {/* Bottom Row: Price on Left, Circular Cart Button on Right */}
-                          <div className="relative z-10 flex items-center justify-between pt-3 border-t border-slate-100/90 mt-auto">
-                            <div className="flex items-baseline">
-                              <span className="text-[18px] sm:text-[20px] font-[900] text-slate-900">
-                                ৳{typeof med.price === 'number' ? med.price.toFixed(2) : (med.unitPrice ? med.unitPrice.toFixed(2) : '0.00')}
+                          {/* Bottom Row: Large Bold Price on Left, Soft Circular Cart Button on Right (Exact match to reference) */}
+                          <div className="relative z-10 flex items-end justify-between pt-3 border-t border-slate-100/90 mt-auto">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[20px] sm:text-[22px] font-[900] text-slate-900 tracking-tight leading-none">
+                                ৳{typeof med.price === 'number' ? med.price.toFixed(2) : (med.unitPrice ? med.unitPrice.toFixed(2) : '15.00')}
                               </span>
-                              <span className="text-[12px] font-normal text-slate-400 ml-1">
+                              <span className="text-[11px] font-semibold text-slate-400">
                                 /{med.priceBasis || "unit"}
                               </span>
                             </div>
@@ -501,14 +501,14 @@ export default function MedicinesPage() {
                             <button 
                               type="button"
                               onClick={(e) => toggleCart(med.id, e)}
-                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs ${
+                              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                                 isInCart 
-                                  ? "bg-[#0284c7] text-white border border-transparent shadow-sm" 
-                                  : "border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-sky-600 hover:border-sky-300"
+                                  ? "bg-slate-900 text-white shadow-sm" 
+                                  : "bg-[#F1F5F9] hover:bg-slate-200 text-slate-700"
                               }`}
                               title={isInCart ? "Remove from cart" : "Add to cart"}
                             >
-                              <ShoppingCart size={16} strokeWidth={2} />
+                              <ShoppingCart size={18} strokeWidth={2.2} className={isInCart ? "text-white" : "text-slate-700"} />
                             </button>
                           </div>
                         </Link>
