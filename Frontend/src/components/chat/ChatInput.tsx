@@ -199,7 +199,7 @@ export function ChatInput({
     if (selectedMode) {
       return `"${selectedMode.title}" বিষয়ে আপনার প্রশ্ন লিখুন...`;
     }
-    return 'Ask Oxpecker AI a health question...';
+    return 'Ask a health question...';
   };
 
   return (
@@ -458,7 +458,7 @@ export function ChatInput({
                 }
               }}
               placeholder={getDynamicPlaceholder()}
-              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[15px] sm:text-[16px] text-slate-800 placeholder:text-slate-400 py-2 px-2 sm:px-3 scrollbar-thin self-center leading-relaxed font-bengali"
+              className="w-full max-h-[220px] bg-transparent resize-none outline-none text-[14px] sm:text-[15px] md:text-[16px] text-slate-800 placeholder:text-slate-400 placeholder:truncate placeholder:whitespace-nowrap py-2 px-2 sm:px-3 scrollbar-thin self-center leading-normal font-bengali"
               rows={1}
             />
           </div>

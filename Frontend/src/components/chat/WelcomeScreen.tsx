@@ -71,7 +71,7 @@ export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { prom
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.1 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-3.5 w-full"
+        className="w-full flex md:grid overflow-x-auto md:overflow-visible scrollbar-hide snap-x snap-mandatory md:snap-none md:grid-cols-4 gap-2.5 sm:gap-3.5 pb-2 md:pb-0 px-1 -mx-1"
       >
         {suggestions.map((item, idx) => (
           <motion.button
@@ -80,12 +80,12 @@ export function WelcomeScreen({ onSelect }: { onSelect: (mode: ChatMode & { prom
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-            className="flex flex-col items-start justify-between w-full h-[100px] sm:h-[115px] p-4 bg-white border border-slate-200/90 rounded-[20px] hover:border-primary/40 hover:shadow-md text-left shadow-xs group"
+            className="flex flex-row md:flex-col items-center md:items-start justify-start md:justify-between shrink-0 snap-start w-auto md:w-full h-[48px] md:h-[115px] px-3.5 py-2 md:p-4 bg-white border border-slate-200/90 rounded-2xl md:rounded-[20px] hover:border-primary/40 hover:shadow-md text-left shadow-2xs group cursor-pointer transition-all gap-2.5 md:gap-0"
           >
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
+            <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
               <item.icon className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.2} />
             </div>
-            <span className="text-[13px] sm:text-[14px] font-bold text-slate-700 leading-snug group-hover:text-primary transition-colors">
+            <span className="text-[13px] md:text-[14px] font-bold text-slate-700 whitespace-nowrap md:whitespace-normal leading-snug group-hover:text-primary transition-colors">
               {item.title}
             </span>
           </motion.button>
