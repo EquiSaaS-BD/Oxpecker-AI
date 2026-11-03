@@ -1,18 +1,21 @@
 import { NextResponse } from 'next/server';
-import { getMedicineById, getGenericAlternatives, normalizePackageSize } from '@/lib/medicine-catalog';
+import { getMedicineById, getGenericAlternatives, getGenericMonograph, normalizePackageSize } from '@/lib/medicine-catalog';
 
 function determineCategory(genericName: string): string {
   const generic = (genericName || '').toLowerCase();
   if (['omeprazole', 'pantoprazole', 'esomeprazole', 'rabeprazole', 'dexlansoprazole', 'famotidine', 'ranitidine', 'antacid'].some(k => generic.includes(k))) return 'Gastric';
   if (['paracetamol', 'ibuprofen', 'diclofenac', 'ketorolac', 'naproxen', 'tramadol', 'mefenamic', 'aceclofenac'].some(k => generic.includes(k))) return 'Painkiller';
-  if (['amoxicillin', 'azithromycin', 'cefixime', 'cefuroxime', 'ciprofloxacin', 'ceftriaxone', 'levofloxacin', 'metronidazole', 'doxycycline', 'flucloxacillin', 'meropenem'].some(k => generic.includes(k))) return 'Antibiotic';
+  if (['amoxicillin', 'azithromycin', 'cefixime', 'cefuroxime', 'ciprofloxacin', 'ceftriaxone', 'levofloxacin', 'metronidazole', 'doxycycline', 'flucloxacillin', 'meropenem', 'cefadroxil'].some(k => generic.includes(k))) return 'Antibiotic';
   if (['cetirizine', 'fexofenadine', 'loratadine', 'montelukast', 'rupatadine', 'bilastine', 'levocetirizine', 'desloratadine'].some(k => generic.includes(k))) return 'Allergy';
   if (['vitamin', 'calcium', 'zinc', 'ascorbic acid', 'magnesium', 'cholecalciferol', 'iron', 'ferrous', 'folic acid', 'multivitamin', 'cyanocobalamin'].some(k => generic.includes(k))) return 'Vitamins';
   if (['metformin', 'sitagliptin', 'linagliptin', 'glimepiride', 'gliclazide', 'empagliflozin', 'losartan', 'valsartan', 'olmesartan', 'amlodipine', 'bisoprolol', 'atorvastatin', 'rosuvastatin', 'clopidogrel', 'insulin', 'atenolol', 'nebivolol'].some(k => generic.includes(k))) return 'Cardiac';
   return 'Other';
 }
 
-function getUseFor(category: string, generic: string): string {
+function getUseFor(category: string, generic: string, monographIndication?: string): string {
+  if (monographIndication && monographIndication.trim()) {
+    return monographIndication.trim();
+  }
   switch(category) {
     case 'Gastric': return 'Acidity & Ulcer Treatment';
     case 'Painkiller': return 'Fever & Pain Relief';
@@ -42,6 +45,7 @@ export async function GET(
       || String(med.package_container || '').match(/(?:pack|bottle|box|strip)[^৳]*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
     const packagePrice = packagePriceMatch ? Number(packagePriceMatch[1].replace(/,/g, '')) : null;
 
+    const monograph = getGenericMonograph(med.generic_name || '');
     const category = determineCategory(med.generic_name || '');
     const price = Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : (Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null);
     const priceBasis = Number.isFinite(unitPrice) && unitPrice! > 0 ? 'unit' : (Number.isFinite(packagePrice) && packagePrice! > 0 ? 'package' : null);
@@ -66,11 +70,33 @@ export async function GET(
       drugType: med.type || 'allopathic',
       slug: med.slug || '',
       category,
-      useFor: getUseFor(category, med.generic_name || ''),
+      useFor: getUseFor(category, med.generic_name || '', monograph?.indication),
+      image: '/images/medicine-box.png',
+      monograph: monograph ? {
+        id: monograph.id,
+        name: monograph.name,
+        slug: monograph.slug || '',
+        monograph_link: monograph.monograph_link || null,
+        drug_class: monograph.drug_class || '',
+        therapeutic_class: monograph.therapeutic_class || '',
+        indication: monograph.indication || '',
+        indication_description: monograph.indication_description || '',
+        pharmacology: monograph.pharmacology || '',
+        dosage: monograph.dosage || '',
+        administration: monograph.administration || '',
+        interaction: monograph.interaction || '',
+        contraindications: monograph.contraindications || '',
+        side_effects: monograph.side_effects || '',
+        pregnancy_and_lactation: monograph.pregnancy_and_lactation || '',
+        precautions: monograph.precautions || '',
+        pediatric_usage: monograph.pediatric_usage || '',
+        overdose_effects: monograph.overdose_effects || '',
+        storage_conditions: monograph.storage_conditions || '',
+      } : null,
     };
 
     // Find authentic generic alternatives from the same database
-    const rawAlternatives = getGenericAlternatives(med.generic_name || '', med.id, 6);
+    const rawAlternatives = getGenericAlternatives(med.generic_name || '', med.id, 8);
     const alternatives = rawAlternatives.map(alt => {
       const altUnitMatch = String(alt.package_container || '').match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
       const altUnitPrice = altUnitMatch ? Number(altUnitMatch[1].replace(/,/g, '')) : null;

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
-  Search, ShieldCheck, ScanBarcode, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
+  Search, ShieldCheck, ScanBarcode, FileCheck2, ChevronRight, ChevronLeft, ShoppingCart, UploadCloud, 
   CheckCircle2, TrendingDown, Image as ImageIcon, Bot,
   Pill, Activity, Brain, BugOff, Apple, Wind, Heart, Thermometer, ArrowRight,
   SlidersHorizontal, X, Syringe, FlaskConical, Bandage, Sparkles, Camera, Check
@@ -188,29 +188,16 @@ export default function MedicinesPage() {
               </button>
             </div>
             
-            {/* Popular Searches Pills */}
-            <div className="flex items-center gap-2 mt-3.5 overflow-x-auto scrollbar-hide whitespace-nowrap pt-0.5 pb-1">
-              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mr-1 shrink-0">Popular:</span>
-              {["Napa Extend", "Sergel 20mg", "Losectil", "Calbo D", "Alatrol", "Ace Plus", "Ciprocin"].map(tag => (
-                <button 
-                  key={tag} 
-                  onClick={() => setSearchQuery(tag)}
-                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 px-3 py-1 rounded-lg text-[12px] font-bold text-slate-600 hover:text-sky-700 transition-colors shadow-2xs shrink-0 cursor-pointer"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Right: Modern Prescription Scanner Card (Mobile & Desktop) */}
-          <div className="w-full lg:w-[380px] shrink-0">
+          {/* Right: Hospital-Grade Modern Prescription Scanner */}
+          <div className="w-full lg:w-[420px] shrink-0">
             <label 
               htmlFor="rx-upload"
-              className={`block relative overflow-hidden rounded-2xl border transition-all cursor-pointer shadow-xs ${
+              className={`block relative overflow-hidden rounded-3xl border transition-all cursor-pointer ${
                 isScanning 
-                  ? 'border-sky-500 bg-sky-50/90 cursor-wait ring-2 ring-sky-500/20' 
-                  : 'border-sky-200/80 bg-gradient-to-br from-sky-50/60 via-white to-blue-50/50 hover:border-sky-400 hover:shadow-md'
+                  ? 'border-sky-500 bg-sky-50/90 cursor-wait ring-2 ring-sky-500/20 shadow-lg' 
+                  : 'border-slate-200/90 bg-white hover:border-sky-400 hover:shadow-xl shadow-xs'
               }`}
             >
               {/* Hidden file input */}
@@ -225,50 +212,63 @@ export default function MedicinesPage() {
               
               {uploadedImage && (
                 <div className="absolute inset-0 z-0">
-                  <Image src={uploadedImage} alt="Uploaded Rx" fill className="object-cover opacity-15" />
+                  <Image src={uploadedImage} alt="Uploaded Rx" fill className="object-cover opacity-10" />
                 </div>
               )}
 
               {isScanning ? (
-                <div className="relative z-10 p-5 flex flex-col items-center justify-center text-center">
+                <div className="relative z-10 p-6 flex flex-col items-center justify-center text-center">
                   <div className="relative mb-3">
-                    <ScanBarcode size={36} className="text-sky-600 animate-pulse" />
+                    <ScanBarcode size={38} className="text-sky-600 animate-pulse" />
                     <div className="absolute inset-0 bg-sky-500/20 blur-lg rounded-full"></div>
                     <div className="absolute top-0 left-0 w-full h-[2px] bg-sky-600 animate-scan-line shadow-[0_0_8px_2px_#0284c7]"></div>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-extrabold uppercase tracking-wider mb-1.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-[11px] font-extrabold uppercase tracking-wider mb-1.5">
                     <Bot size={13} />
-                    <span>AI Scanning Active</span>
+                    <span>AI OCR Prescription Engine</span>
                   </div>
-                  <p className="text-[13px] text-slate-800 font-bold">
-                    Analyzing prescription & comparing prices...
+                  <p className="text-[14px] text-slate-800 font-bold">
+                    Analyzing prescription & matching DGDA registry...
                   </p>
-                  <div className="w-full max-w-[200px] bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
+                  <div className="w-full max-w-[220px] bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
                     <div className="bg-sky-600 h-full w-2/3 animate-[pulse_1s_infinite] rounded-full" />
                   </div>
                 </div>
               ) : (
-                <div className="relative z-10 p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4">
-                  <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-sky-600/10 text-sky-600 border border-sky-600/20 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                    <UploadCloud size={22} className="text-sky-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <h3 className="text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-sky-600 transition-colors">
-                        Upload Prescription
-                      </h3>
-                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 border border-sky-200/50">
-                        AI OCR
-                      </span>
+                <div className="relative z-10 p-5 sm:p-6 flex flex-col gap-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                        <UploadCloud size={24} className="text-sky-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="text-[15px] sm:text-[16px] font-[900] text-slate-900 group-hover:text-sky-600 transition-colors">
+                            Smart Prescription Scanner
+                          </h3>
+                        </div>
+                        <p className="text-[12px] text-slate-500 font-medium">
+                          প্রেসক্রিপশন আপলোড ও মূল্য সাশ্রয় যাচাই
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[12px] text-slate-500 font-medium line-clamp-1">
-                      Instant price match & substitute finder
-                    </p>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 shrink-0">
+                      Optical OCR
+                    </span>
                   </div>
-                  <div className="shrink-0">
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-[12px] shadow-xs transition-colors">
-                      <Camera size={13} />
-                      <span className="hidden min-[420px]:inline">Upload</span>
+
+                  <p className="text-[12px] text-slate-600 font-medium leading-relaxed">
+                    Upload doctor's prescription to auto-detect medicines, compare brand prices and find cheaper generic substitutes.
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                      <FileCheck2 size={13} className="text-slate-400" />
+                      JPG, PNG, PDF up to 10MB
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-sky-600 text-white font-bold text-[12px] shadow-xs transition-colors">
+                      <Camera size={14} />
+                      <span>Upload Rx</span>
                     </span>
                   </div>
                 </div>
@@ -451,8 +451,8 @@ export default function MedicinesPage() {
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div 
-                          onClick={() => setSelectedMedicine(med)}
+                        <Link 
+                          href={`/medicines/${med.id}`}
                           className="block relative bg-white border border-slate-200 p-3.5 sm:p-5 rounded-[16px] sm:rounded-[24px] shadow-sm hover:shadow-[0_16px_48px_rgba(0,61,155,0.08)] hover:border-sky-300 transition-all duration-300 group cursor-pointer h-full flex flex-col justify-between overflow-hidden"
                         >
                           <div className="absolute inset-0 from-white/80 opacity-50 pointer-events-none z-0"></div>
@@ -492,16 +492,14 @@ export default function MedicinesPage() {
                             </span>
                             <button 
                               type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                               className="flex items-center justify-center gap-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 hover:bg-sky-600 text-slate-600 hover:text-white transition-colors group/btn shadow-2xs"
                               title="Add to cart"
                             >
                               <ShoppingCart className="w-[14px] h-[14px] sm:w-[18px] sm:h-[18px] group-hover/btn:scale-110 transition-transform" />
                             </button>
                           </div>
-                        </div>
+                        </Link>
                       </motion.div>
                     );
                   })}

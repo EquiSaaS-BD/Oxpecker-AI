@@ -14,12 +14,37 @@ type CatalogMedicine = {
   slug?: string;
 };
 
+export type GenericMonograph = {
+  id: number | string;
+  name: string;
+  slug?: string;
+  monograph_link?: string;
+  drug_class?: string;
+  indication?: string;
+  indication_description?: string;
+  therapeutic_class?: string;
+  pharmacology?: string;
+  dosage?: string;
+  administration?: string;
+  interaction?: string;
+  contraindications?: string;
+  side_effects?: string;
+  pregnancy_and_lactation?: string;
+  precautions?: string;
+  pediatric_usage?: string;
+  overdose_effects?: string;
+  duration_of_treatment?: string;
+  reconstitution?: string;
+  storage_conditions?: string;
+};
+
 let cachedCatalog: { generatedAt: string | null; data: CatalogMedicine[] } | null = null;
 let cachedCatalogMtime = 0;
 
 function loadCatalog(): { generatedAt: string | null; data: CatalogMedicine[] } {
   const paths = [
     path.join(process.cwd(), "public/data/medicines.json"),
+    path.join(process.cwd(), "organized_medicine_data/organized/medicines.json"),
     path.join(process.cwd(), "../organized_medicine_data/organized/medicines.json"),
   ];
   const file = paths.find((candidate) => fs.existsSync(candidate));
@@ -30,6 +55,49 @@ function loadCatalog(): { generatedAt: string | null; data: CatalogMedicine[] } 
   cachedCatalog = { generatedAt: contents.generated_at || null, data: contents.data || [] };
   cachedCatalogMtime = mtime;
   return cachedCatalog;
+}
+
+let cachedGenericsMap: Map<string, GenericMonograph> | null = null;
+let cachedGenericsMtime = 0;
+
+function loadGenerics(): Map<string, GenericMonograph> {
+  const paths = [
+    path.join(process.cwd(), "public/data/generics.json"),
+    path.join(process.cwd(), "organized_medicine_data/organized/generics.json"),
+    path.join(process.cwd(), "../organized_medicine_data/organized/generics.json"),
+  ];
+  const file = paths.find((candidate) => fs.existsSync(candidate));
+  if (!file) return new Map();
+  const mtime = fs.statSync(file).mtimeMs;
+  if (cachedGenericsMap && cachedGenericsMtime === mtime) return cachedGenericsMap;
+
+  try {
+    const raw = fs.readFileSync(file, "utf8");
+    const contents = JSON.parse(raw);
+    const list: GenericMonograph[] = contents.data || contents || [];
+    const map = new Map<string, GenericMonograph>();
+
+    for (const g of list) {
+      if (g.name) {
+        const norm = normalized(g.name);
+        map.set(norm, g);
+
+        // Strip common salt suffixes for relaxed lookup
+        const baseName = norm
+          .replace(/\s+(monohydrate|trihydrate|hydrochloride|magnesium|sodium|potassium|fumarate|succinate|besylate|maleate|sulfate|phosphate)\b/g, "")
+          .trim();
+        if (baseName && !map.has(baseName)) {
+          map.set(baseName, g);
+        }
+      }
+    }
+    cachedGenericsMap = map;
+    cachedGenericsMtime = mtime;
+    return cachedGenericsMap;
+  } catch (err) {
+    console.error("Failed to load generics catalog:", err);
+    return new Map();
+  }
 }
 
 function normalized(value: unknown): string {
@@ -137,6 +205,26 @@ export function comparePrescriptionPrices(parsed: unknown) {
   });
 
   return { snapshot: metadata, matches };
+}
+
+export function getGenericMonograph(genericName: string): GenericMonograph | null {
+  if (!genericName) return null;
+  const map = loadGenerics();
+  const norm = normalized(genericName);
+  if (map.has(norm)) return map.get(norm)!;
+
+  const baseName = norm
+    .replace(/\s+(monohydrate|trihydrate|hydrochloride|magnesium|sodium|potassium|fumarate|succinate|besylate|maleate|sulfate|phosphate)\b/g, "")
+    .trim();
+  if (map.has(baseName)) return map.get(baseName)!;
+
+  for (const [key, value] of map.entries()) {
+    if (key.length > 4 && (key.includes(norm) || norm.includes(key))) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 export function getCatalogMedicines() {
