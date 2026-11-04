@@ -184,7 +184,7 @@ export function MedicineDetailsModal({
                 <div className="sm:text-right shrink-0 bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none w-full sm:w-auto">
                   <div className="text-xs text-slate-400 font-medium">Govt. Retail Price</div>
                   <div className="text-2xl sm:text-3xl font-black text-white">
-                    ৳{typeof medicine.price === 'number' ? medicine.price.toFixed(2) : (medicine.unitPrice ? medicine.unitPrice.toFixed(2) : '0.00')}
+                    {typeof medicine.price === 'number' && medicine.price > 0 ? `৳${medicine.price.toFixed(2)}` : (typeof medicine.unitPrice === 'number' && medicine.unitPrice > 0 ? `৳${medicine.unitPrice.toFixed(2)}` : 'Price unavailable')}
                   </div>
                   <div className="text-[11px] text-slate-400 font-medium">
                     per {medicine.priceBasis || "unit"}

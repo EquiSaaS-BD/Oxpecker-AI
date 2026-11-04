@@ -113,18 +113,22 @@ export function normalizePackageSize(value: unknown): string {
 }
 
 function priceDetails(medicine: CatalogMedicine): { amount: number; basis: "unit" | "package" } | null {
+  const unitMatch = (medicine.package_container || "").match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
+  if (unitMatch) {
+    const amount = Number(unitMatch[1].replace(/,/g, ""));
+    if (Number.isFinite(amount) && amount > 0) return { amount, basis: "unit" };
+  }
+
   const packageText = medicine.package_size || "";
-  const packageMatch = packageText.match(/৳\s*([\d,]+(?:\.\d{1,2})?)/)
-    || (medicine.package_container || "").match(/(?:pack|bottle|box|strip)[^৳]*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
+  const packageMatch =
+    packageText.match(/৳\s*([\d,]+(?:\.\d{1,2})?)/) ||
+    (medicine.package_container || "").match(/(?:pack|bottle|box|strip)[^৳]*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
   if (packageMatch) {
     const amount = Number(packageMatch[1].replace(/,/g, ""));
     if (Number.isFinite(amount) && amount > 0) return { amount, basis: "package" };
   }
 
-  const unitMatch = (medicine.package_container || "").match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
-  if (!unitMatch) return null;
-  const amount = Number(unitMatch[1].replace(/,/g, ""));
-  return Number.isFinite(amount) && amount > 0 ? { amount, basis: "unit" } : null;
+  return null;
 }
 
 export function getMedicineSnapshotMetadata() {
@@ -148,12 +152,33 @@ export function comparePrescriptionPrices(parsed: unknown) {
   if (!Array.isArray(medicines)) return { snapshot: metadata, matches: [] };
 
   const matches = medicines.map((item: any) => {
-    const generic = normalized(item?.genericName || item?.generic);
-    const strength = normalized(item?.strength);
-    const form = normalized(item?.dosageForm);
+    const rawBrand = normalized(item?.brandName || item?.name)
+      .replace(/^(?:tab(?:let)?s?|cap(?:sule)?s?|syp|syrup|susp(?:ension)?|inj(?:ection)?)\.?\s+/i, "")
+      .trim();
+    let generic = normalized(item?.genericName || item?.generic);
+    let strength = normalized(item?.strength);
+    let form = normalized(item?.dosageForm);
     const packageSize = normalizePackageSize(item?.packageSize);
-    const brand = normalized(item?.brandName || item?.name);
-    if (!generic || !strength || !form || !packageSize) {
+
+    // Resolve baseline record by brand if generic/strength/form were not explicitly written on prescription
+    let baseline = catalog.data.find((candidate) => {
+      if (normalized(candidate.brand_name) !== rawBrand) return false;
+      if (strength && normalized(candidate.strength).replace(/\s+/g, "") !== strength.replace(/\s+/g, "")) return false;
+      if (form && !normalized(candidate.dosage_form).includes(form) && !form.includes(normalized(candidate.dosage_form))) return false;
+      return true;
+    });
+
+    if (!baseline && rawBrand) {
+      baseline = catalog.data.find((candidate) => normalized(candidate.brand_name) === rawBrand);
+    }
+
+    if (baseline) {
+      if (!generic) generic = normalized(baseline.generic_name);
+      if (!strength) strength = normalized(baseline.strength);
+      if (!form) form = normalized(baseline.dosage_form);
+    }
+
+    if (!generic || !strength) {
       return {
         prescribed: item,
         baselinePrice: null,
@@ -162,45 +187,57 @@ export function comparePrescriptionPrices(parsed: unknown) {
       };
     }
 
-    const comparable = catalog.data.filter((candidate) =>
-      normalized(candidate.generic_name) === generic
-      && normalized(candidate.strength) === strength
-      && normalized(candidate.dosage_form) === form
-      && normalizePackageSize(candidate.package_size) === packageSize
-      && priceDetails(candidate) !== null
-    );
-    const baseline = comparable.find((candidate) => normalized(candidate.brand_name) === brand);
+    const normStrengthCompact = strength.replace(/\s+/g, "");
+    const comparable = catalog.data.filter((candidate) => {
+      if (normalized(candidate.generic_name) !== generic) return false;
+      if (normalized(candidate.strength).replace(/\s+/g, "") !== normStrengthCompact) return false;
+      if (form && normalized(candidate.dosage_form) !== form && !normalized(candidate.dosage_form).includes(form)) return false;
+      if (packageSize && normalizePackageSize(candidate.package_size) !== packageSize) return false;
+      return priceDetails(candidate) !== null;
+    });
+
+    if (!baseline) {
+      baseline = comparable.find((candidate) => normalized(candidate.brand_name) === rawBrand);
+    }
     const baselineDetails = baseline ? priceDetails(baseline) : null;
     const baselinePrice = baselineDetails?.amount ?? null;
+
     const alternatives = comparable
-      .filter((candidate) => normalized(candidate.brand_name) !== brand)
+      .filter((candidate) => normalized(candidate.brand_name) !== rawBrand)
       .map((candidate) => {
         const details = priceDetails(candidate)!;
         return {
+          id: String(candidate.id),
           brandName: candidate.brand_name || "Unknown",
           manufacturer: candidate.manufacturer || "Unknown",
           price: details.amount,
           priceBasis: details.basis,
-          savings: baselinePrice === null || baselineDetails?.basis !== details.basis
-            ? null
-            : Number((baselinePrice - details.amount).toFixed(2)),
+          savings:
+            baselinePrice === null || baselineDetails?.basis !== details.basis
+              ? null
+              : Number((baselinePrice - details.amount).toFixed(2)),
           generic: candidate.generic_name,
           strength: candidate.strength,
           dosageForm: candidate.dosage_form,
           packageSize: candidate.package_size,
         };
       })
-      .filter((candidate) => candidate.savings === null || candidate.savings > 0)
-      .sort((a, b) => a.price - b.price);
+      .sort((a, b) => a.price - b.price)
+      .slice(0, 8);
 
     return {
       prescribed: item,
       baselinePrice,
       baselinePriceBasis: baselineDetails?.basis ?? null,
       comparablePrices: alternatives,
-      status: metadata.freshness === "recent"
-        ? alternatives.length ? "matched" : "no-exact-package-match"
-        : alternatives.length ? "historical-snapshot-match" : "no-exact-package-match",
+      status:
+        metadata.freshness === "recent"
+          ? alternatives.length
+            ? "matched"
+            : "no-exact-package-match"
+          : alternatives.length
+            ? "historical-snapshot-match"
+            : "no-exact-package-match",
     };
   });
 
@@ -234,7 +271,11 @@ export function getCatalogMedicines() {
 export function getMedicineById(id: string | number) {
   const catalog = loadCatalog();
   const idStr = String(id).trim().toLowerCase();
-  return catalog.data.find(m => String(m.id).toLowerCase() === idStr || String(m.slug || '').toLowerCase() === idStr) || null;
+  return (
+    catalog.data.find(
+      (m) => String(m.id).toLowerCase() === idStr || String(m.slug || "").toLowerCase() === idStr
+    ) || null
+  );
 }
 
 export function getGenericAlternatives(genericName: string, excludeId: string | number, limit: number = 6) {
@@ -243,6 +284,6 @@ export function getGenericAlternatives(genericName: string, excludeId: string | 
   if (!normalizedGen) return [];
   const idStr = String(excludeId);
   return catalog.data
-    .filter(m => String(m.id) !== idStr && normalized(m.generic_name) === normalizedGen)
+    .filter((m) => String(m.id) !== idStr && normalized(m.generic_name) === normalizedGen)
     .slice(0, limit);
 }

@@ -19,7 +19,7 @@ function getBengaliLexicon(): Record<string, string> {
   return {};
 }
 
-function extractUnitPrice(packageContainer?: string, packageSize?: string): { price: number; basis: string } {
+function extractUnitPrice(packageContainer?: string, packageSize?: string): { price: number | null; basis: string | null } {
   const containerStr = String(packageContainer || '');
   const unitMatch = containerStr.match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
   if (unitMatch) {
@@ -31,7 +31,7 @@ function extractUnitPrice(packageContainer?: string, packageSize?: string): { pr
     const amount = Number(pkgMatch[1].replace(/,/g, ''));
     if (Number.isFinite(amount) && amount > 0) return { price: amount, basis: 'pack' };
   }
-  return { price: 10.0, basis: 'unit' };
+  return { price: null, basis: null };
 }
 
 export async function GET(request: NextRequest) {
@@ -39,7 +39,9 @@ export async function GET(request: NextRequest) {
   const rawName = (searchParams.get('name') || '').trim();
   const rawGeneric = (searchParams.get('generic') || '').trim();
   const rawQ = (searchParams.get('q') || rawName || rawGeneric || '').trim();
-  const limit = Math.min(20, Math.max(1, Number(searchParams.get('limit') || '6')));
+  const filterStrength = (searchParams.get('strength') || '').toLowerCase().replace(/\s+/g, '').trim();
+  const filterForm = (searchParams.get('form') || '').toLowerCase().trim();
+  const limit = Math.min(30, Math.max(1, Number(searchParams.get('limit') || '10')));
 
   const catalog = getCatalogMedicines().data || [];
   const lexicon = getBengaliLexicon();
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest) {
     const gName = String(m.generic_name || '').toLowerCase();
     const mfg = String(m.manufacturer || '').toLowerCase();
     const strength = String(m.strength || '').toLowerCase();
+    const form = String(m.dosage_form || m.type || '').toLowerCase();
 
     let score = 0;
     if (bName === qLower) score += 100;
@@ -75,10 +78,12 @@ export async function GET(request: NextRequest) {
     else if (gName.startsWith(qLower)) score += 65;
     else if (gName.includes(qLower)) score += 45;
 
-    if (`${bName} ${strength}`.includes(qLower)) score += 30;
+    if (`${bName} ${strength}`.includes(qLower) || `${bName} ${strength} ${form}`.includes(qLower)) score += 35;
     if (mfg.includes(qLower)) score += 15;
 
     if (score > 0) {
+      if (filterStrength && strength.replace(/\s+/g, '').includes(filterStrength)) score += 25;
+      if (filterForm && form.includes(filterForm)) score += 20;
       scored.push({ med: m, score });
     }
   }
@@ -124,6 +129,10 @@ export async function GET(request: NextRequest) {
       strength: med.strength || '',
       price,
       priceBasis: basis,
+      priceAvailable: price !== null,
+      priceStatus: price !== null ? 'Verified DGDA/MedEx Price' : 'Price unavailable — verification required.',
+      packageContainer: med.package_container || null,
+      packageSize: med.package_size || null,
       availability: true,
       category: mono?.therapeutic_class || 'Therapeutic',
       dosageForm: med.dosage_form || med.type || 'Tablet',

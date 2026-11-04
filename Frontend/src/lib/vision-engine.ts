@@ -4,6 +4,8 @@
 // Strict Image Classification & Anti-Hallucination
 // ============================================
 
+import { extractStructuredMedicinesFromRawOcrText } from '@/lib/prescription-intelligence';
+
 export type ImageCategory = 'prescription' | 'medicine_box' | 'lab_report' | 'clinical_symptom' | 'food' | 'non_medical';
 
 export interface VisionAnalysisResult {
@@ -397,7 +399,7 @@ export async function callMultimodalVision(
               prescriptionDate: null,
               patientName: null,
               doctorName: null,
-              medicines: [],
+              medicines: extractStructuredMedicinesFromRawOcrText(ocrCombined),
               uncertainFields: ["Medicine names, strengths, doses, schedules, and durations need manual review."],
               rawOcrText: ocrCombined,
               manualReviewRequired: true,
