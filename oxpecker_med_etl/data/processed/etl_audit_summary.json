@@ -1,0 +1,49 @@
+{
+  "database": "oxpecker_med_db",
+  "elapsed_seconds": 37.53,
+  "raw_rows_read": {
+    "BD-1_Manufacturer": 240,
+    "BD-2_Manufacturer": 240,
+    "BD-1_DrugClass": 453,
+    "BD-2_DrugClass": 453,
+    "INT-4_DrugBank": 7759,
+    "INT-3_DrugsCom": 2931,
+    "INT-2_AZ_India": 253973,
+    "INT-1_250k_Usage": 248218,
+    "INT-5_Images_11k": 11825,
+    "BD-1_Generic": 1711,
+    "BD-2_Generic": 1711,
+    "BD-3_Price20k": 19957,
+    "BD-1_Medicine": 21714,
+    "BD-2_Medicine": 21714
+  },
+  "exact_duplicates_dropped": {
+    "BD-2_Manufacturer": 240,
+    "BD-1_Manufacturer_Ref": 464,
+    "BD-3_Manufacturer_Ref": 182,
+    "BD-1_DrugClass": 32,
+    "BD-2_DrugClass": 453,
+    "BD-1_Generic_DrugClass_Ref": 358,
+    "BD-1_Generic": 43,
+    "BD-2_Generic": 1711,
+    "BD-1_Medicine": 66,
+    "BD-2_Medicine": 21711,
+    "BD-3_Price20k": 13784
+  },
+  "malformed_rows_rejected": {
+    "INT-3_DrugsCom": 43,
+    "BD-1_Medicine": 3,
+    "BD-2_Medicine": 3,
+    "BD-3_Price20k": 34
+  },
+  "clean_rows_upserted": {
+    "manufacturers": 328,
+    "drug_classes": 421,
+    "generics": 1987,
+    "medicines": 27784
+  },
+  "enrichment_hits": {
+    "generics_global_enriched": 989,
+    "bd3_price_fallback_filled": 151
+  }
+}

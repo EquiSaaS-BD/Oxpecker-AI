@@ -1,0 +1,134 @@
+{
+  "database_name": "oxpecker_med_db",
+  "total_unique_bangladeshi_brands": 27784,
+  "total_unique_generics": 1987,
+  "generics_with_clinical_pharmacology": 1795,
+  "generics_pharmacology_coverage_pct": 90.34,
+  "generics_with_drugbank_id": 742,
+  "generics_with_structured_side_effects": 1014,
+  "generics_with_pregnancy_category": 710,
+  "total_unique_manufacturers": 328,
+  "total_unique_drug_classes": 421,
+  "medicines_with_valid_bdt_pricing": 27720,
+  "medicines_with_unit_price_bdt": 27700,
+  "medicines_with_strip_price_bdt": 14914,
+  "bdt_pricing_coverage_pct": 99.77,
+  "medicines_with_reference_image_url": 14954,
+  "duplicate_dedup_hash_count": 0,
+  "duplicate_canonical_generic_count": 0,
+  "duplicate_medicine_slug_count": 0,
+  "orphan_generic_fk_count": 0,
+  "orphan_manufacturer_fk_count": 0,
+  "orphan_drug_class_fk_count": 0,
+  "sample_fulltext_ocr_matches": [
+    {
+      "brand_name": "Napa",
+      "dosage_form": "Tablet",
+      "strength": "500 mg",
+      "unit_price_bdt": 1.2
+    },
+    {
+      "brand_name": "Napa Rapid",
+      "dosage_form": "Tablet",
+      "strength": "500 mg",
+      "unit_price_bdt": 1.3
+    },
+    {
+      "brand_name": "Napa Extra",
+      "dosage_form": "Tablet",
+      "strength": "500 mg+65 mg",
+      "unit_price_bdt": 2.49
+    }
+  ],
+  "sample_enriched_generics": [
+    {
+      "generic_name": "Adalimumab",
+      "canonical_name": "adalimumab",
+      "drugbank_id": "DB00051",
+      "pregnancy_category": "B",
+      "rx_otc_status": "Rx",
+      "habit_forming": false
+    },
+    {
+      "generic_name": "Acitretin",
+      "canonical_name": "acitretin",
+      "drugbank_id": "DB00459",
+      "pregnancy_category": "X",
+      "rx_otc_status": "Rx",
+      "habit_forming": false
+    },
+    {
+      "generic_name": "Acetylcysteine",
+      "canonical_name": "acetylcysteine",
+      "drugbank_id": "DB06151",
+      "pregnancy_category": null,
+      "rx_otc_status": null,
+      "habit_forming": false
+    },
+    {
+      "generic_name": "Acetazolamide",
+      "canonical_name": "acetazolamide",
+      "drugbank_id": "DB00819",
+      "pregnancy_category": null,
+      "rx_otc_status": null,
+      "habit_forming": false
+    },
+    {
+      "generic_name": "Allopurinol",
+      "canonical_name": "allopurinol",
+      "drugbank_id": "DB00437",
+      "pregnancy_category": "C",
+      "rx_otc_status": "Rx",
+      "habit_forming": false
+    }
+  ],
+  "etl_audit_log": {
+    "database": "oxpecker_med_db",
+    "elapsed_seconds": 37.53,
+    "raw_rows_read": {
+      "BD-1_Manufacturer": 240,
+      "BD-2_Manufacturer": 240,
+      "BD-1_DrugClass": 453,
+      "BD-2_DrugClass": 453,
+      "INT-4_DrugBank": 7759,
+      "INT-3_DrugsCom": 2931,
+      "INT-2_AZ_India": 253973,
+      "INT-1_250k_Usage": 248218,
+      "INT-5_Images_11k": 11825,
+      "BD-1_Generic": 1711,
+      "BD-2_Generic": 1711,
+      "BD-3_Price20k": 19957,
+      "BD-1_Medicine": 21714,
+      "BD-2_Medicine": 21714
+    },
+    "exact_duplicates_dropped": {
+      "BD-2_Manufacturer": 240,
+      "BD-1_Manufacturer_Ref": 464,
+      "BD-3_Manufacturer_Ref": 182,
+      "BD-1_DrugClass": 32,
+      "BD-2_DrugClass": 453,
+      "BD-1_Generic_DrugClass_Ref": 358,
+      "BD-1_Generic": 43,
+      "BD-2_Generic": 1711,
+      "BD-1_Medicine": 66,
+      "BD-2_Medicine": 21711,
+      "BD-3_Price20k": 13784
+    },
+    "malformed_rows_rejected": {
+      "INT-3_DrugsCom": 43,
+      "BD-1_Medicine": 3,
+      "BD-2_Medicine": 3,
+      "BD-3_Price20k": 34
+    },
+    "clean_rows_upserted": {
+      "manufacturers": 328,
+      "drug_classes": 421,
+      "generics": 1987,
+      "medicines": 27784
+    },
+    "enrichment_hits": {
+      "generics_global_enriched": 989,
+      "bd3_price_fallback_filled": 151
+    }
+  }
+}

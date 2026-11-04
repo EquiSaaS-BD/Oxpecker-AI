@@ -69,3 +69,6 @@ __pycache__/
 *.zip
 Backend/app/ai/models/*.gguf
 Backend/app/ai/models/*.bin
+
+oxpecker_med_etl/data/raw/
+oxpecker_med_etl/data/mysql_datadir/
