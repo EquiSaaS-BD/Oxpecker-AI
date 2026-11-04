@@ -62,6 +62,16 @@ export function MegaMenuNavbar({
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [mobileSection, setMobileSection] = React.useState<MobileSection | null>(null);
   const [activeSection, setActiveSection] = React.useState("");
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const navRef = React.useRef<HTMLElement>(null);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -214,7 +224,10 @@ export function MegaMenuNavbar({
       {...props}
       ref={navRef}
       className={cn(
-        "fixed top-0 left-0 right-0 z-[100] w-full border-b border-white/40 glass-panel transition-all duration-300",
+        "fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300",
+        isScrolled
+          ? "bg-white/80 supports-[backdrop-filter]:bg-white/70 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.9)] border-b border-slate-200/60"
+          : "bg-white/65 supports-[backdrop-filter]:bg-white/55 backdrop-blur-xl shadow-[0_2px_15px_rgba(0,0,0,0.02),inset_0_1px_0_0_rgba(255,255,255,0.8)] border-b border-slate-200/40",
         className
       )}
       onMouseLeave={(event) => {
@@ -254,7 +267,7 @@ export function MegaMenuNavbar({
 
           {/* Center Desktop Navigation */}
           <nav aria-label="Primary navigation" className="hidden items-center md:flex">
-            <ul className="flex items-center gap-1 lg:gap-1.5 bg-slate-100/70 backdrop-blur-md px-1.5 lg:px-2 py-1 lg:py-1.5 rounded-full border border-slate-200/60 shadow-xs">
+            <ul className="flex items-center gap-1 lg:gap-1.5 bg-white/70 supports-[backdrop-filter]:bg-white/60 backdrop-blur-xl px-1.5 lg:px-2 py-1 lg:py-1.5 rounded-full border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)]">
               
               {/* 1. Services / Features Dropdown */}
               <li className="relative" onMouseEnter={() => setOpenMenu("services")}>
@@ -285,7 +298,7 @@ export function MegaMenuNavbar({
                       : "invisible scale-95 opacity-0 pointer-events-none"
                   )}
                 >
-                  <div className="w-[640px] rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl">
+                  <div className="w-[640px] rounded-2xl border border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-2xl p-3.5 shadow-2xl shadow-slate-900/10">
                     <div className="grid grid-cols-2 gap-2">
                       {SERVICES_FEATURES.map((item) => {
                         const Icon = item.icon;
@@ -368,7 +381,7 @@ export function MegaMenuNavbar({
                       : "invisible scale-95 opacity-0 pointer-events-none"
                   )}
                 >
-                  <div className="w-[410px] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl">
+                  <div className="w-[410px] rounded-2xl border border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-2xl p-3 shadow-2xl shadow-slate-900/10">
                     <div className="flex flex-col gap-1">
                       {USE_CASES.map((item) => {
                         const Icon = item.icon;
@@ -458,7 +471,7 @@ export function MegaMenuNavbar({
                       : "invisible scale-95 opacity-0 pointer-events-none"
                   )}
                 >
-                  <div className="grid grid-cols-3 gap-4 w-[600px] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+                  <div className="grid grid-cols-3 gap-4 w-[600px] rounded-2xl border border-slate-200/80 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-2xl p-4 shadow-2xl shadow-slate-900/10">
                     <div className="flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-4">
                       <div>
                         <span className="flex size-9 items-center justify-center rounded-lg bg-sky-100 text-sky-700">

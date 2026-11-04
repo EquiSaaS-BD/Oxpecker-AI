@@ -190,7 +190,7 @@ export function AwwwardsNav({
       className={cn(
         "fixed bottom-4 left-1/2 z-[100] -translate-x-1/2",
         "h-[64px] w-[min(680px,94vw)] overflow-hidden rounded-2xl border backdrop-blur-2xl transition-shadow",
-        "border-slate-200 bg-white/95 text-slate-700 shadow-lg",
+        "border-white/80 bg-white/80 supports-[backdrop-filter]:bg-white/70 backdrop-blur-2xl text-slate-800 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.9)]",
         className
       )}
     >

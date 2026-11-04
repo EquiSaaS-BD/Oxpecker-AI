@@ -100,7 +100,7 @@ export function PatientMegaMenuNavbar() {
   return (
     <header
       ref={navRef}
-      className="hidden lg:flex 2xl:hidden sticky top-0 left-0 right-0 h-[72px] glass-panel border-x-0 border-t-0 border-b border-slate-200/50 items-center px-6 z-[60] spatial-shadow-sm justify-between"
+      className="hidden lg:flex 2xl:hidden sticky top-0 left-0 right-0 h-[72px] bg-white/75 supports-[backdrop-filter]:bg-white/70 backdrop-blur-2xl border-x-0 border-t-0 border-b border-slate-200/60 items-center px-6 z-[60] shadow-[0_4px_24px_rgba(0,0,0,0.03),inset_0_1px_0_0_rgba(255,255,255,0.8)] justify-between transition-all duration-300"
     >
       {/* 1. Clickable Logo + New Chat + Primary Links */}
       <div className="flex items-center gap-5">
