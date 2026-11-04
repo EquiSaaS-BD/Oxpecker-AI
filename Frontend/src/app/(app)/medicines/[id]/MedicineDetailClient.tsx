@@ -10,7 +10,8 @@ import {
   FileCheck2, 
   Share2, 
   Check, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronDown, 
   ShieldCheck, 
   ExternalLink, 
   AlertTriangle, 
@@ -78,6 +79,13 @@ interface Translations {
   languageSelectTitle: string;
   languageSelectSub: string;
   translatingLabel: string;
+  selectLanguage: string;
+  quickSwitch: string;
+  allopathicMedicine: string;
+  dgdaCertified: string;
+  monographHeaderBadge: string;
+  pricePerUnit: string;
+  dgdaIndexLabel: string;
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -126,9 +134,16 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialCarton: "Regulatory Container & Blister/Bottle Presentation",
     officialPhotoTitle: "Official Registered Packaging Photo",
     chemicalStructureTitle: "Chemical Molecular Structure",
-    languageSelectTitle: "Translate Page Language / ভাষা পরিবর্তন",
-    languageSelectSub: "Switch between English (Default), Bengali, Arabic, or Hindi for complete clinical guidelines.",
-    translatingLabel: "Translating clinical monograph..."
+    languageSelectTitle: "Select Language / ভাষা নির্বাচন",
+    languageSelectSub: "Instant full-page clinical translation.",
+    translatingLabel: "Translating monograph...",
+    selectLanguage: "Select Language",
+    quickSwitch: "Translate Page Instantly",
+    allopathicMedicine: "Allopathic Medicine",
+    dgdaCertified: "DGDA Certified",
+    monographHeaderBadge: "DGDA & Pharmacopeia Monograph (English)",
+    pricePerUnit: "/unit",
+    dgdaIndexLabel: "DGDA Index #"
   },
   bn: {
     backToMedicines: "ওষুধের তালিকায় ফিরে যান",
@@ -175,9 +190,16 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialCarton: "অনুমোদিত রেগুলেটরি কন্টেইনার ও কার্টন উপস্থাপনা",
     officialPhotoTitle: "রেজিস্টার্ড অফিশিয়াল প্যাকেজিং ছবি",
     chemicalStructureTitle: "রাসায়নিক আণবিক সংকেত ও গঠন",
-    languageSelectTitle: "পৃষ্ঠার ভাষা পরিবর্তন করুন / Language",
-    languageSelectSub: "ইংরেজি (ডিফল্ট), বাংলা, আরবি অথবা হিন্দি ভাষায় সম্পূর্ণ ক্লিনিকাল গাইডলাইন পড়ুন।",
-    translatingLabel: "বাংলায় অনুবাদ করা হচ্ছে..."
+    languageSelectTitle: "ভাষা নির্বাচন করুন / Language",
+    languageSelectSub: "সম্পূর্ণ পাতা ও ওষুধের সেবন নির্দেশিকা বাংলায় পড়ুন।",
+    translatingLabel: "বাংলায় অনুবাদ হচ্ছে...",
+    selectLanguage: "ভাষা নির্বাচন",
+    quickSwitch: "মুহূর্তেই পুরো পাতা বাংলায় অনুবাদ",
+    allopathicMedicine: "অ্যালোপ্যাথিক ওষুধ",
+    dgdaCertified: "ডিজিডিএ প্রত্যয়িত",
+    monographHeaderBadge: "ডিজিডিএ ও অফিশিয়াল ফার্মাকোপিয়া মনোগ্রাফ (বাংলা)",
+    pricePerUnit: "/পিস (ইউনিট)",
+    dgdaIndexLabel: "ডিজিডিএ ইনডেক্স #"
   },
   ar: {
     backToMedicines: "العودة إلى الأدوية",
@@ -224,9 +246,16 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialCarton: "العبوة الصيدلانية المعتمدة مع ختم الجودة",
     officialPhotoTitle: "الصورة الرسمية المعتمدة لعبوة الدواء",
     chemicalStructureTitle: "التركيب الجزيئي الكيميائي للمادة الفعالة",
-    languageSelectTitle: "ترجمة لغة الصفحة / Language",
-    languageSelectSub: "التبديل بين اللغة الإنجليزية والبنغالية والعربية والهندية لقراءة الدليل الطبي الكامل.",
-    translatingLabel: "جاري ترجمة البيانات الطبية..."
+    languageSelectTitle: "اختيار اللغة / Language",
+    languageSelectSub: "قراءة الدليل الطبي المعتمد باللغة العربية.",
+    translatingLabel: "جاري الترجمة...",
+    selectLanguage: "اختيار اللغة",
+    quickSwitch: "ترجمة فورية للصفحة",
+    allopathicMedicine: "دواء كيميائي معتمد",
+    dgdaCertified: "معتمد من DGDA",
+    monographHeaderBadge: "الدليل الدوائي الرسمي (العربية)",
+    pricePerUnit: "/وحدة",
+    dgdaIndexLabel: "فهرس DGDA #"
   },
   hi: {
     backToMedicines: "दवाइयों की सूची पर वापस जाएं",
@@ -273,10 +302,179 @@ const TRANSLATIONS: Record<Language, Translations> = {
     officialCarton: "प्रमाणित कंटेनर और पैकेजिंग प्रस्तुति",
     officialPhotoTitle: "आधिकारिक पंजीकृत पैकेजिंग फोटो",
     chemicalStructureTitle: "रासायनिक आणविक संरचना",
-    languageSelectTitle: "पेज की भाषा बदलें / Translate Language",
-    languageSelectSub: "अंग्रेजी, बंगाली, अरबी या हिंदी में संपूर्ण चिकित्सीय दिशानिर्देश पढ़ें।",
-    translatingLabel: "अनुवाद किया जा रहा है..."
+    languageSelectTitle: "भाषा चुनें / Select Language",
+    languageSelectSub: "संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश हिंदी में पढ़ें।",
+    translatingLabel: "हिंदी में अनुवाद हो रहा है...",
+    selectLanguage: "भाषा चुनें",
+    quickSwitch: "तुरंत पूरे पृष्ठ का अनुवाद करें",
+    allopathicMedicine: "एलोपैथिक दवा",
+    dgdaCertified: "DGDA प्रमाणित",
+    monographHeaderBadge: "DGDA एवं आधिकारिक फार्माकोपिया मोनोग्राफ (हिंदी)",
+    pricePerUnit: "/यूनिट",
+    dgdaIndexLabel: "DGDA इंडेक्स #"
   }
+};
+
+export interface LanguageOption {
+  id: Language;
+  flag: string;
+  label: string;
+  nativeName: string;
+  badge: string;
+  description: Record<Language, string>;
+}
+
+export const LANG_OPTIONS: LanguageOption[] = [
+  {
+    id: "en",
+    flag: "🇺🇸",
+    label: "English",
+    nativeName: "English (US)",
+    badge: "Default",
+    description: {
+      en: "Default DGDA clinical guidelines & monographs",
+      bn: "মূল ডিজিডিএ ক্লিনিকাল গাইডলাইন ও মনোগ্রাফ",
+      hi: "मूल DGDA क्लिनिकल दिशानिर्देश एवं मोनोग्राफ",
+      ar: "الدليل الطبي المعتمد باللغة الإنجليزية",
+    },
+  },
+  {
+    id: "bn",
+    flag: "🇧🇩",
+    label: "Bengali",
+    nativeName: "বাংলা",
+    badge: "সম্পূর্ণ বাংলা",
+    description: {
+      en: "Complete page & clinical guidelines in Bengali",
+      bn: "সম্পূর্ণ পাতা ও ওষুধের সেবন নির্দেশিকা বাংলায়",
+      hi: "बंगाली में संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश",
+      ar: "ترجمة كامل محتوى الصفحة إلى اللغة البنغالية",
+    },
+  },
+  {
+    id: "hi",
+    flag: "🇮🇳",
+    label: "Hindi",
+    nativeName: "हिन्दी",
+    badge: "संपूर्ण हिंदी",
+    description: {
+      en: "Complete page & clinical guidelines in Hindi",
+      bn: "সম্পূর্ণ পাতা ও মনোগ্রাফ হিন্দিতে রূপান্তর",
+      hi: "संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश हिंदी में",
+      ar: "ترجمة كامل محتوى الصفحة إلى اللغة الهندية",
+    },
+  },
+  {
+    id: "ar",
+    flag: "🇸🇦",
+    label: "Arabic",
+    nativeName: "العربية",
+    badge: "بالعربية",
+    description: {
+      en: "Complete page & clinical guidelines in Arabic",
+      bn: "সম্পূর্ণ পাতা ও মনোগ্রাফ আরবিতে রূপান্তর",
+      hi: "संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश अरबी में",
+      ar: "ترجمة كامل محتوى الصفحة إلى اللغة العربية",
+    },
+  },
+];
+
+const LOCALIZED_DOSAGE_FORMS: Record<Language, Record<string, string>> = {
+  en: {},
+  bn: {
+    tablet: "ট্যাবলেট",
+    capsule: "ক্যাপসুল",
+    syrup: "সিরাপ",
+    suspension: "সাসপেনশন",
+    injection: "ইনজেকশন",
+    suppository: "সাপোজিটরি",
+    cream: "ক্রিম",
+    ointment: "মলম (অয়েন্টমেন্ট)",
+    drops: "ড্রপস",
+    "eye drops": "আই ড্রপস",
+    "ear drops": "ইয়ার ড্রপস",
+    inhaler: "ইনহেলার",
+    powder: "পাউডার",
+    lotion: "লোশন",
+    gel: "জেল",
+    spray: "স্প্রে",
+    saline: "স্যালাইন",
+    solution: "সল্যুশন",
+  },
+  hi: {
+    tablet: "टैबलेट",
+    capsule: "कैप्सूल",
+    syrup: "सिरप",
+    suspension: "सस्पेंशन",
+    injection: "इंजेक्शन",
+    suppository: "सपोसिटरी",
+    cream: "क्रीम",
+    ointment: "मलहम",
+    drops: "ड्रॉप्स",
+    "eye drops": "आई ड्रॉप्स",
+    "ear drops": "इयर ड्रॉप्स",
+    inhaler: "इनहेलर",
+    powder: "पाउडर",
+    lotion: "लोशन",
+    gel: "जेल",
+    spray: "स्प्रे",
+    saline: "सलाइन",
+    solution: "घोल (सॉल्यूशन)",
+  },
+  ar: {
+    tablet: "أقراص",
+    capsule: "كبسولات",
+    syrup: "شراب",
+    suspension: "معلق",
+    injection: "حقن",
+    suppository: "تحاميل",
+    cream: "كريم",
+    ointment: "مرهم",
+    drops: "قطرات",
+    inhaler: "بخاخ استنشاق",
+    powder: "مسحوق",
+    lotion: "لوشن",
+    gel: "جل",
+    spray: "رذاذ",
+    solution: "محلول",
+  },
+};
+
+const LOCALIZED_CONTAINERS: Record<Language, Record<string, string>> = {
+  en: {},
+  bn: {
+    "blister pack": "ব্লিস্টার প্যাক",
+    "alu-alu pack": "অ্যালু-অ্যালু ফয়েল প্যাক",
+    "amber bottle": "অ্যাম্বার কাঁচের বোতল",
+    "plastic bottle": "প্লাস্টিক বোতল",
+    "strip pack": "স্ট্রিপ প্যাক",
+    box: "কার্টন বক্স",
+    vial: "ভায়াল",
+    ampoule: "অ্যাম্পুল",
+    tube: "টিউব",
+    sachet: "স্যাচেট",
+  },
+  hi: {
+    "blister pack": "ब्लिस्टर पैक",
+    "alu-alu pack": "एलु-एलु फॉयल पैक",
+    "amber bottle": "एम्बर कांच की बोतल",
+    "plastic bottle": "प्लास्टिक की बोतल",
+    "strip pack": "स्ट्रिप पैक",
+    box: "कार्टन बॉक्स",
+    vial: "वायल",
+    ampoule: "एम्पूल",
+    tube: "ट्यूब",
+    sachet: "सैशे",
+  },
+  ar: {
+    "blister pack": "شريط بثور",
+    "amber bottle": "زجاجة عنبرية",
+    "plastic bottle": "زجاجة بلاستيكية",
+    box: "علبة كرتونية",
+    vial: "قارورة",
+    ampoule: "أمبولة",
+    tube: "أنبوب",
+  },
 };
 
 export default function MedicineDetailClient({ 
@@ -290,12 +488,34 @@ export default function MedicineDetailClient({
   const [alternatives] = useState<any[]>(initialAlternatives || []);
   const [copied, setCopied] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>("en");
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const langMenuRef = React.useRef<HTMLDivElement>(null);
   const [viewPhotoZoom, setViewPhotoZoom] = useState(false);
   const [activePackIndex, setActivePackIndex] = useState(0);
   const [translatedData, setTranslatedData] = useState<Record<string, Record<string, string>>>({});
   const [isTranslating, setIsTranslating] = useState(false);
 
   const t = useMemo(() => TRANSLATIONS[currentLang] || TRANSLATIONS.en, [currentLang]);
+
+  const currentLangOption = useMemo(
+    () => LANG_OPTIONS.find((opt) => opt.id === currentLang) || LANG_OPTIONS[0],
+    [currentLang]
+  );
+
+  // Close language popup on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+    if (isLangMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isLangMenuOpen]);
 
   const monograph = medicine?.monograph;
   const monographBn = useMemo(() => medicine?.monographBn || {}, [medicine?.monographBn]);
@@ -376,10 +596,27 @@ export default function MedicineDetailClient({
     };
   }, [currentLang, medicine, monograph, monographBn, translatedData]);
 
-  // Helper to get localized clinical field (instant MedEx BN monograph or neural translation)
+  // Helper to get localized clinical field (instant MedEx BN monograph, dictionary lookup or neural translation)
   const getLocalizedField = (key: string, defaultVal?: string): string => {
     const fallback = defaultVal ?? monograph?.[key] ?? "";
     if (currentLang === "en" || !fallback) return fallback;
+
+    // Check localized dosage forms
+    if (key === "type") {
+      const raw = (fallback || "").toLowerCase().trim();
+      if (LOCALIZED_DOSAGE_FORMS[currentLang]?.[raw]) {
+        return LOCALIZED_DOSAGE_FORMS[currentLang][raw];
+      }
+    }
+
+    // Check localized containers
+    if (key === "packageContainer") {
+      const raw = (fallback || "").toLowerCase().trim();
+      if (LOCALIZED_CONTAINERS[currentLang]?.[raw]) {
+        return LOCALIZED_CONTAINERS[currentLang][raw];
+      }
+    }
+
     if (currentLang === "bn" && monographBn[key]) {
       return monographBn[key];
     }
@@ -438,7 +675,7 @@ export default function MedicineDetailClient({
             <span>{t.backToMedicines}</span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             {monograph?.monograph_link && (
               <a
                 href={monograph.monograph_link}
@@ -459,85 +696,109 @@ export default function MedicineDetailClient({
               {copied ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
               <span>{copied ? t.copied : t.share}</span>
             </button>
+
+            {/* Professional Custom Selection Pop-up System */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                aria-expanded={isLangMenuOpen}
+                aria-haspopup="dialog"
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                  isLangMenuOpen
+                    ? "bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-900/15"
+                    : "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:border-slate-300"
+                }`}
+              >
+                <Globe size={14} className={isTranslating ? "animate-spin text-sky-400" : (isLangMenuOpen ? "text-sky-400" : "text-sky-600")} />
+                <span className="flex items-center gap-1.5">
+                  <span className="text-sm">{currentLangOption.flag}</span>
+                  <span className="font-extrabold">{currentLangOption.nativeName}</span>
+                </span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${isLangMenuOpen ? "rotate-180 text-white" : "text-slate-400"}`} />
+              </button>
+
+              {/* Custom Selection Pop-up Menu */}
+              {isLangMenuOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Language selection"
+                  className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl z-50 p-2 sm:p-2.5 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
+                        <Globe size={13} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900 leading-tight">
+                          {t.selectLanguage}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-semibold leading-tight">
+                          {t.quickSwitch}
+                        </p>
+                      </div>
+                    </div>
+                    {isTranslating && (
+                      <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100 animate-pulse">
+                        {t.translatingLabel}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    {LANG_OPTIONS.map((opt) => {
+                      const isActive = currentLang === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setCurrentLang(opt.id);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-sky-50 border border-sky-200/90 shadow-2xs"
+                              : "hover:bg-slate-50 border border-transparent"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl sm:text-2xl leading-none">{opt.flag}</span>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`text-xs sm:text-sm font-black ${isActive ? "text-sky-950" : "text-slate-800"}`}>
+                                  {opt.nativeName}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-400">
+                                  ({opt.label})
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+                                {opt.description[currentLang] || opt.description.en}
+                              </p>
+                            </div>
+                          </div>
+                          {isActive ? (
+                            <div className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                              <Check size={12} strokeWidth={3} />
+                            </div>
+                          ) : (
+                            <span className="text-[10px] font-bold text-slate-400 px-2 py-0.5 rounded-md bg-slate-100">
+                              {opt.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* PROMINENT, UNMISSABLE MULTI-LANGUAGE TRANSLATOR BAR */}
-        <div className="bg-gradient-to-r from-sky-50 via-white to-indigo-50/50 border-2 border-sky-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="w-11 h-11 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Globe size={22} className={isTranslating ? "animate-spin" : ""} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-                  {t.languageSelectTitle}
-                </span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/80">
-                  {isTranslating ? t.translatingLabel : "Full Monograph Translator"}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">
-                {t.languageSelectSub}
-              </p>
-            </div>
-          </div>
 
-          {/* Interactive Language Buttons */}
-          <div className="flex flex-wrap items-center bg-white p-1 rounded-xl border border-slate-200/90 shadow-2xs w-full md:w-auto justify-center gap-1">
-            <button
-              type="button"
-              onClick={() => setCurrentLang("en")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                currentLang === "en"
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-              }`}
-            >
-              <span className="text-sm">🇺🇸</span>
-              <span>English</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentLang("bn")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                currentLang === "bn"
-                  ? "bg-sky-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-sky-600 hover:bg-slate-100"
-              }`}
-            >
-              <span className="text-sm">🇧🇩</span>
-              <span>বাংলা</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentLang("ar")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                currentLang === "ar"
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "text-slate-600 hover:text-emerald-700 hover:bg-slate-100"
-              }`}
-            >
-              <span className="text-sm">🇸🇦</span>
-              <span>العربية</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrentLang("hi")}
-              className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                currentLang === "hi"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-indigo-600 hover:bg-slate-100"
-              }`}
-            >
-              <span className="text-sm">🇮🇳</span>
-              <span>हिन्दी</span>
-            </button>
-          </div>
-        </div>
 
         {/* Hero Card: Official Packaging + Pharmaceutical Specifications */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -654,7 +915,7 @@ export default function MedicineDetailClient({
                               <p className="text-[8px] font-bold text-slate-700 truncate">{medicine.company}</p>
                             )}
                             <div className="flex items-center justify-between text-[8px] text-slate-400">
-                              <span>DGDA Validated</span>
+                              <span>{t.dgdaCertified}</span>
                               <ShieldCheck size={11} className="text-emerald-600" />
                             </div>
                           </div>
@@ -744,10 +1005,10 @@ export default function MedicineDetailClient({
                 {/* Badges Row */}
                 <div className="flex flex-wrap items-center gap-2 mb-2.5">
                   <span className="px-2.5 py-0.5 rounded-lg text-xs font-extrabold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-200/80">
-                    {medicine.drugType ? `${medicine.drugType} Medicine` : "Allopathic Medicine"}
+                    {medicine.drugType ? `${medicine.drugType} Medicine` : t.allopathicMedicine}
                   </span>
                   <span className="text-xs font-bold text-slate-400">
-                    DGDA Index #{medicine.id}
+                    {t.dgdaIndexLabel}{medicine.id}
                   </span>
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-rose-50 text-rose-700 border border-rose-200">
                     {t.rxOnly}
@@ -812,7 +1073,7 @@ export default function MedicineDetailClient({
                   </div>
 
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0 flex items-center gap-1">
-                    <CheckCircle2 size={12} /> DGDA Certified
+                    <CheckCircle2 size={12} /> {t.dgdaCertified}
                   </span>
                 </div>
 
@@ -844,7 +1105,7 @@ export default function MedicineDetailClient({
                         ৳{typeof medicine.price === 'number' ? medicine.price.toFixed(2) : (medicine.unitPrice ? medicine.unitPrice.toFixed(2) : '15.00')}
                       </span>
                       <span className="text-sm font-semibold text-slate-500">
-                        /{medicine.priceBasis || "unit"}
+                        {medicine.priceBasis ? `/${medicine.priceBasis}` : t.pricePerUnit}
                       </span>
                     </div>
                   </div>
@@ -876,7 +1137,7 @@ export default function MedicineDetailClient({
                 <div className="flex items-center gap-2 text-sky-600 mb-1">
                   <Sparkles size={18} />
                   <span className="text-xs font-black tracking-wider uppercase">
-                    DGDA & Pharmacopeia Monograph ({currentLang.toUpperCase()})
+                    {t.monographHeaderBadge}
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">

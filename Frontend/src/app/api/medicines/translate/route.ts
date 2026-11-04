@@ -6,15 +6,21 @@ const translationCache = new Map<string, Record<string, string>>();
 async function translateSingleText(text: string, targetLang: string): Promise<string> {
   if (!text || !text.trim()) return text;
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(
+const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(
       targetLang
-    )}&dt=t&q=${encodeURIComponent(text)}`;
+    )}&dt=t`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const params = new URLSearchParams();
+    params.append("q", text);
+
     const res = await fetch(url, {
+      method: "POST",
       headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
       },
+      body: params.toString(),
       signal: controller.signal,
     });
     clearTimeout(timeout);
