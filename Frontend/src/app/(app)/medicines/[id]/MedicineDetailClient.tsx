@@ -317,66 +317,14 @@ const TRANSLATIONS: Record<Language, Translations> = {
 
 export interface LanguageOption {
   id: Language;
-  flag: string;
-  label: string;
-  nativeName: string;
-  badge: string;
-  description: Record<Language, string>;
+  name: string;
 }
 
 export const LANG_OPTIONS: LanguageOption[] = [
-  {
-    id: "en",
-    flag: "🇺🇸",
-    label: "English",
-    nativeName: "English (US)",
-    badge: "Default",
-    description: {
-      en: "Default DGDA clinical guidelines & monographs",
-      bn: "মূল ডিজিডিএ ক্লিনিকাল গাইডলাইন ও মনোগ্রাফ",
-      hi: "मूल DGDA क्लिनिकल दिशानिर्देश एवं मोनोग्राफ",
-      ar: "الدليل الطبي المعتمد باللغة الإنجليزية",
-    },
-  },
-  {
-    id: "bn",
-    flag: "🇧🇩",
-    label: "Bengali",
-    nativeName: "বাংলা",
-    badge: "সম্পূর্ণ বাংলা",
-    description: {
-      en: "Complete page & clinical guidelines in Bengali",
-      bn: "সম্পূর্ণ পাতা ও ওষুধের সেবন নির্দেশিকা বাংলায়",
-      hi: "बंगाली में संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश",
-      ar: "ترجمة كامل محتوى الصفحة إلى اللغة البنغالية",
-    },
-  },
-  {
-    id: "hi",
-    flag: "🇮🇳",
-    label: "Hindi",
-    nativeName: "हिन्दी",
-    badge: "संपूर्ण हिंदी",
-    description: {
-      en: "Complete page & clinical guidelines in Hindi",
-      bn: "সম্পূর্ণ পাতা ও মনোগ্রাফ হিন্দিতে রূপান্তর",
-      hi: "संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश हिंदी में",
-      ar: "ترجمة كامل محتوى الصفحة إلى اللغة الهندية",
-    },
-  },
-  {
-    id: "ar",
-    flag: "🇸🇦",
-    label: "Arabic",
-    nativeName: "العربية",
-    badge: "بالعربية",
-    description: {
-      en: "Complete page & clinical guidelines in Arabic",
-      bn: "সম্পূর্ণ পাতা ও মনোগ্রাফ আরবিতে রূপান্তর",
-      hi: "संपूर्ण पृष्ठ एवं चिकित्सीय दिशानिर्देश अरबी में",
-      ar: "ترجمة كامل محتوى الصفحة إلى اللغة العربية",
-    },
-  },
+  { id: "en", name: "English" },
+  { id: "bn", name: "বাংলা" },
+  { id: "hi", name: "हिन्दी" },
+  { id: "ar", name: "العربية" },
 ];
 
 const LOCALIZED_DOSAGE_FORMS: Record<Language, Record<string, string>> = {
@@ -697,101 +645,48 @@ export default function MedicineDetailClient({
               <span>{copied ? t.copied : t.share}</span>
             </button>
 
-            {/* Professional Custom Selection Pop-up System */}
+            {/* Clean & Professional Language Selector */}
             <div className="relative" ref={langMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
                 aria-expanded={isLangMenuOpen}
-                aria-haspopup="dialog"
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-                  isLangMenuOpen
-                    ? "bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-900/15"
-                    : "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 hover:border-slate-300"
-                }`}
+                aria-haspopup="true"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-2xs cursor-pointer hover:border-slate-300"
               >
-                <Globe size={14} className={isTranslating ? "animate-spin text-sky-400" : (isLangMenuOpen ? "text-sky-400" : "text-sky-600")} />
-                <span className="flex items-center gap-1.5">
-                  <span className="text-sm">{currentLangOption.flag}</span>
-                  <span className="font-extrabold">{currentLangOption.nativeName}</span>
-                </span>
-                <ChevronDown size={13} className={`transition-transform duration-200 ${isLangMenuOpen ? "rotate-180 text-white" : "text-slate-400"}`} />
+                <Globe size={14} className={isTranslating ? "animate-spin text-sky-600" : "text-slate-500"} />
+                <span>{currentLangOption.name}</span>
+                <ChevronDown size={13} className={`text-slate-400 transition-transform duration-150 ${isLangMenuOpen ? "rotate-180" : ""}`} />
               </button>
 
-              {/* Custom Selection Pop-up Menu */}
+              {/* Clean & Compact Normal Pop-up Menu */}
               {isLangMenuOpen && (
                 <div
-                  role="dialog"
-                  aria-label="Language selection"
-                  className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl z-50 p-2 sm:p-2.5 animate-in fade-in zoom-in-95 duration-150"
+                  role="menu"
+                  className="absolute right-0 top-full mt-1.5 w-36 sm:w-40 bg-white rounded-xl border border-slate-200 shadow-xl z-50 p-1 animate-in fade-in zoom-in-95 duration-100"
                 >
-                  <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
-                        <Globe size={13} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-slate-900 leading-tight">
-                          {t.selectLanguage}
-                        </h4>
-                        <p className="text-[10px] text-slate-400 font-semibold leading-tight">
-                          {t.quickSwitch}
-                        </p>
-                      </div>
-                    </div>
-                    {isTranslating && (
-                      <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100 animate-pulse">
-                        {t.translatingLabel}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    {LANG_OPTIONS.map((opt) => {
-                      const isActive = currentLang === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => {
-                            setCurrentLang(opt.id);
-                            setIsLangMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${
-                            isActive
-                              ? "bg-sky-50 border border-sky-200/90 shadow-2xs"
-                              : "hover:bg-slate-50 border border-transparent"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-xl sm:text-2xl leading-none">{opt.flag}</span>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className={`text-xs sm:text-sm font-black ${isActive ? "text-sky-950" : "text-slate-800"}`}>
-                                  {opt.nativeName}
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-400">
-                                  ({opt.label})
-                                </span>
-                              </div>
-                              <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
-                                {opt.description[currentLang] || opt.description.en}
-                              </p>
-                            </div>
-                          </div>
-                          {isActive ? (
-                            <div className="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                              <Check size={12} strokeWidth={3} />
-                            </div>
-                          ) : (
-                            <span className="text-[10px] font-bold text-slate-400 px-2 py-0.5 rounded-md bg-slate-100">
-                              {opt.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {LANG_OPTIONS.map((opt) => {
+                    const isActive = currentLang === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setCurrentLang(opt.id);
+                          setIsLangMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          isActive
+                            ? "bg-slate-100 text-slate-900 font-bold"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
+                      >
+                        <span>{opt.name}</span>
+                        {isActive && <Check size={14} className="text-sky-600 stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
