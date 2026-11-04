@@ -218,7 +218,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer showFeaturedHospitals={false} />
     </div>
   );
 }

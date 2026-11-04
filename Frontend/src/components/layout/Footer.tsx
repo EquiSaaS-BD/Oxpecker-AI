@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useHackathon } from "@/context/HackathonContext";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   MapPin,
   Mail,
@@ -37,8 +38,11 @@ const HOSPITAL_EXAMPLES = [
   "BRB Hospitals Limited",
 ];
 
-export function Footer() {
+export function Footer({ showFeaturedHospitals }: { showFeaturedHospitals?: boolean } = {}) {
   const { isYunet } = useHackathon();
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
+  const shouldShowHospitals = showFeaturedHospitals !== undefined ? showFeaturedHospitals : isLandingPage;
   const CLINICAL_LINKS = [
     { label: "AI Diagnostic Chat", href: "/chat" },
     { label: "Find Doctors", href: "/doctors" },
@@ -57,7 +61,8 @@ export function Footer() {
   return (
     <footer className="relative bg-slate-50 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        {/* Hospital directory examples */}
+        {/* Hospital directory examples - Only visible on Landing Page */}
+        {shouldShowHospitals && (
         <div id="hospital-directory" className="py-12 sm:py-14 border-b border-slate-200">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -82,6 +87,7 @@ export function Footer() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Main Footer Colophon */}
         <div className="py-14 sm:py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">

@@ -94,7 +94,7 @@ export default function NotFound() {
         </div>
       </main>
 
-      <Footer />
+      <Footer showFeaturedHospitals={false} />
     </div>
   );
 }

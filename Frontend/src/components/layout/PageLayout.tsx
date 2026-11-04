@@ -61,7 +61,7 @@ export function PageLayout({ title, breadcrumb, lastUpdated, children }: PageLay
         </div>
       </main>
 
-      <Footer />
+      <Footer showFeaturedHospitals={false} />
     </div>
   );
 }

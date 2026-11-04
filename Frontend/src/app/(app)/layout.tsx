@@ -40,7 +40,7 @@ export default function AppLayout({
         <main className="flex-1 pt-[72px] pb-16 md:pb-0">
           {children}
         </main>
-        <Footer />
+        <Footer showFeaturedHospitals={false} />
       </div>
     );
   }

@@ -46,7 +46,7 @@ export default function LandingPage() {
         <FinalCTASection />
       </main>
 
-      <Footer />
+      <Footer showFeaturedHospitals={true} />
     </div>
   );
 }
