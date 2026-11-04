@@ -287,3 +287,96 @@ export function getGenericAlternatives(genericName: string, excludeId: string | 
     .filter((m) => String(m.id) !== idStr && normalized(m.generic_name) === normalizedGen)
     .slice(0, limit);
 }
+
+export type IndicationItem = {
+  id: number | string;
+  name: string;
+  slug?: string;
+  generics_count?: number;
+};
+
+export type DrugClassItem = {
+  id: number | string;
+  name: string;
+  slug?: string;
+  generics_count?: number;
+};
+
+export type DosageFormItem = {
+  id: number | string;
+  name: string;
+  slug?: string;
+  brand_names_count?: number;
+};
+
+export type ManufacturerItem = {
+  id: number | string;
+  name: string;
+  slug?: string;
+  generics_count?: number;
+  brand_names_count?: number;
+};
+
+let cachedIndications: IndicationItem[] | null = null;
+export function getIndicationsCatalog(): IndicationItem[] {
+  if (cachedIndications) return cachedIndications;
+  try {
+    const p = path.join(process.cwd(), "public/data/indications.json");
+    if (fs.existsSync(p)) {
+      const d = JSON.parse(fs.readFileSync(p, "utf8"));
+      cachedIndications = d.data || d || [];
+      return cachedIndications!;
+    }
+  } catch {}
+  return [];
+}
+
+let cachedDrugClasses: DrugClassItem[] | null = null;
+export function getDrugClassesCatalog(): DrugClassItem[] {
+  if (cachedDrugClasses) return cachedDrugClasses;
+  try {
+    const p = path.join(process.cwd(), "public/data/drug_classes.json");
+    if (fs.existsSync(p)) {
+      const d = JSON.parse(fs.readFileSync(p, "utf8"));
+      cachedDrugClasses = d.data || d || [];
+      return cachedDrugClasses!;
+    }
+  } catch {}
+  return [];
+}
+
+let cachedDosageForms: DosageFormItem[] | null = null;
+export function getDosageFormsCatalog(): DosageFormItem[] {
+  if (cachedDosageForms) return cachedDosageForms;
+  try {
+    const p = path.join(process.cwd(), "public/data/dosage_forms.json");
+    if (fs.existsSync(p)) {
+      const d = JSON.parse(fs.readFileSync(p, "utf8"));
+      cachedDosageForms = d.data || d || [];
+      return cachedDosageForms!;
+    }
+  } catch {}
+  return [];
+}
+
+let cachedManufacturers: ManufacturerItem[] | null = null;
+export function getManufacturersCatalog(): ManufacturerItem[] {
+  if (cachedManufacturers) return cachedManufacturers;
+  try {
+    const p = path.join(process.cwd(), "public/data/manufacturers.json");
+    if (fs.existsSync(p)) {
+      const d = JSON.parse(fs.readFileSync(p, "utf8"));
+      cachedManufacturers = d.data || d || [];
+      return cachedManufacturers!;
+    }
+  } catch {}
+  return [];
+}
+
+export function findIndicationByName(query: string): IndicationItem | null {
+  if (!query) return null;
+  const list = getIndicationsCatalog();
+  const qNorm = normalized(query);
+  return list.find((item) => normalized(item.name) === qNorm || normalized(item.name).includes(qNorm)) || null;
+}
+

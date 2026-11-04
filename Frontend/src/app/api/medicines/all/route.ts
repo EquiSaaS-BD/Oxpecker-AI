@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCatalogMedicines, getGenericMonograph, getMedicineSnapshotMetadata, normalizePackageSize } from '@/lib/medicine-catalog';
+import { getOfficialDosageIcon, getMedicinePackaging, getManufacturerAsset } from '@/lib/medicine-brand-assets';
 
 // Memory cache for the large database to avoid reading from disk on every request
 let cachedMedicines: any[] = [];
@@ -77,6 +78,12 @@ function loadDatabase() {
         slug: med.slug || '',
         category: category,
         useFor: getUseFor(category, med.generic_name, monograph?.indication, monograph?.therapeutic_class || monograph?.drug_class),
+        indication: monograph?.indication || null,
+        indicationDescription: monograph?.indication_description || null,
+        drugClass: monograph?.drug_class || monograph?.therapeutic_class || null,
+        image: getMedicinePackaging(med.id, med.brand_name) || null,
+        dosageIcon: getOfficialDosageIcon(med.dosage_form || med.type || ''),
+        manufacturerLogoUrl: getManufacturerAsset(med.manufacturer || '')?.logoUrl || null,
       };
     });
     

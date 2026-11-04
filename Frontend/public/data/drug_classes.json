@@ -1,0 +1,2724 @@
+{
+  "total_count": 453,
+  "generated_at": "2026-07-30 18:01:46",
+  "data": [
+    {
+      "id": 55,
+      "name": "4-Quinolone preparations",
+      "slug": "4-quinolone-preparations-55",
+      "generics_count": 16
+    },
+    {
+      "id": 155,
+      "name": "5-HT Agonists",
+      "slug": "5-ht-agonists-155",
+      "generics_count": 5
+    },
+    {
+      "id": 392,
+      "name": "Abdominal gas adsorbent preparations",
+      "slug": "abdominal-gas-adsorbent-preparations-392",
+      "generics_count": 0
+    },
+    {
+      "id": 561,
+      "name": "Acne treatment preparations",
+      "slug": "acne-treatment-preparations-561",
+      "generics_count": 4
+    },
+    {
+      "id": 658,
+      "name": "Adenosine triphosphate-citrate lyase (ACL) inhibitor",
+      "slug": "adenosine-triphosphate-citrate-lyase-acl-inhibitor-658",
+      "generics_count": 0
+    },
+    {
+      "id": 590,
+      "name": "Adjunct anti-epileptic drugs",
+      "slug": "adjunct-anti-epileptic-drugs-590",
+      "generics_count": 13
+    },
+    {
+      "id": 168,
+      "name": "Adjunct anti-epileptic drugs",
+      "slug": "adjunct-anti-epileptic-drugs-168",
+      "generics_count": 11
+    },
+    {
+      "id": 591,
+      "name": "Aldose reductase inhibitor",
+      "slug": "aldose-reductase-inhibitor-591",
+      "generics_count": 1
+    },
+    {
+      "id": 125,
+      "name": "Alpha adrenoceptor blocking drugs",
+      "slug": "alpha-adrenoceptor-blocking-drugs-125",
+      "generics_count": 5
+    },
+    {
+      "id": 492,
+      "name": "Alpha adrenoceptor blocking drugs",
+      "slug": "alpha-adrenoceptor-blocking-drugs-492",
+      "generics_count": 5
+    },
+    {
+      "id": 493,
+      "name": "Alpha and Beta-adrenergic agonist",
+      "slug": "alpha-and-beta-adrenergic-agonist-493",
+      "generics_count": 1
+    },
+    {
+      "id": 126,
+      "name": "Alpha and Beta-adrenergic agonist",
+      "slug": "alpha-and-beta-adrenergic-agonist-126",
+      "generics_count": 0
+    },
+    {
+      "id": 612,
+      "name": "Alpha-Glucosidase inhibitor",
+      "slug": "alpha-glucosidase-inhibitor-612",
+      "generics_count": 3
+    },
+    {
+      "id": 56,
+      "name": "Aminoglycosides",
+      "slug": "aminoglycosides-56",
+      "generics_count": 4
+    },
+    {
+      "id": 655,
+      "name": "Aminosalicylates",
+      "slug": "aminosalicylates-655",
+      "generics_count": 1
+    },
+    {
+      "id": 79,
+      "name": "Amoebicides",
+      "slug": "amoebicides-79",
+      "generics_count": 5
+    },
+    {
+      "id": 592,
+      "name": "Anabolic steroid (Androgens)",
+      "slug": "anabolic-steroid-androgens-592",
+      "generics_count": 2
+    },
+    {
+      "id": 21,
+      "name": "Anaphylaxis",
+      "slug": "anaphylaxis-21",
+      "generics_count": 1
+    },
+    {
+      "id": 495,
+      "name": "Angiotensin-converting enzyme (ACE) inhibitors",
+      "slug": "angiotensin-converting-enzyme-ace-inhibitors-495",
+      "generics_count": 5
+    },
+    {
+      "id": 118,
+      "name": "Angiotensin-converting enzyme (ACE) inhibitors",
+      "slug": "angiotensin-converting-enzyme-ace-inhibitors-118",
+      "generics_count": 5
+    },
+    {
+      "id": 512,
+      "name": "Angiotensin-ll receptor blocker",
+      "slug": "angiotensin-ll-receptor-blocker-512",
+      "generics_count": 7
+    },
+    {
+      "id": 509,
+      "name": "Angiotensin-ll receptor blocker",
+      "slug": "angiotensin-ll-receptor-blocker-509",
+      "generics_count": 7
+    },
+    {
+      "id": 494,
+      "name": "Angiotensin-ll receptor blocker",
+      "slug": "angiotensin-ll-receptor-blocker-494",
+      "generics_count": 7
+    },
+    {
+      "id": 117,
+      "name": "Angiotensin-ll receptor blocker",
+      "slug": "angiotensin-ll-receptor-blocker-117",
+      "generics_count": 7
+    },
+    {
+      "id": 393,
+      "name": "Antacid with laxative action",
+      "slug": "antacid-with-laxative-action-393",
+      "generics_count": 3
+    },
+    {
+      "id": 530,
+      "name": "Antacids",
+      "slug": "antacids-530",
+      "generics_count": 6
+    },
+    {
+      "id": 527,
+      "name": "Antacids",
+      "slug": "antacids-527",
+      "generics_count": 6
+    },
+    {
+      "id": 525,
+      "name": "Antacids",
+      "slug": "antacids-525",
+      "generics_count": 8
+    },
+    {
+      "id": 407,
+      "name": "Antacids",
+      "slug": "antacids-407",
+      "generics_count": 6
+    },
+    {
+      "id": 78,
+      "name": "Anthelmintic",
+      "slug": "anthelmintic-78",
+      "generics_count": 5
+    },
+    {
+      "id": 531,
+      "name": "Anti H. pylori drugs",
+      "slug": "anti-h-pylori-drugs-531",
+      "generics_count": 3
+    },
+    {
+      "id": 113,
+      "name": "Anti adrenergic agent (Beta blockers)",
+      "slug": "anti-adrenergic-agent-beta-blockers-113",
+      "generics_count": 3
+    },
+    {
+      "id": 232,
+      "name": "Anti neoplastic preparations",
+      "slug": "anti-neoplastic-preparations-232",
+      "generics_count": 5
+    },
+    {
+      "id": 170,
+      "name": "Anti vertigo drugs",
+      "slug": "anti-vertigo-drugs-170",
+      "generics_count": 3
+    },
+    {
+      "id": 173,
+      "name": "Anti-Alzheimer drugs",
+      "slug": "anti-alzheimer-drugs-173",
+      "generics_count": 1
+    },
+    {
+      "id": 57,
+      "name": "Anti-Leprotic drugs",
+      "slug": "anti-leprotic-drugs-57",
+      "generics_count": 1
+    },
+    {
+      "id": 58,
+      "name": "Anti-Tubercular Antibiotics",
+      "slug": "anti-tubercular-antibiotics-58",
+      "generics_count": 2
+    },
+    {
+      "id": 59,
+      "name": "Anti-Tubercular Chemotherapeutics",
+      "slug": "anti-tubercular-chemotherapeutics-59",
+      "generics_count": 3
+    },
+    {
+      "id": 107,
+      "name": "Anti-anginal & lipid lowering drugs",
+      "slug": "anti-anginal-lipid-lowering-drugs-107",
+      "generics_count": 1
+    },
+    {
+      "id": 532,
+      "name": "Anti-cholinergic & anti-psychotic combination drugs",
+      "slug": "anti-cholinergic-anti-psychotic-combination-drugs-532",
+      "generics_count": 0
+    },
+    {
+      "id": 34,
+      "name": "Anti-cholinesterases",
+      "slug": "anti-cholinesterases-34",
+      "generics_count": 1
+    },
+    {
+      "id": 513,
+      "name": "Anti-coagulants",
+      "slug": "anti-coagulants-513",
+      "generics_count": 3
+    },
+    {
+      "id": 401,
+      "name": "Anti-diarrhoeal",
+      "slug": "anti-diarrhoeal-401",
+      "generics_count": 3
+    },
+    {
+      "id": 402,
+      "name": "Anti-diarrhoeal Antimicrobial drugs",
+      "slug": "anti-diarrhoeal-antimicrobial-drugs-402",
+      "generics_count": 4
+    },
+    {
+      "id": 403,
+      "name": "Anti-diarrhoeal Antiprotozoal",
+      "slug": "anti-diarrhoeal-antiprotozoal-403",
+      "generics_count": 4
+    },
+    {
+      "id": 404,
+      "name": "Anti-diarrhoeal Enzyme",
+      "slug": "anti-diarrhoeal-enzyme-404",
+      "generics_count": 0
+    },
+    {
+      "id": 533,
+      "name": "Anti-dyspeptic/Carminatives",
+      "slug": "anti-dyspepticcarminatives-533",
+      "generics_count": 3
+    },
+    {
+      "id": 408,
+      "name": "Anti-dyspeptic/Carminatives",
+      "slug": "anti-dyspepticcarminatives-408",
+      "generics_count": 2
+    },
+    {
+      "id": 523,
+      "name": "Anti-emetic drugs",
+      "slug": "anti-emetic-drugs-523",
+      "generics_count": 16
+    },
+    {
+      "id": 171,
+      "name": "Anti-emetic drugs",
+      "slug": "anti-emetic-drugs-171",
+      "generics_count": 15
+    },
+    {
+      "id": 103,
+      "name": "Anti-fibrinolytic drugs",
+      "slug": "anti-fibrinolytic-drugs-103",
+      "generics_count": 4
+    },
+    {
+      "id": 650,
+      "name": "Anti-fungal or anti-bacterial ear drops",
+      "slug": "anti-fungal-or-anti-bacterial-ear-drops-650",
+      "generics_count": 2
+    },
+    {
+      "id": 387,
+      "name": "Anti-gallstones drugs: Bile Acids",
+      "slug": "anti-gallstones-drugs-bile-acids-387",
+      "generics_count": 1
+    },
+    {
+      "id": 22,
+      "name": "Anti-histamine & decongestant",
+      "slug": "anti-histamine-decongestant-22",
+      "generics_count": 1
+    },
+    {
+      "id": 187,
+      "name": "Anti-histamine Preparations",
+      "slug": "anti-histamine-preparations-187",
+      "generics_count": 2
+    },
+    {
+      "id": 559,
+      "name": "Anti-hypertensive",
+      "slug": "anti-hypertensive-559",
+      "generics_count": 5
+    },
+    {
+      "id": 238,
+      "name": "Anti-infective & Anesthetic combined preparations",
+      "slug": "anti-infective-anesthetic-combined-preparations-238",
+      "generics_count": 1
+    },
+    {
+      "id": 80,
+      "name": "Anti-malarial drugs",
+      "slug": "anti-malarial-drugs-80",
+      "generics_count": 10
+    },
+    {
+      "id": 181,
+      "name": "Anti-manic drugs",
+      "slug": "anti-manic-drugs-181",
+      "generics_count": 1
+    },
+    {
+      "id": 405,
+      "name": "Anti-motility drugs",
+      "slug": "anti-motility-drugs-405",
+      "generics_count": 1
+    },
+    {
+      "id": 285,
+      "name": "Anti-oxidant Multivitamin Multimineral preparations",
+      "slug": "anti-oxidant-multivitamin-multimineral-preparations-285",
+      "generics_count": 2
+    },
+    {
+      "id": 286,
+      "name": "Anti-oxidant Multivitamin preparations",
+      "slug": "anti-oxidant-multivitamin-preparations-286",
+      "generics_count": 2
+    },
+    {
+      "id": 514,
+      "name": "Anti-platelet drugs",
+      "slug": "anti-platelet-drugs-514",
+      "generics_count": 14
+    },
+    {
+      "id": 104,
+      "name": "Anti-platelet drugs",
+      "slug": "anti-platelet-drugs-104",
+      "generics_count": 14
+    },
+    {
+      "id": 606,
+      "name": "Anti-thyroid drugs",
+      "slug": "anti-thyroid-drugs-606",
+      "generics_count": 2
+    },
+    {
+      "id": 609,
+      "name": "Anti-viral drugs",
+      "slug": "anti-viral-drugs-609",
+      "generics_count": 4
+    },
+    {
+      "id": 630,
+      "name": "Antiarrhythmic Therapy",
+      "slug": "antiarrhythmic-therapy-630",
+      "generics_count": 0
+    },
+    {
+      "id": 624,
+      "name": "Anticavity Mouthwash",
+      "slug": "anticavity-mouthwash-624",
+      "generics_count": 1
+    },
+    {
+      "id": 475,
+      "name": "Anticholinergic bronchodilators",
+      "slug": "anticholinergic-bronchodilators-475",
+      "generics_count": 3
+    },
+    {
+      "id": 535,
+      "name": "Anticholinergics",
+      "slug": "anticholinergics-535",
+      "generics_count": 6
+    },
+    {
+      "id": 534,
+      "name": "Anticholinergics (antimuscarinics)/ Anti-spasmodics",
+      "slug": "anticholinergics-antimuscarinics-anti-spasmodics-534",
+      "generics_count": 12
+    },
+    {
+      "id": 177,
+      "name": "Antidote preparations",
+      "slug": "antidote-preparations-177",
+      "generics_count": 12
+    },
+    {
+      "id": 105,
+      "name": "Antihaemophilic factor",
+      "slug": "antihaemophilic-factor-105",
+      "generics_count": 1
+    },
+    {
+      "id": 476,
+      "name": "Antihistamines anti-allergies & hypo-sensitisation",
+      "slug": "antihistamines-anti-allergies-hypo-sensitisation-476",
+      "generics_count": 2
+    },
+    {
+      "id": 357,
+      "name": "Antioxidant vitamins & minerals for eye",
+      "slug": "antioxidant-vitamins-minerals-for-eye-357",
+      "generics_count": 1
+    },
+    {
+      "id": 174,
+      "name": "Antiparkinson drugs",
+      "slug": "antiparkinson-drugs-174",
+      "generics_count": 14
+    },
+    {
+      "id": 178,
+      "name": "Appetite suppressant drugs/Anti-obesity drugs",
+      "slug": "appetite-suppressant-drugsanti-obesity-drugs-178",
+      "generics_count": 1
+    },
+    {
+      "id": 163,
+      "name": "Atypical anti-depressant drugs",
+      "slug": "atypical-anti-depressant-drugs-163",
+      "generics_count": 5
+    },
+    {
+      "id": 182,
+      "name": "Atypical neuroleptic drugs",
+      "slug": "atypical-neuroleptic-drugs-182",
+      "generics_count": 12
+    },
+    {
+      "id": 308,
+      "name": "Aural Anti-bacterial preparations",
+      "slug": "aural-anti-bacterial-preparations-308",
+      "generics_count": 5
+    },
+    {
+      "id": 309,
+      "name": "Aural Anti-fungal preparations",
+      "slug": "aural-anti-fungal-preparations-309",
+      "generics_count": 3
+    },
+    {
+      "id": 310,
+      "name": "Aural steroid & antibiotic combined preparations",
+      "slug": "aural-steroid-antibiotic-combined-preparations-310",
+      "generics_count": 4
+    },
+    {
+      "id": 425,
+      "name": "BPH/ Urinary retention/ Urinary incontinence",
+      "slug": "bph-urinary-retention-urinary-incontinence-425",
+      "generics_count": 12
+    },
+    {
+      "id": 158,
+      "name": "Barbiturates",
+      "slug": "barbiturates-158",
+      "generics_count": 1
+    },
+    {
+      "id": 444,
+      "name": "Barium Sulphate",
+      "slug": "barium-sulphate-444",
+      "generics_count": 0
+    },
+    {
+      "id": 248,
+      "name": "Beclomethasone & Combined Preparations",
+      "slug": "beclomethasone-combined-preparations-248",
+      "generics_count": 0
+    },
+    {
+      "id": 35,
+      "name": "Benzodiazepine antagonist",
+      "slug": "benzodiazepine-antagonist-35",
+      "generics_count": 2
+    },
+    {
+      "id": 159,
+      "name": "Benzodiazepine hypnotics",
+      "slug": "benzodiazepine-hypnotics-159",
+      "generics_count": 8
+    },
+    {
+      "id": 160,
+      "name": "Benzodiazepine sedatives",
+      "slug": "benzodiazepine-sedatives-160",
+      "generics_count": 7
+    },
+    {
+      "id": 223,
+      "name": "Benzoyl peroxide, Azelaic acid & other preparations",
+      "slug": "benzoyl-peroxide-azelaic-acid-other-preparations-223",
+      "generics_count": 2
+    },
+    {
+      "id": 60,
+      "name": "Benzylpenicillin & Phenoxymethyl penicillin",
+      "slug": "benzylpenicillin-phenoxymethyl-penicillin-60",
+      "generics_count": 3
+    },
+    {
+      "id": 496,
+      "name": "Beta-adrenoceptor blocking drugs",
+      "slug": "beta-adrenoceptor-blocking-drugs-496",
+      "generics_count": 7
+    },
+    {
+      "id": 188,
+      "name": "Beta-blockers",
+      "slug": "beta-blockers-188",
+      "generics_count": 6
+    },
+    {
+      "id": 249,
+      "name": "Betamethasone & Combined preparations",
+      "slug": "betamethasone-combined-preparations-249",
+      "generics_count": 4
+    },
+    {
+      "id": 576,
+      "name": "Biguanides",
+      "slug": "biguanides-576",
+      "generics_count": 1
+    },
+    {
+      "id": 388,
+      "name": "Bile acid sequestrants",
+      "slug": "bile-acid-sequestrants-388",
+      "generics_count": 0
+    },
+    {
+      "id": 268,
+      "name": "Bisphosphonate preparations",
+      "slug": "bisphosphonate-preparations-268",
+      "generics_count": 7
+    },
+    {
+      "id": 452,
+      "name": "Black Seed Oil",
+      "slug": "black-seed-oil-452",
+      "generics_count": 0
+    },
+    {
+      "id": 217,
+      "name": "Bleaching and Disinfectants",
+      "slug": "bleaching-and-disinfectants-217",
+      "generics_count": 6
+    },
+    {
+      "id": 61,
+      "name": "Broad spectrum penicillins",
+      "slug": "broad-spectrum-penicillins-61",
+      "generics_count": 3
+    },
+    {
+      "id": 637,
+      "name": "Bronchodilator",
+      "slug": "bronchodilator-637",
+      "generics_count": 6
+    },
+    {
+      "id": 394,
+      "name": "Bulk-forming laxatives",
+      "slug": "bulk-forming-laxatives-394",
+      "generics_count": 5
+    },
+    {
+      "id": 183,
+      "name": "Butyrophenone drugs",
+      "slug": "butyrophenone-drugs-183",
+      "generics_count": 1
+    },
+    {
+      "id": 179,
+      "name": "CNS stimulant drugs",
+      "slug": "cns-stimulant-drugs-179",
+      "generics_count": 4
+    },
+    {
+      "id": 598,
+      "name": "Calcium Regulator",
+      "slug": "calcium-regulator-598",
+      "generics_count": 2
+    },
+    {
+      "id": 515,
+      "name": "Calcium-channel blockers",
+      "slug": "calcium-channel-blockers-515",
+      "generics_count": 11
+    },
+    {
+      "id": 510,
+      "name": "Calcium-channel blockers",
+      "slug": "calcium-channel-blockers-510",
+      "generics_count": 11
+    },
+    {
+      "id": 497,
+      "name": "Calcium-channel blockers",
+      "slug": "calcium-channel-blockers-497",
+      "generics_count": 11
+    },
+    {
+      "id": 114,
+      "name": "Calcium-channel blockers",
+      "slug": "calcium-channel-blockers-114",
+      "generics_count": 11
+    },
+    {
+      "id": 108,
+      "name": "Calcium-channel blockers",
+      "slug": "calcium-channel-blockers-108",
+      "generics_count": 11
+    },
+    {
+      "id": 651,
+      "name": "Candida infections",
+      "slug": "candida-infections-651",
+      "generics_count": 1
+    },
+    {
+      "id": 498,
+      "name": "Carbonic anhydrase inhibitor",
+      "slug": "carbonic-anhydrase-inhibitor-498",
+      "generics_count": 1
+    },
+    {
+      "id": 636,
+      "name": "Carboxylic acids and derivatives",
+      "slug": "carboxylic-acids-and-derivatives-636",
+      "generics_count": 2
+    },
+    {
+      "id": 47,
+      "name": "Central Depolarizing muscle relaxants",
+      "slug": "central-depolarizing-muscle-relaxants-47",
+      "generics_count": 1
+    },
+    {
+      "id": 466,
+      "name": "Centrally acting Skeletal Muscle Relaxants",
+      "slug": "centrally-acting-skeletal-muscle-relaxants-466",
+      "generics_count": 8
+    },
+    {
+      "id": 499,
+      "name": "Centrally acting antihypertensive drugs (central sympatholytic)",
+      "slug": "centrally-acting-antihypertensive-drugs-central-sympatholytic-499",
+      "generics_count": 2
+    },
+    {
+      "id": 516,
+      "name": "Cerebral vasodilator & Neurosensory oxygenator drugs",
+      "slug": "cerebral-vasodilator-neurosensory-oxygenator-drugs-516",
+      "generics_count": 2
+    },
+    {
+      "id": 137,
+      "name": "Cerebral vasodilator & Neurosensory oxygenator drugs",
+      "slug": "cerebral-vasodilator-neurosensory-oxygenator-drugs-137",
+      "generics_count": 2
+    },
+    {
+      "id": 654,
+      "name": "Cerumenolytic",
+      "slug": "cerumenolytic-654",
+      "generics_count": 1
+    },
+    {
+      "id": 536,
+      "name": "Chelating complex",
+      "slug": "chelating-complex-536",
+      "generics_count": 1
+    },
+    {
+      "id": 218,
+      "name": "Chlorhexidine & Chloroxylenol preparations",
+      "slug": "chlorhexidine-chloroxylenol-preparations-218",
+      "generics_count": 6
+    },
+    {
+      "id": 389,
+      "name": "Cholagogues, Cholelitholytics & Hepatic Protectors",
+      "slug": "cholagogues-cholelitholytics-hepatic-protectors-389",
+      "generics_count": 2
+    },
+    {
+      "id": 250,
+      "name": "Clobetasol / Clobetasone & Combined Preparations",
+      "slug": "clobetasol-clobetasone-combined-preparations-250",
+      "generics_count": 4
+    },
+    {
+      "id": 209,
+      "name": "Coal-tar preparations",
+      "slug": "coal-tar-preparations-209",
+      "generics_count": 3
+    },
+    {
+      "id": 583,
+      "name": "Combination Insulin",
+      "slug": "combination-insulin-583",
+      "generics_count": 3
+    },
+    {
+      "id": 577,
+      "name": "Combination Oral hypoglycemic preparations",
+      "slug": "combination-oral-hypoglycemic-preparations-577",
+      "generics_count": 10
+    },
+    {
+      "id": 62,
+      "name": "Combined anti- Tubercular Preparations",
+      "slug": "combined-anti-tubercular-preparations-62",
+      "generics_count": 3
+    },
+    {
+      "id": 500,
+      "name": "Combined antihypertensive preparations",
+      "slug": "combined-antihypertensive-preparations-500",
+      "generics_count": 20
+    },
+    {
+      "id": 164,
+      "name": "Combined anxiolytics & anti-depressant drugs",
+      "slug": "combined-anxiolytics-anti-depressant-drugs-164",
+      "generics_count": 3
+    },
+    {
+      "id": 477,
+      "name": "Combined bronchodilators",
+      "slug": "combined-bronchodilators-477",
+      "generics_count": 6
+    },
+    {
+      "id": 486,
+      "name": "Combined cough expectorants",
+      "slug": "combined-cough-expectorants-486",
+      "generics_count": 6
+    },
+    {
+      "id": 487,
+      "name": "Combined cough suppressants",
+      "slug": "combined-cough-suppressants-487",
+      "generics_count": 5
+    },
+    {
+      "id": 395,
+      "name": "Combined preparation for constipation",
+      "slug": "combined-preparation-for-constipation-395",
+      "generics_count": 0
+    },
+    {
+      "id": 233,
+      "name": "Combined preparations",
+      "slug": "combined-preparations-233",
+      "generics_count": 1
+    },
+    {
+      "id": 269,
+      "name": "Combined preparations: Inhibiting bone resorption",
+      "slug": "combined-preparations-inhibiting-bone-resorption-269",
+      "generics_count": 1
+    },
+    {
+      "id": 417,
+      "name": "Compound steroidal preparations",
+      "slug": "compound-steroidal-preparations-417",
+      "generics_count": 2
+    },
+    {
+      "id": 439,
+      "name": "Contrast medium for diagnostic procedures",
+      "slug": "contrast-medium-for-diagnostic-procedures-439",
+      "generics_count": 6
+    },
+    {
+      "id": 518,
+      "name": "Corticosteroid",
+      "slug": "corticosteroid-518",
+      "generics_count": 10
+    },
+    {
+      "id": 23,
+      "name": "Corticosteroid",
+      "slug": "corticosteroid-23",
+      "generics_count": 10
+    },
+    {
+      "id": 488,
+      "name": "Cough expectorants & mucolytics",
+      "slug": "cough-expectorants-mucolytics-488",
+      "generics_count": 6
+    },
+    {
+      "id": 489,
+      "name": "Cough suppressant",
+      "slug": "cough-suppressant-489",
+      "generics_count": 4
+    },
+    {
+      "id": 478,
+      "name": "Cromoglycate & related drugs",
+      "slug": "cromoglycate-related-drugs-478",
+      "generics_count": 1
+    },
+    {
+      "id": 219,
+      "name": "Crystal violet/ Gentian violet preparations",
+      "slug": "crystal-violet-gentian-violet-preparations-219",
+      "generics_count": 1
+    },
+    {
+      "id": 548,
+      "name": "Cytotoxic Chemotherapy",
+      "slug": "cytotoxic-chemotherapy-548",
+      "generics_count": 41
+    },
+    {
+      "id": 553,
+      "name": "Cytotoxic immunosuppressants",
+      "slug": "cytotoxic-immunosuppressants-553",
+      "generics_count": 3
+    },
+    {
+      "id": 312,
+      "name": "Decongestant",
+      "slug": "decongestant-312",
+      "generics_count": 1
+    },
+    {
+      "id": 48,
+      "name": "Depolarizing muscle relaxants",
+      "slug": "depolarizing-muscle-relaxants-48",
+      "generics_count": 1
+    },
+    {
+      "id": 390,
+      "name": "Digestive Enzyme",
+      "slug": "digestive-enzyme-390",
+      "generics_count": 3
+    },
+    {
+      "id": 578,
+      "name": "Dipeptidyl Peptidase-4 (DPP-4) inhibitor",
+      "slug": "dipeptidyl-peptidase-4-dpp-4-inhibitor-578",
+      "generics_count": 6
+    },
+    {
+      "id": 501,
+      "name": "Direct Renin Inhibitors",
+      "slug": "direct-renin-inhibitors-501",
+      "generics_count": 1
+    },
+    {
+      "id": 460,
+      "name": "Disease-modifying antirheumatic drugs (DMARDs)",
+      "slug": "disease-modifying-antirheumatic-drugs-dmards-460",
+      "generics_count": 3
+    },
+    {
+      "id": 210,
+      "name": "Dithranol & combined preparations",
+      "slug": "dithranol-combined-preparations-210",
+      "generics_count": 1
+    },
+    {
+      "id": 222,
+      "name": "Dressing products for wounds/burns/ulcers",
+      "slug": "dressing-products-for-woundsburnsulcers-222",
+      "generics_count": 1
+    },
+    {
+      "id": 426,
+      "name": "Drugs acting on the Uterus",
+      "slug": "drugs-acting-on-the-uterus-426",
+      "generics_count": 12
+    },
+    {
+      "id": 604,
+      "name": "Drugs affecting (inhibiting) gonadotrophin",
+      "slug": "drugs-affecting-inhibiting-gonadotrophin-604",
+      "generics_count": 4
+    },
+    {
+      "id": 391,
+      "name": "Drugs affecting exocrine secretions",
+      "slug": "drugs-affecting-exocrine-secretions-391",
+      "generics_count": 2
+    },
+    {
+      "id": 211,
+      "name": "Drugs affecting the immune response",
+      "slug": "drugs-affecting-the-immune-response-211",
+      "generics_count": 3
+    },
+    {
+      "id": 358,
+      "name": "Drugs for Age-Related Macular Degeneration (AMD)",
+      "slug": "drugs-for-age-related-macular-degeneration-amd-358",
+      "generics_count": 2
+    },
+    {
+      "id": 537,
+      "name": "Drugs for Aphthous ulcer",
+      "slug": "drugs-for-aphthous-ulcer-537",
+      "generics_count": 0
+    },
+    {
+      "id": 175,
+      "name": "Drugs for Dementia",
+      "slug": "drugs-for-dementia-175",
+      "generics_count": 2
+    },
+    {
+      "id": 359,
+      "name": "Drugs for Dry eyes",
+      "slug": "drugs-for-dry-eyes-359",
+      "generics_count": 12
+    },
+    {
+      "id": 427,
+      "name": "Drugs for Erectile Dysfunction",
+      "slug": "drugs-for-erectile-dysfunction-427",
+      "generics_count": 5
+    },
+    {
+      "id": 599,
+      "name": "Drugs for Growth failure",
+      "slug": "drugs-for-growth-failure-599",
+      "generics_count": 1
+    },
+    {
+      "id": 83,
+      "name": "Drugs for HIV / Anti-retroviral drugs",
+      "slug": "drugs-for-hiv-anti-retroviral-drugs-83",
+      "generics_count": 10
+    },
+    {
+      "id": 263,
+      "name": "Drugs for Haemolytic Hypoplastic & Renal Anemia",
+      "slug": "drugs-for-haemolytic-hypoplastic-renal-anemia-263",
+      "generics_count": 6
+    },
+    {
+      "id": 600,
+      "name": "Drugs for Infertility",
+      "slug": "drugs-for-infertility-600",
+      "generics_count": 9
+    },
+    {
+      "id": 415,
+      "name": "Drugs for Irritable Bowel Syndrome",
+      "slug": "drugs-for-irritable-bowel-syndrome-415",
+      "generics_count": 2
+    },
+    {
+      "id": 264,
+      "name": "Drugs for Megaloblastic Anemia",
+      "slug": "drugs-for-megaloblastic-anemia-264",
+      "generics_count": 3
+    },
+    {
+      "id": 601,
+      "name": "Drugs for Milk suppression",
+      "slug": "drugs-for-milk-suppression-601",
+      "generics_count": 0
+    },
+    {
+      "id": 519,
+      "name": "Drugs for Osteoarthritis",
+      "slug": "drugs-for-osteoarthritis-519",
+      "generics_count": 27
+    },
+    {
+      "id": 360,
+      "name": "Drugs for corneal oedema",
+      "slug": "drugs-for-corneal-oedema-360",
+      "generics_count": 0
+    },
+    {
+      "id": 361,
+      "name": "Drugs for lens opacification",
+      "slug": "drugs-for-lens-opacification-361",
+      "generics_count": 1
+    },
+    {
+      "id": 602,
+      "name": "Drugs for menopausal symptoms: Hormone replacement therapy",
+      "slug": "drugs-for-menopausal-symptoms-hormone-replacement-therapy-602",
+      "generics_count": 8
+    },
+    {
+      "id": 362,
+      "name": "Drugs for miotics and glaucoma",
+      "slug": "drugs-for-miotics-and-glaucoma-362",
+      "generics_count": 17
+    },
+    {
+      "id": 138,
+      "name": "Drugs for muscular energy metabolism",
+      "slug": "drugs-for-muscular-energy-metabolism-138",
+      "generics_count": 1
+    },
+    {
+      "id": 430,
+      "name": "Drugs for reduction of serum phosphorus in patients with ESRD",
+      "slug": "drugs-for-reduction-of-serum-phosphorus-in-patients-with-esrd-430",
+      "generics_count": 2
+    },
+    {
+      "id": 77,
+      "name": "Drugs for subcutaneous and mycoses",
+      "slug": "drugs-for-subcutaneous-and-mycoses-77",
+      "generics_count": 8
+    },
+    {
+      "id": 461,
+      "name": "Drugs used for Rheumatoid Arthritis",
+      "slug": "drugs-used-for-rheumatoid-arthritis-461",
+      "generics_count": 32
+    },
+    {
+      "id": 428,
+      "name": "Drugs used in Ano-rectal region",
+      "slug": "drugs-used-in-ano-rectal-region-428",
+      "generics_count": 5
+    },
+    {
+      "id": 467,
+      "name": "Drugs used in Cerebral Palsy",
+      "slug": "drugs-used-in-cerebral-palsy-467",
+      "generics_count": 1
+    },
+    {
+      "id": 462,
+      "name": "Drugs used in Gout",
+      "slug": "drugs-used-in-gout-462",
+      "generics_count": 5
+    },
+    {
+      "id": 468,
+      "name": "Drugs used in Myasthenia Gravis",
+      "slug": "drugs-used-in-myasthenia-gravis-468",
+      "generics_count": 2
+    },
+    {
+      "id": 429,
+      "name": "Drugs used in Vaginal and Vulval condition",
+      "slug": "drugs-used-in-vaginal-and-vulval-condition-429",
+      "generics_count": 12
+    },
+    {
+      "id": 622,
+      "name": "Drugs used in chronic kidney dialysis",
+      "slug": "drugs-used-in-chronic-kidney-dialysis-622",
+      "generics_count": 2
+    },
+    {
+      "id": 239,
+      "name": "Drugs used in diaper rash",
+      "slug": "drugs-used-in-diaper-rash-239",
+      "generics_count": 2
+    },
+    {
+      "id": 172,
+      "name": "Drugs used in meniere's diseases",
+      "slug": "drugs-used-in-menieres-diseases-172",
+      "generics_count": 2
+    },
+    {
+      "id": 180,
+      "name": "Drugs used in substance dependence",
+      "slug": "drugs-used-in-substance-dependence-180",
+      "generics_count": 1
+    },
+    {
+      "id": 176,
+      "name": "Drugs used in tremor, tics & related disorder",
+      "slug": "drugs-used-in-tremor-tics-related-disorder-176",
+      "generics_count": 2
+    },
+    {
+      "id": 616,
+      "name": "Dyslipidaemic Agents",
+      "slug": "dyslipidaemic-agents-616",
+      "generics_count": 1
+    },
+    {
+      "id": 566,
+      "name": "Ear Anti-Infectives & Antiseptics",
+      "slug": "ear-anti-infectives-antiseptics-566",
+      "generics_count": 1
+    },
+    {
+      "id": 653,
+      "name": "Echinocandins",
+      "slug": "echinocandins-653",
+      "generics_count": 1
+    },
+    {
+      "id": 621,
+      "name": "Electrolytes preparations",
+      "slug": "electrolytes-preparations-621",
+      "generics_count": 3
+    },
+    {
+      "id": 608,
+      "name": "Emergency Contraceptive Pill",
+      "slug": "emergency-contraceptive-pill-608",
+      "generics_count": 2
+    },
+    {
+      "id": 212,
+      "name": "Emollients & combined preparations",
+      "slug": "emollients-combined-preparations-212",
+      "generics_count": 8
+    },
+    {
+      "id": 502,
+      "name": "Endothelin receptor antagonist",
+      "slug": "endothelin-receptor-antagonist-502",
+      "generics_count": 2
+    },
+    {
+      "id": 396,
+      "name": "Enema & bowel cleansing solution",
+      "slug": "enema-bowel-cleansing-solution-396",
+      "generics_count": 3
+    },
+    {
+      "id": 470,
+      "name": "Enzymes",
+      "slug": "enzymes-470",
+      "generics_count": 1
+    },
+    {
+      "id": 156,
+      "name": "Ergot Alkaloids",
+      "slug": "ergot-alkaloids-156",
+      "generics_count": 1
+    },
+    {
+      "id": 565,
+      "name": "Eye Anti-Infectives & Antiseptics",
+      "slug": "eye-anti-infectives-antiseptics-565",
+      "generics_count": 2
+    },
+    {
+      "id": 132,
+      "name": "Ezetimibe",
+      "slug": "ezetimibe-132",
+      "generics_count": 1
+    },
+    {
+      "id": 634,
+      "name": "Farnesoid X Receptor Agonists",
+      "slug": "farnesoid-x-receptor-agonists-634",
+      "generics_count": 1
+    },
+    {
+      "id": 593,
+      "name": "Female Sex hormones",
+      "slug": "female-sex-hormones-593",
+      "generics_count": 19
+    },
+    {
+      "id": 133,
+      "name": "Fibrates",
+      "slug": "fibrates-133",
+      "generics_count": 1
+    },
+    {
+      "id": 99,
+      "name": "Fibrinolytics (Thrombolytics)",
+      "slug": "fibrinolytics-thrombolytics-99",
+      "generics_count": 7
+    },
+    {
+      "id": 63,
+      "name": "First generation Cephalosporins",
+      "slug": "first-generation-cephalosporins-63",
+      "generics_count": 4
+    },
+    {
+      "id": 251,
+      "name": "Fluocinolone & Combined Preparations",
+      "slug": "fluocinolone-combined-preparations-251",
+      "generics_count": 6
+    },
+    {
+      "id": 252,
+      "name": "Fluticasone & combined preparations topical",
+      "slug": "fluticasone-combined-preparations-topical-252",
+      "generics_count": 1
+    },
+    {
+      "id": 64,
+      "name": "Fourth generation Cephalosporins",
+      "slug": "fourth-generation-cephalosporins-64",
+      "generics_count": 2
+    },
+    {
+      "id": 584,
+      "name": "GLP-1 receptor agonists",
+      "slug": "glp-1-receptor-agonists-584",
+      "generics_count": 4
+    },
+    {
+      "id": 442,
+      "name": "Gadodiamide",
+      "slug": "gadodiamide-442",
+      "generics_count": 0
+    },
+    {
+      "id": 441,
+      "name": "Gadoversetamide",
+      "slug": "gadoversetamide-441",
+      "generics_count": 0
+    },
+    {
+      "id": 41,
+      "name": "General (Inhalation) anesthetics",
+      "slug": "general-inhalation-anesthetics-41",
+      "generics_count": 3
+    },
+    {
+      "id": 42,
+      "name": "General (Intravenous) anesthetics",
+      "slug": "general-intravenous-anesthetics-42",
+      "generics_count": 3
+    },
+    {
+      "id": 589,
+      "name": "Glucocorticoids",
+      "slug": "glucocorticoids-589",
+      "generics_count": 10
+    },
+    {
+      "id": 648,
+      "name": "Glycopeptide",
+      "slug": "glycopeptide-648",
+      "generics_count": 1
+    },
+    {
+      "id": 594,
+      "name": "Gonadotropin-releasing hormone (GnRH) antagonist",
+      "slug": "gonadotropin-releasing-hormone-gnrh-antagonist-594",
+      "generics_count": 2
+    },
+    {
+      "id": 605,
+      "name": "Growth hormone antagonist",
+      "slug": "growth-hormone-antagonist-605",
+      "generics_count": 2
+    },
+    {
+      "id": 544,
+      "name": "H2 receptor antagonist",
+      "slug": "h2-receptor-antagonist-544",
+      "generics_count": 3
+    },
+    {
+      "id": 538,
+      "name": "H2 receptor antagonist",
+      "slug": "h2-receptor-antagonist-538",
+      "generics_count": 3
+    },
+    {
+      "id": 528,
+      "name": "H2 receptor antagonist",
+      "slug": "h2-receptor-antagonist-528",
+      "generics_count": 3
+    },
+    {
+      "id": 409,
+      "name": "H2 receptor antagonist",
+      "slug": "h2-receptor-antagonist-409",
+      "generics_count": 3
+    },
+    {
+      "id": 611,
+      "name": "Haematopoietic Agents",
+      "slug": "haematopoietic-agents-611",
+      "generics_count": 4
+    },
+    {
+      "id": 431,
+      "name": "Haemodialysis solutions",
+      "slug": "haemodialysis-solutions-431",
+      "generics_count": 4
+    },
+    {
+      "id": 106,
+      "name": "Haemostatic drugs",
+      "slug": "haemostatic-drugs-106",
+      "generics_count": 3
+    },
+    {
+      "id": 615,
+      "name": "Haemostatics",
+      "slug": "haemostatics-615",
+      "generics_count": 1
+    },
+    {
+      "id": 628,
+      "name": "Hair Growth Inhibitor",
+      "slug": "hair-growth-inhibitor-628",
+      "generics_count": 1
+    },
+    {
+      "id": 100,
+      "name": "Hematopoietic drug",
+      "slug": "hematopoietic-drug-100",
+      "generics_count": 1
+    },
+    {
+      "id": 85,
+      "name": "Hepatic viral infections (Hepatitis B)",
+      "slug": "hepatic-viral-infections-hepatitis-b-85",
+      "generics_count": 7
+    },
+    {
+      "id": 86,
+      "name": "Hepatic viral infections (Hepatitis C)",
+      "slug": "hepatic-viral-infections-hepatitis-c-86",
+      "generics_count": 8
+    },
+    {
+      "id": 645,
+      "name": "Herbal and Nutraceuticals",
+      "slug": "herbal-and-nutraceuticals-645",
+      "generics_count": 153
+    },
+    {
+      "id": 87,
+      "name": "Herpes simplex & Varicella-zoster virus infections",
+      "slug": "herpes-simplex-varicella-zoster-virus-infections-87",
+      "generics_count": 4
+    },
+    {
+      "id": 549,
+      "name": "Hormonal Chemotherapy",
+      "slug": "hormonal-chemotherapy-549",
+      "generics_count": 5
+    },
+    {
+      "id": 595,
+      "name": "Hormonal Implants",
+      "slug": "hormonal-implants-595",
+      "generics_count": 0
+    },
+    {
+      "id": 270,
+      "name": "Hormone in bone formation by Inhibiting bone resorption",
+      "slug": "hormone-in-bone-formation-by-inhibiting-bone-resorption-270",
+      "generics_count": 1
+    },
+    {
+      "id": 271,
+      "name": "Hormone in bone formation by stimulation",
+      "slug": "hormone-in-bone-formation-by-stimulation-271",
+      "generics_count": 2
+    },
+    {
+      "id": 603,
+      "name": "Hormone preparations for other uses",
+      "slug": "hormone-preparations-for-other-uses-603",
+      "generics_count": 2
+    },
+    {
+      "id": 253,
+      "name": "Hydrocortisone & Combined preparations",
+      "slug": "hydrocortisone-combined-preparations-253",
+      "generics_count": 6
+    },
+    {
+      "id": 231,
+      "name": "Hydroquinone Preparations",
+      "slug": "hydroquinone-preparations-231",
+      "generics_count": 2
+    },
+    {
+      "id": 647,
+      "name": "Hyperkalaemia Products",
+      "slug": "hyperkalaemia-products-647",
+      "generics_count": 1
+    },
+    {
+      "id": 550,
+      "name": "Immunological Chemotherapy",
+      "slug": "immunological-chemotherapy-550",
+      "generics_count": 4
+    },
+    {
+      "id": 640,
+      "name": "Immunomodulator",
+      "slug": "immunomodulator-640",
+      "generics_count": 1
+    },
+    {
+      "id": 26,
+      "name": "Immunosuppressant",
+      "slug": "immunosuppressant-26",
+      "generics_count": 14
+    },
+    {
+      "id": 273,
+      "name": "Inhibiting bone resorption",
+      "slug": "inhibiting-bone-resorption-273",
+      "generics_count": 2
+    },
+    {
+      "id": 119,
+      "name": "Inotropic-sympathomimetics",
+      "slug": "inotropic-sympathomimetics-119",
+      "generics_count": 2
+    },
+    {
+      "id": 68,
+      "name": "Intracellular antibiotic",
+      "slug": "intracellular-antibiotic-68",
+      "generics_count": 1
+    },
+    {
+      "id": 302,
+      "name": "Intravenous fluid preparations",
+      "slug": "intravenous-fluid-preparations-302",
+      "generics_count": 8
+    },
+    {
+      "id": 220,
+      "name": "Iodine compounds (Anti-septic Preparations)",
+      "slug": "iodine-compounds-anti-septic-preparations-220",
+      "generics_count": 1
+    },
+    {
+      "id": 259,
+      "name": "Iron & Vitamin Combined preparations",
+      "slug": "iron-vitamin-combined-preparations-259",
+      "generics_count": 8
+    },
+    {
+      "id": 260,
+      "name": "Iron, Vitamin & Mineral Combined preparation",
+      "slug": "iron-vitamin-mineral-combined-preparation-260",
+      "generics_count": 8
+    },
+    {
+      "id": 434,
+      "name": "Irrigation Solution used in Urological Surgery",
+      "slug": "irrigation-solution-used-in-urological-surgery-434",
+      "generics_count": 1
+    },
+    {
+      "id": 613,
+      "name": "Irrigation during various surgical procedures",
+      "slug": "irrigation-during-various-surgical-procedures-613",
+      "generics_count": 1
+    },
+    {
+      "id": 81,
+      "name": "Leishmaniacides",
+      "slug": "leishmaniacides-81",
+      "generics_count": 2
+    },
+    {
+      "id": 479,
+      "name": "Leukotriene receptor antagonists",
+      "slug": "leukotriene-receptor-antagonists-479",
+      "generics_count": 2
+    },
+    {
+      "id": 45,
+      "name": "Local & Surface anesthesia",
+      "slug": "local-surface-anesthesia-45",
+      "generics_count": 9
+    },
+    {
+      "id": 245,
+      "name": "Local Antipruritic",
+      "slug": "local-antipruritic-245",
+      "generics_count": 9
+    },
+    {
+      "id": 469,
+      "name": "Locally acting Skeletal Muscle Relaxants",
+      "slug": "locally-acting-skeletal-muscle-relaxants-469",
+      "generics_count": 3
+    },
+    {
+      "id": 585,
+      "name": "Long Acting Insulin",
+      "slug": "long-acting-insulin-585",
+      "generics_count": 4
+    },
+    {
+      "id": 65,
+      "name": "Long acting penicillin",
+      "slug": "long-acting-penicillin-65",
+      "generics_count": 1
+    },
+    {
+      "id": 480,
+      "name": "Long-acting selective β-adrenoceptor stimulants",
+      "slug": "long-acting-selective-β-adrenoceptor-stimulants-480",
+      "generics_count": 4
+    },
+    {
+      "id": 503,
+      "name": "Loop diuretics",
+      "slug": "loop-diuretics-503",
+      "generics_count": 4
+    },
+    {
+      "id": 120,
+      "name": "Loop diuretics",
+      "slug": "loop-diuretics-120",
+      "generics_count": 4
+    },
+    {
+      "id": 66,
+      "name": "Macrolides",
+      "slug": "macrolides-66",
+      "generics_count": 13
+    },
+    {
+      "id": 596,
+      "name": "Male Sex hormones (Androgens)",
+      "slug": "male-sex-hormones-androgens-596",
+      "generics_count": 2
+    },
+    {
+      "id": 313,
+      "name": "Mast Cell Stabiliser",
+      "slug": "mast-cell-stabiliser-313",
+      "generics_count": 3
+    },
+    {
+      "id": 67,
+      "name": "Mecillinams",
+      "slug": "mecillinams-67",
+      "generics_count": 1
+    },
+    {
+      "id": 236,
+      "name": "Medicated Shampoos",
+      "slug": "medicated-shampoos-236",
+      "generics_count": 0
+    },
+    {
+      "id": 586,
+      "name": "Medium Acting Insulin",
+      "slug": "medium-acting-insulin-586",
+      "generics_count": 1
+    },
+    {
+      "id": 579,
+      "name": "Meglitinide Analogues",
+      "slug": "meglitinide-analogues-579",
+      "generics_count": 2
+    },
+    {
+      "id": 115,
+      "name": "Membrane stabilizing agent (Sodium channel blockers)",
+      "slug": "membrane-stabilizing-agent-sodium-channel-blockers-115",
+      "generics_count": 2
+    },
+    {
+      "id": 230,
+      "name": "Methoxsalen preparation",
+      "slug": "methoxsalen-preparation-230",
+      "generics_count": 1
+    },
+    {
+      "id": 481,
+      "name": "Methyl xanthine derivatives",
+      "slug": "methyl-xanthine-derivatives-481",
+      "generics_count": 2
+    },
+    {
+      "id": 272,
+      "name": "Minerals in bone formation",
+      "slug": "minerals-in-bone-formation-272",
+      "generics_count": 6
+    },
+    {
+      "id": 189,
+      "name": "Miscellaneous prophylactic migraine preparations",
+      "slug": "miscellaneous-prophylactic-migraine-preparations-189",
+      "generics_count": 1
+    },
+    {
+      "id": 161,
+      "name": "Miscellaneous sedatives & hypnotics",
+      "slug": "miscellaneous-sedatives-hypnotics-161",
+      "generics_count": 9
+    },
+    {
+      "id": 558,
+      "name": "Miscellaneous topical agents",
+      "slug": "miscellaneous-topical-agents-558",
+      "generics_count": 19
+    },
+    {
+      "id": 410,
+      "name": "Motility Stimulants",
+      "slug": "motility-stimulants-410",
+      "generics_count": 1
+    },
+    {
+      "id": 539,
+      "name": "Motility stimulants/Dopamine antagonist",
+      "slug": "motility-stimulantsdopamine-antagonist-539",
+      "generics_count": 2
+    },
+    {
+      "id": 520,
+      "name": "Multi-vitamin & Multi-mineral combined preparations",
+      "slug": "multi-vitamin-multi-mineral-combined-preparations-520",
+      "generics_count": 12
+    },
+    {
+      "id": 623,
+      "name": "Multiple gynecological preparation",
+      "slug": "multiple-gynecological-preparation-623",
+      "generics_count": 0
+    },
+    {
+      "id": 363,
+      "name": "Mydriatic and Cycloplegic agents",
+      "slug": "mydriatic-and-cycloplegic-agents-363",
+      "generics_count": 4
+    },
+    {
+      "id": 314,
+      "name": "Nasal Anti-cholinergic (Anti- muscarinic) Preparations",
+      "slug": "nasal-anti-cholinergic-anti-muscarinic-preparations-314",
+      "generics_count": 0
+    },
+    {
+      "id": 315,
+      "name": "Nasal Anti-histamine preparations",
+      "slug": "nasal-anti-histamine-preparations-315",
+      "generics_count": 4
+    },
+    {
+      "id": 614,
+      "name": "Nasal Decongestants & Other Nasal Preparations",
+      "slug": "nasal-decongestants-other-nasal-preparations-614",
+      "generics_count": 5
+    },
+    {
+      "id": 316,
+      "name": "Nasal Steroid Preparations",
+      "slug": "nasal-steroid-preparations-316",
+      "generics_count": 6
+    },
+    {
+      "id": 317,
+      "name": "Nasal non-steroid Preparation",
+      "slug": "nasal-non-steroid-preparation-317",
+      "generics_count": 0
+    },
+    {
+      "id": 631,
+      "name": "Neurodegenerative Disease Drugs / Neuromuscular Disorder Drugs",
+      "slug": "neurodegenerative-disease-drugs-neuromuscular-disorder-drugs-631",
+      "generics_count": 1
+    },
+    {
+      "id": 453,
+      "name": "Nicotine",
+      "slug": "nicotine-453",
+      "generics_count": 0
+    },
+    {
+      "id": 134,
+      "name": "Nicotinic acid group",
+      "slug": "nicotinic-acid-group-134",
+      "generics_count": 1
+    },
+    {
+      "id": 109,
+      "name": "Nitrates: Coronary vasodilators",
+      "slug": "nitrates-coronary-vasodilators-109",
+      "generics_count": 5
+    },
+    {
+      "id": 451,
+      "name": "Nitrous Oxide 98 % Gas",
+      "slug": "nitrous-oxide-98-gas-451",
+      "generics_count": 0
+    },
+    {
+      "id": 49,
+      "name": "Non depolarizing muscle relaxants",
+      "slug": "non-depolarizing-muscle-relaxants-49",
+      "generics_count": 5
+    },
+    {
+      "id": 43,
+      "name": "Non opioid analgesics",
+      "slug": "non-opioid-analgesics-43",
+      "generics_count": 4
+    },
+    {
+      "id": 162,
+      "name": "Non-Benzodiazepine hypnotics",
+      "slug": "non-benzodiazepine-hypnotics-162",
+      "generics_count": 0
+    },
+    {
+      "id": 152,
+      "name": "Non-Opioid Analgesics",
+      "slug": "non-opioid-analgesics-152",
+      "generics_count": 3
+    },
+    {
+      "id": 660,
+      "name": "Non-prostanoid IP prostacyclin receptor agonist",
+      "slug": "non-prostanoid-ip-prostacyclin-receptor-agonist-660",
+      "generics_count": 1
+    },
+    {
+      "id": 24,
+      "name": "Non-sedating antihistamines",
+      "slug": "non-sedating-antihistamines-24",
+      "generics_count": 9
+    },
+    {
+      "id": 153,
+      "name": "Non-steroidal Anti-inflammatory Drugs (NSAIDs)",
+      "slug": "non-steroidal-anti-inflammatory-drugs-nsaids-153",
+      "generics_count": 31
+    },
+    {
+      "id": 465,
+      "name": "Non-steroidal Anti-inflammatory Drugs (NSAIDs)",
+      "slug": "non-steroidal-anti-inflammatory-drugs-nsaids-465",
+      "generics_count": 31
+    },
+    {
+      "id": 364,
+      "name": "Ocular perioperative drugs",
+      "slug": "ocular-perioperative-drugs-364",
+      "generics_count": 2
+    },
+    {
+      "id": 365,
+      "name": "Ophthalmic Anti-allergic preparations",
+      "slug": "ophthalmic-anti-allergic-preparations-365",
+      "generics_count": 3
+    },
+    {
+      "id": 367,
+      "name": "Ophthalmic Anti-fungal Products",
+      "slug": "ophthalmic-anti-fungal-products-367",
+      "generics_count": 2
+    },
+    {
+      "id": 368,
+      "name": "Ophthalmic Anti-viral Products",
+      "slug": "ophthalmic-anti-viral-products-368",
+      "generics_count": 4
+    },
+    {
+      "id": 369,
+      "name": "Ophthalmic Non-Steroid Combined preparations",
+      "slug": "ophthalmic-non-steroid-combined-preparations-369",
+      "generics_count": 1
+    },
+    {
+      "id": 370,
+      "name": "Ophthalmic Non-Steroid drugs",
+      "slug": "ophthalmic-non-steroid-drugs-370",
+      "generics_count": 10
+    },
+    {
+      "id": 371,
+      "name": "Ophthalmic Steroid preparations",
+      "slug": "ophthalmic-steroid-preparations-371",
+      "generics_count": 8
+    },
+    {
+      "id": 372,
+      "name": "Ophthalmic Steroid- anti allergic combined preparations",
+      "slug": "ophthalmic-steroid-anti-allergic-combined-preparations-372",
+      "generics_count": 0
+    },
+    {
+      "id": 366,
+      "name": "Ophthalmic and Topical antibacterial products",
+      "slug": "ophthalmic-and-topical-antibacterial-products-366",
+      "generics_count": 1
+    },
+    {
+      "id": 562,
+      "name": "Ophthalmic antibacterial drugs",
+      "slug": "ophthalmic-antibacterial-drugs-562",
+      "generics_count": 16
+    },
+    {
+      "id": 373,
+      "name": "Ophthalmic steroid - antibiotic combined preparations",
+      "slug": "ophthalmic-steroid-antibiotic-combined-preparations-373",
+      "generics_count": 12
+    },
+    {
+      "id": 44,
+      "name": "Opioid analgesics",
+      "slug": "opioid-analgesics-44",
+      "generics_count": 8
+    },
+    {
+      "id": 101,
+      "name": "Oral Anti-coagulants",
+      "slug": "oral-anti-coagulants-101",
+      "generics_count": 3
+    },
+    {
+      "id": 597,
+      "name": "Oral Contraceptive preparations",
+      "slug": "oral-contraceptive-preparations-597",
+      "generics_count": 19
+    },
+    {
+      "id": 224,
+      "name": "Oral Hormonal preparations for Acne",
+      "slug": "oral-hormonal-preparations-for-acne-224",
+      "generics_count": 1
+    },
+    {
+      "id": 261,
+      "name": "Oral Iron preparations",
+      "slug": "oral-iron-preparations-261",
+      "generics_count": 6
+    },
+    {
+      "id": 213,
+      "name": "Oral Retinoid preparations",
+      "slug": "oral-retinoid-preparations-213",
+      "generics_count": 2
+    },
+    {
+      "id": 303,
+      "name": "Oral electrolytes preparations",
+      "slug": "oral-electrolytes-preparations-303",
+      "generics_count": 6
+    },
+    {
+      "id": 646,
+      "name": "Oral nutritional preparations",
+      "slug": "oral-nutritional-preparations-646",
+      "generics_count": 7
+    },
+    {
+      "id": 311,
+      "name": "Oral preparations",
+      "slug": "oral-preparations-311",
+      "generics_count": 5
+    },
+    {
+      "id": 225,
+      "name": "Oral retinoids for Acne",
+      "slug": "oral-retinoids-for-acne-225",
+      "generics_count": 1
+    },
+    {
+      "id": 504,
+      "name": "Osmotic diuretics",
+      "slug": "osmotic-diuretics-504",
+      "generics_count": 1
+    },
+    {
+      "id": 397,
+      "name": "Osmotic purgatives",
+      "slug": "osmotic-purgatives-397",
+      "generics_count": 9
+    },
+    {
+      "id": 110,
+      "name": "Other Anti-anginal & Anti-ischaemic drugs",
+      "slug": "other-anti-anginal-anti-ischaemic-drugs-110",
+      "generics_count": 8
+    },
+    {
+      "id": 82,
+      "name": "Other Anti-protozoals",
+      "slug": "other-anti-protozoals-82",
+      "generics_count": 2
+    },
+    {
+      "id": 240,
+      "name": "Other Antifungal preparations",
+      "slug": "other-antifungal-preparations-240",
+      "generics_count": 6
+    },
+    {
+      "id": 435,
+      "name": "Other Systemic Anti-infective Effective in Urinary tract infections",
+      "slug": "other-systemic-anti-infective-effective-in-urinary-tract-infections-435",
+      "generics_count": 0
+    },
+    {
+      "id": 254,
+      "name": "Other Topical corticosteroids",
+      "slug": "other-topical-corticosteroids-254",
+      "generics_count": 14
+    },
+    {
+      "id": 482,
+      "name": "Other adrenoceptor stimulants",
+      "slug": "other-adrenoceptor-stimulants-482",
+      "generics_count": 3
+    },
+    {
+      "id": 610,
+      "name": "Other antibacterial preparation",
+      "slug": "other-antibacterial-preparation-610",
+      "generics_count": 8
+    },
+    {
+      "id": 618,
+      "name": "Other antibiotic",
+      "slug": "other-antibiotic-618",
+      "generics_count": 2
+    },
+    {
+      "id": 69,
+      "name": "Other beta-lactam Antibiotics",
+      "slug": "other-beta-lactam-antibiotics-69",
+      "generics_count": 6
+    },
+    {
+      "id": 157,
+      "name": "Other drugs for migraine",
+      "slug": "other-drugs-for-migraine-157",
+      "generics_count": 3
+    },
+    {
+      "id": 540,
+      "name": "Other drugs used for peptic ulcer disease",
+      "slug": "other-drugs-used-for-peptic-ulcer-disease-540",
+      "generics_count": 0
+    },
+    {
+      "id": 546,
+      "name": "Other genito-urinary preparations",
+      "slug": "other-genito-urinary-preparations-546",
+      "generics_count": 4
+    },
+    {
+      "id": 398,
+      "name": "Other laxative preparations",
+      "slug": "other-laxative-preparations-398",
+      "generics_count": 2
+    },
+    {
+      "id": 135,
+      "name": "Other lipid regulating drugs",
+      "slug": "other-lipid-regulating-drugs-135",
+      "generics_count": 2
+    },
+    {
+      "id": 374,
+      "name": "Other ophthalmic preparations",
+      "slug": "other-ophthalmic-preparations-374",
+      "generics_count": 8
+    },
+    {
+      "id": 440,
+      "name": "Other preparations",
+      "slug": "other-preparations-440",
+      "generics_count": 6
+    },
+    {
+      "id": 237,
+      "name": "Other scalp preparations",
+      "slug": "other-scalp-preparations-237",
+      "generics_count": 3
+    },
+    {
+      "id": 620,
+      "name": "Oxidising agent with antibacterial and antiviral properties",
+      "slug": "oxidising-agent-with-antibacterial-and-antiviral-properties-620",
+      "generics_count": 1
+    },
+    {
+      "id": 659,
+      "name": "Painkiller Muscle Relaxant",
+      "slug": "painkiller-muscle-relaxant-659",
+      "generics_count": 1
+    },
+    {
+      "id": 241,
+      "name": "Parasiticidal preparations",
+      "slug": "parasiticidal-preparations-241",
+      "generics_count": 5
+    },
+    {
+      "id": 262,
+      "name": "Parenteral Iron Preparations",
+      "slug": "parenteral-iron-preparations-262",
+      "generics_count": 4
+    },
+    {
+      "id": 102,
+      "name": "Parenteral anti-coagulants",
+      "slug": "parenteral-anti-coagulants-102",
+      "generics_count": 4
+    },
+    {
+      "id": 295,
+      "name": "Parenteral nutritional preparations",
+      "slug": "parenteral-nutritional-preparations-295",
+      "generics_count": 9
+    },
+    {
+      "id": 116,
+      "name": "Paroxysmal supraventricular tachycardia (PSVT)",
+      "slug": "paroxysmal-supraventricular-tachycardia-psvt-116",
+      "generics_count": 1
+    },
+    {
+      "id": 71,
+      "name": "Penicillinase-resistant penicillins",
+      "slug": "penicillinase-resistant-penicillins-71",
+      "generics_count": 2
+    },
+    {
+      "id": 139,
+      "name": "Peripheral Vasodilator drugs: Intermittent Claudication",
+      "slug": "peripheral-vasodilator-drugs-intermittent-claudication-139",
+      "generics_count": 2
+    },
+    {
+      "id": 547,
+      "name": "Peritoneal dialysis solution",
+      "slug": "peritoneal-dialysis-solution-547",
+      "generics_count": 1
+    },
+    {
+      "id": 184,
+      "name": "Phenothiazine drugs",
+      "slug": "phenothiazine-drugs-184",
+      "generics_count": 4
+    },
+    {
+      "id": 185,
+      "name": "Phenothiazine related drugs",
+      "slug": "phenothiazine-related-drugs-185",
+      "generics_count": 5
+    },
+    {
+      "id": 418,
+      "name": "Phlebotonic & Vascular protecting preparation",
+      "slug": "phlebotonic-vascular-protecting-preparation-418",
+      "generics_count": 2
+    },
+    {
+      "id": 186,
+      "name": "Piperidinyl-benzisoxazole derivative",
+      "slug": "piperidinyl-benzisoxazole-derivative-186",
+      "generics_count": 1
+    },
+    {
+      "id": 304,
+      "name": "Plasma expanders",
+      "slug": "plasma-expanders-304",
+      "generics_count": 4
+    },
+    {
+      "id": 121,
+      "name": "Positive Inotropic drugs",
+      "slug": "positive-inotropic-drugs-121",
+      "generics_count": 1
+    },
+    {
+      "id": 112,
+      "name": "Potassium channel blockers",
+      "slug": "potassium-channel-blockers-112",
+      "generics_count": 1
+    },
+    {
+      "id": 111,
+      "name": "Potassium-channel activator",
+      "slug": "potassium-channel-activator-111",
+      "generics_count": 1
+    },
+    {
+      "id": 506,
+      "name": "Potassium-sparing diuretics",
+      "slug": "potassium-sparing-diuretics-506",
+      "generics_count": 3
+    },
+    {
+      "id": 122,
+      "name": "Potassium-sparing diuretics",
+      "slug": "potassium-sparing-diuretics-122",
+      "generics_count": 3
+    },
+    {
+      "id": 505,
+      "name": "Potassium-sparing diuretics & Aldosterone antagonists",
+      "slug": "potassium-sparing-diuretics-aldosterone-antagonists-505",
+      "generics_count": 3
+    },
+    {
+      "id": 375,
+      "name": "Preparations for Ophthalmic diagnosis",
+      "slug": "preparations-for-ophthalmic-diagnosis-375",
+      "generics_count": 3
+    },
+    {
+      "id": 564,
+      "name": "Preparations for Oral Ulceration & Inflammation",
+      "slug": "preparations-for-oral-ulceration-inflammation-564",
+      "generics_count": 1
+    },
+    {
+      "id": 424,
+      "name": "Prevention of repeated kidney stone formation",
+      "slug": "prevention-of-repeated-kidney-stone-formation-424",
+      "generics_count": 2
+    },
+    {
+      "id": 169,
+      "name": "Primary anti-epileptic drugs",
+      "slug": "primary-anti-epileptic-drugs-169",
+      "generics_count": 6
+    },
+    {
+      "id": 524,
+      "name": "Prokinetic drugs",
+      "slug": "prokinetic-drugs-524",
+      "generics_count": 3
+    },
+    {
+      "id": 541,
+      "name": "Prostaglandin analogues",
+      "slug": "prostaglandin-analogues-541",
+      "generics_count": 3
+    },
+    {
+      "id": 643,
+      "name": "Protein kinase inhibitor",
+      "slug": "protein-kinase-inhibitor-643",
+      "generics_count": 2
+    },
+    {
+      "id": 545,
+      "name": "Proton Pump Inhibitor",
+      "slug": "proton-pump-inhibitor-545",
+      "generics_count": 6
+    },
+    {
+      "id": 542,
+      "name": "Proton Pump Inhibitor",
+      "slug": "proton-pump-inhibitor-542",
+      "generics_count": 6
+    },
+    {
+      "id": 529,
+      "name": "Proton Pump Inhibitor",
+      "slug": "proton-pump-inhibitor-529",
+      "generics_count": 6
+    },
+    {
+      "id": 526,
+      "name": "Proton Pump Inhibitor",
+      "slug": "proton-pump-inhibitor-526",
+      "generics_count": 6
+    },
+    {
+      "id": 411,
+      "name": "Proton Pump Inhibitor",
+      "slug": "proton-pump-inhibitor-411",
+      "generics_count": 6
+    },
+    {
+      "id": 490,
+      "name": "Pulmonary surfactants",
+      "slug": "pulmonary-surfactants-490",
+      "generics_count": 1
+    },
+    {
+      "id": 455,
+      "name": "Purified Soybean Oil",
+      "slug": "purified-soybean-oil-455",
+      "generics_count": 0
+    },
+    {
+      "id": 638,
+      "name": "Pyrrolopyrimidines",
+      "slug": "pyrrolopyrimidines-638",
+      "generics_count": 1
+    },
+    {
+      "id": 587,
+      "name": "Rapid Acting Insulin",
+      "slug": "rapid-acting-insulin-587",
+      "generics_count": 6
+    },
+    {
+      "id": 46,
+      "name": "Regional anesthesia",
+      "slug": "regional-anesthesia-46",
+      "generics_count": 3
+    },
+    {
+      "id": 483,
+      "name": "Respiratory corticosteroids",
+      "slug": "respiratory-corticosteroids-483",
+      "generics_count": 13
+    },
+    {
+      "id": 491,
+      "name": "Respiratory stimulants: analeptics",
+      "slug": "respiratory-stimulants-analeptics-491",
+      "generics_count": 3
+    },
+    {
+      "id": 88,
+      "name": "Respiratory viral infections (Influenza)",
+      "slug": "respiratory-viral-infections-influenza-88",
+      "generics_count": 3
+    },
+    {
+      "id": 165,
+      "name": "SSRIs & related anti-depressant drugs",
+      "slug": "ssris-related-anti-depressant-drugs-165",
+      "generics_count": 6
+    },
+    {
+      "id": 456,
+      "name": "Salmon Calcitonin",
+      "slug": "salmon-calcitonin-456",
+      "generics_count": 0
+    },
+    {
+      "id": 72,
+      "name": "Second generation Cephalosporins",
+      "slug": "second-generation-cephalosporins-72",
+      "generics_count": 5
+    },
+    {
+      "id": 25,
+      "name": "Sedating Anti-histamine",
+      "slug": "sedating-anti-histamine-25",
+      "generics_count": 10
+    },
+    {
+      "id": 652,
+      "name": "Selective vasopressin V2-receptor antagonist",
+      "slug": "selective-vasopressin-v2-receptor-antagonist-652",
+      "generics_count": 1
+    },
+    {
+      "id": 166,
+      "name": "Serotonin-norepinephrine reuptake inhibitor (SNRI)",
+      "slug": "serotonin-norepinephrine-reuptake-inhibitor-snri-166",
+      "generics_count": 6
+    },
+    {
+      "id": 588,
+      "name": "Short Acting Insulin",
+      "slug": "short-acting-insulin-588",
+      "generics_count": 0
+    },
+    {
+      "id": 484,
+      "name": "Short-acting selective & β2-adrenoceptor stimulants",
+      "slug": "short-acting-selective-β2-adrenoceptor-stimulants-484",
+      "generics_count": 7
+    },
+    {
+      "id": 449,
+      "name": "Silymarin",
+      "slug": "silymarin-449",
+      "generics_count": 0
+    },
+    {
+      "id": 580,
+      "name": "Sodium-glucose Cotransporter-2 (SGLT2) Inhibitors",
+      "slug": "sodium-glucose-cotransporter-2-sglt2-inhibitors-580",
+      "generics_count": 4
+    },
+    {
+      "id": 288,
+      "name": "Specific combined vitamin preparations",
+      "slug": "specific-combined-vitamin-preparations-288",
+      "generics_count": 14
+    },
+    {
+      "id": 289,
+      "name": "Specific mineral & vitamin combined preparations",
+      "slug": "specific-mineral-vitamin-combined-preparations-289",
+      "generics_count": 15
+    },
+    {
+      "id": 290,
+      "name": "Specific mineral preparations",
+      "slug": "specific-mineral-preparations-290",
+      "generics_count": 13
+    },
+    {
+      "id": 517,
+      "name": "Statins",
+      "slug": "statins-517",
+      "generics_count": 5
+    },
+    {
+      "id": 136,
+      "name": "Statins",
+      "slug": "statins-136",
+      "generics_count": 5
+    },
+    {
+      "id": 399,
+      "name": "Stimulant purgatives",
+      "slug": "stimulant-purgatives-399",
+      "generics_count": 1
+    },
+    {
+      "id": 276,
+      "name": "Stimulation of Cartilage formation",
+      "slug": "stimulation-of-cartilage-formation-276",
+      "generics_count": 3
+    },
+    {
+      "id": 661,
+      "name": "Stimulator of soluble guanylate cyclase",
+      "slug": "stimulator-of-soluble-guanylate-cyclase-661",
+      "generics_count": 1
+    },
+    {
+      "id": 400,
+      "name": "Stool softener",
+      "slug": "stool-softener-400",
+      "generics_count": 1
+    },
+    {
+      "id": 581,
+      "name": "Sulfonylureas",
+      "slug": "sulfonylureas-581",
+      "generics_count": 4
+    },
+    {
+      "id": 73,
+      "name": "Sulphonamides & Trimethoprim",
+      "slug": "sulphonamides-trimethoprim-73",
+      "generics_count": 1
+    },
+    {
+      "id": 235,
+      "name": "Sunblock Preparation",
+      "slug": "sunblock-preparation-235",
+      "generics_count": 7
+    },
+    {
+      "id": 560,
+      "name": "Supplements & adjuvant therapy",
+      "slug": "supplements-adjuvant-therapy-560",
+      "generics_count": 4
+    },
+    {
+      "id": 551,
+      "name": "Supportive Care Therapy",
+      "slug": "supportive-care-therapy-551",
+      "generics_count": 2
+    },
+    {
+      "id": 656,
+      "name": "Synthetic analogue of ADH",
+      "slug": "synthetic-analogue-of-adh-656",
+      "generics_count": 1
+    },
+    {
+      "id": 436,
+      "name": "Systemic Urinary Anti- infective",
+      "slug": "systemic-urinary-anti-infective-436",
+      "generics_count": 3
+    },
+    {
+      "id": 552,
+      "name": "Targeted Cancer Therapy",
+      "slug": "targeted-cancer-therapy-552",
+      "generics_count": 18
+    },
+    {
+      "id": 74,
+      "name": "Tetracycline group of drugs",
+      "slug": "tetracycline-group-of-drugs-74",
+      "generics_count": 6
+    },
+    {
+      "id": 485,
+      "name": "Theophylline & related drugs",
+      "slug": "theophylline-related-drugs-485",
+      "generics_count": 2
+    },
+    {
+      "id": 507,
+      "name": "Thiazide diuretics & related drugs",
+      "slug": "thiazide-diuretics-related-drugs-507",
+      "generics_count": 4
+    },
+    {
+      "id": 123,
+      "name": "Thiazide diuretics & related drugs",
+      "slug": "thiazide-diuretics-related-drugs-123",
+      "generics_count": 4
+    },
+    {
+      "id": 582,
+      "name": "Thiazolidinedione Group",
+      "slug": "thiazolidinedione-group-582",
+      "generics_count": 1
+    },
+    {
+      "id": 75,
+      "name": "Third generation Cephalosporins",
+      "slug": "third-generation-cephalosporins-75",
+      "generics_count": 10
+    },
+    {
+      "id": 607,
+      "name": "Thyroid drugs & hormone",
+      "slug": "thyroid-drugs-hormone-607",
+      "generics_count": 4
+    },
+    {
+      "id": 208,
+      "name": "Topical Analgesics",
+      "slug": "topical-analgesics-208",
+      "generics_count": 9
+    },
+    {
+      "id": 242,
+      "name": "Topical Antibiotic preparations",
+      "slug": "topical-antibiotic-preparations-242",
+      "generics_count": 10
+    },
+    {
+      "id": 243,
+      "name": "Topical Antifungal preparations",
+      "slug": "topical-antifungal-preparations-243",
+      "generics_count": 19
+    },
+    {
+      "id": 246,
+      "name": "Topical Antihistamines",
+      "slug": "topical-antihistamines-246",
+      "generics_count": 1
+    },
+    {
+      "id": 244,
+      "name": "Topical Antiviral preparations",
+      "slug": "topical-antiviral-preparations-244",
+      "generics_count": 1
+    },
+    {
+      "id": 247,
+      "name": "Topical Local Anesthetics",
+      "slug": "topical-local-anesthetics-247",
+      "generics_count": 3
+    },
+    {
+      "id": 215,
+      "name": "Topical Vitamin D & related preparations",
+      "slug": "topical-vitamin-d-related-preparations-215",
+      "generics_count": 1
+    },
+    {
+      "id": 471,
+      "name": "Topical anti-inflammatory preparations",
+      "slug": "topical-anti-inflammatory-preparations-471",
+      "generics_count": 9
+    },
+    {
+      "id": 226,
+      "name": "Topical antibiotic & retinoid preparations",
+      "slug": "topical-antibiotic-retinoid-preparations-226",
+      "generics_count": 1
+    },
+    {
+      "id": 227,
+      "name": "Topical antibiotics for Acne",
+      "slug": "topical-antibiotics-for-acne-227",
+      "generics_count": 2
+    },
+    {
+      "id": 228,
+      "name": "Topical retinoid and related preparations",
+      "slug": "topical-retinoid-and-related-preparations-228",
+      "generics_count": 4
+    },
+    {
+      "id": 214,
+      "name": "Topical retinoid and related preparations",
+      "slug": "topical-retinoid-and-related-preparations-214",
+      "generics_count": 7
+    },
+    {
+      "id": 234,
+      "name": "Topical salicylic preparation",
+      "slug": "topical-salicylic-preparation-234",
+      "generics_count": 1
+    },
+    {
+      "id": 229,
+      "name": "Topical urea preparations",
+      "slug": "topical-urea-preparations-229",
+      "generics_count": 2
+    },
+    {
+      "id": 255,
+      "name": "Triamcinolone & Combined preparations",
+      "slug": "triamcinolone-combined-preparations-255",
+      "generics_count": 4
+    },
+    {
+      "id": 167,
+      "name": "Tricyclic & related anti-depressant drugs",
+      "slug": "tricyclic-related-anti-depressant-drugs-167",
+      "generics_count": 5
+    },
+    {
+      "id": 190,
+      "name": "Tricyclic Anti-depressant",
+      "slug": "tricyclic-anti-depressant-190",
+      "generics_count": 5
+    },
+    {
+      "id": 617,
+      "name": "Trophic Hormones & Related Synthetic Drugs",
+      "slug": "trophic-hormones-related-synthetic-drugs-617",
+      "generics_count": 3
+    },
+    {
+      "id": 639,
+      "name": "Tyrosine Kinase Inhibitor",
+      "slug": "tyrosine-kinase-inhibitor-639",
+      "generics_count": 7
+    },
+    {
+      "id": 543,
+      "name": "Ulcer protective",
+      "slug": "ulcer-protective-543",
+      "generics_count": 0
+    },
+    {
+      "id": 416,
+      "name": "Ulcerative Colitis",
+      "slug": "ulcerative-colitis-416",
+      "generics_count": 2
+    },
+    {
+      "id": 437,
+      "name": "Urinary Alkalinizing Agent",
+      "slug": "urinary-alkalinizing-agent-437",
+      "generics_count": 2
+    },
+    {
+      "id": 27,
+      "name": "Vaccines, Anti-sera & Immunoglobulin",
+      "slug": "vaccines-anti-sera-immunoglobulin-27",
+      "generics_count": 36
+    },
+    {
+      "id": 633,
+      "name": "Vaso Protective",
+      "slug": "vaso-protective-633",
+      "generics_count": 1
+    },
+    {
+      "id": 124,
+      "name": "Vasoconstrictor/Venotonic",
+      "slug": "vasoconstrictorvenotonic-124",
+      "generics_count": 2
+    },
+    {
+      "id": 508,
+      "name": "Vasodilator antihypertensive drugs",
+      "slug": "vasodilator-antihypertensive-drugs-508",
+      "generics_count": 1
+    },
+    {
+      "id": 274,
+      "name": "Vitamin in bone formation",
+      "slug": "vitamin-in-bone-formation-274",
+      "generics_count": 3
+    },
+    {
+      "id": 296,
+      "name": "Vitamin-A preparations",
+      "slug": "vitamin-a-preparations-296",
+      "generics_count": 1
+    },
+    {
+      "id": 297,
+      "name": "Vitamin-B preparations",
+      "slug": "vitamin-b-preparations-297",
+      "generics_count": 7
+    },
+    {
+      "id": 298,
+      "name": "Vitamin-C Preparations",
+      "slug": "vitamin-c-preparations-298",
+      "generics_count": 1
+    },
+    {
+      "id": 299,
+      "name": "Vitamin-D preparations",
+      "slug": "vitamin-d-preparations-299",
+      "generics_count": 3
+    },
+    {
+      "id": 300,
+      "name": "Vitamin-E Preparations",
+      "slug": "vitamin-e-preparations-300",
+      "generics_count": 1
+    },
+    {
+      "id": 301,
+      "name": "Vitamin-K Preparations",
+      "slug": "vitamin-k-preparations-301",
+      "generics_count": 2
+    },
+    {
+      "id": 406,
+      "name": "Water purifying agent",
+      "slug": "water-purifying-agent-406",
+      "generics_count": 2
+    },
+    {
+      "id": 216,
+      "name": "Zinc & Combined preparations",
+      "slug": "zinc-combined-preparations-216",
+      "generics_count": 0
+    },
+    {
+      "id": 445,
+      "name": "lodixanol",
+      "slug": "lodixanol-445",
+      "generics_count": 0
+    },
+    {
+      "id": 446,
+      "name": "lohexol",
+      "slug": "lohexol-446",
+      "generics_count": 0
+    },
+    {
+      "id": 447,
+      "name": "lopamidol",
+      "slug": "lopamidol-447",
+      "generics_count": 0
+    },
+    {
+      "id": 443,
+      "name": "lopanoic Acid",
+      "slug": "lopanoic-acid-443",
+      "generics_count": 0
+    },
+    {
+      "id": 448,
+      "name": "loversol",
+      "slug": "loversol-448",
+      "generics_count": 0
+    }
+  ]
+}
