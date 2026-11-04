@@ -1,0 +1,1005 @@
+{
+  "version": "2.0.0",
+  "updated_at": "2026-11-04",
+  "sources": [
+    "DGDA (Directorate General of Drug Administration, Bangladesh) Registered Medicine Directory (21,714 Brands)",
+    "MedEx Bangladesh Clinical Pharmacology & Generic Monographs (1,711 Generics)",
+    "DGHS (Directorate General of Health Services, Bangladesh) Standard Treatment Guidelines (STG)",
+    "WHO (World Health Organization) Pocket Book of Hospital Care & Essential Medicines",
+    "icddr,b (International Centre for Diarrhoeal Disease Research, Bangladesh) Clinical Protocols",
+    "BADAS (Diabetic Association of Bangladesh) Clinical & Nutritional Management Guidelines",
+    "British National Formulary (BNF) & American Heart Association (AHA/ESC) Guidelines"
+  ],
+  "bengali_medicine_lexicon": {
+    "নাপা এক্সট্রা": "Napa Extra",
+    "নাপা এক্সটেন্ড": "Napa Extend",
+    "নাপা র‍্যাপিড": "Napa Rapid",
+    "নাপা ওয়ান": "Napa One",
+    "নাপা সিরাপ": "Napa",
+    "নাপা": "Napa",
+    "এইস প্লাস": "Ace Plus",
+    "এইস এক্সআর": "Ace XR",
+    "এইস": "Ace",
+    "রেনোভা": "Renova",
+    "ফাস্ট": "Fast",
+    "সার্জেল": "Sergel",
+    "সেক্লো": "Seclo",
+    "ম্যাক্সপ্রো": "Maxpro",
+    "লোসেকটিল": "Losectil",
+    "প্যান্টোনিক্স": "Pantonix",
+    "ফিনিক্স": "Finix",
+    "রাবিজল": "Rabeca",
+    "ওমিডন": "Omidon",
+    "মটিগাট": "Motigut",
+    "ডেফ্লাক্স": "Deflux",
+    "অ্যান্টাসিড প্লাস": "Antacid Plus",
+    "এন্টাসিড": "Entacyd",
+    "গ্যাভিসল": "Gavisol",
+    "অ্যালজিসেক": "Algicid",
+    "ফেক্সো": "Fexo",
+    "ফেক্সোফাস্ট": "Fexofast",
+    "টেলফাস্ট": "Telfast",
+    "এলাট্রল": "Alatrol",
+    "মোনাস": "Monas",
+    "মন্টেয়ার": "Montair",
+    "অ্যারোকাস্ট": "Arokast",
+    "রুপিন": "Rupin",
+    "বিলাস্টিন": "Bilastin",
+    "ডেসলর": "Deslor",
+    "৩-সি": "3-C",
+    "থ্রি-সি": "3-C",
+    "সেফ-৩": "Cef-3",
+    "ওরসেফ": "Orcef",
+    "ট্রিডোসিল": "Tridosil",
+    "১ম সেফ": "1stCef",
+    "জি-ম্যাক্স": "Zimax",
+    "জিম্যাক্স": "Zimax",
+    "অ্যাজিথ্রোসিন": "Azithrocin",
+    "সিপ্রোসিন": "Ciprocin",
+    "মক্সাসিল": "Moxacil",
+    "টাইসিল": "Tycil",
+    "ফিমক্সিল": "Fimoxyl",
+    "অগমেন্টিন": "Augmentin",
+    "ফ্লাজিল": "Flagyl",
+    "অ্যামোডিস": "Amodis",
+    "ফিলমেট": "Filmet",
+    "ক্যালবো ডি": "Calbo-D",
+    "কোরালক্যাল ডি": "Coralcal-D",
+    "অসটোক্যাল ডি": "Ostocal D",
+    "বেকোসুল": "Becosules",
+    "নিউরো-বি": "Neuro-B",
+    "জিফ-সিআই": "Zif-CI",
+    "আয়রন": "Ferocit",
+    "টافনিল": "Tufnil",
+    "টাফনিল": "Tufnil",
+    "টোফেন": "Tofen",
+    "ভলম্যাক": "Volmac",
+    "ক্লোফেনাক": "Clofenac",
+    "নাপ্রক্সেন": "Naprox",
+    "টোরাক্স": "Torax",
+    "রোলাক": "Rolac",
+    "কমেট": "Comet",
+    "সিনজার": "Sinjar",
+    "লিনাক্স": "Linax",
+    "গ্লিমেপিরাইড": "Secrin",
+    "বিজলল": "Bislol",
+    "কনকর": "Concor",
+    "অ্যামলোকার্ড": "Amlocard",
+    "ক্যামলোডিন": "Camlodin",
+    "লসারটিল": "Losartil",
+    "অ্যাঞ্জিলক": "Angilock",
+    "টেলমি": "Telmi",
+    "ক্লোপিড": "Clopid",
+    "অ্যানলগ": "Anlog",
+    "রোজুভা": "Rosuva",
+    "অ্যাটোরভা": "Atova",
+    "লিপিকর": "Lipicon",
+    "ওরস্যালাইন": "Orsaline-N",
+    "স্যালাইন": "Orsaline-N",
+    "বেবি জিংক": "Baby Zinc",
+    "রিবোফ্লাভিন": "Riboson",
+    "রিভোট্রিল": "Rivotril",
+    "পেইস": "Pase",
+    "থাইরক্স": "Thyrox",
+    "সালবুটামল": "Sulprex",
+    "উইনডিল": "Windel",
+    "ব্রডিল": "Brodil",
+    "প্যারাসিটামল": "Paracetamol",
+    "ওমিপ্রাজল": "Omeprazole",
+    "ইসোমিপ্রাজল": "Esomeprazole",
+    "প্যান্টোপ্রাজল": "Pantoprazole",
+    "রাবিপ্রাজল": "Rabeprazole",
+    "সেফিক্সিম": "Cefixime Trihydrate",
+    "সেফাড্রক্সিল": "Cefadroxil Monohydrate",
+    "সেফুরক্সিম": "Cefuroxime Axetil",
+    "অ্যাজিথ্রোমাইসিন": "Azithromycin",
+    "সিপ্রোফ্লক্সাসিন": "Ciprofloxacin",
+    "লিভোফ্লক্সাসিন": "Levofloxacin",
+    "অ্যামোক্সিসিলিন": "Amoxicillin",
+    "মেট্রোনিডাজল": "Metronidazole",
+    "মন্টেলুকাস্ট": "Montelukast Sodium",
+    "ফেক্সোফেনাডিন": "Fexofenadine Hydrochloride",
+    "সেটিরিজিন": "Cetirizine Hydrochloride",
+    "ডমপেরিডন": "Domperidone",
+    "অনডানসেট্রন": "Ondansetron",
+    "মেটফরমিন": "Metformin Hydrochloride",
+    "লসারটান": "Losartan Potassium",
+    "অ্যামলোডিপিন": "Amlodipine",
+    "বিসোপ্রোলল": "Bisoprolol Fumarate",
+    "ক্লোপিডোগ্রেল": "Clopidogrel Bisulfate",
+    "রোজুভাস্ট্যাটিন": "Rosuvastatin",
+    "অ্যাটোরভাস্ট্যাটিন": "Atorvastatin Calcium",
+    "টলফেনামিক এসিড": "Tolfenamic Acid",
+    "ডাইক্লোফেনাক": "Diclofenac Sodium",
+    "আইবুপ্রোফেন": "Ibuprofen",
+    "লিভোথাইরক্সিন": "Levothyroxine Sodium",
+    "ক্যালসিয়াম": "Calcium Carbonate",
+    "জিংক": "Zinc Sulfate Monohydrate"
+  },
+  "lab_reference_ranges": [
+    {
+      "id": "cbc_panel",
+      "test_name": "Complete Blood Count (CBC) with ESR",
+      "test_name_bn": "সিবিসি (রক্তের পূর্ণাঙ্গ পরীক্ষা - CBC)",
+      "category": "Hematology",
+      "recommended_specialty": "Medicine",
+      "keywords": [
+        "cbc",
+        "সিবিসি",
+        "হিমোগ্লোবিন",
+        "hemoglobin",
+        "hb",
+        "প্লাটিলেট",
+        "platelet",
+        "plt",
+        "wbc",
+        "ডব্লিউবিসি",
+        "esr",
+        "ইএসআর",
+        "রক্তশূন্যতা",
+        "anemia",
+        "hematocrit",
+        "hct",
+        "pcv"
+      ],
+      "parameters": [
+        {
+          "parameter": "Hemoglobin (Hb)",
+          "normal_range": "পুরুষ: 13.5–17.5 g/dL | নারী: 12.0–15.5 g/dL",
+          "high_meaning_bn": "পানিশূন্যতা (Dehydration), পলিসাইথেমিয়া বা ডেঙ্গুতে হিমোকনসেনট্রেশন",
+          "low_meaning_bn": "রক্তশূন্যতা (Anemia), আয়রন/ভিটামিন B12 ঘাটতি বা রক্তক্ষরণ",
+          "action_bn": "Hb ১০ g/dL-এর নিচে হলে আয়রন প্রোফাইল ও পেরিফেরাল ব্লাড ফিল্ম পরীক্ষা করুন"
+        },
+        {
+          "parameter": "Total WBC Count",
+          "normal_range": "4,000 – 11,000 /cmm (4.0–11.0 × 10³/µL)",
+          "high_meaning_bn": "ব্যাকটেরিয়াল সংক্রমণ, প্রদাহ বা শারীরিক স্ট্রেস (Leukocytosis)",
+          "low_meaning_bn": "ডেঙ্গু, টাইফয়েড বা ভাইরাল জ্বর (Leukopenia < 4,000/cmm)",
+          "action_bn": "জ্বরের সাথে WBC অনেক বেশি বা কম থাকলে চিকিৎসকের পরামর্শে পরবর্তী টেস্ট করুন"
+        },
+        {
+          "parameter": "Platelet Count",
+          "normal_range": "1,50,000 – 4,50,000 /cmm",
+          "high_meaning_bn": "প্রদাহ বা আয়রন ঘাটতিজনিত থ্রম্বোসাইটোসিস",
+          "low_meaning_bn": "ডেঙ্গু জ্বর বা ভাইরাল থ্রম্বোসাইটোপেনিয়া (< 1,00,000/cmm হলে সতর্কতা, < 50,000 হলে হাসপাতালে ভর্তি)",
+          "action_bn": "প্লাটিলেট ১ লাখের নিচে নামলে প্রতিদিন CBC ও Hematocrit মনিটর করুন এবং NSAID ব্যথানাশক সম্পূর্ণ বর্জন করুন"
+        },
+        {
+          "parameter": "Hematocrit (HCT / PCV)",
+          "normal_range": "পুরুষ: 40%–50% | নারী: 36%–44%",
+          "high_meaning_bn": "ডেঙ্গুতে প্লাজমা লিকেজ (বেসলাইন থেকে ২০% বৃদ্ধি পেলে ক্রিটিক্যাল ফেজ)",
+          "low_meaning_bn": "রক্তশূন্যতা বা অভ্যন্তরীণ রক্তক্ষরণ",
+          "action_bn": "ডেঙ্গু রোগীর HCT হঠাৎ বাড়লে দ্রুত শিরাপথে বা মুখে ফ্লুইড ম্যানেজমেন্ট প্রয়োজন"
+        },
+        {
+          "parameter": "ESR (Westergren)",
+          "normal_range": "পুরুষ: 0–15 mm/1st hr | নারী: 0–20 mm/1st hr",
+          "high_meaning_bn": "দীর্ঘমেয়াদী সংক্রমণ, বাতজ্বর, টিবি (TB) বা অটোইমিউন প্রদাহ",
+          "low_meaning_bn": "সাধারণত ক্লিনিক্যালি তাৎপর্যপূর্ণ নয়",
+          "action_bn": "ESR ৫০-এর বেশি হলে CRP এবং সংক্রমণের উৎস অনুসন্ধান করুন"
+        }
+      ]
+    },
+    {
+      "id": "diabetes_panel",
+      "test_name": "Glycemic Profile (FBS, 2HABF, RBS, HbA1c)",
+      "test_name_bn": "ডায়াবেটিস ও রক্তের সুগার পরীক্ষা (Blood Sugar & HbA1c)",
+      "category": "Endocrinology & Diabetes",
+      "recommended_specialty": "Endocrinology",
+      "keywords": [
+        "hba1c",
+        "এইচবিএ১সি",
+        "fbs",
+        "fasting blood sugar",
+        "খালি পেটে সুগার",
+        "2habf",
+        "ভরা পেটে সুগার",
+        "rbs",
+        "সুগার",
+        "ডায়াবেটিস",
+        "diabetes",
+        "blood glucose",
+        "mmol/l"
+      ],
+      "parameters": [
+        {
+          "parameter": "Fasting Blood Sugar (FBS - খালি পেটে)",
+          "normal_range": " স্বাভাবিক: 3.9–5.5 mmol/L (70–99 mg/dL) | প্রি-ডায়াবেটিস: 5.6–6.9 mmol/L",
+          "high_meaning_bn": "≥ 7.0 mmol/L (126 mg/dL) হলে ডায়াবেটিস মেলাইটাস নির্দেশ করে",
+          "low_meaning_bn": "< 3.9 mmol/L (70 mg/dL) হলে হাইপোগ্লাইসেমিয়া (জরুরি চিনি/গ্লুকোজ পান করুন)",
+          "action_bn": "৮-১০ ঘণ্টা খালি পেটে থাকার পর পরীক্ষা করুন"
+        },
+        {
+          "parameter": "2 Hours After Breakfast (2HABF / OGTT)",
+          "normal_range": "স্বাভাবিক: < 7.8 mmol/L (< 140 mg/dL) | প্রি-ডায়াবেটিস: 7.8–11.0 mmol/L",
+          "high_meaning_bn": "≥ 11.1 mmol/L (200 mg/dL) হলে ডায়াবেটিস নিশ্চিত করে",
+          "low_meaning_bn": "< 3.9 mmol/L হলে ওভারডোজ বা হাইপোগ্লাইসেমিয়া",
+          "action_bn": "সকালের নাস্তা বা ৭৫ গ্রাম গ্লুকোজ খাওয়ার ঠিক ২ ঘণ্টা পর রক্ত দিন"
+        },
+        {
+          "parameter": "HbA1c (৩ মাসের গড় সুগার)",
+          "normal_range": "স্বাভাবিক: < 5.7% | প্রি-ডায়াবেটিস: 5.7%–6.4% | ডায়াবেটিস: ≥ 6.5%",
+          "high_meaning_bn": "ডায়াবেটিস রোগীদের লক্ষ্যমাত্রা সাধারণত < 7.0%; 8.0%-এর বেশি হলে ওষুধ বা ইনসুলিন সমন্বয় প্রয়োজন",
+          "low_meaning_bn": "অতিরিক্ত সুগার কমে যাওয়ার ঝুঁকি",
+          "action_bn": "প্রতি ৩ মাস পর পর HbA1c পরীক্ষা করে ডায়াবেটিস বিশেষজ্ঞের পরামর্শ নিন"
+        }
+      ]
+    },
+    {
+      "id": "renal_panel",
+      "test_name": "Renal Function Test (Serum Creatinine, eGFR, Urea, Electrolytes)",
+      "test_name_bn": "কিডনি ফাংশন টেস্ট (ক্রিয়েটিনিন, ইউরিয়া ও ইলেকট্রোলাইটস)",
+      "category": "Nephrology",
+      "recommended_specialty": "Nephrology",
+      "keywords": [
+        "creatinine",
+        "ক্রিয়েটিনিন",
+        "ক্রিয়েটিনিন",
+        "egfr",
+        "কিডনি টেস্ট",
+        "kidney test",
+        "blood urea",
+        "ইউরিয়া",
+        "uric acid",
+        "ইউরিক এসিড",
+        "electrolytes",
+        "sodium",
+        "potassium",
+        "পটাশিয়াম",
+        "সোডিয়াম"
+      ],
+      "parameters": [
+        {
+          "parameter": "Serum Creatinine",
+          "normal_range": "পুরুষ: 0.7–1.3 mg/dL | নারী: 0.6–1.1 mg/dL",
+          "high_meaning_bn": "কিডনির ছাঁকন ক্ষমতা হ্রাস (AKI বা CKD), পানিশূন্যতা বা ব্যথানাশক ওষুধের পার্শ্বপ্রতিক্রিয়া",
+          "low_meaning_bn": "মাংসপেশির ক্ষয় বা অপুষ্টি",
+          "action_bn": "ক্রিয়েটিনিন ১.৩-এর বেশি হলে সব ব্যথানাশক (NSAIDs) বন্ধ করুন এবং নেফ্রোলজিস্ট দেখান"
+        },
+        {
+          "parameter": "eGFR (Estimated GFR)",
+          "normal_range": "স্বাভাবিক: ≥ 90 mL/min/1.73m²",
+          "high_meaning_bn": "স্বাভাবিক কিডনি কার্যকারিতা",
+          "low_meaning_bn": "< 60 mL/min হলে দীর্ঘমেয়াদী কিডনি রোগ (CKD Stage 3-5) নির্দেশ করে",
+          "action_bn": "eGFR অনুযায়ী অ্যান্টিবায়োটিক ও ডায়াবেটিসের ওষুধের ডোজ সমন্বয় করা আবশ্যক"
+        },
+        {
+          "parameter": "Serum Uric Acid",
+          "normal_range": "পুরুষ: 3.4–7.0 mg/dL | নারী: 2.4–6.0 mg/dL",
+          "high_meaning_bn": "গেঁটে বাত (Gout), জয়েন্টে ব্যথা বা কিডনিতে পাথরের ঝুঁকি",
+          "low_meaning_bn": "সাধারণত তাৎপর্যপূর্ণ নয়",
+          "action_bn": "লাল মাংস, কলিজা, সামুদ্রিক মাছ ও ডাল সীমিত করুন এবং প্রচুর পানি পান করুন"
+        },
+        {
+          "parameter": "Serum Potassium (K+)",
+          "normal_range": "3.5 – 5.0 mmol/L",
+          "high_meaning_bn": "> 5.5 mmol/L (Hyperkalemia) — কিডনি জটিলতা বা হৃদস্পন্দনের মারাত্মক ঝুঁকি",
+          "low_meaning_bn": "< 3.5 mmol/L (Hypokalemia) — ডায়রিয়া, বমি বা ডাইইউরেটিক ওষুধের কারণে শরীর দুর্বল হওয়া",
+          "action_bn": "পটাশিয়াম ৬.০-এর বেশি হলে জরুরি ইসিজি (ECG) ও হাসপাতালে চিকিৎসা প্রয়োজন"
+        }
+      ]
+    },
+    {
+      "id": "liver_lipid_panel",
+      "test_name": "Liver Function (SGPT/ALT, Bilirubin) & Lipid Profile",
+      "test_name_bn": "লিভার ফাংশন (SGPT, বিলিরুবিন) ও লিপিড প্রোফাইল (কোলেস্টেরল)",
+      "category": "Gastroenterology & Cardiology",
+      "recommended_specialty": "Gastroenterology",
+      "keywords": [
+        "sgpt",
+        "এসজিপিটি",
+        "alt",
+        "sgot",
+        "ast",
+        "bilirubin",
+        "বিলিরুবিন",
+        "জন্ডিস",
+        "jaundice",
+        "ফ্যাটি লিভার",
+        "fatty liver",
+        "lipid profile",
+        "লিপিড প্রোফাইল",
+        "cholesterol",
+        "কোলেস্টেরল",
+        "ldl",
+        "hdl",
+        "triglycerides",
+        "ট্রাইগ্লিসারাইড",
+        "tg"
+      ],
+      "parameters": [
+        {
+          "parameter": "SGPT (ALT)",
+          "normal_range": "পুরুষ: 10–45 U/L | নারী: 7–35 U/L",
+          "high_meaning_bn": "ফ্যাটি লিভার, হেপাটাইটিস (A/B/E), ডেঙ্গু বা ওষুধের কারণে লিভারে প্রদাহ",
+          "low_meaning_bn": "স্বাভাবিক",
+          "action_bn": "SGPT স্বাভাবিকের চেয়ে ২-৩ গুণ বেশি হলে ফ্যাটি লিভার আল্ট্রাসনোগ্রাম ও ভাইরাল হেপাটাইটিস টেস্ট করুন"
+        },
+        {
+          "parameter": "Serum Bilirubin (Total)",
+          "normal_range": "0.2 – 1.2 mg/dL",
+          "high_meaning_bn": "> 2.0 mg/dL হলে জন্ডিস (চোখ ও প্রস্রাব হলুদ হওয়া), হেপাটাইটিস বা পিত্তনালীর বাধা",
+          "low_meaning_bn": "স্বাভাবিক",
+          "action_bn": "জন্ডিস হলে প্যারাসিটামল ও তেল-চর্বিযুক্ত খাবার পরিহার করে লিভার বিশেষজ্ঞ দেখান"
+        },
+        {
+          "parameter": "LDL Cholesterol (Bad Cholesterol)",
+          "normal_range": "স্বাভাবিক: < 100 mg/dL (হৃদরোগীদের জন্য < 70 mg/dL)",
+          "high_meaning_bn": "≥ 130–160 mg/dL হলে রক্তনালীতে ব্লক ও হার্ট অ্যাটাকের ঝুঁকি বৃদ্ধি পায়",
+          "low_meaning_bn": "ভালো",
+          "action_bn": "ভাজাপোড়া ও রেড মিট বর্জন করুন; প্রয়োজনে চিকিৎসকের পরামর্শে Statin (Rosuvastatin/Atorvastatin) শুরু করুন"
+        },
+        {
+          "parameter": "Triglycerides (TG)",
+          "normal_range": "স্বাভাবিক: < 150 mg/dL",
+          "high_meaning_bn": "≥ 200 mg/dL (High); > 500 mg/dL হলে অ্যাকিউট প্যানক্রিয়াটাইটিসের ঝুঁকি",
+          "low_meaning_bn": "স্বাভাবিক",
+          "action_bn": "সাদা ভাত, চিনি, মিষ্টি ও কোমল পানীয় কমিয়ে প্রতিদিন ৩০-৪০ মিনিট হাঁটুন"
+        }
+      ]
+    },
+    {
+      "id": "thyroid_cardiac_infection",
+      "test_name": "Thyroid (TSH, FT4), Cardiac (Troponin-I) & Urine R/M/E",
+      "test_name_bn": "থাইরয়েড (TSH), কার্ডিয়াক (Troponin-I) ও ইউরিন টেস্ট",
+      "category": "Clinical Pathology",
+      "recommended_specialty": "Medicine",
+      "keywords": [
+        "tsh",
+        "টিএসএইচ",
+        "thyroid",
+        "থাইরয়েড",
+        "থাইরয়েড",
+        "ft3",
+        "ft4",
+        "troponin",
+        "ট্রপোনিন",
+        "crp",
+        "সিআরপি",
+        "urine r/m/e",
+        "প্রস্রাব পরীক্ষা",
+        "pus cell",
+        "পাস সেল",
+        "dengue ns1",
+        "ডেঙ্গু টেস্ট",
+        "widal",
+        "টাইফয়েড টেস্ট"
+      ],
+      "parameters": [
+        {
+          "parameter": "Serum TSH",
+          "normal_range": "0.45 – 4.50 mIU/L",
+          "high_meaning_bn": "> 4.5 mIU/L হলে হাইপোথাইরয়েডিজম (ওজন বৃদ্ধি, ক্লান্তি, চুল পড়া, ঠান্ডা অসহিষ্ণুতা)",
+          "low_meaning_bn": "< 0.4 mIU/L হলে হাইপারথাইরয়েডিজম (ওজন হ্রাস, বুক ধড়ফড়, হাত কাঁপা)",
+          "action_bn": "হরমোন বিশেষজ্ঞের (Endocrinologist) পরামর্শে খালি পেটে থাইরক্সিন ডোজ নির্ধারণ করুন"
+        },
+        {
+          "parameter": "Troponin-I (High Sensitivity)",
+          "normal_range": "< 0.04 ng/mL",
+          "high_meaning_bn": "> 0.04 ng/mL (বিশেষ করে বুকে ব্যথার সাথে) হার্ট অ্যাটাক (Myocardial Infarction) নির্দেশ করে",
+          "low_meaning_bn": "হার্টের মাংসপেশির তাৎক্ষণিক ক্ষতির সম্ভাবনা কম",
+          "action_bn": "🚨 ট্রপোনিন বেশি হলে ১ মিনিটও দেরি না করে সিসিইউ (CCU) বা কার্ডিয়াক ইমার্জেন্সিতে ভর্তি হোন"
+        },
+        {
+          "parameter": "Urine Pus Cells (প্রস্রাবে পাস সেল)",
+          "normal_range": "0 – 4 /HPF",
+          "high_meaning_bn": "> 5 /HPF (বিশেষ করে > 10–15 /HPF) হলে প্রস্রাবে ইনফেকশন (UTI) নির্দেশ করে",
+          "low_meaning_bn": "স্বাভাবিক",
+          "action_bn": "Urine C/S (Culture & Sensitivity) পরীক্ষা করে সঠিক অ্যান্টিবায়োটিক গ্রহণ করুন এবং দৈনিক ৩ লিটার পানি পান করুন"
+        }
+      ]
+    }
+  ],
+  "drug_interactions": [
+    {
+      "id": "ppi_clopidogrel",
+      "pair_title": "Omeprazole / Esomeprazole (Seclo / Sergel / Maxpro) + Clopidogrel (Clopid / Plavix)",
+      "severity": "Major",
+      "keywords": [
+        "clopidogrel",
+        "ক্লোপিড",
+        "clopid",
+        "plavix",
+        "seclo",
+        "sergel",
+        "maxpro",
+        "omeprazole",
+        "esomeprazole"
+      ],
+      "mechanism_bn": "ওমিপ্রাজল ও ইসোমিপ্রাজল লিভারের CYP2C19 এনজাইমকে বাধা দেয়, ফলে রক্ত পাতলা করার ওষুধ Clopidogrel-এর কার্যকারিতা প্রায় ৪০% কমে গিয়ে পুনরায় হার্ট অ্যাটাক বা স্ট্রোকের ঝুঁকি বাড়াতে পারে।",
+      "safe_action_bn": "হৃদরোগীরা Clopidogrel-এর সাথে গ্যাস্ট্রিকের ওষুধ হিসেবে Omeprazole/Esomeprazole-এর পরিবর্তে **Pantoprazole (Pantonix 20mg)** অথবা **Rabeprazole (Finix 20mg)** চিকিৎসকের পরামর্শে গ্রহণ করবেন।"
+    },
+    {
+      "id": "antibiotic_antacid_calcium",
+      "pair_title": "Azithromycin / Ciprofloxacin / Cefixime + Antacid / Calcium / Iron / Zinc",
+      "severity": "Moderate-Major",
+      "keywords": [
+        "azithromycin",
+        "zimax",
+        "ciprofloxacin",
+        "ciprocin",
+        "অ্যান্টিবায়োটিক",
+        "antibiotic",
+        "antacid",
+        "অ্যান্টাসিড",
+        "calcium",
+        "ক্যালসিয়াম",
+        "ক্যালবো",
+        "calbo",
+        "iron",
+        "আয়রন",
+        "zinc",
+        "জিংক"
+      ],
+      "mechanism_bn": "ক্যালসিয়াম, আয়রন, জিংক এবং অ্যান্টাসিডের অ্যালুমিনিয়াম/ম্যাগনেসিয়াম অ্যান্টিবায়োটিকের সাথে পেটে অদ্রবণীয় যৌগ (Chelation) তৈরি করে, ফলে অ্যান্টিবায়োটিক রক্তে শোষিত হতে পারে না এবং কাজ করে না।",
+      "safe_action_bn": "অ্যান্টিবায়োটিক এবং ক্যালসিয়াম/আয়রন/অ্যান্টাসিড খাওয়ার মধ্যে কমপক্ষে **২ থেকে ৩ ঘণ্টার ব্যবধান** রাখুন।"
+    },
+    {
+      "id": "dengue_nsaids",
+      "pair_title": "Dengue / Viral Fever + NSAIDs (Diclofenac / Ibuprofen / Ketorolac / Tufnil / Aspirin)",
+      "severity": "Contraindicated (Critical)",
+      "keywords": [
+        "ডেঙ্গু",
+        "dengue",
+        "ব্যথানাশক",
+        "painkiller",
+        "nsaid",
+        "diclofenac",
+        "clofenac",
+        "volmac",
+        "ibuprofen",
+        "rolac",
+        "torax",
+        "ketorolac",
+        "aspirin",
+        "tufnil"
+      ],
+      "mechanism_bn": "ডেঙ্গু জ্বরে রক্তের প্লাটিলেট কমে যায়। এ অবস্থায় যেকোনো NSAID ব্যথানাশক (বড়ি বা সাপোজিটরি) প্লাটিলেটের কার্যকারিতা নষ্ট করে মারাত্মক অভ্যন্তরীণ রক্তক্ষরণ (GI Bleeding / Dengue Shock) ঘটাতে পারে।",
+      "safe_action_bn": "জ্বর ও শরীর ব্যথায় শুধুমাত্র **Paracetamol (Napa / Ace)** অনুমোদিত মাত্রায় সেবন করুন। কোনো অবস্থাতেই ব্যথানাশক NSAID খাবেন না।"
+    },
+    {
+      "id": "calcium_iron_thyroxine",
+      "pair_title": "Levothyroxine (Thyrox) + Calcium / Iron / PPI / Tea & Coffee",
+      "severity": "Major",
+      "keywords": [
+        "thyrox",
+        "থাইরক্স",
+        "levothyroxine",
+        "থাইরয়েডের ওষুধ",
+        "ক্যালসিয়াম",
+        "আয়রন"
+      ],
+      "mechanism_bn": "খাবার, চা-কফি, ক্যালসিয়াম বা আয়রনের সাথে থাইরয়েডের ওষুধ (Thyrox) খেলে এর শোষণ ৫০% পর্যন্ত কমে যায় এবং TSH নিয়ন্ত্রণে আসে না।",
+      "safe_action_bn": "**Thyrox** প্রতিদিন সকালে ঘুম থেকে উঠে একদম খালি পেটে পানিসহ খাবেন এবং এর পর কমপক্ষে **৩০–৪৫ মিনিট** কিছু খাবেন না। ক্যালসিয়াম বা আয়রন দুপুর বা রাতে (কমপক্ষে ৪ ঘণ্টা পর) খাবেন।"
+    },
+    {
+      "id": "metronidazole_alcohol",
+      "pair_title": "Metronidazole (Amodis / Filmet / Flagyl) + Alcohol / Alcohol-containing syrups",
+      "severity": "Contraindicated",
+      "keywords": [
+        "metronidazole",
+        "amodis",
+        "filmet",
+        "flagyl",
+        "অ্যামোডিস",
+        "ফিলমেট",
+        "ফ্লাজিল"
+      ],
+      "mechanism_bn": "মেট্রোনিডাজল চলাকালীন অ্যালকোহল গ্রহণ করলে তীব্র বমি, বুক ধড়ফড়, মুখ লাল হওয়া ও রক্তচাপ কমে যাওয়ার মতো Disulfiram-like reaction ঘটে।",
+      "safe_action_bn": "ওষুধ চলাকালীন এবং কোর্স শেষ হওয়ার ৪৮ ঘণ্টা পর্যন্ত যেকোনো অ্যালকোহলযুক্ত পানীয় সম্পূর্ণ বর্জন করুন।"
+    }
+  ],
+  "pediatric_dosage_protocols": [
+    {
+      "id": "ped_paracetamol",
+      "generic": "Paracetamol (Pediatric Drops 80mg/ml & Syrup/Suspension 120mg/5ml)",
+      "brands_bd": [
+        "Napa Pediatric Drops / Syrup",
+        "Ace Pediatric Drops / Syrup",
+        "Renova Syrup",
+        "Fast Suspension"
+      ],
+      "keywords": [
+        "বাচ্চার জ্বর",
+        "শিশুর জ্বর",
+        "নাপা সিরাপ",
+        "নাপা ড্রপ",
+        "napa syrup",
+        "napa drop",
+        "ace syrup",
+        "child fever dose",
+        "বাচ্চার ডোজ",
+        "শিশুর ডোজ",
+        "কত চামচ",
+        "কত মিলি"
+      ],
+      "formula_bn": "শিশুদের প্যারাসিটামলের আদর্শ ডোজ প্রতিবারে শরীরের ওজনের প্রতি কেজিতে **১০ থেকে ১৫ মিগ্রা (10–15 mg/kg/dose)**, প্রতি ৬ ঘণ্টা পর পর (২৪ ঘণ্টায় সর্বোচ্চ ৪ বার)।",
+      "weight_table_markdown": "| শিশুর ওজন (kg) | অনুমোদিত মাত্রা (15 mg/kg) | পেডিয়াট্রিক ড্রপস (80mg/1ml) | সিরাপ / সাসপেনশন (120mg/5ml) |\n| :--- | :--- | :--- | :--- |\n| **৪ কেজি** | ৬০ মিগ্রা | ০.৭৫ মিলি (১৫ ফোঁটা) | ২.৫ মিলি (আধা চা চামচ) |\n| **৬ কেজি** | ৯০ মিগ্রা | ১.১ মিলি | ৩.৭৫ মিলি (পৌনে ১ চা চামচ) |\n| **৮ কেজি** | ১২০ মিগ্রা | ১.৫ মিলি | ৫ মিলি (১ চা চামচ) |\n| **১০ কেজি** | ১৫০ মিগ্রা | — | ৬.২৫ মিলি (১.২৫ চা চামচ) |\n| **১২ কেজি** | ১৮০ মিগ্রা | — | ৭.৫ মিলি (দেড় চা চামচ) |\n| **১৬ কেজি** | ২৪০ মিগ্রা | — | ১০ মিলি (২ চা চামচ) |\n| **২০ কেজি** | ৩০০ মিগ্রা | — | ১২.৫ মিলি (২.৫ চা চামচ) |"
+    },
+    {
+      "id": "ped_cefixime",
+      "generic": "Cefixime Trihydrate (Suspension 100mg/5ml & Forte 200mg/5ml & Drops 25mg/ml)",
+      "brands_bd": [
+        "3-C Powder for Suspension",
+        "Cef-3 Suspension",
+        "Orcef Suspension",
+        "T-Cef Suspension"
+      ],
+      "keywords": [
+        "3-c",
+        "৩-সি",
+        "cef-3",
+        "সেফ-৩",
+        "orcef",
+        "cefixime syrup",
+        "বাচ্চার অ্যান্টিবায়োটিক",
+        "সেফিক্সিম সিরাপ"
+      ],
+      "formula_bn": "শিশুদের সেফিক্সিম (Cefixime)-এর আদর্শ মাত্রা প্রতিদিন প্রতি কেজি ওজনের জন্য **৮ মিগ্রা (8 mg/kg/day)** — যা দিনে ১ বার অথবা সমান ২ ভাগে (১২ ঘণ্টা পর পর 4 mg/kg করে) ৭ থেকে ১০ দিন দেওয়া হয় (রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন অনুযায়ী)।",
+      "weight_table_markdown": "| শিশুর ওজন (kg) | দৈনিক মোট মাত্রা (8 mg/kg/day) | সাসপেনশন (100mg/5ml) দিনে মোট | ১২ ঘণ্টা পর পর (দিনে ২ বার) |\n| :--- | :--- | :--- | :--- |\n| **৬ কেজি** | ৪৮ মিগ্রা | ২.৫ মিলি | ১.২৫ মিলি করে দিনে ২ বার |\n| **১০ কেজি** | ৮০ মিগ্রা | ৪.০ মিলি | ২.০ মিলি করে দিনে ২ বার |\n| **১২.৫ কেজি** | ১০০ মিগ্রা | ৫.০ মিলি (১ চা চামচ) | ২.৫ মিলি (আধা চামচ) করে দিনে ২ বার |\n| **১৫ কেজি** | ১২০ মিগ্রা | ৬.০ মিলি | ৩.০ মিলি করে দিনে ২ বার |\n| **২০ কেজি** | ১৬০ মিগ্রা | ৮.০ মিলি | ৪.০ মিলি করে দিনে ২ বার |\n| **২৫ কেজি** | ২০০ মিগ্রা | ১০ মিলি (২ চা চামচ) | ৫.০ মিলি (১ চামচ) করে দিনে ২ বার |"
+    },
+    {
+      "id": "ped_ors_zinc",
+      "generic": "Oral Rehydration Salt (ORS) + Zinc Sulfate (20mg/5ml or 20mg Dispersible Tablet)",
+      "brands_bd": [
+        "Orsaline-N (SMC)",
+        "Baby Zinc (20mg)",
+        "Zink Syrup"
+      ],
+      "keywords": [
+        "বাচ্চার ডায়রিয়া",
+        "শিশুর পাতলা পায়খানা",
+        "baby zinc",
+        "বেবি জিংক",
+        "স্যালাইন খাওয়ানোর নিয়ম"
+      ],
+      "formula_bn": "icddr,b ও WHO প্রোটোকল অনুযায়ী শিশুর ডায়রিয়ায় প্রতিবার পাতলা পায়খানার পর ওজন অনুযায়ী ORS এবং টানা ১০–১৪ দিন জিংক দেওয়া আবশ্যক।",
+      "weight_table_markdown": "| শিশুর বয়স | প্রতিবার পায়খানার পর ORS-এর পরিমাণ | দৈনিক জিংক (Zinc) ডোজ (১০–১৪ দিন) |\n| :--- | :--- | :--- |\n| **৬ মাসের কম** | ৫০ মিলি (১০ চা চামচ) + মায়ের দুধ | ১০ মিগ্রা (আধা চামচ বা অর্ধেক ট্যাবলেট) দিনে ১ বার |\n| **৬ মাস – ২ বছর** | ৫০ থেকে ১০০ মিলি (কাপ বা চামচে) | ২০ মিগ্রা (১ চা চামচ বা ১টি ট্যাবলেট) দিনে ১ বার |\n| **২ বছর – ১০ বছর** | ১০০ থেকে ২০০ মিলি (আধা থেকে ১ গ্লাস) | ২০ মিগ্রা দিনে ১ বার |"
+    }
+  ],
+  "nutrition_protocols": [
+    {
+      "id": "diet_diabetes_badas",
+      "title_bn": "ডায়াবেটিস রোগীদের দেশীয় সুষম খাদ্যতালিকা (BADAS গাইডলাইন)",
+      "keywords": [
+        "ডায়াবেটিস ডায়েট",
+        "ডায়াবেটিস খাবার",
+        "diabetic diet",
+        "সুগারের খাবার",
+        "ডায়াবেটিস রোগীর খাদ্যতালিকা",
+        "কী খাব",
+        "ডায়েট চার্ট",
+        "diet chart"
+      ],
+      "summary_bn": "বাংলাদেশ ডায়াবেটিক সমিতি (BADAS)-এর 'প্লেট মেথড' অনুযায়ী খাবারের প্লেটের অর্ধেক (৫০%) সবুজ শাকসবজি, এক-চতুর্থাংশ (২৫%) মাছ/মাংস/ডিম/ডাল (প্রোটিন), এবং বাকি এক-চতুর্থাংশ (২৫%) লাল চালের ভাত বা লাল আটার রুটি রাখুন।",
+      "table_markdown": "| খাবারের সময় | অনুমোদিত খাবার ও পরিমাণ | বর্জনীয় খাবার |\n| :--- | :--- | :--- |\n| **সকাল (৮:০০ - ৮:৩০)** | লাল আটার রুটি ২টি + ১টি সেদ্ধ ডিম + ১ বাটি সবজি ভাজি (কম তেলে) | সাদা পাউরুটি, পরোটা, মিষ্টি চা, হালুয়া |\n| **মধ্য-সকাল (১১:০০)** | ১টি পেয়ারা, আমড়া, জাম্বুরা বা শসা + চিনি ছাড়া গ্রিন টি/লেবু পানি | পাকা আম, কাঁঠাল, কলা, ফলের জুস, বিস্কুট |\n| **দুপুর (১:৩০ - ২:০০)** | লাল চালের ভাত ১ কাপ (১২০ গ্রাম) + মাছ/মুরগি ২ টুকরা + ঘন ডাল ১ কাপ + প্রচুর শাকসবজি ও সালাদ | বিরিয়ানি, পোলাও, অতিরিক্ত ভাত, আলু ভর্তা |\n| **বিকাল (৫:৩০)** | ভাজা ছোলা/বাদাম ১ মুঠো অথবা টক দই ১ কাপ | সিঙ্গারা, সামুচা, চানাচুর, চিনি দেওয়া চা |\n| **রাত (৮:৩০ - ৯:০০)** | লাল আটার রুটি ২টি + মাছ বা সবজি ১ বাটি + ডাল (ঘুমানোর অন্তত ২ ঘণ্টা আগে) | রাত ১০টার পর ভারী খাবার বা মিষ্টি |"
+    },
+    {
+      "id": "diet_kidney_ckd",
+      "title_bn": "কিডনি রোগী ও উচ্চ ক্রিয়েটিনিন নিয়ন্ত্রণের খাদ্যতালিকা (Renal Diet)",
+      "keywords": [
+        "কিডনি রোগীর খাবার",
+        "ক্রিয়েটিনিন কমানোর খাবার",
+        "renal diet",
+        "kidney diet",
+        "কিডনি ডায়েট"
+      ],
+      "summary_bn": "রক্তে ক্রিয়েটিনিন ও পটাশিয়াম বেশি থাকলে প্রোটিন, কাঁচা লবণ এবং উচ্চ পটাশিয়ামযুক্ত খাবার নিয়ন্ত্রণ করা জরুরি। সবজি রান্নার আগে ছোট করে কেটে কুসুম গরম পানিতে ৩০ মিনিট ভিজিয়ে রেখে পানি ফেলে দিয়ে রান্না করুন (Leaching method)।",
+      "table_markdown": "| খাদ্য উপাদান | নিরাপদ / অনুমোদিত খাবার | কঠোরভাবে বর্জনীয় খাবার |\n| :--- | :--- | :--- |\n| **সবজি** | পেঁপে, লাউ, ঝিঙে, চিচিঙ্গা, চালকুমড়া, পটল, করলা | আলু, মিষ্টি কুমড়া, টমেটো, পালং শাক, কচু, কাঁচা কলা |\n| **ফলমূল** | আপেল, নাশপাতি, পেয়ারা (বিচি ফেলে পরিমিত) | ডাবের পানি, কলা, কমলা, মাল্টা, আঙুর, কামরাঙা (কিডনির জন্য মারাত্মক বিষাক্ত!) |\n| **প্রোটিন** | নদীর ছোট/মাঝারি মাছ (১-২ টুকরা), ডিমের সাদা অংশ | গরু/খাসির মাংস, কলিজা, সামুদ্রিক মাছ, ঘন ডাল, বাদাম |\n| **লবণ ও পানি** | চিকিৎসকের নির্ধারিত পরিমাণ পানি, লবণ দিনে ১/২ চা চামচের কম | কাঁচা লবণ, আচার, সস, প্যাকেটজাত চিপস, টেস্টিং সল্ট |"
+    },
+    {
+      "id": "diet_hypertension_heart",
+      "title_bn": "উচ্চ রক্তচাপ ও হৃদরোগীদের খাদ্যতালিকা (DASH Diet Bangladesh)",
+      "keywords": [
+        "হাই প্রেশারের খাবার",
+        "উচ্চ রক্তচাপের খাবার",
+        "হার্টের রোগীর খাবার",
+        "কোলেস্টেরল কমানোর খাবার",
+        "dash diet"
+      ],
+      "summary_bn": "রক্তচাপ ও কোলেস্টেরল নিয়ন্ত্রণে কাঁচা লবণ ও স্যাচুরেটেড ফ্যাট বর্জন করে ওমেগা-৩ সমৃদ্ধ দেশি মাছ, আঁশযুক্ত সবজি ও ফল গ্রহণ করুন।",
+      "table_markdown": "| খাবারের ধরন | যা খাবেন (উপকারী) | যা বর্জন করবেন (ক্ষতিকর) |\n| :--- | :--- | :--- |\n| **লবণ ও মশলা** | রসুন, আদা, লেবুর রস, গোলমরিচ (দিনে মোট লবণ < ৫ গ্রাম) | পাতে কাঁচা লবণ, বিট লবণ, সয়া সস, আচার, নোনা ইলিশ/শুঁটকি |\n| **আমিষ** | দেশি মাছ, সামুদ্রিক মাছ (ওমেগা-৩), চামড়া ছাড়া মুরগি, ডাল | গরুর মাংস, খাসির মাংস, মগজ, কলিজা, চিংড়ি মাছের মাথা, ডিমের কুসুম |\n| **তেল ও চর্বি** | সরিষার তেল, রাইস ব্র্যান বা অলিভ অয়েল (দিনে ৩-৪ চামচের কম) | ঘি, মাখন, ডালডা, পাম অয়েল, বেকারির ফাস্টফুড |\n| **ফল ও সবজি** | শসা, লাউ, পালং শাক, টক দই, ওটস, লাল চাল | কোমল পানীয়, এনার্জি ড্রিংকস, অতিরিক্ত কফি ও ধূমপান |"
+    }
+  ],
+  "emergency_protocols": [
+    {
+      "id": "emerg_snakebite",
+      "title_bn": "সাপে কামড়ালে জরুরি প্রাথমিক চিকিৎসা (DGHS National Snakebite Guideline)",
+      "keywords": [
+        "সাপে কামড়",
+        "সাপে কাটলে",
+        "snakebite",
+        "snake bite",
+        "রাসেলস ভাইপার",
+        "চন্দ্রবোড়া",
+        "গোখরা",
+        "কালাচ"
+      ],
+      "steps_bn": [
+        "**আতঙ্কিত হবেন না:** রোগীকে সম্পূর্ণ শান্ত ও স্থির রাখুন; হাঁটাচলা করলে বিষ দ্রুত রক্তে ছড়িয়ে পড়ে।",
+        "**শক্ত বাঁধন দেবেন না:** ক্ষতস্থানে কখনোই রশি বা গামছা দিয়ে শক্ত করে বাঁধবেন না (Tourniquet নিষিদ্ধ), ব্লেড দিয়ে কাটবেন না এবং মুখ দিয়ে বিষ চোষার চেষ্টা করবেন না।",
+        "**অঙ্গ স্থিরকরণ (Immobilization):** হাত বা পায়ে কামড়ালে ভাঙা হাড়ের মতো দুটি কাঠ বা স্কেল দিয়ে হালকা ব্যান্ডেজ করে অঙ্গটি নড়াচড়াহীন রাখুন।",
+        "**দ্রুত সরকারি হাসপাতালে স্থানান্তর:** ওঝা বা ঝাড়ফুঁকে ১ মিনিটও নষ্ট না করে সরাসরি নিকটস্থ সরকারি মেডিকেল কলেজ বা সদর হাসপাতালে নিয়ে যান — যেখানে বিনামূল্যে **Polyvalent Anti-Snake Venom (ASV)** ইনজেকশন দেওয়া হয়।"
+      ]
+    },
+    {
+      "id": "emerg_dogbite_rabies",
+      "title_bn": "কুকুর, বিড়াল বা শেয়ালের কামড়/আঁচড়ে জলাতঙ্ক প্রতিরোধ (Rabies PEP Protocol)",
+      "keywords": [
+        "কুকুরে কামড়",
+        "বিড়ালে আঁচড়",
+        "বিড়ালে কামড়",
+        "dog bite",
+        "cat scratch",
+        "rabies",
+        "জলাতঙ্ক",
+        "টিকা"
+      ],
+      "steps_bn": [
+        "**১৫ মিনিট সাবান ও প্রবহমান পানি:** কামড় বা আঁচড়ানোর সাথে সাথে ক্ষতস্থানটি প্রবহমান কলের পানির নিচে ক্ষারযুক্ত সাবান (কাপড় কাচার সাবান বা লাইফবয়/স্যাভলন) দিয়ে টানা **১৫ মিনিট** ধরে ভালোভাবে ধুয়ে ফেলুন (এতে ৮০% ভাইরাস দূর হয়)।",
+        "**অ্যান্টিসেপটিক প্রয়োগ:** ধোয়ার পর পভিডন আয়োডিন (Viodin 10%) বা অ্যালকোহল লাগান। ক্ষতস্থানে কখনোই সেলাই বা ব্যান্ডেজ করে ঢেকে রাখবেন না।",
+        "**র‍্যাবিস ভ্যাকসিন সূচি (IDRV Schedule):** যত দ্রুত সম্ভব (২৪ ঘণ্টার মধ্যে) নিকটস্থ সরকারি হাসপাতাল বা মহাখালী সংক্রামক ব্যাধি হাসপাতাল থেকে **Day 0, Day 3, Day 7 এবং Day 28**-এ চামড়ার নিচে র‍্যাবিস টিকা নিন। রক্ত বের হলে (Category III) ক্ষতস্থানে **Rabies Immunoglobulin (RIG)** নেওয়া আবশ্যক।"
+      ]
+    }
+  ],
+  "verified_videos": [
+    {
+      "id": "inhaler_technique",
+      "title": "Mayo Clinic Minute: How to use an asthma inhaler",
+      "title_bn": "ইনহেলার ব্যবহারের সঠিক নিয়ম ও কার্যপদ্ধতি (Mayo Clinic)",
+      "youtubeId": "uje9beC6GlU",
+      "author": "Mayo Clinic",
+      "category": "Asthma & Respiratory",
+      "keywords": [
+        "ইনহেলার",
+        "inhaler",
+        "হাঁপানি",
+        "asthma",
+        "শ্বাসকষ্ট",
+        "সালবুটামল",
+        "salbutamol",
+        "windel",
+        "brodil"
+      ],
+      "description_bn": "অ্যাজমা বা শ্বাসকষ্টে মিটারড ডোজ ইনহেলার (MDI) সঠিকভাবে ফুসফুসে নেওয়ার ধাপসমূহ।"
+    },
+    {
+      "id": "ors_prep",
+      "title": "How to make oral rehydration solutions for diarrhoea",
+      "title_bn": "মুখে খাবার স্যালাইন (ORS) তৈরির সঠিক নিয়ম (Stanford Health)",
+      "youtubeId": "xWyqD_C9YV4",
+      "author": "Stanford Center for Health Education",
+      "category": "Diarrhea & Dehydration",
+      "keywords": [
+        "স্যালাইন",
+        "ওরস্যালাইন",
+        "ors",
+        "orsaline",
+        "ডায়রিয়া",
+        "ডায়রিয়া",
+        "পাতলা পায়খানা",
+        "diarrhea",
+        "বমি",
+        "ডিহাইড্রেশন"
+      ],
+      "description_bn": "ডায়রিয়া ও পানিশূন্যতা রোধে সঠিক পরিমাপে খাবার স্যালাইন তৈরির বৈজ্ঞানিক পদ্ধতি।"
+    },
+    {
+      "id": "hands_only_cpr",
+      "title": "How to Perform Hands-Only CPR",
+      "title_bn": "জরুরি কার্ডিয়াক অ্যারেস্টে হাতের সাহায্যে সিপিআর (CPR) দেওয়ার নিয়ম (American Red Cross)",
+      "youtubeId": "6eRwgM2Pa4o",
+      "author": "American Red Cross",
+      "category": "Cardiovascular Emergency",
+      "keywords": [
+        "cpr",
+        "সিপিআর",
+        "হার্ট অ্যাটাক",
+        "heart attack",
+        "cardiac arrest",
+        "বুকে চাপ",
+        "অজ্ঞান"
+      ],
+      "description_bn": "হঠাৎ হৃদযন্ত্র বন্ধ হয়ে রোগী অজ্ঞান হয়ে গেলে জরুরি অ্যাম্বুলেন্স না আসা পর্যন্ত বুকে চাপ দিয়ে সিপিআর দেওয়ার জীবনরক্ষাকারী কৌশল।"
+    },
+    {
+      "id": "insulin_pen",
+      "title": "How to Properly Use an Insulin Pen",
+      "title_bn": "ইনসুলিন পেন দিয়ে সঠিকভাবে ইনসুলিন নেওয়ার নিয়ম (Endocrinology Guide)",
+      "youtubeId": "BXsuSRx3z6s",
+      "author": "CLS Health",
+      "category": "Diabetes Care",
+      "keywords": [
+        "ইনসুলিন",
+        "insulin",
+        "insulin pen",
+        "ডায়াবেটিস ইনজেকশন",
+        "সুগার ইনজেকশন"
+      ],
+      "description_bn": "ডায়াবেটিস রোগীদের পেটে বা উরুতে ব্যথাহীন ও নিরাপদভাবে ইনসুলিন পেন ব্যবহারের নিয়ম।"
+    },
+    {
+      "id": "blood_pressure",
+      "title": "Doctor shows you how to measure blood pressure PROPERLY at home",
+      "title_bn": "ঘরে বসে ডিজিটাল মেশিনে সঠিকভাবে রক্তচাপ (BP) মাপার নিয়ম",
+      "youtubeId": "XUApETuCiR8",
+      "author": "Dr Sophie GP",
+      "category": "Hypertension",
+      "keywords": [
+        "রক্তচাপ",
+        "প্রেশার মাপার",
+        "ব্লাড প্রেশার",
+        "blood pressure",
+        "high bp",
+        "হাই প্রেশার",
+        "প্রেশার"
+      ],
+      "description_bn": "সঠিক রক্তচাপ রিডিং পেতে বসার ভঙ্গিমা, হাতের অবস্থান ও কাফ বাঁধার নিয়ম।"
+    },
+    {
+      "id": "back_pain_physio",
+      "title": "3 SIMPLE Exercises For Lower Back Pain Relief",
+      "title_bn": "কোমর ও পিঠের ব্যথা উপশমে কার্যকর ফিজিওথেরাপি ব্যায়াম",
+      "youtubeId": "1pOMjt6gkiE",
+      "author": "Tone and Tighten",
+      "category": "Orthopedics",
+      "keywords": [
+        "কোমর ব্যথা",
+        "পিঠ ব্যথা",
+        "back pain",
+        "ফিজিওথেরাপি",
+        "physiotherapy",
+        "কোমরের ব্যায়াম",
+        "মেরুদণ্ড"
+      ],
+      "description_bn": "দীর্ঘক্ষণ বসে কাজ করা বা মাংসপেশির টানে কোমর ব্যথার সহজ ও নিরাপদ ঘরোয়া ফিজিওথেরাপি।"
+    },
+    {
+      "id": "dengue_care",
+      "title": "Dengue Fever Symptoms, Warning Signs, Diagnosis & Management",
+      "title_bn": "ডেঙ্গু জ্বরের লক্ষণ, বিপদচিহ্ন ও ফ্লুইড ম্যানেজমেন্ট গাইড",
+      "youtubeId": "Of2XBq635xg",
+      "author": "MedNerd - Dr. Waqas Fazal",
+      "category": "Infectious Disease",
+      "keywords": [
+        "ডেঙ্গু",
+        "dengue",
+        "প্লাটিলেট",
+        "platelet",
+        "ns1"
+      ],
+      "description_bn": "ডেঙ্গু জ্বরের ক্রিটিক্যাল ফেজ, প্লাটিলেট পর্যবেক্ষণ ও পানিশূন্যতা প্রতিরোধের চিকিৎসা নির্দেশনা।"
+    },
+    {
+      "id": "acid_reflux",
+      "title": "GERD Explained: Symptoms, Causes & Treatment | Acid Reflux",
+      "title_bn": "গ্যাস্ট্রিক, এসিডিটি ও বুক জ্বালাপোড়া (GERD) নিয়ন্ত্রণের উপায়",
+      "youtubeId": "xMuAuojSs_o",
+      "author": "MEDISCOPE",
+      "category": "Gastroenterology",
+      "keywords": [
+        "গ্যাস্ট্রিক",
+        "এসিডিটি",
+        "বুক জ্বালা",
+        "acidity",
+        "gerd",
+        "acid reflux",
+        "গ্যাস",
+        "heartburn"
+      ],
+      "description_bn": "খাবারের সঠিক সময়সূচি এবং গ্যাস্ট্রিক ও এসিড রিফ্লাক্স প্রতিরোধের বৈজ্ঞানিক উপায়।"
+    },
+    {
+      "id": "choking_first_aid",
+      "title": "First aid for someone who is choking | British Red Cross",
+      "title_bn": "গলায় খাবার আটকে দম বন্ধ হলে (Choking) জরুরি প্রাথমিক চিকিৎসা",
+      "youtubeId": "WeY4KJUnfMc",
+      "author": "British Red Cross",
+      "category": "Emergency First Aid",
+      "keywords": [
+        "গলায় খাবার",
+        "গলায় কিছু আটকে",
+        "choking",
+        "heimlich",
+        "দম বন্ধ"
+      ],
+      "description_bn": "গলায় খাবার বা বস্তু আটকে শ্বাস বন্ধ হয়ে গেলে পিঠে চাপড় ও পেটে চাপ (Abdominal Thrusts) দেওয়ার নিয়ম।"
+    },
+    {
+      "id": "burn_first_aid",
+      "title": "Burns and scalds: First aid steps and key action | British Red Cross",
+      "title_bn": "আগুনে বা গরম পানিতে পুড়ে গেলে (Burns) তাৎক্ষণিক প্রাথমিক চিকিৎসা",
+      "youtubeId": "0AuQ30idF0c",
+      "author": "British Red Cross",
+      "category": "Emergency First Aid",
+      "keywords": [
+        "পুড়ে গেলে",
+        "আগুনে পোড়া",
+        "গরম পানিতে পোড়া",
+        "burn",
+        "scald",
+        "পোড়া ঘা"
+      ],
+      "description_bn": "পোড়া স্থানে ২০ মিনিট ঠান্ডা প্রবহমান পানি ঢালা এবং ফোসকা না ফাটিয়ে নিরাপদ ড্রেসিং করার নিয়ম।"
+    },
+    {
+      "id": "stroke_fast",
+      "title": "How to Recognize and Respond to a Stroke (FAST) | Red Cross",
+      "title_bn": "স্ট্রোকের লক্ষণ চেনার উপায় (FAST) ও জরুরি করণীয়",
+      "youtubeId": "WKGs9qbVugk",
+      "author": "Canadian Red Cross",
+      "category": "Neurological Emergency",
+      "keywords": [
+        "স্ট্রোক",
+        "stroke",
+        "মুখ বেঁকে",
+        "হাত অবশ",
+        "কথা জড়িয়ে",
+        "প্যারালাইসিস",
+        "paralysis"
+      ],
+      "description_bn": "মুখ বেঁকে যাওয়া, হাত অবশ হওয়া বা কথা জড়িয়ে গেলে দ্রুত স্ট্রোক শনাক্ত করে হাসপাতালে নেওয়ার নির্দেশনা।"
+    },
+    {
+      "id": "nebulizer_use",
+      "title": "How to Properly Use a Nebulizer | American Lung Association",
+      "title_bn": "নেবুলাইজার মেশিন সঠিকভাবে ব্যবহারের নিয়ম (American Lung Association)",
+      "youtubeId": "pEKFKZiLNaA",
+      "author": "American Lung Association",
+      "category": "Respiratory Care",
+      "keywords": [
+        "নেবুলাইজার",
+        "nebulizer",
+        "নেবুলাইজেশন",
+        "গ্যাস দেওয়া"
+      ],
+      "description_bn": "শিশু ও বয়স্কদের শ্বাসকষ্টে ঘরে বসে নেবুলাইজার মেশিন ব্যবহার ও পরিষ্কার রাখার নিয়ম।"
+    },
+    {
+      "id": "nosebleed_first_aid",
+      "title": "How to stop a nosebleed | British Red Cross",
+      "title_bn": "নাক দিয়ে রক্ত পড়লে (Nosebleed) দ্রুত বন্ধ করার প্রাথমিক চিকিৎসা",
+      "youtubeId": "K4KWO0FnwGc",
+      "author": "British Red Cross",
+      "category": "First Aid",
+      "keywords": [
+        "নাক দিয়ে রক্ত",
+        "নাকে রক্ত",
+        "nosebleed",
+        "epistaxis"
+      ],
+      "description_bn": "মাথা সামনের দিকে ঝুঁকিয়ে নাকের নরম অংশে ১০ মিনিট চাপ দিয়ে ধরে রক্তপাত বন্ধ করার সঠিক পদ্ধতি।"
+    },
+    {
+      "id": "diabetic_diet",
+      "title": "Understanding Carbs and Using the Diabetes MyPlate Method",
+      "title_bn": "ডায়াবেটিস নিয়ন্ত্রণে খাবারের প্লেট মেথড ও কার্বোহাইড্রেট গাইড",
+      "youtubeId": "RH3d1WtfBKA",
+      "author": "CommunityHealth",
+      "category": "Nutrition & Diabetes",
+      "keywords": [
+        "ডায়াবেটিস খাবার",
+        "ডায়াবেটিস ডায়েট",
+        "diabetic plate",
+        "ডায়েট ভিডিও"
+      ],
+      "description_bn": "রক্তের সুগার নিয়ন্ত্রণে প্রতিবেলার খাবারের সঠিক অনুপাত নির্ধারণের সহজ পদ্ধতি।"
+    },
+    {
+      "id": "neck_pain_exercises",
+      "title": "Neck Pain Relief Routine with Stretches & Exercises",
+      "title_bn": "ঘাড় ব্যথা ও সার্ভাইক্যাল স্পন্ডিলাইটিস উপশমের ফিজিওথেরাপি ব্যায়াম",
+      "youtubeId": "sr3hW43i9tg",
+      "author": "AskDoctorJo",
+      "category": "Orthopedics & Physiotherapy",
+      "keywords": [
+        "ঘাড় ব্যথা",
+        "neck pain",
+        "স্পন্ডিলাইটিস",
+        "spondylitis",
+        "ঘাড়ের ব্যায়াম"
+      ],
+      "description_bn": "মোবাইল বা কম্পিউটার ব্যবহারের কারণে ঘাড় ও কাঁধের ব্যথা কমানোর স্ট্রেচিং ও ব্যায়াম।"
+    },
+    {
+      "id": "knee_pain_exercises",
+      "title": "Knee Osteoarthritis Pain Relief Physiotherapy Exercises",
+      "title_bn": "হাঁটু ব্যথা ও অস্টিওআর্থ্রাইটিস উপশমের ফিজিওথেরাপি ব্যায়াম",
+      "youtubeId": "hzsGUmYvKIs",
+      "author": "Sai Physiotherapy",
+      "category": "Orthopedics & Physiotherapy",
+      "keywords": [
+        "হাঁটু ব্যথা",
+        "knee pain",
+        "আর্থ্রাইটিস",
+        "arthritis",
+        "হাঁটুর ব্যায়াম"
+      ],
+      "description_bn": "বয়সজনিত হাঁটুর ক্ষয় ও ব্যথা কমাতে পায়ের পেশি শক্তিশালী করার ব্যায়াম।"
+    },
+    {
+      "id": "pregnancy_nutrition",
+      "title": "Nutrition During Pregnancy | Stanford Center for Health Education",
+      "title_bn": "গর্ভাবস্থায় মায়ের সঠিক পুষ্টি ও সুষম খাদ্যতালিকা (Stanford Health)",
+      "youtubeId": "0BrxCY89_uQ",
+      "author": "Stanford Center for Health Education",
+      "category": "Maternal Health",
+      "keywords": [
+        "গর্ভাবস্থায় খাবার",
+        "গর্ভবতী মায়ের খাবার",
+        "pregnancy diet",
+        "গর্ভাবস্থা",
+        "pregnant"
+      ],
+      "description_bn": "গর্ভস্থ শিশুর সুস্থ বিকাশে আয়রন, ফলিক এসিড, ক্যালসিয়াম ও প্রোটিন সমৃদ্ধ খাবারের নির্দেশনা।"
+    },
+    {
+      "id": "snakebite_first_aid",
+      "title": "Understand snakebite, recognize the signs, learn how to provide first aid",
+      "title_bn": "সাপে কামড়ালে লক্ষণ চেনা ও জীবনরক্ষাকারী প্রাথমিক চিকিৎসা (Apollo Hospitals)",
+      "youtubeId": "NKyWknKHlw8",
+      "author": "Apollo Hospitals",
+      "category": "Emergency First Aid",
+      "keywords": [
+        "সাপে কামড়",
+        "সাপে কাটলে",
+        "snakebite",
+        "snake bite",
+        "চন্দ্রবোড়া",
+        "রাসেলস ভাইপার"
+      ],
+      "description_bn": "সাপে কামড়ালে কী করবেন এবং কী করা সম্পূর্ণ নিষেধ তার জরুরি চিকিৎসা নির্দেশনা।"
+    },
+    {
+      "id": "seizure_first_aid",
+      "title": "First aid for someone having a seizure | British Red Cross",
+      "title_bn": "খিঁচুনি বা মৃগীরোগ (Seizure / Epilepsy) হলে জরুরি প্রাথমিক চিকিৎসা",
+      "youtubeId": "1SMFUwyEafw",
+      "author": "British Red Cross",
+      "category": "Neurological Emergency",
+      "keywords": [
+        "খিঁচুনি",
+        "মৃগীরোগ",
+        "seizure",
+        "epilepsy",
+        "convulsion"
+      ],
+      "description_bn": "রোগীর খিঁচুনি শুরু হলে মুখে কিছু না ঢুকিয়ে একপাশে কাত করে শোয়ানো (Recovery Position) ও নিরাপদ রাখার নিয়ম।"
+    },
+    {
+      "id": "fever_management",
+      "title": "How To Treat A Fever Safely in Adults & Children",
+      "title_bn": "বয়স্ক ও শিশুদের জ্বর দ্রুত কমানোর ঘরোয়া ও নিরাপদ উপায়",
+      "youtubeId": "9HkRoeshhCg",
+      "author": "AbrahamThePharmacist",
+      "category": "General Medicine",
+      "keywords": [
+        "জ্বর কমানোর উপায়",
+        "জ্বর হলে করণীয়",
+        "গা স্পঞ্জ",
+        "fever treatment"
+      ],
+      "description_bn": "জ্বর হলে সঠিক নিয়মে গা স্পঞ্জ করা, হাইড্রেশন এবং প্যারাসিটামল ব্যবহারের নির্দেশিকা।"
+    }
+  ]
+}

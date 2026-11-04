@@ -1,276 +1,140 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+import { getCatalogMedicines, getGenericMonograph, getGenericAlternatives } from '@/lib/medicine-catalog';
+import { getOfficialDosageIcon, getManufacturerAsset, getMedicinePackaging, getChemicalStructure } from '@/lib/medicine-brand-assets';
 
-// ============================================
-// Types
-// ============================================
+let cachedBengaliLexicon: Record<string, string> | null = null;
 
-interface Medicine {
-  id: string;
-  brandName: string;
-  genericName: string;
-  manufacturer: string;
-  strength: string;
-  price: number;
-  availability: 'In Stock' | 'Limited' | 'Out of Stock';
-  category: string;
-  dosageForm: string;
-  warnings: string[];
-  alternatives: string[];
+function getBengaliLexicon(): Record<string, string> {
+  if (cachedBengaliLexicon) return cachedBengaliLexicon;
+  try {
+    const p = path.join(process.cwd(), 'public/data/clinical_rag_corpus.json');
+    if (fs.existsSync(p)) {
+      const parsed = JSON.parse(fs.readFileSync(p, 'utf8'));
+      cachedBengaliLexicon = parsed.bengali_medicine_lexicon || {};
+      return cachedBengaliLexicon!;
+    }
+  } catch {}
+  return {};
 }
 
-// ============================================
-// Mock Data - Common Bangladeshi Medicines
-// ============================================
-
-const medicines: Medicine[] = [
-  {
-    id: 'med-001',
-    brandName: 'Napa',
-    genericName: 'Paracetamol',
-    manufacturer: 'Beximco Pharmaceuticals',
-    strength: '500mg',
-    price: 1.2,
-    availability: 'In Stock',
-    category: 'Analgesic & Antipyretic',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Do not exceed 4g (8 tablets) in 24 hours',
-      'Avoid with liver disease',
-      'Consult a doctor if symptoms persist for more than 3 days',
-    ],
-    alternatives: ['Ace', 'Parol', 'Renova'],
-  },
-  {
-    id: 'med-002',
-    brandName: 'Napa Extra',
-    genericName: 'Paracetamol + Caffeine',
-    manufacturer: 'Beximco Pharmaceuticals',
-    strength: '500mg + 65mg',
-    price: 2.5,
-    availability: 'In Stock',
-    category: 'Analgesic & Antipyretic',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Do not exceed 8 tablets in 24 hours',
-      'Contains caffeine - avoid excessive tea/coffee',
-      'Not recommended during pregnancy without medical advice',
-    ],
-    alternatives: ['Ace Plus', 'Fast Plus'],
-  },
-  {
-    id: 'med-003',
-    brandName: 'Seclo',
-    genericName: 'Omeprazole',
-    manufacturer: 'Square Pharmaceuticals',
-    strength: '20mg',
-    price: 6.0,
-    availability: 'In Stock',
-    category: 'Proton Pump Inhibitor (PPI)',
-    dosageForm: 'Capsule',
-    warnings: [
-      'Take 30 minutes before meals',
-      'Long-term use may reduce magnesium levels',
-      'Not recommended for more than 8 weeks without doctor supervision',
-    ],
-    alternatives: ['Losectil', 'Maxpro', 'Sergel'],
-  },
-  {
-    id: 'med-004',
-    brandName: 'Omidon',
-    genericName: 'Domperidone',
-    manufacturer: 'Incepta Pharmaceuticals',
-    strength: '10mg',
-    price: 3.0,
-    availability: 'In Stock',
-    category: 'Antiemetic / Prokinetic',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Take 15-30 minutes before meals',
-      'Avoid in patients with cardiac conduction disorders',
-      'Not recommended for prolonged use',
-    ],
-    alternatives: ['Motigut', 'Domerin', 'Peridon'],
-  },
-  {
-    id: 'med-005',
-    brandName: 'Losectil',
-    genericName: 'Omeprazole',
-    manufacturer: 'Eskayef Pharmaceuticals',
-    strength: '20mg',
-    price: 5.5,
-    availability: 'In Stock',
-    category: 'Proton Pump Inhibitor (PPI)',
-    dosageForm: 'Capsule',
-    warnings: [
-      'Take 30 minutes before meals on an empty stomach',
-      'Prolonged use may affect calcium absorption',
-      'Report any unusual bleeding or black stools',
-    ],
-    alternatives: ['Seclo', 'Maxpro', 'Sergel'],
-  },
-  {
-    id: 'med-006',
-    brandName: 'Tycil',
-    genericName: 'Amoxicillin',
-    manufacturer: 'Beximco Pharmaceuticals',
-    strength: '500mg',
-    price: 6.5,
-    availability: 'In Stock',
-    category: 'Antibiotic (Penicillin)',
-    dosageForm: 'Capsule',
-    warnings: [
-      'Complete the full course even if symptoms improve',
-      'Do not use if allergic to penicillin',
-      'May cause diarrhoea - consult doctor if severe',
-    ],
-    alternatives: ['Moxacil', 'Amoxil', 'Fimoxyl'],
-  },
-  {
-    id: 'med-007',
-    brandName: 'Flagyl',
-    genericName: 'Metronidazole',
-    manufacturer: 'Sanofi Bangladesh',
-    strength: '400mg',
-    price: 3.5,
-    availability: 'In Stock',
-    category: 'Antiprotozoal / Antibiotic',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Strictly avoid alcohol during and 48 hours after treatment',
-      'May cause metallic taste in mouth',
-      'Complete the full prescribed course',
-    ],
-    alternatives: ['Filmet', 'Amodis', 'Metron'],
-  },
-  {
-    id: 'med-008',
-    brandName: 'Maxpro',
-    genericName: 'Esomeprazole',
-    manufacturer: 'Renata Limited',
-    strength: '20mg',
-    price: 7.0,
-    availability: 'In Stock',
-    category: 'Proton Pump Inhibitor (PPI)',
-    dosageForm: 'Capsule',
-    warnings: [
-      'Take at least 1 hour before meals',
-      'Not for immediate relief of heartburn',
-      'Long-term use requires periodic medical review',
-    ],
-    alternatives: ['Sergel', 'Seclo', 'Losectil'],
-  },
-  {
-    id: 'med-009',
-    brandName: 'Sergel',
-    genericName: 'Esomeprazole',
-    manufacturer: 'Healthcare Pharmaceuticals',
-    strength: '20mg',
-    price: 7.5,
-    availability: 'In Stock',
-    category: 'Proton Pump Inhibitor (PPI)',
-    dosageForm: 'Capsule',
-    warnings: [
-      'Swallow whole - do not crush or chew',
-      'Take on an empty stomach',
-      'May interact with clopidogrel - inform your doctor',
-    ],
-    alternatives: ['Maxpro', 'Seclo', 'Losectil'],
-  },
-  {
-    id: 'med-010',
-    brandName: 'Ace',
-    genericName: 'Paracetamol',
-    manufacturer: 'Square Pharmaceuticals',
-    strength: '500mg',
-    price: 1.0,
-    availability: 'In Stock',
-    category: 'Analgesic & Antipyretic',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Do not exceed 4g (8 tablets) in 24 hours',
-      'Avoid alcohol while taking this medication',
-      'Consult a doctor for children under 12',
-    ],
-    alternatives: ['Napa', 'Parol', 'Renova'],
-  },
-  {
-    id: 'med-011',
-    brandName: 'Montelukast',
-    genericName: 'Montelukast Sodium',
-    manufacturer: 'Incepta Pharmaceuticals',
-    strength: '10mg',
-    price: 12.0,
-    availability: 'In Stock',
-    category: 'Leukotriene Receptor Antagonist',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Take in the evening for best results',
-      'Not for acute asthma attacks - use rescue inhaler',
-      'Report mood changes or unusual behaviour to doctor',
-    ],
-    alternatives: ['Montair', 'Arokast', 'Lukasm'],
-  },
-  {
-    id: 'med-012',
-    brandName: 'Fexo',
-    genericName: 'Fexofenadine Hydrochloride',
-    manufacturer: 'Square Pharmaceuticals',
-    strength: '120mg',
-    price: 8.0,
-    availability: 'In Stock',
-    category: 'Antihistamine',
-    dosageForm: 'Tablet',
-    warnings: [
-      'Does not usually cause drowsiness',
-      'Avoid fruit juices (orange, grapefruit) within 2 hours of dose',
-      'Safe for long-term seasonal allergy use under medical advice',
-    ],
-    alternatives: ['Fexofast', 'Telfast', 'Allegra'],
-  },
-];
-
-// ============================================
-// GET /api/medicines/search
-// ============================================
+function extractUnitPrice(packageContainer?: string, packageSize?: string): { price: number; basis: string } {
+  const containerStr = String(packageContainer || '');
+  const unitMatch = containerStr.match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
+  if (unitMatch) {
+    const amount = Number(unitMatch[1].replace(/,/g, ''));
+    if (Number.isFinite(amount) && amount > 0) return { price: amount, basis: 'unit' };
+  }
+  const pkgMatch = String(packageSize || containerStr).match(/৳\s*([\d,]+(?:\.\d{1,2})?)/);
+  if (pkgMatch) {
+    const amount = Number(pkgMatch[1].replace(/,/g, ''));
+    if (Number.isFinite(amount) && amount > 0) return { price: amount, basis: 'pack' };
+  }
+  return { price: 10.0, basis: 'unit' };
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const rawName = (searchParams.get('name') || '').trim();
+  const rawGeneric = (searchParams.get('generic') || '').trim();
+  const rawQ = (searchParams.get('q') || rawName || rawGeneric || '').trim();
+  const limit = Math.min(20, Math.max(1, Number(searchParams.get('limit') || '6')));
 
-  const name = searchParams.get('name')?.toLowerCase();
-  const generic = searchParams.get('generic')?.toLowerCase();
-  const q = searchParams.get('q')?.toLowerCase();
+  const catalog = getCatalogMedicines().data || [];
+  const lexicon = getBengaliLexicon();
 
-  let results = [...medicines];
-
-  // Filter by brand name
-  if (name) {
-    results = results.filter((med) =>
-      med.brandName.toLowerCase().includes(name)
-    );
+  // Translate Bengali brand/generic query if present
+  let resolvedQuery = rawQ;
+  for (const [bnKey, enVal] of Object.entries(lexicon)) {
+    if (rawQ.includes(bnKey)) {
+      resolvedQuery = enVal;
+      break;
+    }
   }
 
-  // Filter by generic name
-  if (generic) {
-    results = results.filter((med) =>
-      med.genericName.toLowerCase().includes(generic)
-    );
+  const qLower = resolvedQuery.toLowerCase().trim();
+  if (!qLower) {
+    return NextResponse.json([], { status: 200 });
   }
 
-  // General search - matches brand name, generic name, manufacturer, or category
-  if (q) {
-    results = results.filter((med) => {
-      const searchable = [
-        med.brandName,
-        med.genericName,
-        med.manufacturer,
-        med.category,
-        med.dosageForm,
-      ]
-        .join(' ')
-        .toLowerCase();
-      return searchable.includes(q);
+  // Score and rank matches across 21,714 medicines
+  const scored: { med: any; score: number }[] = [];
+  for (const m of catalog) {
+    const bName = String(m.brand_name || '').toLowerCase();
+    const gName = String(m.generic_name || '').toLowerCase();
+    const mfg = String(m.manufacturer || '').toLowerCase();
+    const strength = String(m.strength || '').toLowerCase();
+
+    let score = 0;
+    if (bName === qLower) score += 100;
+    else if (bName.startsWith(qLower)) score += 75;
+    else if (bName.includes(qLower)) score += 50;
+
+    if (gName === qLower) score += 85;
+    else if (gName.startsWith(qLower)) score += 65;
+    else if (gName.includes(qLower)) score += 45;
+
+    if (`${bName} ${strength}`.includes(qLower)) score += 30;
+    if (mfg.includes(qLower)) score += 15;
+
+    if (score > 0) {
+      scored.push({ med: m, score });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  const topMatches = scored.slice(0, limit).map(({ med }) => {
+    const { price, basis } = extractUnitPrice(med.package_container, med.package_size);
+    const mono = getGenericMonograph(med.generic_name || '');
+    const mfgAsset = getManufacturerAsset(med.manufacturer || '');
+    const dosageIcon = getOfficialDosageIcon(med.dosage_form || med.type || '');
+    const packImg = getMedicinePackaging(med.id, med.brand_name) || getChemicalStructure(med.generic_name);
+
+    const warnings: string[] = [];
+    if (mono?.contraindications) {
+      warnings.push(mono.contraindications.split('.')[0].slice(0, 110));
+    }
+    if (mono?.precautions) {
+      warnings.push(mono.precautions.split('.')[0].slice(0, 110));
+    }
+    if (warnings.length === 0) {
+      warnings.push('রেজিস্টার্ড চিকিৎসকের পরামর্শ ও সঠিক মাত্রা অনুযায়ী সেব্য');
+    }
+
+    const rawAlts = getGenericAlternatives(med.generic_name || '', med.id, 4);
+    const alternatives = rawAlts.map((alt) => {
+      const altPrice = extractUnitPrice(alt.package_container, alt.package_size);
+      return {
+        id: String(alt.id),
+        name: `${alt.brand_name} ${alt.strength || ''}`.trim(),
+        manufacturer: alt.manufacturer || '',
+        price: altPrice.price,
+        priceBasis: altPrice.basis,
+        url: `/medicines/${alt.id}`,
+      };
     });
-  }
 
-  return NextResponse.json(results, { status: 200 });
+    return {
+      id: String(med.id),
+      brandName: med.brand_name || 'Medicine',
+      genericName: med.generic_name || 'Generic',
+      manufacturer: med.manufacturer || 'Pharmaceuticals',
+      manufacturerLogoUrl: mfgAsset?.logoUrl || null,
+      strength: med.strength || '',
+      price,
+      priceBasis: basis,
+      availability: true,
+      category: mono?.therapeutic_class || 'Therapeutic',
+      dosageForm: med.dosage_form || med.type || 'Tablet',
+      officialDosageIcon: dosageIcon,
+      packagingImageUrl: packImg || null,
+      indication: mono?.indication_description ? mono.indication_description.slice(0, 180) : undefined,
+      url: `/medicines/${med.id}`,
+      warnings,
+      alternatives,
+    };
+  });
+
+  return NextResponse.json(topMatches, { status: 200 });
 }

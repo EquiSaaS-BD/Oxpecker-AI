@@ -429,6 +429,7 @@ function ChatContent() {
                     imageUrl={msg.imageUrl}
                     imageName={msg.imageName}
                     fileSize={msg.fileSize}
+                    onSelectFollowUp={(q) => handleSend(q)}
                   />;
               })}
               
@@ -462,7 +463,7 @@ function ChatContent() {
                 </div>
               )}
 
-              {!isTyping && messages.length > 0 && messages[messages.length - 1].role === "bot" && messages[messages.length - 1].content !== "" && (
+              {!isTyping && messages.length > 0 && messages[messages.length - 1].role === "bot" && messages[messages.length - 1].content !== "" && !messages[messages.length - 1].content.includes("json:follow_ups") && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
