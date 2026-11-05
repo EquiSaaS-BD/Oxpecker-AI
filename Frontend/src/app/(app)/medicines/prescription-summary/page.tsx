@@ -24,7 +24,7 @@ function PrescriptionSummaryContent() {
 
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold">
             <ShieldCheck size={14} className="text-emerald-600" />
-            <span>Verified DGDA / MedEx National Price Engine (21,714 Records)</span>
+            <span>Verified DGDA / MedEx National Price Engine (27,784 Records)</span>
           </div>
         </div>
 

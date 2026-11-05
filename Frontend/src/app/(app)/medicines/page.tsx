@@ -155,7 +155,7 @@ export default function MedicinesPage() {
             </h1>
 
             <p className="text-[14px] sm:text-[15px] text-[#64748B] font-medium mb-5 leading-relaxed max-w-[620px]">
-              Search {totalCount > 0 ? totalCount.toLocaleString() : "21,714"} verified DGDA medicines, compare pharmacy prices instantly, or upload a prescription for automatic recognition and price analysis.
+              Search {totalCount > 0 ? totalCount.toLocaleString() : "27,784"} verified DGDA medicines, compare pharmacy prices instantly, or upload a prescription for automatic recognition and price analysis.
             </p>
 
             {/* Search Input Box */}
@@ -318,7 +318,7 @@ export default function MedicinesPage() {
               {searchQuery ? `Results for "${searchQuery}"` : "Find Medicines by Category"}
             </h2>
             <p className="text-[13px] sm:text-[14px] text-[#64748B] font-medium mt-0.5">
-              Browse {totalCount > 0 ? totalCount.toLocaleString() : "21,714"} authentic medicines, dosage strengths, and approved generic substitutes.
+              Browse {totalCount > 0 ? totalCount.toLocaleString() : "27,784"} authentic medicines, dosage strengths, and approved generic substitutes.
             </p>
           </div>
         </div>

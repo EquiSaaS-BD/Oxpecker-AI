@@ -1471,7 +1471,7 @@ export function buildPrescriptionIntelligence(params: {
       isCompleteCalculation,
       currency: "BDT",
       currencySymbol: "৳",
-      priceSource: "DGDA / MedEx Verified National Catalog (21,714 records)",
+      priceSource: "DGDA / MedEx Verified National Catalog (27,784 records)",
       catalogLastUpdated: snapshot.generatedAt || null,
       unpricedItems,
       summaryBannerText,
