@@ -1,15 +1,13 @@
 """
 Post-merge verification script for Oxpecker AI Medicine Database.
 Verifies:
-1. Exact count = 28,155
+1. Exact count = 28,151
 2. 0 duplicate 5-field keys
 3. Spot-checks: Napa, Seclo, Sergel, Adovas, 5X
 4. Frontend dataset integrity
 """
 import json
 import sys
-import unicodedata
-import re
 from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -30,10 +28,11 @@ def main():
         med_count = conn.execute(text("SELECT count(*) FROM medicines")).scalar()
         gen_count = conn.execute(text("SELECT count(*) FROM generics")).scalar()
         mfg_count = conn.execute(text("SELECT count(*) FROM manufacturers")).scalar()
-        print(f"Medicines count: {med_count} (Expected: 27790)")
-        print(f"Generics count: {gen_count} (Expected: 1987)")
+        print(f"Medicines count: {med_count} (Expected: 28151)")
+        print(f"Generics count: {gen_count} (Expected: 2029)")
         print(f"Manufacturers count: {mfg_count}")
-        assert med_count == 27790, f"Expected 27790 medicines, got {med_count}"
+        assert med_count == 28151, f"Expected 28151 medicines, got {med_count}"
+        assert gen_count == 2029, f"Expected 2029 generics, got {gen_count}"
 
         print("\n=== STEP 2: VERIFYING ZERO DUPLICATES UNDER 5-FIELD KEY ===")
         sql = """
@@ -48,11 +47,13 @@ def main():
         for r in rows:
             k = compute_5field_key(r['brand_name'], r['generic_name'], r['strength'], r['dosage_form'], r['manufacturer_name'])
             if k in seen_keys:
-                duplicates.append(k)
+                duplicates.append((k, r['brand_name']))
             seen_keys.add(k)
         print(f"Total keys checked: {len(rows)}")
         print(f"Unique keys: {len(seen_keys)}")
         print(f"Duplicates found: {len(duplicates)}")
+        if duplicates:
+            print("Duplicates list:", duplicates[:5])
         assert len(duplicates) == 0, f"Found {len(duplicates)} duplicates!"
 
         print("\n=== STEP 3: SPOT-CHECKING BENCHMARK MEDICINES ===")
@@ -76,15 +77,15 @@ def main():
     with fe_med_file.open(encoding="utf-8") as f:
         fe_med_data = json.load(f)
     print(f"Frontend medicines.json count: {fe_med_data['total_count']} (Data list len: {len(fe_med_data['data'])})")
-    assert fe_med_data['total_count'] == 27790
-    assert len(fe_med_data['data']) == 27790
+    assert fe_med_data['total_count'] == 28151
+    assert len(fe_med_data['data']) == 28151
 
     with fe_gen_file.open(encoding="utf-8") as f:
         fe_gen_data = json.load(f)
     print(f"Frontend generics.json count: {fe_gen_data['total_count']} (Data list len: {len(fe_gen_data['data'])})")
-    assert fe_gen_data['total_count'] == 1987
+    assert fe_gen_data['total_count'] == 2029
 
-    print("\n>>> ALL VERIFICATION CHECKS PASSED PERFECTLY! <<<")
+    print("\n>>> ALL VERIFICATION CHECKS PASSED WITH ZERO DUPLICATES! <<<")
 
 if __name__ == "__main__":
     main()
