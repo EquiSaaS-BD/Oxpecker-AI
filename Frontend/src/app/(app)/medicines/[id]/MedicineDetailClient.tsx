@@ -624,18 +624,6 @@ export default function MedicineDetailClient({
           </Link>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-            {monograph?.monograph_link && (
-              <a
-                href={monograph.monograph_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200/70 text-sky-700 hover:bg-sky-100 text-xs font-bold transition-all shadow-2xs"
-              >
-                <span>{t.officialPrescribingInfo}</span>
-                <ExternalLink size={13} />
-              </a>
-            )}
-
             <button
               type="button"
               onClick={handleShare}

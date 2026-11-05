@@ -9,7 +9,12 @@ import {
   extractStructuredMedicinesFromRawOcrText,
   normalizeRawExtractedMedicine,
 } from "../prescription-intelligence";
-import { hasValidFileSignature, encryptDocumentBytes, decryptDocumentBytes } from "../medical-document-server";
+import {
+  hasValidFileSignature,
+  encryptDocumentBytes,
+  decryptDocumentBytes,
+  extractTextFromPdfBuffer,
+} from "../medical-document-server";
 
 export async function runAllPrescriptionIntelligenceTests() {
   const results: Array<{ scenario: string; passed: boolean; details: string }> = [];
@@ -361,13 +366,37 @@ export async function runAllPrescriptionIntelligenceTests() {
     assert.ok(elapsedMs < 250, `Expected < 250ms, took ${elapsedMs.toFixed(1)}ms`);
   });
 
+  // Scenario 21: Zero-Demo-Data & Null Metadata Verification (never fabricates prescriptionDate, patientName, or doctorName)
+  record("21. Zero-Demo-Data: missing prescription date, doctor, and patient remain strictly null", () => {
+    const intel = buildPrescriptionIntelligence({
+      prescriptionId: "rx-zero-demo",
+      rawMedicines: [{ brandName: "Napa", strength: "500 mg", dosageForm: "Tablet", frequency: "1+0+1", duration: "5 days" }],
+    });
+    assert.equal(intel.prescriptionMetadata.prescriptionDate, null);
+    assert.equal(intel.prescriptionMetadata.patientName, null);
+    assert.equal(intel.prescriptionMetadata.doctorName, null);
+  });
+
+  // Scenario 22: Multi-page PDF stream text extraction
+  record("22. Multi-page PDF text stream extraction and medicine parsing", () => {
+    const multiPagePdfMock = Buffer.from(
+      "%PDF-1.7\nBT (1. Tab. Napa 500 mg - 1+1+1 - 5 days) Tj ET\nBT (2. Cap. Seclo 20 mg - 1+0+1 - 14 days) Tj ET\n%%EOF",
+      "latin1"
+    );
+    const pdfText = extractTextFromPdfBuffer(multiPagePdfMock);
+    const extracted = extractStructuredMedicinesFromRawOcrText(pdfText);
+    assert.equal(extracted.length, 2);
+    assert.equal(extracted[0].brandName.toLowerCase(), "napa");
+    assert.equal(extracted[1].brandName.toLowerCase(), "seclo");
+  });
+
   return results;
 }
 
 if (require.main === module) {
   runAllPrescriptionIntelligenceTests()
     .then((results) => {
-      console.log(`\n=== OXPECKER AI PRESCRIPTION INTELLIGENCE TEST SUITE (${results.length}/20 PASSED) ===`);
+      console.log(`\n=== OXPECKER AI PRESCRIPTION INTELLIGENCE TEST SUITE (${results.length}/22 PASSED) ===`);
       for (const r of results) {
         console.log(`[PASS] ${r.scenario}`);
       }

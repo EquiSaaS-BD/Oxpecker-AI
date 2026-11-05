@@ -46,7 +46,10 @@ export default function MedicinesPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState<any>(null);
   const [cartItems, setCartItems] = useState<Set<string>>(new Set());
-  const [showScannerWorkspace, setShowScannerWorkspace] = useState(true);
+  const [uploadedPrescriptionFile, setUploadedPrescriptionFile] = useState<File | null>(null);
+  const [isDraggingTopUpload, setIsDraggingTopUpload] = useState(false);
+  const topFileInputRef = useRef<HTMLInputElement | null>(null);
+  const topCameraInputRef = useRef<HTMLInputElement | null>(null);
   const scannerSectionRef = useRef<HTMLDivElement | null>(null);
 
   const getFormIcon = (type: string) => {
@@ -142,23 +145,23 @@ export default function MedicinesPage() {
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] overflow-y-auto pb-36 sm:pb-32 lg:pb-16">
-      {/* Search & Scanner Hero Banner */}
-      <div className="relative shrink-0 bg-white border-b border-slate-200/80 px-4 md:px-8 pt-6 sm:pt-10 lg:pt-8 pb-7 z-10 shadow-xs">
+      {/* Search & Automated Prescription Upload Hero Banner */}
+      <div className="relative shrink-0 bg-white border-b border-[#E5E7EB] px-4 md:px-8 pt-6 sm:pt-10 lg:pt-8 pb-7 z-10 shadow-2xs">
         <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch lg:items-center justify-between">
           {/* Left: Search Title & Bar */}
           <div className="flex-1 w-full min-w-0">
-            <h1 className="text-[24px] sm:text-[32px] md:text-[36px] font-[900] text-slate-900 mb-2 leading-tight tracking-tight">
+            <h1 className="text-[24px] sm:text-[32px] md:text-[36px] font-[900] text-[#111827] mb-2 leading-tight tracking-tight">
               Centralized Medicine Database
             </h1>
 
-            <p className="text-[14px] sm:text-[15px] text-slate-500 font-medium mb-5 leading-relaxed max-w-[620px]">
-              Search 21,714 verified DGDA medicines, compare pharmacy prices instantly, or upload a prescription for full OCR recognition and total cost calculation.
+            <p className="text-[14px] sm:text-[15px] text-[#64748B] font-medium mb-5 leading-relaxed max-w-[620px]">
+              Search {totalCount > 0 ? totalCount.toLocaleString() : "21,714"} verified DGDA medicines, compare pharmacy prices instantly, or upload a prescription for automatic recognition and price analysis.
             </p>
 
             {/* Search Input Box */}
             <div className="flex items-center gap-2 max-w-[620px] w-full">
-              <div className="flex-1 bg-slate-50 hover:bg-slate-100/70 rounded-2xl flex items-center p-1.5 sm:p-2 border border-slate-200 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/15 focus-within:bg-white transition-all shadow-xs">
-                <div className="pl-3.5 pr-2.5 text-slate-400">
+              <div className="flex-1 bg-[#F8FAFC] hover:bg-slate-100/70 rounded-2xl flex items-center p-1.5 sm:p-2 border border-[#E5E7EB] focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/15 focus-within:bg-white transition-all shadow-2xs">
+                <div className="pl-3.5 pr-2.5 text-[#64748B]">
                   <Search size={18} />
                 </div>
                 <input
@@ -166,12 +169,12 @@ export default function MedicinesPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search medicine, generic, or symptom..."
-                  className="flex-1 bg-transparent border-none outline-none py-1.5 text-[14px] sm:text-[15px] font-medium text-slate-800 placeholder:text-slate-400 min-w-0"
+                  className="flex-1 bg-transparent border-none outline-none py-1.5 text-[14px] sm:text-[15px] font-medium text-[#111827] placeholder:text-[#64748B] min-w-0"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 mr-1 cursor-pointer"
+                    className="p-1.5 rounded-full hover:bg-slate-200 text-[#64748B] hover:text-[#111827] mr-1 cursor-pointer"
                     title="Clear search"
                   >
                     <X size={14} />
@@ -180,7 +183,7 @@ export default function MedicinesPage() {
               </div>
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 rounded-2xl w-[48px] sm:w-[52px] h-[48px] sm:h-[52px] shrink-0 flex items-center justify-center transition-all shadow-xs cursor-pointer"
+                className="bg-white border border-[#E5E7EB] hover:border-sky-300 text-[#111827] hover:text-sky-600 rounded-2xl w-[48px] sm:w-[52px] h-[48px] sm:h-[52px] shrink-0 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
                 title="Filter categories"
               >
                 <SlidersHorizontal size={18} />
@@ -188,78 +191,133 @@ export default function MedicinesPage() {
             </div>
           </div>
 
-          {/* Right: Hospital-Grade Modern Prescription Scanner Trigger */}
-          <div className="w-full lg:w-[420px] shrink-0 flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setShowScannerWorkspace(true);
-                scannerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          {/* Right: Single Automated Prescription Upload Interface (Drag & Drop, Click to Upload, Camera Capture) */}
+          <div className="w-full lg:w-[440px] shrink-0">
+            <input
+              ref={topFileInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setUploadedPrescriptionFile(file);
+                  setTimeout(() => {
+                    scannerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 100);
+                }
+                e.target.value = "";
               }}
-              className="w-full text-left relative overflow-hidden rounded-2xl border border-slate-200/90 hover:border-sky-400 hover:shadow-md shadow-xs transition-all cursor-pointer bg-white p-4 sm:p-5 flex items-center justify-between gap-3.5 group"
+              className="hidden"
+            />
+            <input
+              ref={topCameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setUploadedPrescriptionFile(file);
+                  setTimeout(() => {
+                    scannerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 100);
+                }
+                e.target.value = "";
+              }}
+              className="hidden"
+            />
+
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingTopUpload(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingTopUpload(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingTopUpload(false);
+                const droppedFile = e.dataTransfer.files?.[0];
+                if (droppedFile) {
+                  setUploadedPrescriptionFile(droppedFile);
+                  setTimeout(() => {
+                    scannerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 100);
+                }
+              }}
+              onClick={() => topFileInputRef.current?.click()}
+              className={`w-full text-left relative overflow-hidden rounded-2xl border transition-all cursor-pointer p-4 sm:p-5 flex items-center justify-between gap-3.5 group ${
+                isDraggingTopUpload
+                  ? "border-sky-500 bg-sky-50/50 ring-2 ring-sky-500/20"
+                  : "border-[#E5E7EB] hover:border-sky-400 hover:shadow-sm bg-white"
+              }`}
             >
               <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <UploadCloud size={24} className="text-sky-600" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <h3 className="text-[14px] sm:text-[15px] font-[900] text-slate-900 group-hover:text-sky-600 transition-colors truncate">
+                    <h3 className="text-[14px] sm:text-[15px] font-[900] text-[#111827] group-hover:text-sky-600 transition-colors truncate">
                       Upload Prescription
                     </h3>
-                    <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 shrink-0">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200 shrink-0">
                       AI OCR
                     </span>
                   </div>
-                  <p className="text-[11px] sm:text-[12px] text-slate-500 font-medium truncate">
-                    Instant DB match, quantity & verified price engine
+                  <p className="text-[11px] sm:text-[12px] text-[#64748B] font-medium truncate">
+                    Drop JPG, PNG, WEBP, or PDF for instant price analysis
                   </p>
                 </div>
               </div>
 
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-colors shrink-0">
-                <Camera size={14} />
-                <span>Scan Rx</span>
-              </span>
-            </button>
-
-            <div className="flex items-center justify-between px-1">
-              <button
-                type="button"
-                onClick={() => setShowScannerWorkspace((prev) => !prev)}
-                className="text-xs font-bold text-sky-700 hover:underline cursor-pointer"
-              >
-                {showScannerWorkspace ? "Hide Prescription Scanner Workspace" : "Open Prescription Scanner Workspace"}
-              </button>
-              <Link
-                href="/medicines/prescription-summary"
-                className="text-xs font-bold text-slate-600 hover:text-sky-700 inline-flex items-center gap-1"
-              >
-                <FileText size={12} />
-                <span>Prescription Summary Route</span>
-              </Link>
+              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => topCameraInputRef.current?.click()}
+                  className="inline-flex sm:hidden items-center justify-center w-9 h-9 rounded-xl bg-[#F8FAFC] hover:bg-slate-100 text-[#111827] border border-[#E5E7EB] cursor-pointer"
+                  title="Capture prescription with camera"
+                >
+                  <Camera size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => topFileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                >
+                  <Camera size={14} />
+                  <span>Scan Rx</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-6 sm:py-8 w-full">
-        {/* END-TO-END PRESCRIPTION INTELLIGENCE & PRICE ENGINE WORKSPACE */}
-        {showScannerWorkspace && (
-          <div ref={scannerSectionRef} className="mb-10">
-            <PrescriptionIntelligenceWorkspace
-              onSelectMedicineDetail={(med) => setSelectedMedicine(med)}
-            />
-          </div>
-        )}
+        {/* AUTOMATED PRESCRIPTION RECOGNITION & VERIFIED PRICE ANALYSIS RESULTS */}
+        <div ref={scannerSectionRef} className={uploadedPrescriptionFile ? "mb-8" : ""}>
+          <PrescriptionIntelligenceWorkspace
+            onSelectMedicineDetail={(med) => setSelectedMedicine(med)}
+            externalUploadedFile={uploadedPrescriptionFile}
+            onExternalFileHandled={() => setUploadedPrescriptionFile(null)}
+            hideInlineUploader={true}
+            onTriggerNewUpload={() => topFileInputRef.current?.click()}
+          />
+        </div>
 
         {/* Clean Header: Category & Count */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 mt-2">
           <div>
-            <h2 className="text-[20px] sm:text-[26px] md:text-[28px] font-[900] text-slate-900 tracking-tight">
+            <h2 className="text-[20px] sm:text-[26px] md:text-[28px] font-[900] text-[#111827] tracking-tight">
               {searchQuery ? `Results for "${searchQuery}"` : "Find Medicines by Category"}
             </h2>
-            <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium mt-0.5">
+            <p className="text-[13px] sm:text-[14px] text-[#64748B] font-medium mt-0.5">
               Browse {totalCount > 0 ? totalCount.toLocaleString() : "21,714"} authentic medicines, dosage strengths, and approved generic substitutes.
             </p>
           </div>

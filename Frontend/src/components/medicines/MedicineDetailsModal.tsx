@@ -184,11 +184,11 @@ export function MedicineDetailsModal({
           <div className="p-6 overflow-y-auto space-y-6">
             
             {/* Visual Hero Card with Authentic Packaging / Official Dosage Icon */}
-            <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-sky-950 p-6 text-white shadow-md overflow-hidden border border-slate-800">
+            <div className="relative rounded-2xl bg-[#F8FAFC] p-6 text-[#111827] overflow-hidden border border-[#E5E7EB]">
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
                 <div className="flex items-center gap-4 min-w-0">
                   {/* Photo or 3D Icon Presentation */}
-                  <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-2 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
+                  <div className="w-20 h-20 rounded-2xl bg-white border border-[#E5E7EB] p-2 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
                     {packagingImage ? (
                       <img 
                         src={packagingImage} 
@@ -202,38 +202,38 @@ export function MedicineDetailsModal({
                         className="w-12 h-12 object-contain"
                       />
                     ) : (
-                      <DosageIcon size={36} className="text-sky-300" />
+                      <DosageIcon size={36} className="text-sky-600" />
                     )}
                   </div>
                   
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-sky-500/25 text-sky-200 border border-sky-400/30">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200">
                         {medicine.type || "Tablet"}
                       </span>
                       {drugClassText && (
-                        <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30 truncate max-w-[200px]">
+                        <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 truncate max-w-[200px]">
                           {drugClassText}
                         </span>
                       )}
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-[900] tracking-tight text-white truncate">
+                    <h2 className="text-2xl sm:text-3xl font-[900] tracking-tight text-[#111827] truncate">
                       {medicine.name}
                     </h2>
-                    <p className="text-sm font-semibold text-sky-200/90 mt-0.5 truncate">
+                    <p className="text-sm font-semibold text-sky-700 mt-0.5 truncate">
                       {medicine.generic} {medicine.strength ? `• ${medicine.strength}` : ""}
                     </p>
                   </div>
                 </div>
 
-                <div className="sm:text-right shrink-0 bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-2xl sm:rounded-none w-full sm:w-auto border border-white/10 sm:border-0">
-                  <div className="text-[11px] text-slate-300 font-semibold">Govt. Retail Price</div>
-                  <div className="text-2xl sm:text-3xl font-black text-white">
+                <div className="sm:text-right shrink-0 bg-white p-3.5 rounded-2xl w-full sm:w-auto border border-[#E5E7EB]">
+                  <div className="text-[11px] text-[#64748B] font-semibold">Verified Retail Price</div>
+                  <div className="text-2xl sm:text-3xl font-black text-[#111827]">
                     {typeof verifiedPrice === 'number' && verifiedPrice > 0 
                       ? `৳${verifiedPrice.toFixed(2)}` 
-                      : 'Price unavailable'}
+                      : 'Price Unavailable'}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-medium">
+                  <div className="text-[11px] text-[#64748B] font-medium">
                     {typeof verifiedPrice === 'number' && verifiedPrice > 0 
                       ? `per ${medicine.priceBasis || "unit"}` 
                       : 'Verification required'}

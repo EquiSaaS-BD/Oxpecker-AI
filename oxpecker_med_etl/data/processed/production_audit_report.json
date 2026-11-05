@@ -22,22 +22,22 @@
   "orphan_drug_class_fk_count": 0,
   "sample_fulltext_ocr_matches": [
     {
-      "brand_name": "Napa",
+      "brand_name": "Ciprobac 500",
       "dosage_form": "Tablet",
       "strength": "500 mg",
-      "unit_price_bdt": 1.2
+      "unit_price_bdt": 10.0
     },
     {
-      "brand_name": "Napa Rapid",
+      "brand_name": "E-Rox 500",
       "dosage_form": "Tablet",
       "strength": "500 mg",
-      "unit_price_bdt": 1.3
+      "unit_price_bdt": 7.0
     },
     {
-      "brand_name": "Napa Extra",
+      "brand_name": "Eryseem-500",
       "dosage_form": "Tablet",
-      "strength": "500 mg+65 mg",
-      "unit_price_bdt": 2.49
+      "strength": "500 mg",
+      "unit_price_bdt": 8.0
     }
   ],
   "sample_enriched_generics": [

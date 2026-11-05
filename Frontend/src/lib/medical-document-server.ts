@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
+import { inflateSync } from "zlib";
 import { NextResponse } from "next/server";
 import { prisma, withDbTimeout } from "@/lib/prisma";
 import { callMultimodalVision } from "@/lib/vision-engine";
@@ -117,20 +118,45 @@ export function hasValidFileSignature(mimeType: string, bytes: Buffer): boolean 
   return false;
 }
 
-function extractTextFromPdfBuffer(buffer: Buffer): string {
+export function extractTextFromPdfBuffer(buffer: Buffer): string {
   try {
     const raw = buffer.toString("latin1");
+    const sources: string[] = [raw];
+
+    // Also decompress any FlateDecode streams across multi-page PDFs
+    const streamRegex = /stream\r?\n([\s\S]*?)\r?\nendstream/g;
+    let streamMatch: RegExpExecArray | null;
+    while ((streamMatch = streamRegex.exec(raw)) !== null) {
+      try {
+        const streamBytes = Buffer.from(streamMatch[1], "latin1");
+        const decompressed = inflateSync(streamBytes).toString("latin1");
+        if (decompressed && decompressed.length > 0) {
+          sources.push(decompressed);
+        }
+      } catch {
+        // Non-deflate or image stream; skip safely
+      }
+    }
+
     const chunks: string[] = [];
-    // Extract literal strings inside PDF text objects BT ... ET or parentheses (...)
+    const seen = new Set<string>();
     const textObjRegex = /BT[\s\S]*?ET/g;
-    const blocks = raw.match(textObjRegex) || [raw];
-    for (const block of blocks) {
-      const matches = block.match(/\(([^()\\]{2,200})\)/g);
-      if (matches) {
-        for (const m of matches) {
-          const inner = m.slice(1, -1).replace(/\\[nrt]/g, " ").trim();
-          if (/[A-Za-z0-9]/.test(inner) && !/^(Type|Font|Page|Catalog|FlateDecode|DeviceRGB|BaseFont)/.test(inner)) {
-            chunks.push(inner);
+
+    for (const src of sources) {
+      const blocks = src.match(textObjRegex) || [src];
+      for (const block of blocks) {
+        const matches = block.match(/\(([^()\\]{2,240})\)/g);
+        if (matches) {
+          for (const m of matches) {
+            const inner = m.slice(1, -1).replace(/\\[nrt]/g, " ").trim();
+            if (
+              /[A-Za-z0-9\u0980-\u09FF]/.test(inner) &&
+              !/^(Type|Font|Page|Catalog|FlateDecode|DeviceRGB|BaseFont|Metadata|Producer|Creator)/.test(inner) &&
+              !seen.has(inner)
+            ) {
+              seen.add(inner);
+              chunks.push(inner);
+            }
           }
         }
       }
@@ -340,9 +366,12 @@ export async function analyzeAndStoreMedicalImage(
   if ((!file || typeof file === "string") && rawPrescriptionText && kind === "prescription") {
     const extractedMeds = extractStructuredMedicinesFromRawOcrText(rawPrescriptionText);
     const savedId = `rx-${Date.now()}`;
+    const explicitDateMatch = rawPrescriptionText.match(
+      /(?:date\s*[:\-]?\s*)(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})/i
+    );
     const transcription = {
       imageQuality: { status: "clear" as const, reasons: [] },
-      prescriptionDate: new Date().toISOString().slice(0, 10),
+      prescriptionDate: explicitDateMatch ? explicitDateMatch[1].trim() : null,
       patientName: null,
       doctorName: null,
       medicines: extractedMeds,
@@ -405,12 +434,15 @@ export async function analyzeAndStoreMedicalImage(
       const pdfText = rawPrescriptionText || extractTextFromPdfBuffer(buffer);
       if (pdfText && pdfText.length >= 5) {
         const extractedMeds = extractStructuredMedicinesFromRawOcrText(pdfText);
+        const explicitDateMatch = pdfText.match(
+          /(?:date\s*[:\-]?\s*)(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})/i
+        );
         const transcription = {
           imageQuality: {
             status: extractedMeds.length > 0 ? ("clear" as const) : ("partially_readable" as const),
             reasons: extractedMeds.length > 0 ? [] : ["PDF text extracted; verify medicine lines manually."],
           },
-          prescriptionDate: null,
+          prescriptionDate: explicitDateMatch ? explicitDateMatch[1].trim() : null,
           patientName: null,
           doctorName: null,
           medicines: extractedMeds,

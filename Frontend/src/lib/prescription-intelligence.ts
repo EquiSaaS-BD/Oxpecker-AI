@@ -1514,13 +1514,14 @@ export function extractStructuredMedicinesFromRawOcrText(rawOcrText: string): an
 
     // Strip frequency and duration from line to isolate medicine name + strength + form
     let medSegment = withoutBullet;
-    if (freqParsed.normalizedFrequencyText) {
-      medSegment = medSegment.replace(/[0-9০-৯½¼¾\/.]+\s*[+\-]\s*[0-9০-৯½¼¾\/.]+\s*[+\-]\s*[0-9০-৯½¼¾\/.]+(?:\s*[+\-]\s*[0-9০-৯½¼¾\/.]+)?/, " ");
-    }
+    // Strip duration BEFORE frequency so "1+1+1 - 5 days" is not misread as a 4-part dose
     if (durMatch) {
       medSegment = medSegment.replace(durMatch[0], " ");
       // Also strip original Bengali digit duration if present
       medSegment = medSegment.replace(/[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*(?:(?:days?|d|weeks?|wks?|months?|mos?)\b|দিন|রোজ|সপ্তাহ|মাস)/i, " ");
+    }
+    if (freqParsed.normalizedFrequencyText) {
+      medSegment = medSegment.replace(/[0-9০-৯½¼¾\/.]+\s*[+\-]\s*[0-9০-৯½¼¾\/.]+\s*[+\-]\s*[0-9০-৯½¼¾\/.]+(?:\s*[+\-]\s*[0-9০-৯½¼¾\/.]+)?/, " ");
     }
     medSegment = medSegment
       .replace(/(?:\b(?:od|bd|bid|tds|tid|qid|qds|hs|sos|prn|before\s+meals?|after\s+meals?)\b|খাবারের\s+আগে|খাবারের\s+পরে|খাবারের\s+পর|খালি\s+পেটে|ভরা\s+পেটে)/gi, " ")
