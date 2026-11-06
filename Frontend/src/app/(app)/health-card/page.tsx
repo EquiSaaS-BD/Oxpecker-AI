@@ -26,6 +26,9 @@ import {
 } from "@/lib/healthpass";
 import { LocationAutocompleteInput } from "@/components/shared/LocationAutocompleteInput";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
+import { PrintableHealthPassCard } from "@/components/health-card/PrintableHealthPassCard";
+import { OfflineEmergencyProfile } from "@/lib/healthpass-offline-qr";
+import Link from "next/link";
 
 export default function HealthCardPage() {
   const { user } = useAuth();
@@ -38,7 +41,7 @@ export default function HealthCardPage() {
   const [showVerification, setShowVerification] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [activeTab, setActiveTab] = useState<"card" | "history" | "medications">("card");
+  const [activeTab, setActiveTab] = useState<"card" | "history" | "medications" | "printable">("card");
   const [isLocating, setIsLocating] = useState(false);
   const [showDistrictPicker, setShowDistrictPicker] = useState(false);
 
@@ -452,9 +455,10 @@ export default function HealthCardPage() {
       {card && !showVerification && (
         <>
           {/* EQUALIZED TAB NAVIGATION (Grid 3 cols, identical width & height) */}
-          <div className="grid grid-cols-3 w-full max-w-2xl mx-auto p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 mb-8 shadow-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 w-full max-w-3xl mx-auto p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 mb-8 shadow-xs">
             {[
               { key: "card" as const, label: "Digital Card", sub: "3D HealthPass", icon: CreditCard },
+              { key: "printable" as const, label: "Printable Pass", sub: "CR80 PVC / A4", icon: Printer },
               { key: "history" as const, label: "Visit History", sub: "Clinical Visits", icon: Calendar },
               { key: "medications" as const, label: "Active Medications", sub: "Prescriptions", icon: Pill },
             ].map(({ key, label, sub, icon: Icon }) => (
@@ -884,6 +888,52 @@ export default function HealthCardPage() {
                     </div>
                   ))
                 )}
+              </motion.div>
+            )}
+
+            {/* 4. Printable Smart HealthPass ID Card */}
+            {activeTab === "printable" && (
+              <motion.div
+                key="printable"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">Printable National HealthPass (CR80 ID Card)</h3>
+                    <p className="text-xs text-slate-500 font-medium">Dual-sided laminated format with high-density zero-internet emergency QR code</p>
+                  </div>
+                  <Link
+                    href="/emergency-reader"
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-colors"
+                  >
+                    <QrCode size={13} />
+                    <span>Test Offline Emergency Scanner</span>
+                  </Link>
+                </div>
+
+                <PrintableHealthPassCard
+                  profile={{
+                    version: 1,
+                    healthId: card.card_number || card.id || "HP-880-001",
+                    fullName: card.patient_name || user?.name || "Citizen",
+                    bloodGroup: card.blood_group || "O+",
+                    dateOfBirth: card.date_of_birth || "",
+                    emergencyContact: card.emergency_contact_phone || user?.phone || "16263",
+                    emergencyContactName: card.emergency_contact_name || "Emergency Guardian",
+                    knownAllergies: Array.isArray(card.allergies) ? card.allergies : (card.allergies ? [card.allergies] : []),
+                    chronicDiseases: Array.isArray(card.chronic_conditions) 
+                      ? card.chronic_conditions.map((c: any) => typeof c === "string" ? c : (c?.name || ""))
+                      : [],
+                    currentMedications: card.current_medications?.map((m: any) => `${m.name} (${m.dosage})`) || [],
+                    organDonor: card.organ_donor ?? true
+                  }}
+                  language="bn"
+                />
               </motion.div>
             )}
           </AnimatePresence>

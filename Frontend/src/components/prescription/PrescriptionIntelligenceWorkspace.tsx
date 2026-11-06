@@ -32,6 +32,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ClinicalSafetyAlerts } from "@/components/prescription/ClinicalSafetyAlerts";
+import { checkPrescriptionSafety } from "@/lib/clinical-safety";
+import { PrescriptionSavingsCard } from "@/components/prescription/PrescriptionSavingsCard";
+import { calculatePrescriptionSavings, PrescribedMedicineForSavings } from "@/lib/prescription-savings";
 import { jsPDF } from "jspdf";
 import { requestMedicalDocumentConsent, getPrescriptionAuthToken } from "@/lib/medical-document-client";
 import type {
@@ -749,6 +753,49 @@ export function PrescriptionIntelligenceWorkspace({
     toast.success("Downloaded Prescription Analysis PDF.");
   };
 
+  // Clinical Safety and Prescription Savings computations
+  const clinicalSafetyReport = React.useMemo(() => {
+    if (!intelligence?.items || intelligence.items.length === 0) return null;
+    const meds = intelligence.items
+      .map((item) => ({
+        id: String(item.matchedMedicine?.id || item.itemId),
+        generic_name: item.matchedMedicine?.genericName || item.extracted?.genericName || "",
+        brand_name: item.matchedMedicine?.brandName || item.extracted?.brandName || "Prescribed Medicine",
+        dosage_form: (item.matchedMedicine?.dosageForm || item.extracted?.dosageForm) || undefined,
+        strength: (item.matchedMedicine?.strength || item.extracted?.strength) || undefined,
+      }))
+      .filter((m) => m.generic_name || m.brand_name);
+    return checkPrescriptionSafety(meds);
+  }, [intelligence]);
+
+  const prescriptionSavingsReport = React.useMemo(() => {
+    if (!intelligence?.items || intelligence.items.length === 0) return null;
+    const medsForSavings: PrescribedMedicineForSavings[] = intelligence.items.map((item) => ({
+      id: String(item.matchedMedicine?.id || item.itemId),
+      brand_name: item.matchedMedicine?.brandName || item.extracted?.brandName || "Medicine",
+      generic_name: item.matchedMedicine?.genericName || item.extracted?.genericName || "",
+      dosage_form: (item.matchedMedicine?.dosageForm || item.extracted?.dosageForm) || undefined,
+      strength: (item.matchedMedicine?.strength || item.extracted?.strength) || undefined,
+      manufacturer: item.matchedMedicine?.manufacturer || undefined,
+      unit_price_bdt: item.matchedMedicine?.unitPrice ?? null,
+      quantity: item.pricing?.requiredQuantity && item.pricing.requiredQuantity > 0 ? item.pricing.requiredQuantity : 14,
+    }));
+
+    const catalogCandidates = intelligence.items.flatMap((i) =>
+      (i.genericAlternatives || []).map((alt) => ({
+        id: alt.id,
+        brand_name: alt.brandName,
+        generic_name: alt.genericName,
+        dosage_form: alt.dosageForm,
+        strength: alt.strength,
+        manufacturer: alt.manufacturer,
+        unit_price_bdt: alt.unitPrice,
+      }))
+    );
+
+    return calculatePrescriptionSavings(medsForSavings, catalogCandidates);
+  }, [intelligence]);
+
   // If hideInlineUploader is true and there is no active upload, processing, error, or result, render nothing
   if (hideInlineUploader && !isProcessing && !errorMessage && !intelligence && !defaultExpanded) {
     return null;
@@ -1205,6 +1252,23 @@ export function PrescriptionIntelligenceWorkspace({
                       height={1200}
                       unoptimized
                       className="w-full h-auto max-h-[520px] object-contain rounded-xl bg-white border border-[#E5E7EB]"
+                    />
+                  </div>
+                )}
+
+                {/* Clinical Safety Warnings & Drug-Drug Interactions */}
+                {clinicalSafetyReport && clinicalSafetyReport.alerts.length > 0 && (
+                  <div className="w-full">
+                    <ClinicalSafetyAlerts report={clinicalSafetyReport} language="bn" />
+                  </div>
+                )}
+
+                {/* Prescription Cost Savings & Generic Substitution */}
+                {prescriptionSavingsReport && (
+                  <div className="w-full">
+                    <PrescriptionSavingsCard 
+                      savingsReport={prescriptionSavingsReport} 
+                      language="bn"
                     />
                   </div>
                 )}
