@@ -1,7 +1,8 @@
 "use client";
 
 import React, { Suspense, Component, type ReactNode } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, QrCode } from "lucide-react";
+import Link from "next/link";
 import { HealthPassSearchEngine } from "@/components/health-card/HealthPassSearchEngine";
 import { MedicalLoader } from "@/components/shared/MedicalLoader";
 
@@ -66,6 +67,16 @@ class HealthPassErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundar
 function HospitalHealthPassContent() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="flex justify-end">
+        <Link
+          href="/emergency-reader"
+          target="_blank"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl transition-all shadow-2xs"
+        >
+          <QrCode size={14} className="text-rose-600" />
+          <span>জরুরি অফলাইন ট্রায়াজ রিডার (Emergency Reader)</span>
+        </Link>
+      </div>
       <HealthPassSearchEngine portalRole="hospital" />
     </div>
   );
