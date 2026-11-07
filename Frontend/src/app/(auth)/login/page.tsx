@@ -62,8 +62,8 @@ function LoginForm() {
 
       // Fast-track demo & test accounts for zero latency and guaranteed login
       const isTestAdmin = lowerEmail.includes('admin');
-      const isTestDoc = lowerEmail.includes('doctor');
-      const isTestHosp = lowerEmail.includes('hospital');
+      const isTestDoc = lowerEmail.includes('doctor') || lowerEmail.startsWith('dr.') || lowerEmail.includes('physician');
+      const isTestHosp = lowerEmail.includes('hospital') || lowerEmail.includes('clinic');
       const isTestPatient = lowerEmail.includes('patient');
       const isTestAssistant = lowerEmail.includes('assistant');
 
@@ -76,10 +76,24 @@ function LoginForm() {
 
       let dbProfile: any = null;
 
-      // Only query remote database if it is not an instant test account
-      if (!isTestAdmin && !isTestDoc && !isTestHosp && !isTestPatient && !isTestAssistant) {
+      // 1. Check local registered profiles first (from /register storage)
+      if (typeof window !== "undefined") {
         try {
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500));
+          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
+          const matched = localProfiles.find(
+            (p: any) => p.email && p.email.toLowerCase().trim() === lowerEmail
+          );
+          if (matched) {
+            dbProfile = matched;
+            if (matched.role) resolvedRole = matched.role as UserRole;
+          }
+        } catch {}
+      }
+
+      // 2. Query remote database if not found locally
+      if (!dbProfile && !isTestAdmin && !isTestDoc && !isTestHosp && !isTestPatient && !isTestAssistant) {
+        try {
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000));
           const queryPromise = supabase.from('profiles').select('*').ilike('email', lowerEmail).maybeSingle();
           const { data }: any = await Promise.race([queryPromise, timeoutPromise]);
           if (data) {
@@ -99,12 +113,21 @@ function LoginForm() {
         (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now())
       );
 
-      const userName = dbProfile?.name || (
-        resolvedRole === 'admin' ? 'System Administrator' :
-        resolvedRole === 'doctor' ? 'Prof. Dr. Ahmed Rahman, FCPS, MD' :
-        resolvedRole === 'hospital' ? 'Dhaka Central Specialized Hospital' :
-        resolvedRole === 'assistant' ? 'Kamrul Hasan (Front Desk & OPD)' :
-        'রহিম উদ্দিন (Rahim Uddin)'
+      // Cleanly format display name from email or profile
+      const derivedName = lowerEmail.split('@')[0]
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+
+      const userName = dbProfile?.name || dbProfile?.full_name || (
+        isTestAdmin ? 'System Administrator' :
+        isTestDoc ? 'Prof. Dr. Ahmed Rahman, FCPS, MD' :
+        isTestHosp ? 'Dhaka Central Specialized Hospital' :
+        isTestAssistant ? 'Kamrul Hasan (Front Desk & OPD)' :
+        isTestPatient ? 'রহিম উদ্দিন (Rahim Uddin)' :
+        derivedName || 'Oxpecker User'
       );
 
       const userSession = {
@@ -119,10 +142,10 @@ function LoginForm() {
           isTestAssistant ? '+880 1819-001122' :
           '+8801700000000'
         ),
-        blood_group: isTestPatient ? 'A+' : undefined,
-        gender: isTestPatient ? 'Male' : undefined,
-        date_of_birth: isTestPatient ? '1974-04-12' : undefined,
-        image: isTestPatient ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300' : undefined,
+        blood_group: dbProfile?.blood_group || (isTestPatient ? 'A+' : undefined),
+        gender: dbProfile?.gender || (isTestPatient ? 'Male' : undefined),
+        date_of_birth: dbProfile?.date_of_birth || (isTestPatient ? '1974-04-12' : undefined),
+        image: dbProfile?.image || (isTestPatient ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300' : undefined),
         specialty: dbProfile?.specialty || (resolvedRole === 'doctor' ? 'Senior Consultant - Interventional Cardiology' : undefined),
         hospital_name: dbProfile?.hospital_name || (
           resolvedRole === 'hospital' ? 'Dhaka Central Specialized Hospital & Heart Institute' :
@@ -313,6 +336,32 @@ function LoginForm() {
             <div className="flex-1 h-px bg-slate-200"></div>
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Or email login</span>
             <div className="flex-1 h-px bg-slate-200"></div>
+          </div>
+
+          {/* Quick Role Selector Pills for 1-Click Testing */}
+          <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-semibold">
+            {[
+              { label: "Patient", email: "patient@oxpecker.ai" },
+              { label: "Doctor", email: "doctor@oxpecker.ai" },
+              { label: "Hospital", email: "hospital@oxpecker.ai" },
+              { label: "Admin", email: "admin@oxpecker.ai" },
+            ].map((demo) => (
+              <button
+                key={demo.label}
+                type="button"
+                onClick={() => {
+                  setEmail(demo.email);
+                  setPassword("oxpecker123");
+                }}
+                className={`py-1.5 px-1 rounded-lg text-center transition-all text-[11px] ${
+                  email === demo.email 
+                    ? "bg-white text-sky-700 shadow-xs font-bold" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                }`}
+              >
+                {demo.label}
+              </button>
+            ))}
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">

@@ -23,7 +23,7 @@ import type { UserRole } from "@/context/AuthContext";
  */
 export function getRoleHomePath(role: UserRole): string {
   switch (role) {
-    case "patient":   return "/chat";
+    case "patient":   return "/dashboard";
     case "doctor":    return "/doctor/dashboard";
     case "hospital":  return "/hospital/dashboard";
     case "admin":     return "/admin/dashboard";
@@ -153,14 +153,12 @@ export function getAuthorizedRedirectUrl(
     // Already a relative path
   }
 
-  // Auth routes, root, or patient profile/dashboard should NEVER hijack doctor/hospital login!
+  // Auth routes, root, or reset-password should NEVER hijack login!
   if (
     pathname === "/" ||
     pathname === "/login" ||
     pathname.startsWith("/register") ||
-    pathname === "/reset-password" ||
-    pathname === "/profile" ||
-    pathname === "/dashboard"
+    pathname === "/reset-password"
   ) {
     return home;
   }
