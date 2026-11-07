@@ -338,32 +338,6 @@ function LoginForm() {
             <div className="flex-1 h-px bg-slate-200"></div>
           </div>
 
-          {/* Quick Role Selector Pills for 1-Click Testing */}
-          <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-xl mb-4 text-xs font-semibold">
-            {[
-              { label: "Patient", email: "patient@oxpecker.ai" },
-              { label: "Doctor", email: "doctor@oxpecker.ai" },
-              { label: "Hospital", email: "hospital@oxpecker.ai" },
-              { label: "Admin", email: "admin@oxpecker.ai" },
-            ].map((demo) => (
-              <button
-                key={demo.label}
-                type="button"
-                onClick={() => {
-                  setEmail(demo.email);
-                  setPassword("oxpecker123");
-                }}
-                className={`py-1.5 px-1 rounded-lg text-center transition-all text-[11px] ${
-                  email === demo.email 
-                    ? "bg-white text-sky-700 shadow-xs font-bold" 
-                    : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                }`}
-              >
-                {demo.label}
-              </button>
-            ))}
-          </div>
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[13px] font-semibold text-slate-600 mb-1.5 tracking-tight">
