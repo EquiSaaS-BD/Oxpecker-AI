@@ -37,7 +37,7 @@ export function getRoleHomePath(role: UserRole): string {
  * Route prefixes that are EXCLUSIVE to a single role.
  * Order matters: more specific prefixes MUST appear first.
  */
-const ROLE_EXCLUSIVE_ROUTES: { prefix: string; allowedRoles: UserRole[] }[] = [
+export const ROLE_EXCLUSIVE_ROUTES: { prefix: string; allowedRoles: UserRole[] }[] = [
   // Admin-only routes
   { prefix: "/admin",              allowedRoles: ["admin"] },
 
@@ -65,7 +65,7 @@ const ROLE_EXCLUSIVE_ROUTES: { prefix: string; allowedRoles: UserRole[] }[] = [
  * Public discovery and informational routes accessible to ALL roles
  * (and unauthenticated visitors).
  */
-const PUBLIC_ROUTES: string[] = [
+export const PUBLIC_ROUTES: string[] = [
   "/doctors",       // Public doctor directory
   "/hospitals",     // Public hospital directory
   "/medicines",     // Medicine search
@@ -85,6 +85,7 @@ const PUBLIC_ROUTES: string[] = [
   "/settings",      // Shared settings page (role-agnostic UI)
   "/appointments",  // Appointment management (all authenticated roles)
   "/profile",       // Public profile page
+  "/embed",         // Public 2-line embeddable clinic booking widget
 ];
 
 // ── 3. Route Authorization Check ────────────────────────────────
@@ -163,21 +164,7 @@ export function getAuthorizedRedirectUrl(
     return home;
   }
 
-  // Strict role boundaries for home redirect:
-  if (role === "doctor" && !pathname.startsWith("/doctor")) {
-    return home;
-  }
-  if (role === "hospital" && !pathname.startsWith("/hospital")) {
-    return home;
-  }
-  if (role === "assistant" && !pathname.startsWith("/assistant")) {
-    return home;
-  }
-  if (role === "patient" && (pathname.startsWith("/doctor") || pathname.startsWith("/hospital") || pathname.startsWith("/admin") || pathname.startsWith("/assistant"))) {
-    return home;
-  }
-
-  // Validate the target against the user's role
+  // Validate the target against the user's role (handles /doctors vs /doctor, etc.)
   if (isRouteAuthorizedForRole(pathname, role)) {
     return targetUrl; // Original URL (preserves query params)
   }

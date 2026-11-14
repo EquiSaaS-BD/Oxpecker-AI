@@ -18,6 +18,7 @@ import {
   Calendar,
   CheckCircle2,
   Filter,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { toast, Toaster } from "sonner";
@@ -41,6 +42,8 @@ export default function HospitalDashboardPage() {
   const [admissions, setAdmissions] = useState<InpatientAdmission[]>([]);
   const [bills, setBills] = useState<HospitalBill[]>([]);
   const [doctors, setDoctors] = useState<HospitalDoctor[]>([]);
+  const [liveBookingsCount, setLiveBookingsCount] = useState<number>(0);
+  const [hubSyncCount, setHubSyncCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // Timeframe Popup Menu State for Admissions & Discharges Chart
@@ -66,17 +69,44 @@ export default function HospitalDashboardPage() {
   const topFilterRef = useRef<HTMLDivElement>(null);
   const inpatientFilterRef = useRef<HTMLDivElement>(null);
 
-  // Load Data on Mount with Smooth Skeleton Transition
+  // Load Data on Mount with Smooth Skeleton Transition + Live Hub Hydration
   useEffect(() => {
     setBeds(getHospitalBeds());
     setAdmissions(getHospitalAdmissions());
     setBills(getHospitalBills());
     setDoctors(getHospitalDoctors());
 
+    let cancelled = false;
+    (async () => {
+      try {
+        const [hmsRes, hubRes] = await Promise.all([
+          fetch("/api/hospital/hms?type=bookings", { cache: "no-store" }),
+          fetch("/api/integrations/keys", { cache: "no-store" }),
+        ]);
+        if (!cancelled && hmsRes.ok) {
+          const hmsJson = await hmsRes.json();
+          if (Array.isArray(hmsJson.bookings)) {
+            setLiveBookingsCount(hmsJson.bookings.length);
+          }
+        }
+        if (!cancelled && hubRes.ok) {
+          const hubJson = await hubRes.json();
+          if (Array.isArray(hubJson.syncLogs)) {
+            setHubSyncCount(hubJson.syncLogs.length);
+          }
+        }
+      } catch {
+        // Fallback silently to localStorage HMS resilience
+      }
+    })();
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 250);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   // Close filter dropdowns on outside click
@@ -340,6 +370,35 @@ export default function HospitalDashboardPage() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      {/* 1b. 1-Click Clinic Data Hub & Live Interoperability Banner */}
+      <div className="bg-slate-900 text-white rounded-2xl px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs border border-slate-800">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 text-teal-300 flex items-center justify-center shrink-0">
+            <Globe size={20} />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-sm sm:text-base font-black tracking-tight">
+                1-Click Clinic Data Hub &amp; API Sync
+              </h2>
+              <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-400/30">
+                MPI Active
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Live HMS Bookings: <strong className="text-white">{liveBookingsCount}</strong> &bull; Hub Sync Events: <strong className="text-white">{hubSyncCount}</strong> &bull; CSV/FHIR Migration &amp; 2-Line Website Widget
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/hospital/dashboard/integrations"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-black transition-colors shrink-0"
+        >
+          Open Data Hub &amp; Importer
+          <ChevronRight size={15} />
+        </Link>
       </div>
 
       {/* 2. Categorized Production Metric Cards (with Element-Based Skeletons) */}

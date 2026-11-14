@@ -30,8 +30,13 @@ export default function EmergencyReaderPage() {
         if (decoded) {
           setProfile(decoded);
           setError(null);
+          fetch("/api/healthpass/sign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "audit_scan", healthId: decoded.healthId }),
+          }).catch(() => {});
         } else {
-          setError("QR কোডের ডাটা পড়া যায়নি। কোডটি পুনরায় স্ক্যান করুন।");
+          setError("QR কোডের ডিজিটাল সিগনেচার অবৈধ বা ডাটা পরিবর্তন (Tampered) করা হয়েছে। কোডটি পুনরায় স্ক্যান করুন।");
         }
       } else {
         // Default clean demo patient for preview

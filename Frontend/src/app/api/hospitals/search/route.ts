@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma, withDbTimeout } from '@/lib/prisma';
 
 // ============================================
 // Types
@@ -179,7 +180,35 @@ export async function GET(request: NextRequest) {
   const emergency = searchParams.get('emergency');
   const icu = searchParams.get('icu');
 
-  let results = [...hospitals];
+  let dbHospitals: Hospital[] = [];
+  try {
+    const rows = await withDbTimeout(
+      prisma.hospital.findMany({
+        where: { isActive: true },
+        orderBy: { rating: 'desc' },
+        take: 50,
+      }),
+      1500
+    );
+    dbHospitals = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      address: r.address,
+      specialities: Array.isArray(r.specialities) ? (r.specialities as string[]) : [],
+      hasEmergency: r.hasEmergency,
+      hasICU: r.hasICU,
+      hasNICU: r.hasNICU,
+      bedAvailability: r.bedAvailability || 0,
+      consultationFee: r.consultationFee || 1000,
+      rating: r.rating,
+      website: r.website || '',
+      phone: r.phone || '',
+      photoUrl: r.photoUrl || '/placeholders/hospital-1.jpg',
+    }));
+  } catch {}
+
+  const existingIds = new Set(dbHospitals.map((h) => h.id));
+  let results = [...dbHospitals, ...hospitals.filter((h) => !existingIds.has(h.id))];
 
   // Filter by speciality
   if (speciality) {

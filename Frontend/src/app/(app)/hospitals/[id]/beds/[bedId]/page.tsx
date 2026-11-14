@@ -69,6 +69,40 @@ export default function BedBookingPage() {
   // Basic calculation for UI purposes (mocked 1 night if dates are empty)
   const isFormValid = Object.values(formData).every(val => val.trim() !== "") && paymentMethod !== null;
 
+  const handleConfirmBedBooking = async () => {
+    try {
+      await fetch("/api/integrations/v1/sync", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: "oxpecker_booking",
+          clinicSlug: "oxpecker-flagship-hospital",
+          patient: {
+            name: formData.patientName,
+            phone: formData.phone,
+            age: Number(formData.age) || undefined,
+            gender: formData.gender,
+          },
+          appointment: {
+            doctorName: `IPD Bed Reservation (${bed.type})`,
+            specialty: "Inpatient Admission",
+            hospitalName: bed.hospital,
+            date: formData.checkIn || new Date().toISOString().slice(0, 10),
+            time: "Admission Desk",
+            type: "in_person",
+            source: "oxpecker",
+            status: "confirmed",
+            fee: bed.price,
+            notes: `Ward/Room: ${bed.roomNo} (${bed.floor}) • Guardian: ${formData.guardianName}`,
+          },
+        }),
+      }).catch(() => {});
+    } finally {
+      setIsSuccess(true);
+    }
+  };
+
   if (isSuccess) {
     return (
       <div className="h-full flex items-center justify-center bg-[#F8FAFC] p-6">
@@ -316,10 +350,10 @@ export default function BedBookingPage() {
               {/* Action Button */}
               <button 
                 disabled={!isFormValid}
-                onClick={() => setIsSuccess(true)}
+                onClick={handleConfirmBedBooking}
                 className="w-full h-14 bg-sky-600 hover:bg-sky-600/90 text-white rounded-[12px] font-bold text-[16px] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <ShieldCheck size={20} /> Pay ৳{bed.advanceRequired} to Confirm
+                <ShieldCheck size={20} /> Confirm Bed Reservation
               </button>
 
               <div className="text-center text-[12px] text-slate-500 font-medium mt-4">

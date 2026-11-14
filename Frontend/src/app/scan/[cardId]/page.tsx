@@ -29,6 +29,11 @@ export default function ScanPage() {
         if (result) {
           setCard(result.card);
           setVisits(result.visits);
+          fetch("/api/healthpass/sign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "audit_scan", healthId: result.card.card_number || cardId }),
+          }).catch(() => {});
         } else {
           setError(true);
         }

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeClinicalCase } from '@/lib/clinical-engine';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, 'ai-diagnose', 30, 60_000);
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const { symptoms, text, language = 'bn', category } = body;

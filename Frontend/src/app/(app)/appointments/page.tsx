@@ -49,43 +49,79 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     async function loadBookings() {
+      const combined: any[] = [];
       try {
-        if (!user?.email && !user?.id) return;
-        let query = supabase.from("bookings").select("*");
-        const isValidUuid = (str?: string) => str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str) : false;
-        
-        if (isValidUuid(user?.id) && user?.email) {
-          query = query.or(`patient_id.eq.${user.id},patient_email.ilike.${user.email}`);
-        } else if (user?.email) {
-          query = query.ilike("patient_email", user.email);
-        } else if (isValidUuid(user?.id)) {
-          query = query.eq("patient_id", user.id);
+        const hubRes = await fetch("/api/patient/360", { credentials: "include" });
+        if (hubRes.ok) {
+          const hubData = await hubRes.json();
+          const hubApts = Array.isArray(hubData?.appointments) ? hubData.appointments : [];
+          for (const a of hubApts) {
+            combined.push({
+              type: "doctor" as const,
+              id: `HUB-${String(a.id).slice(0, 8).toUpperCase()}`,
+              doctorName: a.doctorName || "Specialist Doctor",
+              doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
+              specialty: `${a.specialty || "Specialist"}${a.source && a.source !== "oxpecker" ? ` (${a.source})` : ""}`,
+              hospitalName: a.hospitalName || "Oxpecker Partner Hospital",
+              hospitalLogo: "/images/Oxpecker_icon.png",
+              address: a.notes || "Partner Hospital Chamber",
+              date: a.date || (a.dateTime ? String(a.dateTime).slice(0, 10) : "Scheduled"),
+              time: a.time || "10:30 AM",
+              patientName: hubData?.patient?.name || user?.name || "Patient",
+              age: String(hubData?.patient?.age || "30"),
+              guardianName: "Self",
+              phone: hubData?.patient?.phone || "N/A",
+              fee: Number(a.fee) || 1000,
+              advancePaid: 0,
+              status: "Confirmed" as const,
+            });
+          }
         }
-        const { data, error } = await query.order("created_at", { ascending: false });
-        if (!error && data && data.length > 0) {
-          const mapped = data.map((b: any) => ({
-            type: "doctor" as const,
-            id: `BK-${b.id.slice(0, 8).toUpperCase()}`,
-            doctorName: b.doctor_name || "Specialist Doctor",
-            doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
-            specialty: b.doctor_specialty || "Specialist",
-            hospitalName: "Oxpecker Partner Hospital",
-            hospitalLogo: "/images/Oxpecker_icon.png",
-            address: b.notes || "Dhanmondi, Dhaka",
-            date: b.booking_date,
-            time: b.booking_time,
-            patientName: b.patient_name,
-            age: "28",
-            guardianName: "Self",
-            phone: b.patient_phone || "N/A",
-            fee: Number(b.total_fee) || 1050,
-            advancePaid: 0,
-            status: "Confirmed" as const
-          }));
-          setLiveAppointments(mapped);
+      } catch {}
+
+      try {
+        if (user?.email || user?.id) {
+          let query = supabase.from("bookings").select("*");
+          const isValidUuid = (str?: string) => str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str) : false;
+
+          if (isValidUuid(user?.id) && user?.email) {
+            query = query.or(`patient_id.eq.${user.id},patient_email.ilike.${user.email}`);
+          } else if (user?.email) {
+            query = query.ilike("patient_email", user.email);
+          } else if (isValidUuid(user?.id)) {
+            query = query.eq("patient_id", user.id);
+          }
+          const { data, error } = await query.order("created_at", { ascending: false });
+          if (!error && data && data.length > 0) {
+            for (const b of data) {
+              combined.push({
+                type: "doctor" as const,
+                id: `BK-${b.id.slice(0, 8).toUpperCase()}`,
+                doctorName: b.doctor_name || "Specialist Doctor",
+                doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
+                specialty: b.doctor_specialty || "Specialist",
+                hospitalName: "Oxpecker Partner Hospital",
+                hospitalLogo: "/images/Oxpecker_icon.png",
+                address: b.notes || "Dhanmondi, Dhaka",
+                date: b.booking_date,
+                time: b.booking_time,
+                patientName: b.patient_name,
+                age: "28",
+                guardianName: "Self",
+                phone: b.patient_phone || "N/A",
+                fee: Number(b.total_fee) || 1050,
+                advancePaid: 0,
+                status: "Confirmed" as const,
+              });
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to load live appointments:", err);
+      }
+
+      if (combined.length > 0) {
+        setLiveAppointments(combined);
       }
     }
     loadBookings();

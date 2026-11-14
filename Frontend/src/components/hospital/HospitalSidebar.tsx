@@ -22,6 +22,7 @@ import {
   CreditCard,
   ChevronsLeft,
   ChevronsRight,
+  Globe,
 } from "lucide-react";
 
 interface HospitalSidebarProps {
@@ -52,6 +53,7 @@ const navGroups: NavGroup[] = [
       { label: "Bookings & Clearance", href: "/hospital/dashboard/bookings", icon: ClipboardCheck },
       { label: "Inpatient Registry", href: "/hospital/dashboard/patients", icon: UserPlus },
       { label: "Emergency HealthPass", href: "/hospital/dashboard/health-pass", icon: CreditCard },
+      { label: "1-Click Data Hub & API", href: "/hospital/dashboard/integrations", icon: Globe, badge: "Hub" },
     ],
   },
   {

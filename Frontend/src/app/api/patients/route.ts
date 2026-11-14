@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma, withDbTimeout } from '@/lib/prisma';
 import { INITIAL_HEALTH_CARDS } from '@/lib/healthpass';
+import { requireSessionUser } from '@/lib/server-auth';
 
 // In-memory / server-side fallback store for resilience when DB is offline or in local dev
 interface LocalPatientRecord {
@@ -50,9 +51,14 @@ const fallbackPatients: LocalPatientRecord[] = INITIAL_HEALTH_CARDS.map((card, i
 }));
 
 export async function GET(req: Request) {
+  const auth = await requireSessionUser(req, ["doctor", "hospital", "assistant", "admin"]);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   try {
     const patients = await withDbTimeout(
       prisma.patient.findMany({
+        where: user.role === "admin" ? {} : { organizationId: user.organizationId },
         orderBy: { updatedAt: 'desc' },
         include: {
           prescriptions: {
@@ -99,12 +105,17 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireSessionUser(req, ["doctor", "hospital", "assistant", "admin"]);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   try {
     const body = await req.json();
     const { name, age, gender, phone, mrn, token, symptoms, doctor, diagnosis } = body;
 
     const patientMrn = mrn || token || `MRN-${Math.floor(100000 + Math.random() * 900000)}`;
     const patientName = name || "Walk-in Patient";
+    const orgId = user.organizationId || "org-default";
 
     let savedPatientId = `local-${Date.now()}`;
 
@@ -118,6 +129,7 @@ export async function POST(req: Request) {
             age: age ? parseInt(String(age), 10) : undefined,
             gender: gender || undefined,
             phone: phone || undefined,
+            organizationId: orgId,
           },
           create: {
             mrn: patientMrn,
@@ -125,6 +137,7 @@ export async function POST(req: Request) {
             age: age ? parseInt(String(age), 10) : 30,
             gender: gender || "Unknown",
             phone: phone || null,
+            organizationId: orgId,
           },
         }),
         2000
@@ -136,6 +149,9 @@ export async function POST(req: Request) {
           prisma.prescription.create({
             data: {
               patientId: dbPatient.id,
+              organizationId: orgId,
+              doctorId: user.doctorId || user.id,
+              doctorName: doctor || user.name,
               chiefComplaint: symptoms || "Initial Chamber Intake",
               diagnosis: diagnosis || symptoms || "Under Clinical Evaluation",
               advice: doctor ? `Consulting Doctor: ${doctor}` : undefined,

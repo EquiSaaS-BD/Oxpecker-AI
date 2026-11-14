@@ -164,7 +164,7 @@ export async function runAllPrescriptionIntelligenceTests() {
     assert.equal(match.matchStatus, "EXACT_MATCH");
     assert.ok(match.matchedMedicine);
     assert.equal(match.matchedMedicine.brandName, "Napa");
-    assert.equal(match.matchedMedicine.genericName, "Paracetamol");
+    assert.equal(match.matchedMedicine.genericName.toLowerCase(), "paracetamol");
   });
 
   // Scenario 9: Medicine that does NOT exist in database

@@ -10,23 +10,199 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organization {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  name             String
+  type             String   @default("hospital") // hospital, clinic, chamber
+  address          String?
+  phone            String?
+  licenseTier      String   @default("hospital_pro") // clinic_starter, hospital_pro, enterprise_gov
+  licenseKey       String?  @unique
+  dghsFacilityCode String?
+  webhookUrl       String?
+  webhookSecret    String?
+  syncStatus       String   @default("active")
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  name           String
+  passwordHash   String?
+  role           String   @default("patient") // patient, doctor, hospital, assistant, admin
+  status         String   @default("active") // active, pending, banned
+  phone          String?
+  organizationId String   @default("org-default")
+  bmdcRegNo      String?
+  bmdcStatus     String   @default("none") // none, pending, verified
+  specialty      String?
+  hospitalName   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, role])
+  @@index([bmdcStatus])
+}
+
+model HealthPassCard {
+  id               String   @id @default(uuid())
+  cardNumber       String   @unique
+  patientId        String
+  organizationId   String   @default("org-default")
+  fullName         String
+  nidNumber        String?
+  phone            String?
+  bloodGroup       String?
+  dateOfBirth      String?
+  gender           String?
+  allergies        Json?
+  chronicDiseases  Json?
+  medications      Json?
+  emergencyContact String?
+  qrSignature      String?
+  isActivated      Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([nidNumber])
+  @@index([phone])
+  @@index([organizationId])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  actorId        String
+  actorName      String?
+  actorRole      String?
+  organizationId String   @default("org-default")
+  action         String   // EMERGENCY_LOOKUP, QR_SCAN, PRESCRIPTION_ACCESS, BMDC_VERIFY
+  targetType     String   // HealthPassCard, Patient, Prescription, MedicalDocument
+  targetId       String
+  reason         String?  @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([targetType, targetId])
+  @@index([actorId, createdAt])
+}
+
+model AutomationEvent {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  type           String
+  title          String
+  patientName    String
+  patientPhone   String?
+  doctorName     String?
+  channel        String
+  status         String   @default("Delivered")
+  summary        String   @db.Text
+  smsPreview     String?  @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([type])
+}
+
+model HmsBooking {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  patientName    String
+  patientPhone   String?
+  patientAge     Int?
+  patientGender  String?
+  doctorName     String?
+  department     String?
+  bookingStatus  String   @default("Confirmed")
+  paymentStatus  String   @default("Unpaid")
+  paidAmount     Float    @default(0)
+  payload        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([bookingStatus])
+}
+
+model HmsAdmission {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  patientName    String
+  smartCardUid   String?
+  ward           String?
+  bedNumber      String?
+  status         String   @default("Admitted")
+  payload        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([status])
+}
+
+model HmsBill {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  patientName    String
+  totalAmount    Float    @default(0)
+  paidAmount     Float    @default(0)
+  status         String   @default("Running")
+  payload        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([status])
+}
+
 model Patient {
-  id            String         @id @default(uuid())
-  mrn           String         @unique // e.g. R 36 53 02
-  name          String
-  age           Int?
-  gender        String?
-  phone         String?
-  prescriptions Prescription[]
-  labReports    LabReport[]
-  appointments  Appointment[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  mrn               String         @unique // e.g. R 36 53 02
+  organizationId    String         @default("org-default")
+  name              String
+  age               Int?
+  gender            String?
+  phone             String?
+  email             String?
+  nidNumber         String?
+  bloodGroup        String?
+  dateOfBirth       String?
+  photoUrl          String?        @db.Text
+  heightCm          Float?
+  weightKg          Float?
+  bmi               Float?
+  allergies         Json?
+  chronicConditions Json?
+  vitalsSnapshot    Json?
+  externalIds       Json?
+  prescriptions     Prescription[]
+  labReports        LabReport[]
+  appointments      Appointment[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([organizationId, updatedAt])
+  @@index([phone])
+  @@index([email])
+  @@index([nidNumber])
+  @@index([name])
 }
 
 model Prescription {
   id                 String   @id @default(uuid())
   patientId          String
+  organizationId     String   @default("org-default")
+  doctorId           String?
+  doctorName         String?
+  hospitalName       String?
+  externalRefId      String?
   patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   chiefComplaint     String?  @db.Text
   physicalExam       String?  @db.Text
@@ -38,26 +214,41 @@ model Prescription {
   advice             String?  @db.Text
   followUp           String?
   theme              String?  @default("modern")
+  savingsBdt         Float    @default(0)
+  ddiAlertsCount     Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  @@index([patientId, createdAt])
+  @@index([organizationId, createdAt])
 }
 
 model LabReport {
-  id        String   @id @default(uuid())
-  patientId String
-  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  name      String
-  type      String
-  date      DateTime
-  status    String   @default("Pending")
-  pages     Int      @default(1)
-  fileUrl   String?
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  patientId      String
+  organizationId String   @default("org-default")
+  facilityName   String?
+  doctorName     String?
+  findings       Json?
+  reportDate     String?
+  externalRefId  String?
+  patient        Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name           String
+  type           String
+  date           DateTime
+  status         String   @default("Pending")
+  pages          Int      @default(1)
+  fileUrl        String?
+  createdAt      DateTime @default(now())
+
+  @@index([patientId, createdAt])
+  @@index([organizationId, createdAt])
 }
 
 model MedicalDocument {
   id              String   @id @default(uuid())
   ownerId         String   @db.VarChar(191)
+  organizationId  String   @default("org-default") @db.VarChar(191)
   kind            String   @db.VarChar(32)
   originalName    String   @db.VarChar(255)
   mimeType        String   @db.VarChar(64)
@@ -71,6 +262,7 @@ model MedicalDocument {
   createdAt       DateTime @default(now())
 
   @@index([ownerId, createdAt])
+  @@index([organizationId, createdAt])
 }
 
 // ============================================
@@ -103,6 +295,8 @@ model ChatThread {
   messages  ChatMessage[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+
+  @@index([userId, updatedAt])
 }
 
 model ChatMessage {
@@ -113,6 +307,8 @@ model ChatMessage {
   content   String     @db.Text
   metadata  Json? // tool calls, sources, structured cards
   createdAt DateTime   @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 // ============================================
@@ -121,6 +317,7 @@ model ChatMessage {
 
 model Doctor {
   id              String        @id @default(uuid())
+  organizationId  String        @default("org-default")
   name            String
   degree          String
   speciality      String
@@ -140,10 +337,14 @@ model Doctor {
   appointments    Appointment[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+
+  @@index([speciality])
+  @@index([organizationId])
 }
 
 model Hospital {
   id              String   @id @default(uuid())
+  organizationId  String   @default("org-default")
   name            String
   address         String
   specialities    Json // ["Cardiology", "Gynecology", ...]
@@ -161,6 +362,9 @@ model Hospital {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([organizationId])
 }
 
 model DiagnosticCentre {
@@ -190,19 +394,64 @@ model Medicine {
   warnings     Json? // ["pregnancy", "kidney"]
   alternatives Json? // [{brandName, price, manufacturer}]
   createdAt    DateTime @default(now())
+
+  @@index([brandName])
+  @@index([genericName])
 }
 
 model Appointment {
-  id            String   @id @default(uuid())
-  patientId     String
-  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctorId      String
-  doctor        Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  dateTime      DateTime
-  type          String // "in_person", "video"
-  status        String   @default("pending") // pending, confirmed, cancelled
-  paymentStatus String   @default("unpaid")
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String   @id @default(uuid())
+  organizationId    String   @default("org-default")
+  patientId         String
+  patient           Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId          String
+  doctor            Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospitalName      String?
+  specialty         String?
+  source            String   @default("oxpecker") // oxpecker, clinic_website, widget, hms_walkin, csv_import
+  externalBookingId String?
+  dateTime          DateTime
+  type              String // "in_person", "video"
+  status            String   @default("pending") // pending, confirmed, cancelled, completed
+  paymentStatus     String   @default("unpaid")
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([organizationId, dateTime])
+  @@index([patientId, dateTime])
+  @@index([doctorId, dateTime])
+}
+
+model TenantApiKey {
+  id             String    @id @default(uuid())
+  organizationId String    @default("org-default")
+  label          String
+  keyPrefix      String
+  keyHash        String    @unique
+  scopes         Json
+  lastUsedAt     DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  @@index([organizationId])
+  @@index([keyHash])
+}
+
+model IntegrationSyncLog {
+  id               String   @id @default(uuid())
+  organizationId   String   @default("org-default")
+  direction        String   @default("inbound")
+  channel          String   @default("rest_api")
+  entityType       String
+  externalRefId    String?
+  idempotencyKey   String?  @unique
+  status           String   @default("success")
+  recordsProcessed Int      @default(1)
+  errorMessage     String?  @db.Text
+  payload          Json?
+  createdAt        DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([channel])
 }

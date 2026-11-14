@@ -8,78 +8,12 @@
  *  (or via any test runner that supports TypeScript)
  */
 
-// Inline the pure functions to avoid import resolution issues in a quick test script
-// In production these come from @/lib/rbac
-
-type UserRole = "patient" | "doctor" | "hospital" | "admin" | "assistant" | null;
-
-function getRoleHomePath(role: UserRole): string {
-  switch (role) {
-    case "patient":   return "/chat";
-    case "doctor":    return "/doctor/dashboard";
-    case "hospital":  return "/hospital/dashboard";
-    case "admin":     return "/admin/dashboard";
-    case "assistant": return "/assistant";
-    default:          return "/login";
-  }
-}
-
-const ROLE_EXCLUSIVE_ROUTES: { prefix: string; allowedRoles: UserRole[] }[] = [
-  { prefix: "/admin",              allowedRoles: ["admin"] },
-  { prefix: "/doctor/",            allowedRoles: ["doctor", "admin"] },
-  { prefix: "/doctor",             allowedRoles: ["doctor", "admin"] },
-  { prefix: "/hospital/",          allowedRoles: ["hospital", "admin"] },
-  { prefix: "/hospital",           allowedRoles: ["hospital", "admin"] },
-  { prefix: "/assistant",          allowedRoles: ["assistant", "admin"] },
-  { prefix: "/chat",               allowedRoles: ["patient", "admin"] },
-  { prefix: "/dashboard",          allowedRoles: ["patient", "admin"] },
-  { prefix: "/health-card",        allowedRoles: ["patient", "admin"] },
-  { prefix: "/patient",            allowedRoles: ["patient", "admin"] },
-  { prefix: "/reports",            allowedRoles: ["patient", "admin"] },
-  { prefix: "/saved",              allowedRoles: ["patient", "admin"] },
-];
-
-const PUBLIC_ROUTES: string[] = [
-  "/doctors", "/hospitals", "/medicines", "/nutrition", "/about",
-  "/contact", "/terms", "/privacy", "/refund", "/disclaimer",
-  "/careers", "/press", "/docs", "/faq", "/scan", "/tv-monitor",
-  "/profile", "/settings", "/appointments",
-];
-
-function isRouteAuthorizedForRole(pathname: string, role: UserRole): boolean {
-  if (!role) return false;
-  const normalizedPath = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
-  const isPublic = PUBLIC_ROUTES.some(
-    (pub) => normalizedPath === pub || normalizedPath.startsWith(pub + "/")
-  );
-  if (isPublic) return true;
-  for (const rule of ROLE_EXCLUSIVE_ROUTES) {
-    const matches =
-      normalizedPath === rule.prefix ||
-      normalizedPath.startsWith(rule.prefix.endsWith("/") ? rule.prefix : rule.prefix + "/");
-    if (matches) {
-      return rule.allowedRoles.includes(role);
-    }
-  }
-  return true;
-}
-
-function getAuthorizedRedirectUrl(targetUrl: string | null, role: UserRole): string {
-  const home = getRoleHomePath(role);
-  if (!targetUrl || !role) return home;
-  let pathname = targetUrl;
-  try {
-    const url = new URL(targetUrl, "http://localhost");
-    pathname = url.pathname;
-  } catch {}
-  if (pathname === "/login" || pathname.startsWith("/register") || pathname === "/reset-password") {
-    return home;
-  }
-  if (isRouteAuthorizedForRole(pathname, role)) {
-    return targetUrl;
-  }
-  return home;
-}
+import {
+  getRoleHomePath,
+  isRouteAuthorizedForRole,
+  getAuthorizedRedirectUrl,
+} from "../rbac";
+import type { UserRole } from "../../context/AuthContext";
 
 // ═══════════════════════════════════════════════════════════════════
 //  TEST EXECUTION
@@ -162,17 +96,17 @@ interface RedirectTestCase {
 }
 
 const redirectTests: RedirectTestCase[] = [
-  { role: "patient",   storedUrl: null,                     expectedTarget: "/chat",               description: "Patient, no stored URL → /chat" },
+  { role: "patient",   storedUrl: null,                     expectedTarget: getRoleHomePath("patient"), description: "Patient, no stored URL → patient home" },
   { role: "patient",   storedUrl: "/dashboard",             expectedTarget: "/dashboard",          description: "Patient, stored /dashboard → /dashboard (own)" },
-  { role: "patient",   storedUrl: "/hospital/dashboard",    expectedTarget: "/chat",               description: "Patient, stored /hospital/dashboard → DISCARDED → /chat" },
-  { role: "patient",   storedUrl: "/doctor/dashboard",      expectedTarget: "/chat",               description: "Patient, stored /doctor/dashboard → DISCARDED → /chat" },
-  { role: "patient",   storedUrl: "/admin/dashboard",       expectedTarget: "/chat",               description: "Patient, stored /admin → DISCARDED → /chat" },
+  { role: "patient",   storedUrl: "/hospital/dashboard",    expectedTarget: getRoleHomePath("patient"), description: "Patient, stored /hospital/dashboard → DISCARDED → patient home" },
+  { role: "patient",   storedUrl: "/doctor/dashboard",      expectedTarget: getRoleHomePath("patient"), description: "Patient, stored /doctor/dashboard → DISCARDED → patient home" },
+  { role: "patient",   storedUrl: "/admin/dashboard",       expectedTarget: getRoleHomePath("patient"), description: "Patient, stored /admin → DISCARDED → patient home" },
   { role: "doctor",    storedUrl: "/chat",                  expectedTarget: "/doctor/dashboard",   description: "Doctor, stored /chat → DISCARDED → /doctor/dashboard" },
   { role: "doctor",    storedUrl: "/doctor/patients",       expectedTarget: "/doctor/patients",    description: "Doctor, stored /doctor/patients → allowed" },
   { role: "hospital",  storedUrl: "/doctor/dashboard",      expectedTarget: "/hospital/dashboard", description: "Hospital, stored /doctor/dashboard → DISCARDED → /hospital/dashboard" },
   { role: "assistant", storedUrl: "/hospital/dashboard",    expectedTarget: "/assistant",          description: "Assistant, stored /hospital → DISCARDED → /assistant" },
   { role: "assistant", storedUrl: "/assistant/queue",       expectedTarget: "/assistant/queue",    description: "Assistant, stored /assistant/queue → allowed" },
-  { role: "patient",   storedUrl: "/login",                 expectedTarget: "/chat",               description: "Patient, stored /login → DISCARDED (auth route) → /chat" },
+  { role: "patient",   storedUrl: "/login",                 expectedTarget: getRoleHomePath("patient"), description: "Patient, stored /login → DISCARDED (auth route) → patient home" },
   { role: "doctor",    storedUrl: "/register",              expectedTarget: "/doctor/dashboard",   description: "Doctor, stored /register → DISCARDED → /doctor/dashboard" },
   { role: "patient",   storedUrl: "/doctors/dr-khan",       expectedTarget: "/doctors/dr-khan",    description: "Patient, stored /doctors/dr-khan → allowed (public)" },
 ];

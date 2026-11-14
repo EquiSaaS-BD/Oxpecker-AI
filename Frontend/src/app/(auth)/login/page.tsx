@@ -59,104 +59,36 @@ function LoginForm() {
 
     try {
       const lowerEmail = email.toLowerCase().trim();
+      let localProfile: any = null;
 
-      // Fast-track demo & test accounts for zero latency and guaranteed login
-      const isTestAdmin = lowerEmail.includes('admin');
-      const isTestDoc = lowerEmail.includes('doctor') || lowerEmail.startsWith('dr.') || lowerEmail.includes('physician');
-      const isTestHosp = lowerEmail.includes('hospital') || lowerEmail.includes('clinic');
-      const isTestPatient = lowerEmail.includes('patient');
-      const isTestAssistant = lowerEmail.includes('assistant');
-
-      let resolvedRole: UserRole = (queryRole as UserRole) || 'patient';
-      if (isTestAdmin) resolvedRole = 'admin';
-      else if (isTestDoc) resolvedRole = 'doctor';
-      else if (isTestHosp) resolvedRole = 'hospital';
-      else if (isTestPatient) resolvedRole = 'patient';
-      else if (isTestAssistant) resolvedRole = 'assistant';
-
-      let dbProfile: any = null;
-
-      // 1. Check local registered profiles first (from /register storage)
       if (typeof window !== "undefined") {
         try {
           const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          const matched = localProfiles.find(
+          localProfile = localProfiles.find(
             (p: any) => p.email && p.email.toLowerCase().trim() === lowerEmail
-          );
-          if (matched) {
-            dbProfile = matched;
-            if (matched.role) resolvedRole = matched.role as UserRole;
-          }
+          ) || null;
         } catch {}
       }
 
-      // 2. Query remote database if not found locally
-      if (!dbProfile && !isTestAdmin && !isTestDoc && !isTestHosp && !isTestPatient && !isTestAssistant) {
-        try {
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000));
-          const queryPromise = supabase.from('profiles').select('*').ilike('email', lowerEmail).maybeSingle();
-          const { data }: any = await Promise.race([queryPromise, timeoutPromise]);
-          if (data) {
-            dbProfile = data;
-            if (data.role) resolvedRole = data.role as UserRole;
-          }
-        } catch (err) {
-          // Fallback to offline local profile cache gracefully
-        }
+      const res = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: lowerEmail,
+          password,
+          localProfile,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.user) {
+        toast.error(data?.error || "Invalid email or password.");
+        return;
       }
 
-      const userId = dbProfile?.id || (
-        isTestPatient ? 'user-001' :
-        isTestDoc ? 'dr-ahmed' :
-        isTestHosp ? 'hosp-001' :
-        isTestAssistant ? 'ast-101' :
-        (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now())
-      );
-
-      // Cleanly format display name from email or profile
-      const derivedName = lowerEmail.split('@')[0]
-        .replace(/[._-]/g, ' ')
-        .split(' ')
-        .filter(Boolean)
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-
-      const userName = dbProfile?.name || dbProfile?.full_name || (
-        isTestAdmin ? 'System Administrator' :
-        isTestDoc ? 'Prof. Dr. Ahmed Rahman, FCPS, MD' :
-        isTestHosp ? 'Dhaka Central Specialized Hospital' :
-        isTestAssistant ? 'Kamrul Hasan (Front Desk & OPD)' :
-        isTestPatient ? 'রহিম উদ্দিন (Rahim Uddin)' :
-        derivedName || 'Oxpecker User'
-      );
-
-      const userSession = {
-        id: userId,
-        name: userName,
-        email: dbProfile?.email || lowerEmail,
-        role: resolvedRole,
-        phone: dbProfile?.phone || (
-          isTestPatient ? '+880 1711-000000' :
-          isTestDoc ? '+880 1712-998877' :
-          isTestHosp ? '+880 2-8812345' :
-          isTestAssistant ? '+880 1819-001122' :
-          '+8801700000000'
-        ),
-        blood_group: dbProfile?.blood_group || (isTestPatient ? 'A+' : undefined),
-        gender: dbProfile?.gender || (isTestPatient ? 'Male' : undefined),
-        date_of_birth: dbProfile?.date_of_birth || (isTestPatient ? '1974-04-12' : undefined),
-        image: dbProfile?.image || (isTestPatient ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300' : undefined),
-        specialty: dbProfile?.specialty || (resolvedRole === 'doctor' ? 'Senior Consultant - Interventional Cardiology' : undefined),
-        hospital_name: dbProfile?.hospital_name || (
-          resolvedRole === 'hospital' ? 'Dhaka Central Specialized Hospital & Heart Institute' :
-          resolvedRole === 'doctor' ? 'Dhaka Central Specialized Hospital' :
-          undefined
-        ),
-        status: dbProfile?.status || 'active',
-      };
-
-      toast.success(`Welcome back, ${userName}!`);
-      login(userSession as any);
+      toast.success(`Welcome back, ${data.user.name}!`);
+      login(data.user);
 
     } catch (err: any) {
       console.error('Login error:', err);

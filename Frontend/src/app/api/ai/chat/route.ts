@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeClinicalCase, ClinicalAnalysis } from '@/lib/clinical-engine';
 import { executeMedicalRAGWithLiveResearch, MedicalRAGResult } from '@/lib/medical-rag';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // ============================================
 // Types
@@ -161,7 +162,11 @@ ${ragSnippet}
 6. **STRICT MEDICAL BOUNDARY:**
    - You ONLY answer questions related to health, medicine, pharmacology, symptoms, lab reports, prescriptions, nutrition, first-aid, doctors, and hospitals.
    - Politely refuse programming/coding, math homework, politics, or non-medical requests.
-   - Do not diagnose diseases if the user only sends a greeting ("হ্যালো", "কেমন আছেন") or asks about general platform services/hotlines.`;
+   - Do not diagnose diseases if the user only sends a greeting ("হ্যালো", "কেমন আছেন") or asks about general platform services/hotlines.
+
+7. **CONTROLLED SUBSTANCES & AUTONOMOUS PRESCRIBING GUARDRAIL:**
+   - Never autonomously prescribe controlled narcotics/opioids (morphine, pethidine, fentanyl, tramadol), benzodiazepines/sedatives (clonazepam, diazepam, alprazolam), systemic corticosteroids, or restricted reserve antibiotics without stating that a registered BMDC physician's in-person prescription is mandatory under DGDA regulations.
+   - For red-flag life-threatening emergencies (chest pain, stroke signs, severe dyspnea, anaphylaxis, active hemorrhage, suicidal crisis), immediately instruct the user to call National Emergency **999** or Shastho Batayon **16263** at the very top of your response.`;
 }
 
 // ============================================
@@ -347,6 +352,9 @@ function streamConversationalText(text: string): ReadableStream {
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, 'ai-chat', 30, 60_000);
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const {
@@ -547,7 +555,7 @@ export async function POST(request: NextRequest) {
     // Provider Attempt 3: Groq AI
     // ============================================
     const groqKey = process.env.GROQ_API_KEY;
-    if (groqKey && groqKey.startsWith('gsk_') && !groqKey.includes('QMaZdoqj5rKrodGXauFDWGdyb3FY')) {
+    if (groqKey && groqKey.startsWith('gsk_') && groqKey.length > 20 && !groqKey.includes('placeholder')) {
       try {
         const stream = await streamFromOpenAIEndpoint(
           'https://api.groq.com/openai/v1/chat/completions',
@@ -577,7 +585,7 @@ export async function POST(request: NextRequest) {
     // Provider Attempt 4: Google Gemini
     // ============================================
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (geminiKey && geminiKey.startsWith('AIzaSy') && !geminiKey.includes('BzMLxU5OTUJy0SPTtU4ZyQB73N3vlwccU')) {
+    if (geminiKey && geminiKey.startsWith('AIzaSy') && geminiKey.length > 20 && !geminiKey.includes('placeholder')) {
       try {
         const stream = await streamFromOpenAIEndpoint(
           'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, DollarSign, BrainCircuit, Activity, TrendingUp, Calendar, AlertCircle, ArrowUpRight, ArrowDownRight, Compass, Siren, ShieldCheck } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -28,6 +29,28 @@ const recentActivity = [
 ];
 
 export default function AdminDashboardPage() {
+  const [liveActivity, setLiveActivity] = useState(recentActivity);
+
+  useEffect(() => {
+    fetch("/api/admin/telemetry", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const logs = data?.telemetry?.recentAuditLogs;
+        if (Array.isArray(logs) && logs.length > 0) {
+          const mapped = logs.slice(0, 5).map((log: any, idx: number) => ({
+            id: log.id || idx + 100,
+            user: log.actorRole ? `${String(log.actorRole).toUpperCase()} (${log.actorId || "System"})` : "System Audit",
+            action: `${log.action}: ${log.resourceType}${log.resourceId ? ` #${log.resourceId}` : ""}`,
+            time: log.createdAt ? new Date(log.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Just now",
+            icon: log.action === "EMERGENCY_LOOKUP" ? Siren : log.action === "QR_SCAN" ? ShieldCheck : Activity,
+            color: log.action === "EMERGENCY_LOOKUP" ? "text-rose-700 bg-rose-50 border-rose-200" : "text-emerald-700 bg-emerald-50 border-emerald-200",
+          }));
+          setLiveActivity([...mapped, ...recentActivity].slice(0, 5));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -141,7 +164,7 @@ export default function AdminDashboardPage() {
             </div>
             
             <div className="space-y-4">
-              {recentActivity.map((activity, i) => (
+              {liveActivity.map((activity, i) => (
                 <div key={activity.id} className="flex gap-3 relative">
                   <div className={`w-9 h-9 rounded-xl border flex flex-shrink-0 items-center justify-center ${activity.color} z-10 shadow-xs`}>
                     <activity.icon size={16} />

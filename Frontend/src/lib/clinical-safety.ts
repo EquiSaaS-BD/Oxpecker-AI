@@ -152,10 +152,20 @@ export interface PrescriptionMedicineInput {
 /**
  * Perform comprehensive clinical safety verification for a prescription.
  */
+export interface PatientSafetyProfile {
+  ageYears?: number;
+  weightKg?: number;
+  isPregnant?: boolean;
+  isLactating?: boolean;
+  egfr?: number;
+  hepaticImpairment?: boolean;
+}
+
 export function checkPrescriptionSafety(
   medicines: PrescriptionMedicineInput[],
   knownAllergies: string[] = [],
-  chronicConditions: string[] = []
+  chronicConditions: string[] = [],
+  patientProfile?: PatientSafetyProfile
 ): ClinicalSafetyReport {
   const alerts: ClinicalAlert[] = [];
   let duplicateCount = 0;
@@ -248,6 +258,121 @@ export function checkPrescriptionSafety(
             managementAdviceBn: `রোগীর এই ওষুধের প্রতি অ্যালার্জি আছে। বিকল্প গ্রুপের ওষুধ ব্যবহার করুন।`
           });
         }
+      }
+    }
+  }
+
+  // 4. Condition & Patient Profile Contraindications (Pregnancy, Pediatric, Renal/CKD, Hepatic)
+  const normConditions = chronicConditions.map(c => c.toLowerCase().trim());
+  const isPregnant = Boolean(
+    patientProfile?.isPregnant ||
+    patientProfile?.isLactating ||
+    normConditions.some(c => c.includes("pregnan") || c.includes("lactat") || c.includes("গর্ভ") || c.includes("প্রসূতি"))
+  );
+  const isPediatric = Boolean(
+    (typeof patientProfile?.ageYears === "number" && patientProfile.ageYears < 16) ||
+    normConditions.some(c => c.includes("pediatric") || c.includes("child") || c.includes("infant") || c.includes("শিশু"))
+  );
+  const hasRenalImpairment = Boolean(
+    (typeof patientProfile?.egfr === "number" && patientProfile.egfr < 45) ||
+    normConditions.some(c => c.includes("renal") || c.includes("ckd") || c.includes("kidney") || c.includes("কিডনি"))
+  );
+  const hasHepaticImpairment = Boolean(
+    patientProfile?.hepaticImpairment ||
+    normConditions.some(c => c.includes("hepatic") || c.includes("liver") || c.includes("cirrhosis") || c.includes("লিভার"))
+  );
+
+  const pregnancyContraindicated = [
+    "atorvastatin", "rosuvastatin", "simvastatin", "pitavastatin",
+    "losartan", "valsartan", "telmisartan", "olmesartan", "irbesartan",
+    "enalapril", "ramipril", "lisinopril", "perindopril",
+    "valproate", "valproic", "isotretinoin", "warfarin", "methotrexate",
+    "ciprofloxacin", "levofloxacin", "moxifloxacin", "doxycycline", "tetracycline"
+  ];
+  const pediatricContraindicated = [
+    "aspirin", "ciprofloxacin", "levofloxacin", "moxifloxacin", "ofloxacin", "tetracycline", "doxycycline"
+  ];
+  const renalNsaids = ["ketorolac", "diclofenac", "ibuprofen", "naproxen", "aceclofenac", "indomethacin", "etoricoxib"];
+  const hepaticHighRisk = ["atorvastatin", "rosuvastatin", "simvastatin", "valproate", "methotrexate", "ketoconazole"];
+
+  for (const med of medicines) {
+    const gen = (med.generic_name || "").toLowerCase();
+    if (!gen) continue;
+
+    if (isPregnant && pregnancyContraindicated.some(k => gen.includes(k))) {
+      alerts.push({
+        id: `preg-ci-${med.id}`,
+        severity: "CONTRAINDICATED",
+        headlineEn: `Pregnancy / Lactation Contraindication: ${med.generic_name}`,
+        headlineBn: `গর্ভাবস্থায় নিষিদ্ধ ওষুধ: ${med.brand_name} (${med.generic_name})`,
+        drugA: { name: med.generic_name, brand: med.brand_name },
+        mechanism: `${med.generic_name} carries teratogenic or fetal toxicity risk (FDA Category D/X equivalent).`,
+        clinicalRisk: "Fetal malformation, renal dysgenesis, or neonatal toxicity.",
+        managementAdviceEn: `Discontinue ${med.brand_name} immediately and switch to a pregnancy-safe alternative (e.g., Labetalol/Nifedipine/Methyldopa for hypertension).`,
+        managementAdviceBn: `গর্ভাবস্থায় ${med.brand_name} সম্পূর্ণ নিষিদ্ধ। নিরাপদ বিকল্প ওষুধ নির্বাচন করুন।`
+      });
+    }
+
+    if (isPediatric && pediatricContraindicated.some(k => gen.includes(k))) {
+      const isAspirin = gen.includes("aspirin");
+      alerts.push({
+        id: `peds-ci-${med.id}`,
+        severity: "CONTRAINDICATED",
+        headlineEn: `Pediatric Contraindication (<16 yrs): ${med.generic_name}`,
+        headlineBn: `শিশুদের জন্য ঝুঁকিপূর্ণ ওষুধ: ${med.brand_name} (${med.generic_name})`,
+        drugA: { name: med.generic_name, brand: med.brand_name },
+        mechanism: isAspirin
+          ? "Aspirin in pediatric viral illness precipitates Reye's syndrome."
+          : "Fluoroquinolones/tetracyclines risk juvenile cartilage arthropathy or dental enamel dysplasia.",
+        clinicalRisk: isAspirin ? "Acute encephalopathy and fatty liver degeneration (Reye's syndrome)." : "Musculoskeletal tendon/cartilage damage or tooth discoloration.",
+        managementAdviceEn: `Avoid ${med.brand_name} in pediatric patients. Use weight-adjusted Paracetamol or pediatric-safe beta-lactams/macrolides.`,
+        managementAdviceBn: `শিশুদের ক্ষেত্রে ${med.brand_name} পরিহার করুন এবং ওজন অনুযায়ী নিরাপদ পেডিয়াট্রিক ডোজ ব্যবহার করুন।`
+      });
+    }
+
+    if (hasRenalImpairment) {
+      if (renalNsaids.some(k => gen.includes(k))) {
+        alerts.push({
+          id: `renal-nsaid-${med.id}`,
+          severity: "CONTRAINDICATED",
+          headlineEn: `Renal Impairment Contraindication (NSAID): ${med.generic_name}`,
+          headlineBn: `কিডনি রোগীদের জন্য ঝুঁকিপূর্ণ ব্যথানাশক: ${med.brand_name}`,
+          drugA: { name: med.generic_name, brand: med.brand_name },
+          mechanism: "NSAID-mediated afferent arteriolar vasoconstriction critically reduces GFR in CKD.",
+          clinicalRisk: "Acute-on-chronic kidney injury (AKI), hyperkalemia, and fluid retention.",
+          managementAdviceEn: `Avoid ${med.brand_name} in CKD / low eGFR. Use renal-adjusted Paracetamol for analgesia.`,
+          managementAdviceBn: `কিডনি জটিলতায় ${med.brand_name} সম্পূর্ণ বর্জনীয়; এটি কিডনি বিকল করতে পারে।`
+        });
+      } else if (gen.includes("metformin")) {
+        alerts.push({
+          id: `renal-metformin-${med.id}`,
+          severity: "MAJOR",
+          headlineEn: `Renal Dosing Warning (CKD / Low eGFR): ${med.generic_name}`,
+          headlineBn: `কিডনি রোগে মেটফরমিন সতর্কতা: ${med.brand_name}`,
+          drugA: { name: med.generic_name, brand: med.brand_name },
+          mechanism: "Impaired renal clearance causes plasma metformin accumulation.",
+          clinicalRisk: "Metformin-associated lactic acidosis (MALA), especially if eGFR < 30 mL/min.",
+          managementAdviceEn: "Verify eGFR. Halve dose if eGFR 30-45; contraindicated if eGFR < 30.",
+          managementAdviceBn: `ইজিএফআর (eGFR) পরীক্ষা করুন; eGFR ৩০-এর নিচে হলে মেটফরমিন বন্ধ রাখুন।`
+        });
+      }
+    }
+
+    if (hasHepaticImpairment) {
+      if (hepaticHighRisk.some(k => gen.includes(k)) || gen.includes("paracetamol") || gen.includes("acetaminophen")) {
+        alerts.push({
+          id: `hepatic-${med.id}`,
+          severity: "MAJOR",
+          headlineEn: `Hepatic Impairment Warning: ${med.generic_name}`,
+          headlineBn: `লিভারের রোগীদের জন্য সতর্কতা: ${med.brand_name}`,
+          drugA: { name: med.generic_name, brand: med.brand_name },
+          mechanism: "Reduced hepatic metabolism or glutathione reserves increase hepatotoxicity risk.",
+          clinicalRisk: "Drug-induced liver injury (DILI), transaminitis, or acute hepatic decompensation.",
+          managementAdviceEn: gen.includes("paracetamol") || gen.includes("acetaminophen")
+            ? "Cap total daily Paracetamol at <=2g/day in chronic liver disease; avoid in acute liver failure."
+            : `Avoid ${med.brand_name} in active liver disease or monitor LFTs (ALT/AST) closely.`,
+          managementAdviceBn: `লিভারের সমস্যায় ${med.brand_name} এর মাত্রা সীমিত রাখুন এবং লিভার ফাংশন (SGPT/ALT) পর্যবেক্ষণ করুন।`
+        });
       }
     }
   }

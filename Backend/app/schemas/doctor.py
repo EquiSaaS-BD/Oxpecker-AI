@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
 class DoctorBase(BaseModel):
@@ -27,5 +27,4 @@ class DoctorBase(BaseModel):
     memberships: Optional[List[str]] = None
 
 class Doctor(DoctorBase):
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

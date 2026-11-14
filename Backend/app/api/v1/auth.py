@@ -72,11 +72,12 @@ class ChangePasswordRequest(BaseModel):
 # ── Helper: Set Auth Cookies ─────────────────────────────────────
 def _set_auth_cookies(response: Response, access_token: str, refresh_token: str):
     """Set secure HTTP-only cookies for tokens."""
+    is_prod = getattr(settings, "ENVIRONMENT", "development").lower() == "production"
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,  # Set to True in production (HTTPS)
+        secure=is_prod,
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -85,7 +86,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str)
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,  # Set to True in production (HTTPS)
+        secure=is_prod,
         samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400,
         path="/",

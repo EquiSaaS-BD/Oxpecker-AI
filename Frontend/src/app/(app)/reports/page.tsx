@@ -28,6 +28,7 @@ export default function ReportsPage(props: any) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReport, setSelectedReport] = useState<typeof mockReports[0] | null>(null);
   const [savedDocuments, setSavedDocuments] = useState<any[]>([]);
+  const [hubRecords, setHubRecords] = useState<typeof mockReports>([]);
   const [savedDocumentsLoading, setSavedDocumentsLoading] = useState(true);
   const [savedDocumentImages, setSavedDocumentImages] = useState<Record<string, string>>({});
   const [loadingDocumentImages, setLoadingDocumentImages] = useState<Record<string, boolean>>({});
@@ -64,6 +65,31 @@ export default function ReportsPage(props: any) {
     let active = true;
     void (async () => {
       try {
+        // Hydrate clinic-synced lab reports & doctor prescriptions from Patient 360° Hub
+        try {
+          const hubRes = await fetch("/api/patient/360", { credentials: "include" });
+          if (hubRes.ok && active) {
+            const hubJson = await hubRes.json();
+            const repCards = (hubJson.labReports || []).map((r: any, idx: number) => ({
+              id: `hub-rep-${r.id || idx}`,
+              title: r.name,
+              date: r.date || "Recent",
+              doctor: `${r.doctorName || "Pathologist"} • ${r.facilityName || "Lab"}`,
+              type: "Lab Result",
+              size: "Verified",
+            }));
+            const rxCards = (hubJson.prescriptions || []).map((rx: any, idx: number) => ({
+              id: `hub-rx-${rx.id || idx}`,
+              title: `Prescription: ${rx.diagnosis || "Consultation"}`,
+              date: rx.date || "Recent",
+              doctor: `${rx.doctorName || "Physician"} • ${rx.hospitalName || "Chamber"}`,
+              type: "Prescription",
+              size: `${Array.isArray(rx.medicines) ? rx.medicines.length : 0} Meds`,
+            }));
+            setHubRecords([...repCards, ...rxCards]);
+          }
+        } catch {}
+
         const { data } = await supabase.auth.getSession();
         if (!data.session?.access_token) {
           if (active) setSavedDocuments([]);
@@ -116,7 +142,8 @@ export default function ReportsPage(props: any) {
     toast.success(`${title} ডাউনলোড শুরু হচ্ছে...`);
   };
 
-  const filteredReports = mockReports.filter(report => 
+  const combinedReports = hubRecords.length > 0 ? [...hubRecords, ...mockReports] : mockReports;
+  const filteredReports = combinedReports.filter(report => 
     (activeTab === "All" || report.type === activeTab) &&
     report.title.toLowerCase().includes(searchQuery.toLowerCase())
   );

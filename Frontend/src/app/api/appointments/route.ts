@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma, withDbTimeout } from '@/lib/prisma';
+import { requireSessionUser } from '@/lib/server-auth';
 
 interface QueueAppointment {
   id: string;
@@ -109,6 +110,10 @@ const liveQueue: QueueAppointment[] = [
 ];
 
 export async function GET(req: Request) {
+  const auth = await requireSessionUser(req);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   try {
     const { searchParams } = new URL(req.url);
     const tokenQuery = searchParams.get("token");
@@ -128,6 +133,7 @@ export async function GET(req: Request) {
     try {
       const dbAppointments = await withDbTimeout(
         prisma.appointment.findMany({
+          where: user.role === "admin" ? {} : { organizationId: user.organizationId },
           orderBy: { createdAt: "desc" },
           include: {
             patient: true,
@@ -175,6 +181,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requireSessionUser(req);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+  const orgId = user.organizationId || "org-default";
+
   try {
     const body = await req.json();
     const {
@@ -223,13 +234,14 @@ export async function POST(req: Request) {
       const p = await withDbTimeout(
         prisma.patient.upsert({
           where: { mrn: generatedToken },
-          update: { name: patientName },
+          update: { name: patientName, organizationId: orgId },
           create: {
             mrn: generatedToken,
             name: patientName,
             age: age ? parseInt(String(age), 10) : 32,
             gender: gender || "Male",
             phone: phone || null,
+            organizationId: orgId,
           },
         }),
         2000
@@ -241,6 +253,7 @@ export async function POST(req: Request) {
         await withDbTimeout(
           prisma.appointment.create({
             data: {
+              organizationId: orgId,
               patientId: p.id,
               doctorId: d.id,
               dateTime: new Date(),
@@ -271,6 +284,9 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const auth = await requireSessionUser(req, ["doctor", "hospital", "assistant", "admin"]);
+  if (auth.error) return auth.error;
+
   try {
     const body = await req.json();
     const { id, token, status } = body;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma, withDbTimeout } from '@/lib/prisma';
 
 // ============================================
 // Types
@@ -159,7 +160,35 @@ export async function GET(request: NextRequest) {
   const location = searchParams.get('location')?.toLowerCase();
   const q = searchParams.get('q')?.toLowerCase();
 
-  let results = [...doctors];
+  let dbDoctors: Doctor[] = [];
+  try {
+    const rows = await withDbTimeout(
+      prisma.doctor.findMany({
+        where: { isActive: true },
+        orderBy: { rating: 'desc' },
+        take: 50,
+      }),
+      1500
+    );
+    dbDoctors = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      degree: r.degree,
+      speciality: r.speciality,
+      experience: r.experience,
+      hospital: r.hospital,
+      consultationFee: r.consultationFee,
+      languages: Array.isArray(r.languages) ? (r.languages as string[]) : ['Bangla', 'English'],
+      location: r.location,
+      rating: r.rating,
+      reviewCount: r.reviewCount,
+      photoUrl: r.photoUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop',
+      videoConsult: r.videoConsult,
+    }));
+  } catch {}
+
+  const existingIds = new Set(dbDoctors.map((d) => d.id));
+  let results = [...dbDoctors, ...doctors.filter((d) => !existingIds.has(d.id))];
 
   // Filter by speciality
   if (speciality) {

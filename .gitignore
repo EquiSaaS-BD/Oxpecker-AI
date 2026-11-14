@@ -66,6 +66,7 @@ __pycache__/
 *.pyd
 *.db
 *.sqlite3
+Backend/Api Key Stacker/
 *.zip
 Backend/app/ai/models/*.gguf
 Backend/app/ai/models/*.bin

@@ -22,6 +22,7 @@ export interface AppUser {
   image?: string;
   assistantId?: string;
   doctorId?: string;
+  organizationId?: string;
   status?: "active" | "pending" | "banned";
 }
 
@@ -41,33 +42,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage and check 30-day session expiry
+  // Initialize from server-verified session first, falling back to local cache
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("oxpecker_mock_user");
-      const lastActivity = localStorage.getItem("oxpecker_last_activity");
-
-      if (savedUser && lastActivity) {
-        const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
-        const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
-
-        if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
-          // Session expired due to 30 days of inactivity
-          console.log("Session expired. Auto-logging out.");
-          localStorage.removeItem("oxpecker_mock_user");
-          localStorage.removeItem("oxpecker_last_activity");
-          setUser(null);
-        } else {
-          // Session valid, refresh the activity timer
-          setUser(JSON.parse(savedUser));
-          localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+    let active = true;
+    async function initAuth() {
+      try {
+        const res = await fetch("/api/auth/session", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (active && data?.authenticated && data?.user) {
+            setUser(data.user);
+            localStorage.setItem("oxpecker_mock_user", JSON.stringify(data.user));
+            localStorage.setItem("oxpecker_user", JSON.stringify(data.user));
+            localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+            setIsLoading(false);
+            return;
+          }
         }
+      } catch {}
+
+      try {
+        const savedUser = localStorage.getItem("oxpecker_mock_user");
+        const lastActivity = localStorage.getItem("oxpecker_last_activity");
+
+        if (savedUser && lastActivity) {
+          const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+          const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+
+          if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
+            localStorage.removeItem("oxpecker_mock_user");
+            localStorage.removeItem("oxpecker_last_activity");
+            if (active) setUser(null);
+          } else {
+            const parsed = JSON.parse(savedUser);
+            if (active) setUser(parsed);
+            localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+            fetch("/api/auth/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionSync: true, user: parsed }),
+            }).catch(() => {});
+          }
+        }
+      } catch (e) {
+        console.error("Auth init error:", e);
+      } finally {
+        if (active) setIsLoading(false);
       }
-    } catch (e) {
-      console.error("Auth init error:", e);
-    } finally {
-      setIsLoading(false);
     }
+    initAuth();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // ── Cross-Tab Session Synchronization ─────────────────────────
@@ -108,6 +134,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("oxpecker_user", JSON.stringify(userData));
     localStorage.setItem("oxpecker_last_activity", Date.now().toString());
 
+    fetch("/api/auth/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionSync: true, user: userData }),
+    }).catch(() => {});
+
     // ── RBAC-Validated Redirect ─────────────────────────────────
     // Instead of blindly trusting sessionStorage, sanitize the stored
     // redirect URL against the user's actual role.
@@ -125,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     try {
+      fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
       supabase.auth.signOut().catch(() => {});
     } catch {}
     setUser(null);

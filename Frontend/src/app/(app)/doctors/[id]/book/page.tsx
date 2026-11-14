@@ -32,13 +32,29 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   const [patientPhone, setPatientPhone] = useState(user?.phone || "");
   const [patientAge, setPatientAge] = useState("");
   const [patientGender, setPatientGender] = useState(user?.gender || "Male");
+  const [patientBloodGroup, setPatientBloodGroup] = useState("O+");
+  const [patientHeightCm, setPatientHeightCm] = useState("");
+  const [patientWeightKg, setPatientWeightKg] = useState("");
   const [patientReason, setPatientReason] = useState("");
+  const [bookingRefId, setBookingRefId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user?.name) setPatientName((prev) => prev || user.name || "");
     if (user?.phone) setPatientPhone((prev) => prev || user.phone || "");
     if (user?.gender) setPatientGender((prev) => prev || user.gender || "Male");
+    fetch("/api/patient/360", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        const p = res?.patient;
+        if (!p) return;
+        if (p.phone) setPatientPhone((prev) => prev || p.phone);
+        if (p.age) setPatientAge((prev) => prev || String(p.age));
+        if (p.bloodGroup) setPatientBloodGroup(p.bloodGroup);
+        if (p.heightCm) setPatientHeightCm(String(p.heightCm));
+        if (p.weightKg) setPatientWeightKg(String(p.weightKg));
+      })
+      .catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -76,13 +92,58 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
     try {
       const isValidUuid = (str?: string) => str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str) : false;
       const bookingDateStr = selectedDateIso || new Date().toISOString().split("T")[0];
+      const resolvedName = patientName.trim() || user?.name || "Patient";
+      const resolvedPhone = patientPhone.trim() || user?.phone || "N/A";
+      const hospitalTitle = selectedChamber || doctor.hospital || "Oxpecker Partner Hospital";
 
-      const { data, error } = await supabase.from("bookings").insert({
+      // 1. Primary Unified Hub Sync -> MPI Patient 360 + Prisma Appointment + Hospital HMS Booking
+      const hubRes = await fetch("/api/integrations/v1/sync", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": `oxp-book-${doctor.id}-${bookingDateStr}-${resolvedPhone}-${selectedTime || "10"}`,
+        },
+        body: JSON.stringify({
+          channel: "oxpecker_booking",
+          clinicSlug: "oxpecker-flagship-hospital",
+          patient: {
+            name: resolvedName,
+            phone: resolvedPhone,
+            email: user?.email || undefined,
+            age: patientAge ? Number(patientAge) : undefined,
+            gender: patientGender,
+            bloodGroup: patientBloodGroup,
+            heightCm: patientHeightCm ? Number(patientHeightCm) : undefined,
+            weightKg: patientWeightKg ? Number(patientWeightKg) : undefined,
+          },
+          appointment: {
+            doctorId: doctor.id,
+            doctorName: doctor.name,
+            specialty: doctor.specialty,
+            hospitalName: hospitalTitle,
+            date: bookingDateStr,
+            time: selectedTime || "10:00 AM",
+            type: consultType === "Video Call" ? "video" : "in_person",
+            source: "oxpecker",
+            status: "confirmed",
+            fee: Number(doctor.fee) || 1000,
+            notes: `${consultType} - ${hospitalTitle}${patientReason ? ` - Reason: ${patientReason}` : ""}`,
+          },
+        }),
+      }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+      if (hubRes?.mrn) {
+        setBookingRefId(hubRes.mrn);
+      }
+
+      // 2. Supabase backup insert for compatibility
+      const { error } = await supabase.from("bookings").insert({
         patient_id: user && isValidUuid(user.id) ? user.id : null,
         doctor_id: isValidUuid(doctor?.id) ? doctor.id : null,
-        patient_name: patientName.trim() || user?.name || "Patient",
+        patient_name: resolvedName,
         patient_email: user?.email || null,
-        patient_phone: patientPhone.trim() || user?.phone || "N/A",
+        patient_phone: resolvedPhone,
         doctor_name: doctor.name,
         doctor_specialty: doctor.specialty,
         booking_date: bookingDateStr,
@@ -94,10 +155,10 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         notes: `${consultType} - ${selectedChamber || "Chamber"}${patientReason ? ` - Reason: ${patientReason}` : ""}${patientAge ? ` (Age: ${patientAge})` : ""}`,
       }).select().maybeSingle();
 
-      if (error) {
+      if (error && !hubRes?.success) {
         console.error("Supabase booking insert error:", error.message);
       } else {
-        toast.success("Appointment successfully confirmed!");
+        toast.success("Appointment confirmed & synced to Patient 360° + Hospital Queue!");
       }
       setStep(5);
     } catch (err: any) {
@@ -305,6 +366,41 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   </div>
                 </div>
                 
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-2">Blood Group</label>
+                    <select
+                      value={patientBloodGroup}
+                      onChange={(e) => setPatientBloodGroup(e.target.value)}
+                      className="w-full pb-3 bg-transparent text-[16px] text-slate-900 border-b border-slate-200 focus:border-primary outline-none transition-colors cursor-pointer"
+                    >
+                      {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-2">Height (cm, Optional)</label>
+                    <input
+                      type="number"
+                      value={patientHeightCm}
+                      onChange={(e) => setPatientHeightCm(e.target.value)}
+                      placeholder="170"
+                      className="w-full pb-3 bg-transparent text-[16px] text-slate-900 placeholder:text-slate-500 border-b border-slate-200 focus:border-primary outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-slate-500 uppercase tracking-wider mb-2">Weight (kg, Optional)</label>
+                    <input
+                      type="number"
+                      value={patientWeightKg}
+                      onChange={(e) => setPatientWeightKg(e.target.value)}
+                      placeholder="70"
+                      className="w-full pb-3 bg-transparent text-[16px] text-slate-900 placeholder:text-slate-500 border-b border-slate-200 focus:border-primary outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-3">Reason for visit (Optional)</label>
                   <textarea 
@@ -389,15 +485,34 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 <CheckCircle2 size={40} className="text-green-500" />
               </div>
               <h2 className="text-[36px] font-[800] text-slate-900 tracking-tight mb-3">Booking Confirmed</h2>
-              <p className="text-slate-500 text-[16px] max-w-[400px] leading-relaxed mb-10">
-                Your appointment with <span className="font-semibold text-slate-900">{doctor.name}</span> is confirmed for <span className="font-semibold text-slate-900">{selectedDate}</span> at <span className="font-semibold text-slate-900">{selectedTime}</span>.
+              <p className="text-slate-500 text-[16px] max-w-[440px] leading-relaxed mb-6">
+                Your appointment with <span className="font-semibold text-slate-900">{doctor.name}</span> is confirmed for <span className="font-semibold text-slate-900">{selectedDate || "Next Available"}</span> at <span className="font-semibold text-slate-900">{selectedTime || "10:00 AM"}</span>.
               </p>
-              <button 
-                onClick={() => router.push(`/doctors/${doctor.id}`)}
-                className="px-8 h-[52px] bg-white hover:bg-slate-50 text-slate-900 rounded-full font-semibold text-[15px] transition-colors"
-              >
-                Done
-              </button>
+              {bookingRefId && (
+                <div className="mb-8 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                  Synced to Patient 360° & Hospital Queue • UHID/MRN: {bookingRefId}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => router.push("/patient/profile")}
+                  className="px-7 h-[48px] bg-sky-600 hover:bg-sky-700 text-white rounded-full font-semibold text-[14px] transition-colors cursor-pointer"
+                >
+                  View in Patient 360° Profile
+                </button>
+                <button
+                  onClick={() => router.push("/appointments")}
+                  className="px-7 h-[48px] bg-slate-900 hover:bg-slate-800 text-white rounded-full font-semibold text-[14px] transition-colors cursor-pointer"
+                >
+                  Track Live Queue
+                </button>
+                <button
+                  onClick={() => router.push(`/doctors/${doctor.id}`)}
+                  className="px-6 h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-full font-semibold text-[14px] transition-colors cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           )}
           

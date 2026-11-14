@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
 class MedicineBase(BaseModel):
@@ -19,5 +19,4 @@ class MedicineBase(BaseModel):
     price_trend: Optional[Dict[str, Any]] = None
 
 class Medicine(MedicineBase):
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

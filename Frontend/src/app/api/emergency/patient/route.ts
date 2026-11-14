@@ -1,21 +1,54 @@
 import { NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { prisma, withDbTimeout } from "@/lib/prisma";
 import { INITIAL_HEALTH_CARDS } from "@/lib/healthpass";
+import { requireSessionUser } from "@/lib/server-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const rateErr = checkRateLimit(request, "emergency-patient", 30, 60_000);
+  if (rateErr) return rateErr;
+
+  const auth = await requireSessionUser(request, ["doctor", "hospital", "assistant", "admin"]);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("query")?.trim();
-    const doctorName = searchParams.get("doctorName") || "Attending Physician";
+    const rawQuery = searchParams.get("query")?.trim();
+    const doctorName = searchParams.get("doctorName") || user.name || "Attending Physician";
     const doctorBmdc = searchParams.get("doctorBmdc") || "EMERGENCY-DESK";
     const hospitalName = searchParams.get("hospitalName") || "Emergency Department";
     const reason = searchParams.get("reason") || "Immediate Emergency Triage Admission";
 
-    if (!query) {
+    if (!rawQuery) {
       return NextResponse.json({ error: "UHID, NID, or Phone query parameter is required" }, { status: 400 });
     }
 
+    // Strict input sanitization to prevent PostgREST .or() filter injection
+    const query = rawQuery.replace(/[^a-zA-Z0-9\-\+\s@.]/g, "").trim().slice(0, 64);
+    if (!query) {
+      return NextResponse.json({ error: "Invalid emergency query format" }, { status: 400 });
+    }
+
     const cleanQ = query.replace(/[- ]/g, "").toLowerCase();
+
+    // Immutable Break-Glass Audit Log in PostgreSQL
+    withDbTimeout(
+      prisma.auditLog.create({
+        data: {
+          actorId: user.id,
+          actorName: doctorName,
+          actorRole: user.role,
+          organizationId: user.organizationId || "org-default",
+          action: "EMERGENCY_LOOKUP",
+          targetType: "HealthPassCard",
+          targetId: query,
+          reason: `${reason} (BMDC: ${doctorBmdc}, Hospital: ${hospitalName})`,
+        },
+      }),
+      1500
+    ).catch(() => {});
 
     // 1. Try Supabase query if configured
     if (isSupabaseConfigured) {
@@ -23,7 +56,7 @@ export async function GET(request: Request) {
         const { data: patient, error } = await supabase
           .from("patient_health_records")
           .select("*")
-          .or(`uhid.eq.${query},nid.eq.${query},phone.eq.${query}`)
+          .or(`uhid.eq."${query}",nid.eq."${query}",phone.eq."${query}"`)
           .maybeSingle();
 
         if (!error && patient) {

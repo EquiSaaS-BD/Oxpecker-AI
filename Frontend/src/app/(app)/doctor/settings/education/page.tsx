@@ -28,6 +28,20 @@ export default function EducationSettingsPage() {
     if (savedBmdcStatus) setBmdcStatus(savedBmdcStatus as any);
     const savedReg = localStorage.getItem('oxpecker_doc_bmdc');
     if (savedReg) setBmdcReg(savedReg);
+
+    fetch('/api/doctor/verify-bmdc', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.bmdcRegNo) {
+          setBmdcReg(data.bmdcRegNo);
+          localStorage.setItem('oxpecker_doc_bmdc', data.bmdcRegNo);
+        }
+        if (data?.bmdcStatus && data.bmdcStatus !== 'none') {
+          setBmdcStatus(data.bmdcStatus);
+          localStorage.setItem('oxpecker_doc_bmdc_status', data.bmdcStatus);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,17 +55,30 @@ export default function EducationSettingsPage() {
     }
   };
 
-  const handleSubmitBMDC = () => {
+  const handleSubmitBMDC = async () => {
     if (!bmdcReg.trim()) return toast.error("Please enter BMDC Registration Number.");
     if (!certificateFile) return toast.error("Please upload your medical certificate.");
 
     toast.loading("Submitting credentials securely...", { id: 'bmdc' });
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/doctor/verify-bmdc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ bmdcRegNo: bmdcReg.trim() }),
+      });
+      const data = await res.json().catch(() => null);
+      const nextStatus = data?.bmdcStatus || "pending";
+      toast.success("Medical credentials submitted for verification!", { id: 'bmdc' });
+      setBmdcStatus(nextStatus);
+      localStorage.setItem('oxpecker_doc_bmdc_status', nextStatus);
+      localStorage.setItem('oxpecker_doc_bmdc', bmdcReg.trim());
+    } catch {
       toast.success("Medical credentials submitted for verification!", { id: 'bmdc' });
       setBmdcStatus("pending");
       localStorage.setItem('oxpecker_doc_bmdc_status', 'pending');
-      localStorage.setItem('oxpecker_doc_bmdc', bmdcReg);
-    }, 2000);
+      localStorage.setItem('oxpecker_doc_bmdc', bmdcReg.trim());
+    }
   };
 
   const handleAddEducation = () => {

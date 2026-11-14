@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { inflateSync } from "zlib";
 import { NextResponse } from "next/server";
 import { prisma, withDbTimeout } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/server-auth";
 import { callMultimodalVision } from "@/lib/vision-engine";
 import { comparePrescriptionPrices } from "@/lib/medicine-catalog";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
@@ -31,6 +31,9 @@ function getDocumentEncryptionKey(): Buffer {
       return asBase64;
     }
     return createHash("sha256").update(configured).digest();
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("MEDICAL_DOCUMENT_ENCRYPTION_KEY is required in production.");
   }
   const fallbackSecret =
     process.env.DATABASE_URL ||
@@ -67,38 +70,8 @@ function jsonError(message: string, status: number) {
 }
 
 async function getVerifiedUserId(request: Request): Promise<string | null> {
-  // 1. Direct explicit clinical headers
-  const headerUserId = request.headers.get("x-user-id") || request.headers.get("x-patient-id");
-  if (headerUserId && headerUserId.trim().length >= 3) return headerUserId.trim().slice(0, 191);
-
-  try {
-    const url = new URL(request.url);
-    const queryUserId = url.searchParams.get("userId") || url.searchParams.get("patientId");
-    if (queryUserId && queryUserId.trim().length >= 3) return queryUserId.trim().slice(0, 191);
-  } catch {}
-
-  // 2. Bearer token lookup from Supabase if configured with non-dummy key
-  const token = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (token && supabaseUrl && anonKey && !anonKey.includes("dummy") && !token.startsWith("oxp-rx-")) {
-    try {
-      const authClient = createClient(supabaseUrl, anonKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const { data, error } = await authClient.auth.getUser(token);
-      if (!error && data.user?.id) return data.user.id;
-    } catch {}
-  }
-
-  // 3. If a direct session or actor token is supplied
-  if (token && token.length >= 4 && !token.includes(" ")) {
-    return token.slice(0, 191);
-  }
-
-  // 4. Fallback to authenticated hospital clinical actor
-  return "usr-hospital-verified";
+  const session = await getSessionUser(request);
+  return session?.id || null;
 }
 
 export function hasValidFileSignature(mimeType: string, bytes: Buffer): boolean {
