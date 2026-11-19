@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
 import { ChatInput, ChatMode, COMPOSER_CATEGORIES } from "@/components/chat/ChatInput";
 import { MessageBubble } from "@/components/chat/MessageBubble";
-import { ArrowRight, AlertTriangle, Phone } from "lucide-react";
+import { ArrowRight, AlertTriangle, Phone, Stethoscope, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { detectEmergency } from "@/lib/ai/emergency-detector";
@@ -478,6 +479,60 @@ function ChatContent() {
                       {chip} <ArrowRight size={14} className="opacity-50" />
                     </button>
                   ))}
+                  {(() => {
+                    const lastContent = messages[messages.length - 1]?.content || "";
+                    const specMatch = lastContent.match(/"speciality"\s*:\s*"([^"]+)"/i);
+                    const inferredSpecialty =
+                      specMatch?.[1] ||
+                      (/heart|chest|cardio|হৃদ/i.test(lastContent)
+                        ? "Cardiology"
+                        : /sugar|diabet|thyroid|ডায়াবেটিস/i.test(lastContent)
+                          ? "Endocrinology"
+                          : /kidney|urine|কিডনি/i.test(lastContent)
+                            ? "Nephrology"
+                            : /skin|rash|ত্বক/i.test(lastContent)
+                              ? "Dermatology"
+                              : "General Medicine");
+                    return (
+                      <>
+                        <Link
+                          href={`/doctors?specialty=${encodeURIComponent(inferredSpecialty)}`}
+                          className="flex items-center gap-1.5 h-[38px] px-4 rounded-full bg-sky-600 hover:bg-sky-700 text-white text-[13px] font-bold transition-colors shadow-sm"
+                        >
+                          <Stethoscope size={14} /> কোন ডাক্তার দেখাবেন ({inferredSpecialty})
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await fetch("/api/integrations/v1/sync", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                channel: "widget",
+                                clinicSlug: "oxpecker-flagship-hospital",
+                                patient: {
+                                  mrn: "HP-2026-8841",
+                                  name: user?.name || "Rahim Uddin",
+                                  phone: user?.phone || "+8801711000000",
+                                },
+                                labReport: {
+                                  name: `Symptom Check (${inferredSpecialty})`,
+                                  type: "Symptom Assistant Summary",
+                                  facilityName: "Oxpecker AI Bengali Assistant",
+                                  doctorName: inferredSpecialty,
+                                  summary: lastContent.slice(0, 320),
+                                  status: "Reviewed",
+                                },
+                              }),
+                            }).catch(() => {});
+                          }}
+                          className="flex items-center gap-1.5 h-[38px] px-4 rounded-full bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 text-[13px] font-bold transition-colors cursor-pointer"
+                        >
+                          <ShieldCheck size={14} /> Health ID-তে সংরক্ষণ করুন
+                        </button>
+                      </>
+                    );
+                  })()}
                 </motion.div>
               )}
               

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Settings, User, Bell, Shield, LogOut, ChevronRight, Moon, Edit3, Fingerprint, FileCheck2, GraduationCap, CheckCircle2, UploadCloud, X, Save, FileText, Globe, Camera, AlertCircle, Info, Stethoscope, Upload, Image as ImageIcon, Clock } from "lucide-react";
+import { Settings, User, Bell, Shield, LogOut, ChevronRight, Moon, Edit3, Fingerprint, FileCheck2, GraduationCap, CheckCircle2, UploadCloud, X, Save, FileText, Globe, Camera, AlertCircle, Info, Stethoscope, Upload, Image as ImageIcon, Clock, Copy } from "lucide-react";
 import Image from "next/image";
 import { ImageUploadCropper } from "@/components/shared/ImageUploadCropper";
 import { useAuth } from "@/context/AuthContext";
@@ -90,7 +90,6 @@ export default function AssistantSettingsPage() {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    router.push("/auth/login");
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -175,6 +174,22 @@ export default function AssistantSettingsPage() {
                 <div className="flex-1 text-center sm:text-left lg:text-left">
                   <h2 className="text-[18px] lg:text-[20px] font-bold text-slate-800">{user?.name || "Assistant"}</h2>
                   <p className="text-[14px] text-[#2F80ED] font-bold capitalize">{user?.role || "Head Assistant"}</p>
+                  {user?.assistantId && (
+                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-800">
+                      <span>Code: {user.assistantId}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(user.assistantId || "").catch(() => {});
+                          toast.success("12-digit Assistant Code copied!");
+                        }}
+                        className="text-sky-600 hover:text-sky-800 cursor-pointer"
+                        aria-label="Copy 12-digit Assistant Code"
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

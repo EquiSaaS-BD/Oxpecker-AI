@@ -23,6 +23,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Globe,
+  FlaskConical,
 } from "lucide-react";
 
 interface HospitalSidebarProps {
@@ -61,7 +62,13 @@ const navGroups: NavGroup[] = [
     items: [
       { label: "Appointments", href: "/hospital/dashboard/appointments", icon: CalendarDays },
       { label: "Doctors Roster", href: "/hospital/dashboard/doctors", icon: Users },
-      { label: "Test Reports", href: "/hospital/dashboard/reports", icon: FileText },
+    ],
+  },
+  {
+    sectionTitle: "Diagnostic Center (LIS/PACS)",
+    items: [
+      { label: "Diagnostics & LIS Hub", href: "/hospital/dashboard/diagnostics", icon: FlaskConical, badge: "LIS" },
+      { label: "Test Reports & AI Scan", href: "/hospital/dashboard/reports", icon: FileText, badge: "AI" },
     ],
   },
   {
@@ -184,6 +191,7 @@ export function HospitalSidebar({
                   <div key={item.href} className="relative group">
                     <Link
                       href={item.href}
+                      prefetch={true}
                       onClick={() => onClose()}
                       className={`
                         flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer

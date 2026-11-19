@@ -11,7 +11,6 @@ import { AccessDeniedModal } from "@/components/doctor/AccessDeniedModal";
 import { PendingApprovalModal } from "@/components/shared/PendingApprovalModal";
 import { DoctorDashboardSkeleton } from "@/components/doctor/DoctorDashboardSkeleton";
 import { DoctorProvider } from "@/context/DoctorContext";
-import { Toaster } from "sonner";
 
 export default function DoctorDashboardLayout({
   children,
@@ -51,7 +50,6 @@ export default function DoctorDashboardLayout({
   return (
     <DoctorProvider>
       <div className="flex h-screen bg-white overflow-hidden">
-        <Toaster position="top-right" richColors closeButton />
 
         {/* Sidebar (Desktop lg:block) */}
         <DoctorSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />

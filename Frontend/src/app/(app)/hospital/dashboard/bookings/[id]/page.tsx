@@ -35,7 +35,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type {
   BedBooking,
   PaymentMethod,
@@ -466,7 +466,6 @@ export default function BookingDetailPage() {
 
   return (
     <div className="w-full space-y-6 pb-20">
-      <Toaster position="top-right" richColors />
 
       {/* 1. Top Clinical Letterhead & Action Bar */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -336,6 +336,32 @@
     border: none !important;
   }
 
+  /* Universal Hospital Branded Print Studio Isolation */
+  body.oxpecker-print-active * {
+    visibility: hidden !important;
+  }
+  body.oxpecker-print-active #oxpecker-print-sheet,
+  body.oxpecker-print-active #oxpecker-print-sheet * {
+    visibility: visible !important;
+  }
+  body.oxpecker-print-active #oxpecker-print-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  body.oxpecker-print-active #oxpecker-print-sheet.thermal-80mm {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    padding: 4mm !important;
+  }
+
   /* Ensure colors and borders are preserved when printing */
   * {
     -webkit-print-color-adjust: exact !important;

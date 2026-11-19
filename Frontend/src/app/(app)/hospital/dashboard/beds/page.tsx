@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import type {
   BedGig,
@@ -451,7 +451,6 @@ function BedHubContent() {
 
   return (
     <div className="w-full space-y-6 pb-16">
-      <Toaster position="top-right" richColors />
 
       {/* 1. Master Command Center Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">

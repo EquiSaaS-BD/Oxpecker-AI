@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { 
   User, 
   Stethoscope, 
@@ -26,7 +26,6 @@ import {
   DollarSign
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
 import { PhoneInputWithCountry } from "@/components/auth/PhoneInputWithCountry";
 import { DoctorSpecializationSelector } from "@/components/auth/DoctorSpecializationSelector";
@@ -185,11 +184,60 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [duplicateEmailInfo, setDuplicateEmailInfo] = useState<{ email: string; role?: string | null } | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const updateForm = useCallback((field: keyof FormData, value: string | boolean | AccountType) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
+    if (String(field).toLowerCase().includes("email")) {
+      setDuplicateEmailInfo(null);
+    }
   }, []);
+
+  const activeStepEmail =
+    formData.accountType === "patient"
+      ? formData.patientEmail
+      : formData.accountType === "doctor"
+      ? formData.doctorEmail
+      : formData.accountType === "assistant"
+      ? formData.assistantEmail
+      : formData.hospitalEmail;
+
+  const activeEmailFieldName =
+    formData.accountType === "patient"
+      ? "patientEmail"
+      : formData.accountType === "doctor"
+      ? "doctorEmail"
+      : formData.accountType === "assistant"
+      ? "assistantEmail"
+      : "hospitalEmail";
+
+  // Debounced live email uniqueness check on Step 2
+  useEffect(() => {
+    if (step !== 2 || !activeStepEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(activeStepEmail.trim())) {
+      return;
+    }
+    const clean = activeStepEmail.trim().toLowerCase();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(clean)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.exists) {
+            setDuplicateEmailInfo({ email: clean, role: data.role });
+            setErrors((prev) => ({
+              ...prev,
+              [activeEmailFieldName]: "An account with this email already exists.",
+            }));
+          } else {
+            setDuplicateEmailInfo(null);
+          }
+        }
+      } catch {}
+    }, 380);
+    return () => clearTimeout(timer);
+  }, [step, activeStepEmail, activeEmailFieldName]);
 
   // Check if returning from OAuth callback with pending Google user
   useEffect(() => {
@@ -280,9 +328,37 @@ export default function RegisterPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const goNext = () => {
+  const goNext = async () => {
     if (step === 1 && !formData.accountType) return;
-    if (step === 2 && !validateStep2()) return;
+    if (step === 2) {
+      if (!validateStep2()) return;
+      const cleanEmail = activeStepEmail.trim().toLowerCase();
+      setIsCheckingEmail(true);
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(cleanEmail)}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(tid);
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.exists) {
+            setDuplicateEmailInfo({ email: cleanEmail, role: data.role });
+            setErrors((prev) => ({
+              ...prev,
+              [activeEmailFieldName]: "An account with this email already exists. Please sign in instead.",
+            }));
+            toast.error("This email already has an Oxpecker account. Please sign in.");
+            return;
+          }
+        }
+      } catch {
+        // Proceed if check timed out; /api/auth/register enforces server lock as well
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    }
     setDirection(1);
     setStep((s) => Math.min(3, s + 1));
     setErrors({});
@@ -308,64 +384,62 @@ export default function RegisterPage() {
 
     try {
       const gUser = await initiateGoogleSignIn();
-      
-      // 1. Check if user already exists in profiles
-      const { data: existingUser } = await supabase
-        .from("profiles")
-        .select("*")
-        .ilike("email", gUser.email.toLowerCase().trim())
-        .maybeSingle();
+      const lowerEmail = gUser.email.toLowerCase().trim();
 
-      if (existingUser && existingUser.phone) {
-        const targetRole = formData.accountType || existingUser.role;
-        if (targetRole && existingUser.role !== targetRole) {
-          try {
-            await supabase
-              .from("profiles")
-              .update({ role: targetRole })
-              .eq("id", existingUser.id);
-            existingUser.role = targetRole;
-          } catch (updateErr) {
-            console.warn("Failed to update profile role:", updateErr);
-            existingUser.role = targetRole;
-          }
-        }
-        existingUser.role = targetRole;
-        toast.success(`Welcome back, ${existingUser.name}! Logging you in as ${targetRole}...`);
-        login({
-          ...existingUser,
-          role: targetRole,
-        } as any);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const checkRes = await fetch("/api/auth/oauth-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: controller.signal,
+        body: JSON.stringify({
+          email: lowerEmail,
+          mode: "register",
+          requestedRole: formData.accountType,
+        }),
+      });
+      clearTimeout(timeoutId);
+
+      const checkData = await checkRes.json().catch(() => ({}));
+      if (checkRes.status === 409) {
+        toast.error(checkData?.error || "An account with this email already exists. Please sign in.");
         return;
       }
 
-      // 2. New or incomplete profile -> attach Google info and go to role onboarding
+      if (checkRes.ok && checkData?.exists && checkData?.user) {
+        toast.success(`Welcome back, ${checkData.user.name}! Logging you in...`);
+        await login(checkData.user, { cookieAlreadySet: true });
+        return;
+      }
+
+      // 2. New profile -> attach Google info and go to role onboarding
       setGoogleUser({
         name: gUser.name,
-        email: gUser.email,
-        picture: gUser.picture
+        email: lowerEmail,
+        picture: gUser.picture,
       });
 
       if (formData.accountType === "patient") {
         updateForm("patientFullName", gUser.name);
-        updateForm("patientEmail", gUser.email);
+        updateForm("patientEmail", lowerEmail);
       } else if (formData.accountType === "doctor") {
         updateForm("doctorFullName", gUser.name);
-        updateForm("doctorEmail", gUser.email);
+        updateForm("doctorEmail", lowerEmail);
       } else if (formData.accountType === "assistant") {
         updateForm("assistantFullName", gUser.name);
-        updateForm("assistantEmail", gUser.email);
+        updateForm("assistantEmail", lowerEmail);
       } else if (formData.accountType === "hospital") {
         updateForm("hospitalName", gUser.name);
-        updateForm("hospitalEmail", gUser.email);
+        updateForm("hospitalEmail", lowerEmail);
       }
 
       setIsGoogleOnboarding(true);
       toast.success("Google account verified! Please complete required role profile details.");
     } catch (err: any) {
-      const isCancellation = 
-        err?.code === "popup_closed" || 
-        err?.message?.toLowerCase().includes("closed") || 
+      const isCancellation =
+        err?.code === "popup_closed" ||
+        err?.message?.toLowerCase().includes("closed") ||
         err?.message?.toLowerCase().includes("cancel");
 
       if (isCancellation) {
@@ -415,282 +489,193 @@ export default function RegisterPage() {
 
   // Google Onboarding Submission Handler
   const handleGoogleOnboardingSubmit = async () => {
+    if (isLoading) return;
     if (!validateGoogleOnboarding()) {
       toast.error("Please fill in all mandatory fields marked with *");
       return;
     }
     setIsLoading(true);
 
-    const name = formData.accountType === "patient" ? formData.patientFullName 
-               : formData.accountType === "doctor" ? formData.doctorFullName 
-               : formData.accountType === "assistant" ? formData.assistantFullName 
-               : formData.hospitalName;
+    const name =
+      formData.accountType === "patient"
+        ? formData.patientFullName
+        : formData.accountType === "doctor"
+        ? formData.doctorFullName
+        : formData.accountType === "assistant"
+        ? formData.assistantFullName
+        : formData.hospitalName;
 
-    const email = (googleUser?.email || 
-                  (formData.accountType === "patient" ? formData.patientEmail 
-                  : formData.accountType === "doctor" ? formData.doctorEmail 
-                  : formData.accountType === "assistant" ? formData.assistantEmail 
-                  : formData.hospitalEmail)).toLowerCase().trim();
+    const email = (
+      googleUser?.email ||
+      (formData.accountType === "patient"
+        ? formData.patientEmail
+        : formData.accountType === "doctor"
+        ? formData.doctorEmail
+        : formData.accountType === "assistant"
+        ? formData.assistantEmail
+        : formData.hospitalEmail)
+    )
+      .toLowerCase()
+      .trim();
 
-    const phone = formData.accountType === "patient" ? formData.patientMobile 
-                : formData.accountType === "doctor" ? formData.doctorMobile 
-                : formData.accountType === "assistant" ? formData.assistantMobile 
-                : formData.hospitalPhone;
+    const phone =
+      formData.accountType === "patient"
+        ? formData.patientMobile
+        : formData.accountType === "doctor"
+        ? formData.doctorMobile
+        : formData.accountType === "assistant"
+        ? formData.assistantMobile
+        : formData.hospitalPhone;
 
     const role = formData.accountType || "patient";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     try {
-      const profileData: any = {
-        name: name || "User",
-        email: email,
-        role: role,
-        status: "active",
-        phone: phone || null,
-        image: googleUser?.picture || null,
-        date_of_birth: formData.accountType === "patient" ? formData.patientDob || null : null,
-        gender: formData.accountType === "patient" ? formData.patientGender || null : null,
-        blood_group: formData.accountType === "patient" ? formData.patientBloodGroup || null : null,
-        specialty: formData.accountType === "doctor" ? formData.doctorSpec || null : null,
-        hospital_name: formData.accountType === "doctor" ? formData.doctorHospital || null 
-                     : formData.accountType === "hospital" ? formData.hospitalName || null : null,
-        address: formData.accountType === "hospital" ? formData.hospitalAddress || null : null,
-        join_date: new Date().toISOString().split("T")[0]
-      };
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: controller.signal,
+        body: JSON.stringify({
+          name: name || "User",
+          email,
+          role,
+          phone,
+          isOAuth: true,
+          image: googleUser?.picture,
+          dateOfBirth: formData.accountType === "patient" ? formData.patientDob : undefined,
+          gender: formData.accountType === "patient" ? formData.patientGender : undefined,
+          bloodGroup: formData.accountType === "patient" ? formData.patientBloodGroup : undefined,
+          specialty: formData.accountType === "doctor" ? formData.doctorSpec : undefined,
+          bmdcRegNo: formData.accountType === "doctor" ? formData.doctorRegNo : undefined,
+          hospitalName:
+            formData.accountType === "doctor"
+              ? formData.doctorHospital
+              : formData.accountType === "hospital"
+              ? formData.hospitalName
+              : undefined,
+          address: formData.accountType === "hospital" ? formData.hospitalAddress : undefined,
+        }),
+      });
 
-      const { data: newProfile, error: profileErr } = await supabase
-        .from("profiles")
-        .upsert(profileData, { onConflict: "email" })
-        .select()
-        .single();
-
-      if (profileErr) {
-        console.warn("Supabase upsert warning, fallback insert:", profileErr);
-      }
-
-      const effectiveId = newProfile?.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "user-" + Date.now());
-
-      if (role === "doctor") {
-        try {
-          await supabase.from("doctors").insert({
-            profile_id: effectiveId,
-            name: name,
-            specialty: formData.doctorSpec || "General Physician",
-            hospital: formData.doctorHospital || "Oxpecker Partner Hospital",
-            consultation_fee: Number(formData.doctorFee) || 500,
-            is_verified: true
-          });
-        } catch (docErr) {
-          console.warn("Doctor insert warning:", docErr);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.user) {
+        if (res.status === 409) {
+          setDuplicateEmailInfo({ email });
         }
-      } else if (role === "hospital") {
-        try {
-          await supabase.from("hospitals").insert({
-            profile_id: effectiveId,
-            name: formData.hospitalName,
-            email: email,
-            phone: formData.hospitalPhone || null,
-            address: formData.hospitalAddress || null,
-            specialty: formData.hospitalType || "Hospital",
-            is_verified: true
-          });
-        } catch (hospErr) {
-          console.warn("Hospital insert warning:", hospErr);
-        }
-      }
-
-      const registeredUser = {
-        id: effectiveId,
-        name: name,
-        email: email,
-        role: role,
-        phone: phone,
-        image: googleUser?.picture || null,
-        date_of_birth: profileData.date_of_birth,
-        gender: profileData.gender,
-        blood_group: profileData.blood_group,
-        address: profileData.address,
-        specialty: profileData.specialty,
-        hospital_name: profileData.hospital_name,
-        status: "active"
-      };
-
-      // Cache in oxpecker_registered_profiles for seamless local persistence
-      if (typeof localStorage !== "undefined") {
-        try {
-          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          localProfiles.push(registeredUser);
-          localStorage.setItem("oxpecker_registered_profiles", JSON.stringify(localProfiles));
-        } catch (e) {}
+        toast.error(data?.error || "Registration failed. Please try again.");
+        return;
       }
 
       toast.success("Account successfully created with Google!");
-      login(registeredUser as any);
+      await login(data.user, { cookieAlreadySet: true });
     } catch (err: any) {
-      console.error("Google onboarding registration error:", err);
-      toast.error(err.message || "Registration failed. Please try again.");
+      toast.error(
+        err?.name === "AbortError"
+          ? "Request timed out. Please try again."
+          : err?.message || "Registration failed. Please try again."
+      );
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
   const handleSubmit = async () => {
+    if (isLoading) return;
     if (!validateStep3()) return;
     setIsLoading(true);
 
-    const name = formData.accountType === "patient" ? formData.patientFullName 
-               : formData.accountType === "doctor" ? formData.doctorFullName 
-               : formData.accountType === "assistant" ? formData.assistantFullName 
-               : formData.hospitalName;
+    const name =
+      formData.accountType === "patient"
+        ? formData.patientFullName
+        : formData.accountType === "doctor"
+        ? formData.doctorFullName
+        : formData.accountType === "assistant"
+        ? formData.assistantFullName
+        : formData.hospitalName;
 
-    const email = (formData.accountType === "patient" ? formData.patientEmail 
-                : formData.accountType === "doctor" ? formData.doctorEmail 
-                : formData.accountType === "assistant" ? formData.assistantEmail 
-                : formData.hospitalEmail).toLowerCase().trim();
+    const email = (
+      formData.accountType === "patient"
+        ? formData.patientEmail
+        : formData.accountType === "doctor"
+        ? formData.doctorEmail
+        : formData.accountType === "assistant"
+        ? formData.assistantEmail
+        : formData.hospitalEmail
+    )
+      .toLowerCase()
+      .trim();
 
-    const phone = formData.accountType === "patient" ? formData.patientMobile 
-                : formData.accountType === "doctor" ? formData.doctorMobile 
-                : formData.accountType === "assistant" ? formData.assistantMobile 
-                : formData.hospitalPhone;
+    const phone =
+      formData.accountType === "patient"
+        ? formData.patientMobile
+        : formData.accountType === "doctor"
+        ? formData.doctorMobile
+        : formData.accountType === "assistant"
+        ? formData.assistantMobile
+        : formData.hospitalPhone;
 
     const role = formData.accountType || "patient";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     try {
-      // 1. Check local profiles cache first
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: controller.signal,
+        body: JSON.stringify({
+          name: name || "User",
+          email,
+          password: formData.password,
+          role,
+          phone,
+          dateOfBirth: formData.accountType === "patient" ? formData.patientDob : undefined,
+          gender: formData.accountType === "patient" ? formData.patientGender : undefined,
+          specialty: formData.accountType === "doctor" ? formData.doctorSpec : undefined,
+          bmdcRegNo: formData.accountType === "doctor" ? formData.doctorRegNo : undefined,
+          hospitalName:
+            formData.accountType === "doctor"
+              ? formData.doctorHospital
+              : formData.accountType === "hospital"
+              ? formData.hospitalName
+              : undefined,
+          address: formData.accountType === "hospital" ? formData.hospitalAddress : undefined,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.user) {
+        if (res.status === 409) {
+          setDuplicateEmailInfo({ email });
+        }
+        toast.error(data?.error || "Registration failed. Please try again.");
+        return;
+      }
+
+      // Cache safe profile summary (NEVER store plaintext password)
       if (typeof localStorage !== "undefined") {
         try {
           const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          if (localProfiles.some((p: any) => p.email?.toLowerCase() === email)) {
-            toast.error("An account with this email already exists. Please log in.");
-            setIsLoading(false);
-            return;
-          }
-        } catch (e) {}
-      }
-
-      // Supabase email existence check (best effort)
-      try {
-        const { data: existingUser } = await supabase
-          .from("profiles")
-          .select("id, email")
-          .ilike("email", email)
-          .maybeSingle();
-
-        if (existingUser) {
-          toast.error("An account with this email already exists. Please log in.");
-          setIsLoading(false);
-          return;
-        }
-      } catch (checkErr) {
-        console.warn("Supabase check skipped:", checkErr);
-      }
-
-      // 2. Prepare profile insert data
-      const profileInsertData: any = {
-        name: name || "User",
-        email: email,
-        role: role,
-        status: "active",
-        phone: phone || null,
-        password: formData.password,
-        date_of_birth: formData.accountType === "patient" ? formData.patientDob || null : null,
-        gender: formData.accountType === "patient" ? formData.patientGender || null : null,
-        specialty: formData.accountType === "doctor" ? formData.doctorSpec || null : null,
-        hospital_name: formData.accountType === "hospital" ? formData.hospitalName || null : null,
-        address: formData.accountType === "hospital" ? formData.hospitalAddress || null : null,
-        join_date: new Date().toISOString().split("T")[0]
-      };
-
-      let registeredId: string | null = null;
-      let registeredProfileData: any = null;
-
-      try {
-        const { data: newProfile, error: profileError } = await supabase
-          .from("profiles")
-          .insert(profileInsertData)
-          .select()
-          .single();
-
-        if (profileError) {
-          console.warn("Supabase profile insert fallback (offline/dummy key):", profileError);
-        } else if (newProfile?.id) {
-          registeredId = newProfile.id;
-          registeredProfileData = newProfile;
-        }
-      } catch (insertErr) {
-        console.warn("Supabase insert exception, using local fallback:", insertErr);
-      }
-
-      if (!registeredId) {
-        registeredId = typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : "user-" + Date.now();
-      }
-
-      // 3. Role specific table inserts (best effort)
-      if (role === "doctor") {
-        try {
-          await supabase.from("doctors").insert({
-            profile_id: registeredId,
-            name: name,
-            specialty: formData.doctorSpec || "General Physician",
-            hospital: formData.doctorHospital || "Oxpecker Partner Hospital",
-            consultation_fee: Number(formData.doctorFee) || 500,
-            is_verified: true
-          });
-        } catch (docErr) {
-          console.warn("Doctor table insert warning:", docErr);
-        }
-      } else if (role === "hospital") {
-        try {
-          await supabase.from("hospitals").insert({
-            profile_id: registeredId,
-            name: formData.hospitalName,
-            email: email,
-            phone: formData.hospitalPhone || null,
-            address: formData.hospitalAddress || null,
-            is_verified: true
-          });
-        } catch (hospErr) {
-          console.warn("Hospital table insert warning:", hospErr);
-        }
-      }
-
-      const registeredUser = {
-        id: registeredId,
-        name: registeredProfileData?.name || name || "User",
-        email: registeredProfileData?.email || email,
-        role: role,
-        phone: registeredProfileData?.phone || phone || undefined,
-        image: registeredProfileData?.image || undefined,
-        date_of_birth: registeredProfileData?.date_of_birth || (formData.accountType === "patient" ? formData.patientDob : undefined),
-        gender: registeredProfileData?.gender || (formData.accountType === "patient" ? formData.patientGender : undefined),
-        blood_group: registeredProfileData?.blood_group || (formData.accountType === "patient" ? formData.patientBloodGroup : undefined),
-        address: registeredProfileData?.address || (formData.accountType === "hospital" ? formData.hospitalAddress : undefined),
-        specialty: registeredProfileData?.specialty || (formData.accountType === "doctor" ? formData.doctorSpec : undefined),
-        hospital_name: registeredProfileData?.hospital_name || (formData.accountType === "hospital" ? formData.hospitalName : undefined),
-        status: "active"
-      };
-
-      // Store in oxpecker_registered_profiles for persistent login
-      if (typeof localStorage !== "undefined") {
-        try {
-          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          localProfiles.push({
-            ...registeredUser,
-            password: formData.password,
-          });
-          localStorage.setItem("oxpecker_registered_profiles", JSON.stringify(localProfiles));
-        } catch (e) {
-          console.warn("Failed saving local profile cache:", e);
-        }
+          const filtered = localProfiles.filter((p: any) => p.email?.toLowerCase() !== email);
+          filtered.push(data.user);
+          localStorage.setItem("oxpecker_registered_profiles", JSON.stringify(filtered));
+        } catch {}
       }
 
       toast.success("Account created successfully!");
-      login(registeredUser as any);
+      await login(data.user, { cookieAlreadySet: true });
     } catch (err: any) {
-      console.error("Registration error:", err);
-      toast.error(err?.message || "Registration failed. Please try again.");
+      toast.error(
+        err?.name === "AbortError"
+          ? "Request timed out. Please try again."
+          : err?.message || "Registration failed. Please try again."
+      );
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
@@ -715,7 +700,6 @@ export default function RegisterPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-[700px] flex flex-col items-center relative z-10"
       >
-        <Toaster position="top-center" />
         
         {/* Back to Home Button */}
         <Link href="/" className="absolute left-0 top-0 sm:top-2 p-2.5 text-slate-500 hover:text-primary bg-slate-100 hover:bg-primary/10 rounded-full transition-colors flex items-center gap-2">
@@ -1322,6 +1306,24 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {duplicateEmailInfo && (
+                <div className="mb-5 rounded-2xl bg-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2.5 text-xs text-amber-900 font-semibold">
+                    <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>{duplicateEmailInfo.email}</strong> already has an existing Oxpecker{" "}
+                      {duplicateEmailInfo.role ? `(${duplicateEmailInfo.role}) ` : ""}account. One email can only hold one account.
+                    </span>
+                  </div>
+                  <Link
+                    href={`/login?email=${encodeURIComponent(duplicateEmailInfo.email)}`}
+                    className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 text-center"
+                  >
+                    Sign In Instead →
+                  </Link>
+                </div>
+              )}
+
               <div className="flex gap-4">
                 <button
                   type="button"
@@ -1333,9 +1335,10 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={goNext}
-                  className="w-2/3 h-[52px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+                  disabled={isCheckingEmail || Boolean(duplicateEmailInfo)}
+                  className="w-2/3 h-[52px] bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
                 >
-                  Continue
+                  {isCheckingEmail ? "Checking Email..." : "Continue"}
                 </button>
               </div>
             </motion.div>
@@ -1347,7 +1350,7 @@ export default function RegisterPage() {
                 </h1>
               </div>
 
-              <div className="grid grid-cols-2 gap-5 mb-8">
+              <div className="grid grid-cols-2 gap-5 mb-4">
                 <InputField error={errors["password"]} id="password" 
                   label="Password" 
                   type={showPassword ? "text" : "password"} 
@@ -1368,6 +1371,26 @@ export default function RegisterPage() {
                 />
               </div>
 
+              {formData.password.length > 0 && (() => {
+                const p = formData.password;
+                const score = [p.length >= 8, /[A-Z]/.test(p), /[0-9]/.test(p), /[^A-Za-z0-9]/.test(p)].filter(Boolean).length;
+                const label = score <= 1 ? "Weak (Min 8 chars)" : score === 2 ? "Fair" : score === 3 ? "Strong" : "Very Strong";
+                const barColor = score <= 1 ? "bg-rose-500" : score === 2 ? "bg-amber-500" : score === 3 ? "bg-sky-500" : "bg-emerald-500";
+                return (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
+                      <span>Password Strength</span>
+                      <span>{label}</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[1, 2, 3, 4].map((idx) => (
+                        <div key={idx} className={`h-1.5 rounded-full transition-colors ${idx <= score ? barColor : "bg-slate-200"}`} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <label className="flex items-start gap-3 cursor-pointer mb-8 group">
                 <div className="relative flex items-center justify-center shrink-0 mt-0.5">
                   <input type="checkbox" checked={formData.agreeTerms} onChange={(e) => updateForm("agreeTerms", e.target.checked)} className="peer sr-only" />
@@ -1378,6 +1401,23 @@ export default function RegisterPage() {
                   I agree to the <Link href="/terms" className="text-sky-600 font-bold hover:text-sky-700 hover:underline">Terms</Link> & <Link href="/privacy" className="text-sky-600 font-bold hover:text-sky-700 hover:underline">Privacy Policy</Link>.
                 </span>
               </label>
+              {errors["agreeTerms"] && (
+                <p className="text-xs text-red-500 font-semibold -mt-5 mb-6">{errors["agreeTerms"]}</p>
+              )}
+
+              {duplicateEmailInfo && (
+                <div className="mb-5 rounded-2xl bg-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="text-xs text-amber-900 font-semibold">
+                    An account with <strong>{duplicateEmailInfo.email}</strong> already exists.
+                  </span>
+                  <Link
+                    href={`/login?email=${encodeURIComponent(duplicateEmailInfo.email)}`}
+                    className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 text-center"
+                  >
+                    Sign In Now →
+                  </Link>
+                </div>
+              )}
 
               <div className="flex gap-4">
                 <button

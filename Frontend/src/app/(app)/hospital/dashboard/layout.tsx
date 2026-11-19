@@ -7,7 +7,6 @@ import { HospitalHeader } from "@/components/hospital/HospitalHeader";
 import { AccessDeniedModal } from "@/components/doctor/AccessDeniedModal";
 import { PendingApprovalModal } from "@/components/shared/PendingApprovalModal";
 import { DoctorDashboardSkeleton } from "@/components/doctor/DoctorDashboardSkeleton";
-import { Toaster } from "sonner";
 
 export default function HospitalDashboardLayout({
   children,
@@ -62,7 +61,6 @@ export default function HospitalDashboardLayout({
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Toaster position="top-right" richColors closeButton />
 
       {/* Collapsible Hospital Sidebar */}
       <HospitalSidebar

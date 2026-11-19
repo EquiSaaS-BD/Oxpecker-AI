@@ -140,28 +140,53 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   
   const [connectedAssistants, setConnectedAssistants] = useState<any[]>([]);
   
-  // Load assistants from local storage
+  // Hydrate connected assistants from server API with localStorage offline fallback
   useEffect(() => {
-    const loadAssistants = () => {
-      if (typeof window !== 'undefined') {
+    let active = true;
+    const loadAssistants = async () => {
+      try {
+        let query = "role=doctor";
+        if (typeof window !== "undefined") {
+          const rawUser = localStorage.getItem("oxpecker_mock_user");
+          if (rawUser) {
+            const parsedUser = JSON.parse(rawUser);
+            if (parsedUser?.id) query += `&doctorId=${encodeURIComponent(parsedUser.id)}`;
+            if (parsedUser?.email) query += `&email=${encodeURIComponent(parsedUser.email)}`;
+          }
+        }
+        const res = await fetch(`/api/doctor/assistants?${query}`, { cache: "no-store" });
+        if (res.ok && active) {
+          const data = await res.json();
+          if (Array.isArray(data.connectedAssistants)) {
+            setConnectedAssistants(data.connectedAssistants);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("oxpecker_assistants", JSON.stringify(data.connectedAssistants));
+            }
+            return;
+          }
+        }
+      } catch {}
+
+      if (typeof window !== 'undefined' && active) {
         const saved = localStorage.getItem('oxpecker_assistants');
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
-            // Remove duplicates if any got stuck
             const uniqueAssistants = Array.from(new Map(parsed.map((a: any) => [a.id, a])).values());
             setConnectedAssistants(uniqueAssistants);
-          } catch (e) {}
+          } catch {}
         }
       }
     };
-    
-    loadAssistants();
-    window.addEventListener('storage', loadAssistants);
-    const interval = setInterval(loadAssistants, 1500);
-    
+
+    void loadAssistants();
+    const handleStorage = () => { void loadAssistants(); };
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(() => { void loadAssistants(); }, 3500);
+
     return () => {
-      window.removeEventListener('storage', loadAssistants);
+      active = false;
+      window.removeEventListener('storage', handleStorage);
       clearInterval(interval);
     };
   }, []);

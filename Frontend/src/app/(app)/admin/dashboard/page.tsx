@@ -30,8 +30,19 @@ const recentActivity = [
 
 export default function AdminDashboardPage() {
   const [liveActivity, setLiveActivity] = useState(recentActivity);
+  const [saasOverview, setSaasOverview] = useState<any>(null);
+
+  const loadSaasAdmin = () => {
+    fetch("/api/saas/workspace?includeAdmin=1", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.superAdmin) setSaasOverview(data.superAdmin);
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
+    loadSaasAdmin();
     fetch("/api/admin/telemetry", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -95,6 +106,84 @@ export default function AdminDashboardPage() {
 
       {/* D3.js, Chart.js, Grafana Visual Suite */}
       <AdvancedVisualizations />
+
+      {/* Super-Admin SaaS Tenants, Flagged AI Outputs & Doctor Approvals */}
+      {saasOverview && (
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-lg p-6 sm:p-7 space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100 inline-block mb-1">
+                Super-Admin B2B SaaS Governance
+              </span>
+              <h2 className="text-lg font-black text-slate-950">
+                Tenant Plans, AI Safety Audit &amp; BMDC Doctor Approvals
+              </h2>
+            </div>
+            <div className="text-xs font-bold text-slate-600">
+              Reports: {saasOverview.totalReportsCount} • Leads: {saasOverview.totalLeadsCount} • Flagged AI Outputs: {(saasOverview.flaggedAiOutputs || []).length}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
+            <div className="rounded-2xl border border-slate-200 p-4 space-y-2 bg-slate-50/70">
+              <p className="font-black text-slate-900">Active Tenant Organizations</p>
+              {(saasOverview.organizations || []).map((org: any) => (
+                <div key={org.organizationId} className="bg-white rounded-xl border border-slate-200 p-2.5 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-slate-900">{org.name}</p>
+                    <p className="text-[11px] font-mono text-slate-500">{org.planId} • Reports: {org.usage?.reportsAnalyzed || 0}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px]">{org.billingStatus}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-4 space-y-2 bg-slate-50/70">
+              <p className="font-black text-slate-900">Doctor Verification Queue (BMDC)</p>
+              {(saasOverview.pendingDoctorApprovals || []).map((doc: any) => (
+                <div key={doc.id} className="bg-white rounded-xl border border-slate-200 p-2.5 flex justify-between items-center gap-2">
+                  <div>
+                    <p className="font-bold text-slate-900">{doc.name}</p>
+                    <p className="text-[11px] text-slate-500">{doc.specialty} • {doc.bmdcRegNo}</p>
+                  </div>
+                  {doc.status === "verified" ? (
+                    <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px]">Verified</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await fetch("/api/saas/workspace", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "approve_doctor", candidateId: doc.id, status: "verified" }),
+                        });
+                        loadSaasAdmin();
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-teal-600 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      Approve
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-4 space-y-2 bg-slate-50/70">
+              <p className="font-black text-slate-900">Flagged AI Outputs Log</p>
+              {(saasOverview.flaggedAiOutputs || []).length === 0 ? (
+                <p className="text-slate-500">Zero safety guardrail violations recorded in current runtime.</p>
+              ) : (
+                (saasOverview.flaggedAiOutputs || []).slice(0, 4).map((flag: any) => (
+                  <div key={flag.id} className="bg-white rounded-xl border border-rose-200 p-2.5">
+                    <p className="font-bold text-rose-800">{flag.sourceModule}</p>
+                    <p className="text-[11px] text-slate-600">{(flag.violations || []).join(", ")}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analytics & Activity Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">

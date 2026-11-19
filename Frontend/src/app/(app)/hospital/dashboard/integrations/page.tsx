@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import {
   Activity,
   Building2,
@@ -22,8 +22,9 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { SaasWorkspacePanel } from "@/components/hospital/SaasWorkspacePanel";
 
-type HubTab = "import" | "widget" | "logs";
+type HubTab = "import" | "widget" | "logs" | "saas";
 
 interface OrgConfig {
   organizationId: string;
@@ -318,6 +319,7 @@ export default function HospitalIntegrationsHubPage() {
     { id: "import", label: "1-Click CSV / JSON / FHIR Importer", icon: FileSpreadsheet },
     { id: "widget", label: "2-Line Website Widget & API Keys", icon: Code2 },
     { id: "logs", label: `Live Sync Audit (${syncLogs.length})`, icon: Activity },
+    { id: "saas", label: "B2B SaaS Plans, Clinic Upload, Leads & Analytics", icon: Building2 },
   ];
 
   const clinicSlug = orgConfig.slug || "oxpecker-flagship-hospital";
@@ -327,7 +329,6 @@ export default function HospitalIntegrationsHubPage() {
 
   return (
     <div className="w-full space-y-6 pb-16">
-      <Toaster position="top-right" richColors />
 
       {/* Header + DGHS Compliance Bar */}
       <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-5">
@@ -882,6 +883,15 @@ export default function HospitalIntegrationsHubPage() {
               </table>
             </div>
           </div>
+        </div>
+
+        {/* Panel 4: Multi-Tenant B2B SaaS Portal */}
+        <div
+          role="tabpanel"
+          aria-labelledby="hub-tab-saas"
+          hidden={activeTab !== "saas"}
+        >
+          <SaasWorkspacePanel />
         </div>
       </div>
     </div>

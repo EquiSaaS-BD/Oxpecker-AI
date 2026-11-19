@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { HackathonProvider } from "@/context/HackathonContext";
 import { BuildathonBanner } from "@/components/shared/BuildathonBanner";
+import { Toaster } from "sonner";
 import Script from "next/script";
 import { SEO_CONFIG, generateRootJsonLd } from "@/config/seo";
 
@@ -123,6 +124,7 @@ export default function RootLayout({
         <HackathonProvider>
           <LanguageProvider>
           <AuthProvider>
+            <Toaster position="top-right" richColors closeButton />
             <BuildathonBanner />
               {children}
           </AuthProvider>

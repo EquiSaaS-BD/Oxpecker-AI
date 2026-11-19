@@ -3511,6 +3511,11 @@ export const DEFAULT_HOSPITAL_THEME: HospitalThemeConfig = {
   stamp_text: "ACCOUNTS & AUDIT VERIFIED - OFFICIAL RECEIPT",
   stamp_color: "#059669",
   stamp_enabled: true,
+  primary_color: "#059669",
+  signatory_name: "Prof. Dr. Selina Akter, MD",
+  signatory_designation: "Chief Consultant Pathologist & Lab Director",
+  signatory_bmdc: "BMDC-A-21904",
+  paper_format: "A4",
 };
 
 export function getHospitalThemeConfig(): HospitalThemeConfig {

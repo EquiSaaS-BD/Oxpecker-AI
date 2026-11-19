@@ -13,9 +13,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { useAuth, type UserRole } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { initiateGoogleSignIn } from "@/lib/googleAuth";
 import { getAuthorizedRedirectUrl } from "@/lib/rbac";
 
@@ -33,29 +32,41 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Role query param if linked from specific context (e.g. ?role=doctor)
+  // Role / Email query params if linked from specific context (e.g. ?role=doctor or duplicate ?email=)
   const queryRole = searchParams?.get("role") as UserRole | null;
+  const queryEmail = searchParams?.get("email") || "";
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(queryEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (queryEmail && !email) {
+      setEmail(queryEmail);
+    }
+  }, [queryEmail, email]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       const storedUrl = sessionStorage.getItem("redirect_after_login");
       if (storedUrl) sessionStorage.removeItem("redirect_after_login");
-      
+
       const safeTarget = getAuthorizedRedirectUrl(storedUrl, role);
       router.replace(safeTarget);
     }
   }, [isLoading, isAuthenticated, role, router]);
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
+    setLoginError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     try {
       const lowerEmail = email.toLowerCase().trim();
@@ -64,9 +75,10 @@ function LoginForm() {
       if (typeof window !== "undefined") {
         try {
           const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          localProfile = localProfiles.find(
-            (p: any) => p.email && p.email.toLowerCase().trim() === lowerEmail
-          ) || null;
+          localProfile =
+            localProfiles.find(
+              (p: any) => p.email && p.email.toLowerCase().trim() === lowerEmail
+            ) || null;
         } catch {}
       }
 
@@ -74,6 +86,7 @@ function LoginForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        signal: controller.signal,
         body: JSON.stringify({
           email: lowerEmail,
           password,
@@ -83,127 +96,78 @@ function LoginForm() {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.user) {
-        toast.error(data?.error || "Invalid email or password.");
+        const msg = data?.error || "Invalid email or password.";
+        setLoginError(msg);
+        toast.error(msg);
         return;
       }
 
       toast.success(`Welcome back, ${data.user.name}!`);
-      login(data.user);
-
+      await login(data.user, { cookieAlreadySet: true });
     } catch (err: any) {
-      console.error('Login error:', err);
-      toast.error('Login failed. Please verify credentials.');
+      const msg =
+        err?.name === "AbortError"
+          ? "Sign-in request timed out. Please try again."
+          : "Login failed. Please verify credentials.";
+      setLoginError(msg);
+      toast.error(msg);
     } finally {
+      clearTimeout(timeoutId);
       setIsSubmitting(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (isGoogleLoading) return;
     setIsGoogleLoading(true);
+    setLoginError(null);
 
     try {
       const gUser = await initiateGoogleSignIn();
       const lowerEmail = gUser.email.toLowerCase().trim();
 
-      // 1. Authoritative lookup from Supabase profiles table
-      let dbProfile: any = null;
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .ilike("email", lowerEmail)
-          .maybeSingle();
-        if (data) dbProfile = data;
-      } catch (err) {
-        console.error("Supabase Google profile lookup error:", err);
-      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch("/api/auth/oauth-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: controller.signal,
+        body: JSON.stringify({ email: lowerEmail, mode: "login" }),
+      });
+      clearTimeout(timeoutId);
 
-      // 2. Check local profiles cache
-      if (!dbProfile && typeof localStorage !== "undefined") {
-        try {
-          const localProfiles = JSON.parse(localStorage.getItem("oxpecker_registered_profiles") || "[]");
-          const matched = localProfiles.find((p: any) => p.email?.toLowerCase() === lowerEmail);
-          if (matched) {
-            dbProfile = matched;
-          }
-        } catch (localErr) {}
-      }
-
-      // 3. Check doctors table
-      if (!dbProfile) {
-        try {
-          const { data: doc } = await supabase
-            .from("doctors")
-            .select("*")
-            .ilike("email", lowerEmail)
-            .maybeSingle();
-          if (doc) {
-            dbProfile = {
-              id: doc.profile_id || doc.id,
-              name: doc.name,
-              email: lowerEmail,
-              role: "doctor",
-              specialty: doc.specialty,
-              status: "active",
-            };
-          }
-        } catch (docErr) {}
-      }
-
-      // 4. Check hospitals table
-      if (!dbProfile) {
-        try {
-          const { data: hosp } = await supabase
-            .from("hospitals")
-            .select("*")
-            .ilike("email", lowerEmail)
-            .maybeSingle();
-          if (hosp) {
-            dbProfile = {
-              id: hosp.profile_id || hosp.id,
-              name: hosp.name,
-              email: lowerEmail,
-              role: "hospital",
-              phone: hosp.phone,
-              address: hosp.address,
-              status: "active",
-            };
-          }
-        } catch (hospErr) {}
-      }
-
-      // If account exists, log in immediately with role from profile
-      if (dbProfile) {
-        const resolvedRole: UserRole = (dbProfile.role as UserRole) || "patient";
-        toast.success(`Welcome back, ${dbProfile.name || gUser.name}!`);
-        login({
-          ...dbProfile,
-          id: dbProfile.id,
-          name: dbProfile.name || gUser.name,
-          email: lowerEmail,
-          role: resolvedRole,
-          image: dbProfile.image || gUser.picture || null,
-          status: dbProfile.status || "active",
-        } as any);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.exists && data?.user) {
+        toast.success(`Welcome back, ${data.user.name || gUser.name}!`);
+        await login(
+          {
+            ...data.user,
+            image: data.user.image || gUser.picture || undefined,
+          },
+          { cookieAlreadySet: true }
+        );
         return;
       }
 
       // If NO account exists: store Google credentials and redirect to register
       const defaultRole: UserRole = queryRole || "patient";
-      sessionStorage.setItem("oxpecker_google_user", JSON.stringify({
-        name: gUser.name,
-        email: lowerEmail,
-        picture: gUser.picture,
-        role: defaultRole,
-      }));
+      sessionStorage.setItem(
+        "oxpecker_google_user",
+        JSON.stringify({
+          name: gUser.name,
+          email: lowerEmail,
+          picture: gUser.picture,
+          role: defaultRole,
+        })
+      );
 
       toast.info("Please complete your account registration.");
       router.push("/register");
-
     } catch (err: any) {
-      const isCancellation = 
-        err?.code === "popup_closed" || 
-        err?.message?.toLowerCase().includes("closed") || 
+      const isCancellation =
+        err?.code === "popup_closed" ||
+        err?.message?.toLowerCase().includes("closed") ||
         err?.message?.toLowerCase().includes("cancel");
 
       if (isCancellation) {
@@ -224,7 +188,6 @@ function LoginForm() {
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-sky-100/40 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-50/30 rounded-full blur-3xl" />
       </div>
-      <Toaster position="top-center" richColors />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md relative z-10">
         <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-6 group w-fit">
@@ -271,6 +234,11 @@ function LoginForm() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {loginError && (
+              <div className="rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-semibold text-rose-700">
+                {loginError}
+              </div>
+            )}
             <div>
               <label className="block text-[13px] font-semibold text-slate-600 mb-1.5 tracking-tight">
                 Email Address

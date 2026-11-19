@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     // Keep build workers single-process on constrained Windows build hosts.
     cpus: 1,
     staticGenerationMaxConcurrency: 1,
+    optimizePackageImports: ["lucide-react", "framer-motion", "recharts"],
   },
   reactStrictMode: true,
   poweredByHeader: false,

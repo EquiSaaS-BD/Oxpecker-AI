@@ -5,8 +5,19 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { getRoleHomePath, getAuthorizedRedirectUrl } from "@/lib/rbac";
+import { derive12DigitAssistantCode, isValid12DigitCode } from "@/lib/doctor-assistant-link";
 
 export type UserRole = "patient" | "doctor" | "hospital" | "admin" | "assistant" | null;
+
+function normalizeAppUser(u: AppUser): AppUser {
+  if (u.role === "assistant" && !isValid12DigitCode(u.assistantId)) {
+    return {
+      ...u,
+      assistantId: derive12DigitAssistantCode(u.id || u.email || u.name || "assistant"),
+    };
+  }
+  return u;
+}
 
 export interface AppUser {
   id: string;
@@ -30,7 +41,7 @@ interface AuthContextType {
   user: AppUser | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (userData: AppUser) => void;
+  login: (userData: AppUser, options?: { cookieAlreadySet?: boolean }) => Promise<void>;
   logout: () => void;
   updateUser: (userData: AppUser) => void;
   isLoading: boolean;
@@ -42,55 +53,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from server-verified session first, falling back to local cache
+  // Instant optimistic hydration from localStorage, then authoritative background server session check
   useEffect(() => {
     let active = true;
-    async function initAuth() {
+    const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
+
+    // 1. Instant local cache hydration (<1ms) to eliminate blank loading skeletons
+    let cachedParsed: AppUser | null = null;
+    try {
+      const savedUser = localStorage.getItem("oxpecker_mock_user");
+      const lastActivity = localStorage.getItem("oxpecker_last_activity");
+      if (savedUser && lastActivity) {
+        const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+        if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
+          localStorage.removeItem("oxpecker_mock_user");
+          localStorage.removeItem("oxpecker_last_activity");
+        } else {
+          cachedParsed = normalizeAppUser(JSON.parse(savedUser));
+          if (active) {
+            setUser(cachedParsed);
+            setIsLoading(false);
+          }
+          localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+        }
+      }
+    } catch {}
+
+    // 2. Authoritative background server verification (bounded by 2.5s timeout)
+    async function verifyServerSession() {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
       try {
-        const res = await fetch("/api/auth/session", { credentials: "include" });
+        const res = await fetch("/api/auth/session", {
+          credentials: "include",
+          signal: controller.signal,
+        });
         if (res.ok) {
           const data = await res.json();
           if (active && data?.authenticated && data?.user) {
-            setUser(data.user);
-            localStorage.setItem("oxpecker_mock_user", JSON.stringify(data.user));
-            localStorage.setItem("oxpecker_user", JSON.stringify(data.user));
+            const hydratedUser = normalizeAppUser(data.user);
+            setUser(hydratedUser);
+            localStorage.setItem("oxpecker_mock_user", JSON.stringify(hydratedUser));
+            localStorage.setItem("oxpecker_user", JSON.stringify(hydratedUser));
             localStorage.setItem("oxpecker_last_activity", Date.now().toString());
-            setIsLoading(false);
             return;
           }
         }
-      } catch {}
-
-      try {
-        const savedUser = localStorage.getItem("oxpecker_mock_user");
-        const lastActivity = localStorage.getItem("oxpecker_last_activity");
-
-        if (savedUser && lastActivity) {
-          const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
-          const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
-
-          if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
-            localStorage.removeItem("oxpecker_mock_user");
-            localStorage.removeItem("oxpecker_last_activity");
-            if (active) setUser(null);
-          } else {
-            const parsed = JSON.parse(savedUser);
-            if (active) setUser(parsed);
-            localStorage.setItem("oxpecker_last_activity", Date.now().toString());
-            fetch("/api/auth/session", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionSync: true, user: parsed }),
-            }).catch(() => {});
-          }
+        // If no server cookie yet but valid local cache exists, quietly sync cookie
+        if (cachedParsed) {
+          fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ sessionSync: true, user: cachedParsed }),
+          }).catch(() => {});
         }
-      } catch (e) {
-        console.error("Auth init error:", e);
+      } catch {
+        // Non-blocking fallback
       } finally {
+        clearTimeout(timer);
         if (active) setIsLoading(false);
       }
     }
-    initAuth();
+
+    verifyServerSession();
     return () => {
       active = false;
     };
@@ -128,31 +154,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const router = useRouter();
 
-  const login = (userData: AppUser) => {
-    setUser(userData);
-    localStorage.setItem("oxpecker_mock_user", JSON.stringify(userData));
-    localStorage.setItem("oxpecker_user", JSON.stringify(userData));
-    localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+  const login = async (userData: AppUser, options?: { cookieAlreadySet?: boolean }) => {
+    const normalized = normalizeAppUser(userData);
+    setUser(normalized);
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("oxpecker_mock_user", JSON.stringify(normalized));
+      localStorage.setItem("oxpecker_user", JSON.stringify(normalized));
+      localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+    }
 
-    fetch("/api/auth/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionSync: true, user: userData }),
-    }).catch(() => {});
+    if (!options?.cookieAlreadySet) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      try {
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          signal: controller.signal,
+          body: JSON.stringify({ sessionSync: true, user: normalized }),
+        });
+      } catch {
+        // Proceed with client state if session sync timed out
+      } finally {
+        clearTimeout(timer);
+      }
+    }
 
     // ── RBAC-Validated Redirect ─────────────────────────────────
-    // Instead of blindly trusting sessionStorage, sanitize the stored
-    // redirect URL against the user's actual role.
-    const storedRedirect = typeof window !== "undefined"
-      ? sessionStorage.getItem("redirect_after_login")
-      : null;
+    // Ensure HttpOnly cookie is written before navigating so middleware does not bounce to /login
+    const storedRedirect =
+      typeof window !== "undefined" ? sessionStorage.getItem("redirect_after_login") : null;
 
     if (storedRedirect) {
       sessionStorage.removeItem("redirect_after_login");
     }
 
-    const safeTarget = getAuthorizedRedirectUrl(storedRedirect, userData.role);
-    router.push(safeTarget);
+    const safeTarget = getAuthorizedRedirectUrl(storedRedirect, normalized.role);
+    router.replace(safeTarget);
+    router.refresh();
   };
 
   const logout = () => {
@@ -185,9 +225,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (userData: AppUser) => {
-    setUser(userData);
-    localStorage.setItem("oxpecker_mock_user", JSON.stringify(userData));
-    localStorage.setItem("oxpecker_user", JSON.stringify(userData));
+    const normalized = normalizeAppUser(userData);
+    setUser(normalized);
+    localStorage.setItem("oxpecker_mock_user", JSON.stringify(normalized));
+    localStorage.setItem("oxpecker_user", JSON.stringify(normalized));
     localStorage.setItem("oxpecker_last_activity", Date.now().toString());
   };
 

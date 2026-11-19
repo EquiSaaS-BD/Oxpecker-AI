@@ -19,15 +19,18 @@ import {
   CheckCircle2,
   Filter,
   Globe,
+  FlaskConical,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import {
   getHospitalBeds,
   getHospitalAdmissions,
   getHospitalBills,
   getHospitalDoctors,
 } from "@/lib/hospital-hms";
+import { getDiagnosticOrders, getDiagnosticReports } from "@/lib/hospital-diagnostics";
 import type { BedGig, InpatientAdmission, HospitalBill, HospitalDoctor } from "@/types/hospital-hms";
 import {
   MetricCardSkeleton,
@@ -44,6 +47,8 @@ export default function HospitalDashboardPage() {
   const [doctors, setDoctors] = useState<HospitalDoctor[]>([]);
   const [liveBookingsCount, setLiveBookingsCount] = useState<number>(0);
   const [hubSyncCount, setHubSyncCount] = useState<number>(0);
+  const [diagOrdersCount, setDiagOrdersCount] = useState<number>(0);
+  const [diagCriticalCount, setDiagCriticalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // Timeframe Popup Menu State for Admissions & Discharges Chart
@@ -75,6 +80,10 @@ export default function HospitalDashboardPage() {
     setAdmissions(getHospitalAdmissions());
     setBills(getHospitalBills());
     setDoctors(getHospitalDoctors());
+    const dOrders = getDiagnosticOrders();
+    const dReports = getDiagnosticReports();
+    setDiagOrdersCount(dOrders.length);
+    setDiagCriticalCount(dReports.filter((r) => r.status === "Critical Alert").length);
 
     let cancelled = false;
     (async () => {
@@ -259,7 +268,6 @@ export default function HospitalDashboardPage() {
 
   return (
     <div className="w-full space-y-6 pb-16">
-      <Toaster position="top-right" richColors />
 
       {/* 1. Ultra-Clean Executive Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white px-6 py-5 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -776,6 +784,47 @@ export default function HospitalDashboardPage() {
               Manage Bed Suites →
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* 3.5 Diagnostic Center (LIS/PACS) & AI Lab Command Strip */}
+      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
+            <FlaskConical size={22} className="text-emerald-300" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base sm:text-lg font-black">
+                Diagnostic Center (LIS/PACS) & Branded Print Hub
+              </h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/25 text-emerald-200 border border-emerald-400/30">
+                {diagOrdersCount} Active Lab Orders
+              </span>
+              {diagCriticalCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/25 text-rose-200 border border-rose-400/40">
+                  {diagCriticalCount} Critical Alert
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-300 mt-1">
+              Manage walk-in/OPD/IPD/ER test requisitions, barcode tracking, AI-scanned lab reports & hospital-themed A4/Thermal printing.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Link
+            href="/hospital/dashboard/diagnostics"
+            className="h-10 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <FlaskConical size={14} /> Open LIS Reception
+          </Link>
+          <Link
+            href="/hospital/dashboard/reports"
+            className="h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs flex items-center gap-1.5 transition-colors"
+          >
+            <Sparkles size={14} /> AI Report Studio & Print
+          </Link>
         </div>
       </div>
 

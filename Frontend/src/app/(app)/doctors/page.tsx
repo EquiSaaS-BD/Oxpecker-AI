@@ -21,6 +21,8 @@ import { mockDoctors } from "@/lib/mockData";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
 import { DoctorFilterModal } from "@/components/doctors/DoctorFilterModal";
 import { Pagination } from "@/components/ui/Pagination";
+import { toast } from "sonner";
+import { Building2, PhoneCall, X } from "lucide-react";
 
 const SORT_OPTIONS: { id: "recommended" | "rating" | "fee"; label: string; icon: any; iconColor: string; description: string }[] = [
   { 
@@ -83,6 +85,14 @@ function DoctorCardSkeleton() {
 export default function DoctorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [recommendedSpecialty, setRecommendedSpecialty] = useState<string | null>(null);
+  const [fromReportId, setFromReportId] = useState<string | null>(null);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [leadDoctor, setLeadDoctor] = useState<{ id: string; name: string; specialty: string } | null>(null);
+  const [leadPatientName, setLeadPatientName] = useState("Rahim Uddin");
+  const [leadPatientPhone, setLeadPatientPhone] = useState("+8801711000000");
+  const [leadConsent, setLeadConsent] = useState(false);
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [maxFee, setMaxFee] = useState<number>(5000);
   const [sortBy, setSortBy] = useState<"recommended" | "rating" | "fee">("recommended");
@@ -93,6 +103,18 @@ export default function DoctorsPage() {
   // Pagination State (21 items per page)
   const ITEMS_PER_PAGE = 21;
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Read ?specialty= & ?fromReport= from Report Analyzer / Assistant routing
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const spec = params.get("specialty");
+    const rep = params.get("fromReport");
+    if (spec) {
+      setSearchQuery(spec);
+      setRecommendedSpecialty(spec);
+    }
+    if (rep) setFromReportId(rep);
+  }, []);
 
   // Reset to first page when search, sort, or fee filter criteria change
   useEffect(() => {
@@ -115,6 +137,40 @@ export default function DoctorsPage() {
     const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleCreateConsentLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadDoctor) return;
+    setLeadSubmitting(true);
+    try {
+      const res = await fetch("/api/saas/workspace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_lead",
+          doctorId: leadDoctor.id,
+          doctorName: leadDoctor.name,
+          specialty: leadDoctor.specialty,
+          patientName: leadPatientName,
+          patientPhone: leadPatientPhone,
+          reportId: fromReportId || undefined,
+          patientConsent: leadConsent,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Lead অনুরোধ পাঠানো যায়নি।");
+        return;
+      }
+      toast.success(`${leadDoctor.name}-এর ক্লিনিকে আপনার সম্মতিভিত্তিক অনুরোধ পাঠানো হয়েছে!`);
+      setLeadModalOpen(false);
+      setLeadConsent(false);
+    } catch {
+      toast.error("নেটওয়ার্ক সমস্যার কারণে অনুরোধ পাঠানো যায়নি।");
+    } finally {
+      setLeadSubmitting(false);
+    }
+  };
 
   const filteredDoctors = mockDoctors.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -229,6 +285,48 @@ export default function DoctorsPage() {
 
       {/* MAIN GRID LAYOUT */}
       <div ref={resultsTopRef} className="w-full max-w-[1280px] mx-auto px-[20px] md:px-[32px] lg:px-[48px] py-12 scroll-mt-6">
+        {recommendedSpecialty && (
+          <div className="mb-6 rounded-2xl bg-sky-50 border border-sky-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-sky-700">
+                রিপোর্ট / সহকারী অনুযায়ী প্রস্তাবিত বিশেষজ্ঞ
+              </p>
+              <p className="text-sm font-bold text-slate-900 mt-0.5">
+                বিভাগ: <span className="text-sky-700">{recommendedSpecialty}</span> ({sortedDoctors.length} জন বিশেষজ্ঞ পাওয়া গেছে)
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {sortedDoctors[0] && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLeadDoctor({
+                      id: sortedDoctors[0].id,
+                      name: sortedDoctors[0].name,
+                      specialty: sortedDoctors[0].specialty,
+                    });
+                    setLeadModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-black cursor-pointer"
+                >
+                  <PhoneCall size={14} />
+                  রিপোর্ট পাঠান / কলব্যাক চান
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setRecommendedSpecialty(null);
+                  setSearchQuery("");
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                সব ডাক্তার দেখুন
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-slate-900 flex items-center gap-2">
             Doctors
@@ -363,11 +461,27 @@ export default function DoctorsPage() {
           return (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[24px]">
-                {paginatedDoctors.map(doctor => (
-                  <DoctorCard 
-                    key={doctor.id} 
-                    doctor={doctor} 
-                  />
+                {paginatedDoctors.map((doctor, index) => (
+                  <div key={doctor.id} className="relative flex flex-col">
+                    {currentPage === 1 && index < 2 && (
+                      <div className="mb-1.5 inline-flex items-center justify-between px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-black text-amber-800">
+                        <span className="inline-flex items-center gap-1">
+                          <Building2 size={12} /> Featured Clinic Partner
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLeadDoctor({ id: doctor.id, name: doctor.name, specialty: doctor.specialty });
+                            setLeadModalOpen(true);
+                          }}
+                          className="text-sky-700 hover:underline cursor-pointer"
+                        >
+                          কলব্যাক নিন
+                        </button>
+                      </div>
+                    )}
+                    <DoctorCard doctor={doctor} />
+                  </div>
                 ))}
               </div>
 
@@ -394,6 +508,91 @@ export default function DoctorsPage() {
           setMaxFee(filters.fee);
         }}
       />
+
+      {/* CONSENT-GATED SPECIALIST LEAD MODAL */}
+      {leadModalOpen && leadDoctor && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleCreateConsentLead}
+            className="w-full max-w-md bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-xl"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="text-base font-black text-slate-900">সম্মতিভিত্তিক ডাক্তার পরামর্শ অনুরোধ</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {leadDoctor.name} ({leadDoctor.specialty})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLeadModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="lead-name" className="block text-xs font-bold text-slate-700 mb-1">
+                  রোগীর নাম
+                </label>
+                <input
+                  id="lead-name"
+                  type="text"
+                  required
+                  value={leadPatientName}
+                  onChange={(e) => setLeadPatientName(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 text-sm text-slate-900"
+                />
+              </div>
+              <div>
+                <label htmlFor="lead-phone" className="block text-xs font-bold text-slate-700 mb-1">
+                  মোবাইল নম্বর
+                </label>
+                <input
+                  id="lead-phone"
+                  type="tel"
+                  required
+                  value={leadPatientPhone}
+                  onChange={(e) => setLeadPatientPhone(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 text-sm text-slate-900"
+                />
+              </div>
+              <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  checked={leadConsent}
+                  onChange={(e) => setLeadConsent(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  আমি স্বেচ্ছায় সম্মতি (Patient Consent) দিচ্ছি যেন শুধুমাত্র এই ডাক্তারের ক্লিনিকের সাথে আমার নাম, ফোন নম্বর ও রিপোর্ট সংযুক্ত করা হয়।
+                </span>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setLeadModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer"
+              >
+                বাতিল
+              </button>
+              <button
+                type="submit"
+                disabled={leadSubmitting}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs font-black cursor-pointer"
+              >
+                {leadSubmitting ? "পাঠানো হচ্ছে..." : "অনুরোধ পাঠান"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

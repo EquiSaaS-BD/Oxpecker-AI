@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type { BedGig, BedCategory, BedStatus, BedBooking } from "@/types/hospital-hms";
 import {
   getHospitalBeds,
@@ -304,7 +304,6 @@ export default function BedDetailPage() {
 
   return (
     <div className="w-full space-y-6 pb-20">
-      <Toaster position="top-right" richColors />
 
       {/* Top Header & Breadcrumb Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">

@@ -176,6 +176,11 @@ export interface HospitalThemeConfig {
   stamp_text: string;
   stamp_color: string;
   stamp_enabled: boolean;
+  primary_color?: string;
+  signatory_name?: string;
+  signatory_designation?: string;
+  signatory_bmdc?: string;
+  paper_format?: "A4" | "Thermal-80mm";
 }
 
 // ====== Hospital Financial Transactions Ledger ======

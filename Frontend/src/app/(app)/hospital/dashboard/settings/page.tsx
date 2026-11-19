@@ -23,13 +23,23 @@ import {
   EyeOff,
   BellRing,
   Sparkles,
-  LogOut
+  LogOut,
+  Palette,
+  Printer,
 } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import {
+  DEFAULT_HOSPITAL_THEME,
+  getHospitalThemeConfig,
+  saveHospitalThemeConfig,
+} from "@/lib/hospital-hms";
+import type { HospitalThemeConfig, HospitalThemeStyle } from "@/types/hospital-hms";
+import { HospitalPrintStudio } from "@/components/hospital/HospitalPrintStudio";
+import { INITIAL_DIAGNOSTIC_REPORTS } from "@/lib/hospital-diagnostics";
 
-type TabType = "general" | "beds" | "emergency" | "security" | "billing";
+type TabType = "general" | "branding" | "beds" | "emergency" | "security" | "billing";
 
 export default function HospitalSettingsPage() {
   const { user, updateUser, logout } = useAuth();
@@ -75,6 +85,21 @@ export default function HospitalSettingsPage() {
   const [bkashMerchant, setBkashMerchant] = useState("01711998877");
   const [nagadMerchant, setNagadMerchant] = useState("01811998877");
   const [autoInvoice, setAutoInvoice] = useState(true);
+
+  // --- Branding & Print Theme Configuration ---
+  const [themeCfg, setThemeCfg] = useState<HospitalThemeConfig>(DEFAULT_HOSPITAL_THEME);
+  const [showSamplePrint, setShowSamplePrint] = useState(false);
+
+  // Load saved Hospital Print Theme on mount
+  useEffect(() => {
+    setThemeCfg(getHospitalThemeConfig());
+    fetch("/api/hospital/theme")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (res?.theme) setThemeCfg(res.theme);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load from Supabase or localStorage on mount
   useEffect(() => {
@@ -132,7 +157,15 @@ export default function HospitalSettingsPage() {
           .or(`profile_id.eq.${user?.id},email.eq.${user?.email}`);
       } catch {}
 
-      // 3. Update User Auth Context
+      // 3. Persist Hospital Print & Branding Theme to PostgreSQL + localStorage
+      saveHospitalThemeConfig(themeCfg);
+      fetch("/api/hospital/theme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(themeCfg),
+      }).catch(() => {});
+
+      // 4. Update User Auth Context
       updateUser({
         ...user,
         name: hospitalName,
@@ -141,7 +174,7 @@ export default function HospitalSettingsPage() {
         address: address,
       } as any);
 
-      toast.success("Hospital configuration updated successfully!");
+      toast.success("Hospital configuration & print branding saved successfully!");
     } catch (err: any) {
       console.error("Save error:", err);
       toast.error("Failed to save changes. Please try again.");
@@ -152,6 +185,7 @@ export default function HospitalSettingsPage() {
 
   const tabs = [
     { id: "general" as const, label: "General & Identity", icon: Building2 },
+    { id: "branding" as const, label: "Branding & Print Theme", icon: Palette },
     { id: "beds" as const, label: "Beds & Capacity", icon: BedDouble },
     { id: "emergency" as const, label: "HealthPass & Emergency", icon: Ambulance },
     { id: "security" as const, label: "Security & Access", icon: Lock },
@@ -160,7 +194,6 @@ export default function HospitalSettingsPage() {
 
   return (
     <div className="w-full space-y-6 pb-12">
-      <Toaster position="top-right" richColors />
 
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -682,7 +715,155 @@ export default function HospitalSettingsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* TAB: BRANDING & PRINT THEME */}
+        {activeTab === "branding" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">Hospital Letterhead, Watermark & Direct Print Theme</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Automatically applied to every Diagnostic Lab Report, Cash Receipt, Sample Barcode & Discharge Summary.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  saveHospitalThemeConfig(themeCfg);
+                  setShowSamplePrint(true);
+                }}
+                className="h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <Printer size={15} /> Test Print Sample Report
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { id: "singapore", label: "Singapore Modern", accent: "bg-emerald-700" },
+                { id: "apollo", label: "Apollo Clinical", accent: "bg-sky-800" },
+                { id: "royal", label: "Royal Heritage", accent: "bg-amber-900" },
+                { id: "minimal", label: "Minimal Laser", accent: "bg-slate-900" },
+              ].map((style) => {
+                const selected = themeCfg.theme_style === style.id;
+                return (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() =>
+                      setThemeCfg((prev) => ({ ...prev, theme_style: style.id as HospitalThemeStyle }))
+                    }
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                      selected
+                        ? "border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20"
+                        : "border-slate-200 bg-slate-50 hover:bg-white"
+                    }`}
+                  >
+                    <div className={`w-full h-3 rounded-full mb-2.5 ${style.accent}`} />
+                    <div className="text-xs font-black text-slate-900">{style.label}</div>
+                    <div className="text-[11px] text-slate-500">{selected ? "Active Theme" : "Click to select"}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Hospital Print Name</label>
+                <input
+                  value={themeCfg.hospital_name}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, hospital_name: e.target.value }))}
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Hospital Tagline / Header Subtitle</label>
+                <input
+                  value={themeCfg.hospital_tagline}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, hospital_tagline: e.target.value }))}
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Logo Image URL (Optional)</label>
+                <input
+                  value={themeCfg.logo_url || ""}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, logo_url: e.target.value }))}
+                  placeholder="/images/Oxpecker_icon.png"
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">DGHS License & TAX BIN</label>
+                <div className="flex gap-2">
+                  <input
+                    value={themeCfg.license_no}
+                    onChange={(e) => setThemeCfg((p) => ({ ...p, license_no: e.target.value }))}
+                    placeholder="DGHS License"
+                    className="flex-1 h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                  <input
+                    value={themeCfg.tax_bin}
+                    onChange={(e) => setThemeCfg((p) => ({ ...p, tax_bin: e.target.value }))}
+                    placeholder="BIN"
+                    className="flex-1 h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Watermark Text</label>
+                <input
+                  value={themeCfg.watermark_text}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, watermark_text: e.target.value }))}
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Official Verification Stamp Text</label>
+                <input
+                  value={themeCfg.stamp_text}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, stamp_text: e.target.value }))}
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Default Pathologist / Signatory Name</label>
+                <input
+                  value={themeCfg.signatory_name || ""}
+                  onChange={(e) => setThemeCfg((p) => ({ ...p, signatory_name: e.target.value }))}
+                  placeholder="Prof. Dr. Selina Akter, MD"
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 uppercase block mb-1.5">Signatory Designation & BMDC Reg No.</label>
+                <div className="flex gap-2">
+                  <input
+                    value={themeCfg.signatory_designation || ""}
+                    onChange={(e) => setThemeCfg((p) => ({ ...p, signatory_designation: e.target.value }))}
+                    placeholder="Chief Consultant Pathologist"
+                    className="flex-1 h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
+                  <input
+                    value={themeCfg.signatory_bmdc || ""}
+                    onChange={(e) => setThemeCfg((p) => ({ ...p, signatory_bmdc: e.target.value }))}
+                    placeholder="BMDC-A-21904"
+                    className="w-36 h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      <HospitalPrintStudio
+        isOpen={showSamplePrint}
+        onClose={() => setShowSamplePrint(false)}
+        documentType="lab_report"
+        data={INITIAL_DIAGNOSTIC_REPORTS[0]}
+        overrideTheme={themeCfg}
+      />
     </div>
   );
 }

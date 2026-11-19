@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useDoctor } from '@/context/DoctorContext';
+import { deriveDoctorConnectCode, isValid12DigitCode } from '@/lib/doctor-assistant-link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const stats = [
@@ -53,63 +54,102 @@ export default function DoctorDashboardPage() {
   };
 
   const handleSendInvite = async () => {
-    let finalInviteId = inviteId;
-    if (inviteId && (inviteId.length !== 12 || !/^\d+$/.test(inviteId))) {
-      toast.error("Assistant ID must be exactly 12 digits if provided.");
+    const cleanCode = inviteId.replace(/\D/g, "");
+    if (cleanCode && !isValid12DigitCode(cleanCode)) {
+      toast.error("Assistant pairing code must be exactly 12 digits if provided.");
       return;
     }
-    if (!inviteId) {
-      finalInviteId = `ast-${Math.floor(Math.random() * 1000000)}`;
-    }
-    if (!inviteEmail) {
-      toast.error("Please enter email address.");
+    if (!cleanCode && !inviteEmail.trim()) {
+      toast.error("Provide a 12-digit Assistant Code or Email address.");
       return;
     }
 
     setIsInviting(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setIsInviting(false);
+    try {
+      const doctorId = user?.id || "doctor-default";
+      const doctorName = user?.name || "Attending Doctor";
+      const doctorEmail = user?.email || "doctor@oxpecker.equisaas-bd.com";
 
-    // Add to pending
-    const newAst = {
-      id: finalInviteId,
-      name: "Pending Assistant",
-      status: "Pending Invite",
-      color: "text-[#F59E0B]",
-      bg: "bg-[#F59E0B]",
-      isPending: true
-    };
-    
-    addAssistant(newAst);
-    
-    const invitesStr = localStorage.getItem('oxpecker_invites');
-    const invites = invitesStr ? JSON.parse(invitesStr) : [];
-    invites.push({ 
-      id: Date.now().toString(), 
-      assistantId: finalInviteId, 
-      email: inviteEmail, 
-      role: inviteRole, 
-      status: 'pending',
-      doctorId: user?.id || 'doctor-test-101',
-      doctorName: user?.name || 'Dr. Sarah Rahman',
-      doctorEmail: user?.email || 'doctor@oxpecker.equisaas-bd.com'
-    });
-    localStorage.setItem('oxpecker_invites', JSON.stringify(invites));
+      const res = await fetch("/api/doctor/assistants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_invite",
+          doctorId,
+          doctorName,
+          doctorEmail,
+          assistantId: cleanCode || undefined,
+          assistantEmail: inviteEmail.trim() || undefined,
+          role: inviteRole,
+          permissions,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Failed to send assistant invite.");
+        return;
+      }
 
-    setShowInviteModal(false);
-    setInviteId("");
-    setInviteEmail("");
-    toast.success("Invite sent successfully!");
+      const inv = data.invite;
+      const newAst = {
+        id: inv.assistantId,
+        inviteId: inv.id,
+        name: inv.assistantName || "Pending Assistant",
+        email: inv.assistantEmail,
+        status: inv.status === "accepted" ? "Connected • Online" : "Pending Invite",
+        color: inv.status === "accepted" ? "text-[#22C55E]" : "text-[#F59E0B]",
+        bg: inv.status === "accepted" ? "bg-[#22C55E]" : "bg-[#F59E0B]",
+        isPending: inv.status !== "accepted",
+      };
+      addAssistant(newAst);
+
+      // Sync legacy localStorage cache cleanly for offline tab listeners
+      const invitesStr = localStorage.getItem("oxpecker_invites");
+      const invites = invitesStr ? JSON.parse(invitesStr) : [];
+      invites.push({
+        id: inv.id,
+        assistantId: inv.assistantId,
+        email: inv.assistantEmail,
+        role: inviteRole,
+        status: inv.status,
+        doctorId,
+        doctorName,
+        doctorEmail,
+      });
+      localStorage.setItem("oxpecker_invites", JSON.stringify(invites));
+
+      setShowInviteModal(false);
+      setInviteId("");
+      setInviteEmail("");
+      toast.success(`Invite sent to Code ${inv.assistantId}!`);
+    } catch {
+      toast.error("Network error sending invite.");
+    } finally {
+      setIsInviting(false);
+    }
   };
 
-  const handleRemoveAssistant = (id: string) => {
+  const handleRemoveAssistant = async (id: string) => {
+    const doctorId = user?.id || "doctor-default";
+    const doctorName = user?.name || "Attending Doctor";
     removeAssistant(id);
+    try {
+      await fetch(
+        `/api/doctor/assistants?assistantId=${encodeURIComponent(id)}&doctorId=${encodeURIComponent(doctorId)}&doctorName=${encodeURIComponent(doctorName)}`,
+        { method: "DELETE" }
+      );
+    } catch {}
     toast.success("Assistant removed.");
-    
-    const notifsStr = localStorage.getItem('oxpecker_notifications');
+
+    const notifsStr = localStorage.getItem("oxpecker_notifications");
     const notifs = notifsStr ? JSON.parse(notifsStr) : [];
-    notifs.push({ id: Date.now().toString(), targetId: id, message: "You have been removed by Dr. Sarah.", read: false });
-    localStorage.setItem('oxpecker_notifications', JSON.stringify(notifs));
+    notifs.push({
+      id: Date.now().toString(),
+      targetId: id,
+      message: `You have been removed by ${doctorName}.`,
+      read: false,
+    });
+    localStorage.setItem("oxpecker_notifications", JSON.stringify(notifs));
   };
 
   return (
@@ -266,8 +306,13 @@ export default function DoctorDashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-[20px] shadow-none border border-slate-200 p-6 flex flex-col h-full"
           >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-[18px] font-bold text-slate-700">Connected Assistant</h3>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-[18px] font-bold text-slate-700">Connected Assistant</h3>
+                <p className="text-[11px] font-mono text-sky-700 font-bold mt-0.5">
+                  Doctor Code: {deriveDoctorConnectCode(user?.id || user?.email || "doctor-default")}
+                </p>
+              </div>
               <button onClick={() => setShowInviteModal(true)} className="px-4 py-2 bg-sky-50 text-sky-700 border border-sky-200 text-sm font-bold rounded-lg hover:bg-sky-600 hover:text-white transition-colors flex items-center gap-1.5">
                 <Plus size={16} /> Invite
               </button>

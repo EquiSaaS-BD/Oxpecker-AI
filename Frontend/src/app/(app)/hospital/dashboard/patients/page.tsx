@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type { InpatientAdmission, BedGig } from "@/types/hospital-hms";
 import {
   getHospitalAdmissions,
@@ -39,6 +39,12 @@ import {
   RegistrySearchMatch,
 } from "@/lib/hospital-hms";
 import { CustomSelect, type CustomSelectOption } from "@/components/hospital/CustomSelect";
+import {
+  addClinicalCareNote,
+  getClinicalCareNotes,
+  type ClinicalCareNoteItem,
+} from "@/lib/hospital-diagnostics";
+import { HospitalPrintStudio } from "@/components/hospital/HospitalPrintStudio";
 
 function InpatientConsoleContent() {
   const router = useRouter();
@@ -54,6 +60,12 @@ function InpatientConsoleContent() {
   // Modal States
   const [isAdmitModalOpen, setIsAdmitModalOpen] = useState(false);
   const [selectedDossier, setSelectedDossier] = useState<InpatientAdmission | null>(null);
+  const [clinicalNotes, setClinicalNotes] = useState<ClinicalCareNoteItem[]>([]);
+  const [vitalsBp, setVitalsBp] = useState("120/80");
+  const [vitalsSpo2, setVitalsSpo2] = useState("98%");
+  const [noteInput, setNoteInput] = useState("");
+  const [noteType, setNoteType] = useState<ClinicalCareNoteItem["noteType"]>("Vitals");
+  const [printDischargeData, setPrintDischargeData] = useState<any>(null);
 
   // 1-Click Database Import Search
   const [registryQuery, setRegistryQuery] = useState("");
@@ -92,6 +104,7 @@ function InpatientConsoleContent() {
     const loadedBeds = getHospitalBeds();
     setAdmissions(loadedAdmissions);
     setBeds(loadedBeds);
+    setClinicalNotes(getClinicalCareNotes());
 
     // If preselected bed from URL query param
     if (preselectedBed) {
@@ -271,7 +284,6 @@ function InpatientConsoleContent() {
 
   return (
     <div className="w-full space-y-6 pb-12">
-      <Toaster position="top-right" richColors />
 
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -884,26 +896,137 @@ function InpatientConsoleContent() {
                   <span className="font-bold text-emerald-800">Initial Admission Deposit:</span>
                   <strong className="text-base font-black text-emerald-700">৳ {selectedDossier.initial_deposit.toLocaleString()}</strong>
                 </div>
+
+                {/* Nursing Vitals & Doctor Rounds Log */}
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2.5 text-xs">
+                  <div className="font-black uppercase text-[10px] text-slate-500">
+                    Ward Vitals & Doctor Round Notes
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      value={noteType}
+                      onChange={(e) => setNoteType(e.target.value as any)}
+                      className="h-8 px-2 rounded-lg bg-slate-50 border border-slate-200 font-bold"
+                    >
+                      <option value="Vitals">Nursing Vitals</option>
+                      <option value="DoctorRound">Doctor Round</option>
+                      <option value="Medication">Medication MAR</option>
+                    </select>
+                    <input
+                      value={vitalsBp}
+                      onChange={(e) => setVitalsBp(e.target.value)}
+                      placeholder="BP (120/80)"
+                      className="w-24 h-8 px-2 rounded-lg bg-slate-50 border border-slate-200 font-mono"
+                    />
+                    <input
+                      value={vitalsSpo2}
+                      onChange={(e) => setVitalsSpo2(e.target.value)}
+                      placeholder="SpO2 (98%)"
+                      className="w-20 h-8 px-2 rounded-lg bg-slate-50 border border-slate-200 font-mono"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      placeholder="Add clinical observation or nursing vitals note..."
+                      className="flex-1 h-9 px-3 rounded-lg bg-slate-50 border border-slate-200 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!noteInput.trim()) return;
+                        const summary = `${noteInput.trim()} (BP: ${vitalsBp}, SpO2: ${vitalsSpo2})`;
+                        const updated = addClinicalCareNote({
+                          admissionId: selectedDossier.id,
+                          patientName: selectedDossier.english_name || selectedDossier.patient_name,
+                          smartCardUid: selectedDossier.smart_card_uid,
+                          noteType,
+                          priority: selectedDossier.condition === "Critical" ? "Urgent" : "Routine",
+                          summary,
+                          vitals: { bp: vitalsBp, spo2: vitalsSpo2 },
+                          recordedBy: "Ward Nursing / Attending Staff",
+                        });
+                        setClinicalNotes([...updated]);
+                        fetch("/api/hospital/clinical", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            admissionId: selectedDossier.id,
+                            patientName: selectedDossier.english_name || selectedDossier.patient_name,
+                            smartCardUid: selectedDossier.smart_card_uid,
+                            noteType,
+                            summary,
+                          }),
+                        }).catch(() => {});
+                        setNoteInput("");
+                        toast.success("Clinical note saved.");
+                      }}
+                      className="h-9 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold cursor-pointer"
+                    >
+                      Save Note
+                    </button>
+                  </div>
+                  <div className="space-y-1 max-h-24 overflow-y-auto">
+                    {clinicalNotes
+                      .filter((n) => n.admissionId === selectedDossier.id)
+                      .map((n) => (
+                        <div key={n.id} className="bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-[11px]">
+                          <strong className="text-slate-800">[{n.noteType}]</strong> {n.summary}
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-between">
-                <Link
-                  href="/hospital/dashboard/billing"
-                  className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
-                >
-                  View Inpatient Running Bill →
-                </Link>
-                <button
-                  onClick={() => setSelectedDossier(null)}
-                  className="h-10 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs cursor-pointer"
-                >
-                  Close Dossier
-                </button>
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/hospital/dashboard/billing"
+                    className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
+                  >
+                    Running Bill →
+                  </Link>
+                  <Link
+                    href="/hospital/dashboard/diagnostics"
+                    className="text-xs font-bold text-sky-700 hover:underline flex items-center gap-1"
+                  >
+                    Order IPD Lab →
+                  </Link>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const admNotes = getClinicalCareNotes(selectedDossier.id);
+                      setPrintDischargeData({
+                        ...selectedDossier,
+                        notes: admNotes,
+                      });
+                    }}
+                    className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer"
+                  >
+                    Print Discharge Summary
+                  </button>
+                  <button
+                    onClick={() => setSelectedDossier(null)}
+                    className="h-10 px-5 rounded-xl bg-slate-900 text-white font-bold text-xs cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      <HospitalPrintStudio
+        isOpen={Boolean(printDischargeData)}
+        onClose={() => setPrintDischargeData(null)}
+        documentType="discharge_summary"
+        data={printDischargeData}
+      />
     </div>
   );
 }

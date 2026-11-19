@@ -86,6 +86,7 @@ export const PUBLIC_ROUTES: string[] = [
   "/appointments",  // Appointment management (all authenticated roles)
   "/profile",       // Public profile page
   "/embed",         // Public 2-line embeddable clinic booking widget
+  "/demo",          // Public 60-second Judge Demo route
 ];
 
 // ── 3. Route Authorization Check ────────────────────────────────

@@ -43,7 +43,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import Image from "next/image";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type {
   HospitalBill,
   BillItem,
@@ -537,7 +537,6 @@ export default function HospitalBillingPage() {
 
   return (
     <div className={`space-y-6 max-w-7xl mx-auto pb-16 ${lang === "bn" ? "font-hind" : ""}`}>
-      <Toaster position="top-right" richColors />
 
       {/* Page Header with 1-Click Bilingual Language Switcher */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

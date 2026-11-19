@@ -22,7 +22,7 @@ import {
   Sparkles,
   Activity,
 } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type { HospitalDoctor } from "@/types/hospital-hms";
 import {
   getHospitalDoctors,
@@ -187,7 +187,6 @@ function HospitalDoctorsContent() {
 
   return (
     <div className="w-full space-y-6 pb-12">
-      <Toaster position="top-right" richColors />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">

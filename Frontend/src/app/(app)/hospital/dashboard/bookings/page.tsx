@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type {
   BedBooking,
   BookingStatus,
@@ -247,7 +247,6 @@ export default function BookingManagementPage() {
 
   return (
     <div className="w-full space-y-6 pb-20">
-      <Toaster position="top-right" richColors />
 
       {/* 1. Header & Quick Actions */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 import { PrescriptionReview } from "@/components/prescription/PrescriptionReview";
+import { ReportAnalyzerStudio } from "@/components/reports/ReportAnalyzerStudio";
 
 const mockReports = [
   { id: 1, title: "Complete Blood Count (CBC)", date: "10 Jul 2026", doctor: "Dr. Sarah Rahman", type: "Lab Result", size: "2.4 MB" },
@@ -222,6 +223,8 @@ export default function ReportsPage(props: any) {
 
       {/* Content Section */}
       <div className="max-w-[1200px] mx-auto py-6 md:py-10 pb-[100px] px-4 md:px-6 lg:px-12">
+
+        <ReportAnalyzerStudio />
 
         <section className="mb-10">
           <h2 className="text-xl font-extrabold text-slate-900 mb-2">Saved AI medical documents</h2>

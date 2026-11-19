@@ -455,3 +455,161 @@ model IntegrationSyncLog {
   @@index([organizationId, createdAt])
   @@index([channel])
 }
+
+// ============================================
+// Doctor ↔ Assistant 12-Digit Persistent Pairing
+// ============================================
+
+model DoctorAssistantLink {
+  id                String   @id @default(uuid())
+  organizationId    String   @default("org-default")
+  doctorId          String
+  doctorName        String
+  doctorEmail       String
+  doctorConnectCode String
+  assistantId       String
+  assistantEmail    String
+  assistantName     String?
+  role              String   @default("Front Desk & Queue Assistant")
+  permissions       Json
+  status            String   @default("pending") // pending, accepted, declined, revoked
+  queueSnapshot     Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([doctorId, status])
+  @@index([assistantId, status])
+  @@index([assistantEmail])
+  @@index([doctorConnectCode])
+}
+
+// ============================================
+// Enterprise Hospital & Diagnostic Center (HMS + LIS/PACS)
+// ============================================
+
+model HospitalThemeProfile {
+  id                   String   @id @default(uuid())
+  organizationId       String   @unique @default("org-default")
+  hospitalName         String
+  hospitalTagline      String?
+  hospitalAddress      String?
+  hospitalHotline      String?
+  hospitalPhone        String?
+  hospitalEmail        String?
+  licenseNo            String?
+  taxBin               String?
+  logoUrl              String?  @db.Text
+  themeStyle           String   @default("singapore") // singapore, apollo, royal, minimal
+  watermarkText        String?
+  watermarkOpacity     Float    @default(0.05)
+  watermarkEnabled     Boolean  @default(true)
+  stampText            String?
+  stampColor           String   @default("#059669")
+  stampEnabled         Boolean  @default(true)
+  signatoryName        String?
+  signatoryDesignation String?
+  signatoryBmdc        String?
+  updatedAt            DateTime @updatedAt
+}
+
+model DiagnosticTestCatalog {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  code           String
+  name           String
+  department     String
+  specimen       String
+  referenceRange String?
+  unit           String?
+  price          Float
+  tatHours       Int      @default(6)
+  isPackage      Boolean  @default(false)
+  packageItems   Json?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, department])
+  @@index([code])
+}
+
+model DiagnosticOrder {
+  id              String    @id @default(uuid())
+  accessionId     String    @unique
+  organizationId  String    @default("org-default")
+  patientName     String
+  patientAge      Int?
+  patientGender   String?
+  patientPhone    String?
+  smartCardUid    String?
+  referringDoctor String?
+  source          String    @default("Walk-In") // Walk-In, OPD, IPD, Emergency
+  priority        String    @default("Routine") // Routine, Urgent, STAT
+  status          String    @default("Ordered") // Ordered, Sample Collected, In Lab, AI Analyzed, Pathologist Review, Verified & Published, Delivered
+  tests           Json
+  totalAmount     Float     @default(0)
+  discountAmount  Float     @default(0)
+  paidAmount      Float     @default(0)
+  paymentStatus   String    @default("Unpaid")
+  paymentMethod   String?
+  collectorName   String?
+  collectedAt     DateTime?
+  billId          String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([organizationId, status])
+  @@index([smartCardUid])
+  @@index([patientPhone])
+}
+
+model DiagnosticReportRecord {
+  id                    String    @id @default(uuid())
+  reportCode            String    @unique
+  orderId               String?
+  accessionId           String?
+  organizationId        String    @default("org-default")
+  patientName           String
+  patientAge            Int?
+  patientGender         String?
+  patientPhone          String?
+  smartCardUid          String?
+  testName              String
+  department            String
+  specimen              String?
+  referringDoctor       String?
+  status                String    @default("Processing") // Draft, Processing, Pending Verification, Verified, Critical Alert
+  parameters            Json?
+  keyFindings           String    @db.Text
+  aiAnalysis            Json?
+  bengaliSummary        String?   @db.Text
+  recommendedSpecialist String?
+  signedBy              String?
+  signedByDegrees       String?
+  signedByBmdc          String?
+  signedAt              DateTime?
+  publishedToHealthPass Boolean   @default(false)
+  qrHash                String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([organizationId, status])
+  @@index([smartCardUid])
+}
+
+model ClinicalCareNote {
+  id             String   @id @default(uuid())
+  organizationId String   @default("org-default")
+  admissionId    String?
+  patientName    String
+  smartCardUid   String?
+  noteType       String // Vitals, DoctorRound, Medication, DischargeSummary, ErTriage
+  priority       String   @default("Routine")
+  summary        String   @db.Text
+  payload        Json?
+  recordedBy     String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, noteType])
+  @@index([admissionId])
+}

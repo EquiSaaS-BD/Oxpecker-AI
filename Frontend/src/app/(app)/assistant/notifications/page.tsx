@@ -13,64 +13,109 @@ export default function AssistantNotificationsPage() {
 
   React.useEffect(() => {
     if (!user) return;
-    
-    const loadData = () => {
+    let active = true;
+
+    const loadData = async () => {
       const allNotifs: any[] = [];
-      const currentAssistantId = (user as any).assistantId;
-      
-      // Load invites targeted at this assistant
-      if (currentAssistantId) {
-        const invitesStr = localStorage.getItem('oxpecker_invites');
-        if (invitesStr) {
-          try {
-            const allInvites = JSON.parse(invitesStr);
-            const targetedInvites = allInvites.filter((i: any) => i.assistantId === currentAssistantId && i.status === 'pending');
-            
-            targetedInvites.forEach((inv: any) => {
-               allNotifs.push({
-                 id: inv.id,
-                 type: 'doctor_invite',
-                 title: 'Connection Request',
-                 message: `${inv.doctorName || 'A Doctor'} (${inv.email}) wants to connect with you. If you accept, you will gain access to their queue.`,
-                 time: 'Just now',
-                 unread: true,
-                 doctorName: inv.doctorName || inv.email,
-                 specialty: inv.role || "General"
-               });
+      const currentAssistantId = user.assistantId || "";
+      const userEmail = (user.email || "").toLowerCase();
+
+      // 1. Primary multi-user Server API fetch (works across browsers & devices)
+      try {
+        const res = await fetch(
+          `/api/doctor/assistants?role=assistant&assistantId=${encodeURIComponent(currentAssistantId)}&email=${encodeURIComponent(userEmail)}`,
+          { cache: "no-store" }
+        );
+        if (res.ok && active) {
+          const data = await res.json();
+          (data.pendingInvites || []).forEach((inv: any) => {
+            allNotifs.push({
+              id: inv.id,
+              type: "doctor_invite",
+              title: "Connection Request",
+              message: `${inv.doctorName || "Attending Doctor"} (${inv.doctorEmail}) wants to connect with you via Code ${inv.assistantId}.`,
+              time: "Just now",
+              unread: true,
+              doctorName: inv.doctorName || inv.doctorEmail,
+              doctorId: inv.doctorId,
+              specialty: inv.role || "General",
             });
-          } catch (e) {}
+          });
+          (data.notifications || []).forEach((n: any) => {
+            allNotifs.push({
+              id: n.id,
+              type: n.type || "message",
+              title: n.title || "System Alert",
+              message: n.message,
+              time: n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Just now",
+              unread: !n.read,
+            });
+          });
         }
+      } catch {}
+
+      // 2. Fallback / same-browser localStorage cache merge (matches Code OR Email)
+      const invitesStr = localStorage.getItem("oxpecker_invites");
+      if (invitesStr) {
+        try {
+          const allInvites = JSON.parse(invitesStr);
+          const targetedInvites = allInvites.filter(
+            (i: any) =>
+              i.status === "pending" &&
+              ((currentAssistantId && i.assistantId === currentAssistantId) ||
+                (userEmail && String(i.email || "").toLowerCase() === userEmail)) &&
+              !allNotifs.some((n) => n.id === i.id)
+          );
+
+          targetedInvites.forEach((inv: any) => {
+            allNotifs.push({
+              id: inv.id,
+              type: "doctor_invite",
+              title: "Connection Request",
+              message: `${inv.doctorName || "A Doctor"} (${inv.email}) wants to connect with you. If you accept, you will gain access to their queue.`,
+              time: "Just now",
+              unread: true,
+              doctorName: inv.doctorName || inv.email,
+              doctorId: inv.doctorId,
+              specialty: inv.role || "General",
+            });
+          });
+        } catch {}
       }
-      
-      // Load system notifications
-      const notifStr = localStorage.getItem('oxpecker_notifications');
+
+      const notifStr = localStorage.getItem("oxpecker_notifications");
       if (notifStr) {
         try {
           const sysNotifs = JSON.parse(notifStr);
-          const targeted = sysNotifs.filter((n: any) => n.targetId === currentAssistantId || n.targetId === user.id);
-          
+          const targeted = sysNotifs.filter(
+            (n: any) =>
+              (n.targetId === currentAssistantId || n.targetId === user.id) &&
+              !allNotifs.some((existing) => existing.id === n.id)
+          );
           targeted.forEach((n: any) => {
             allNotifs.push({
-               id: n.id,
-               type: 'message',
-               title: 'System Alert',
-               message: n.message,
-               time: 'Just now',
-               unread: !n.read
+              id: n.id,
+              type: "message",
+              title: "System Alert",
+              message: n.message,
+              time: "Just now",
+              unread: !n.read,
             });
           });
-        } catch (e) {}
+        } catch {}
       }
-      
-      setNotifications(allNotifs);
+
+      if (active) setNotifications(allNotifs);
     };
 
-    loadData();
-    window.addEventListener('storage', loadData);
-    const interval = setInterval(loadData, 1000);
-    
+    void loadData();
+    const onStorage = () => { void loadData(); };
+    window.addEventListener("storage", onStorage);
+    const interval = setInterval(() => { void loadData(); }, 3000);
+
     return () => {
-      window.removeEventListener('storage', loadData);
+      active = false;
+      window.removeEventListener("storage", onStorage);
       clearInterval(interval);
     };
   }, [user]);
@@ -92,54 +137,53 @@ export default function AssistantNotificationsPage() {
     setSelectedNotification(notif);
   };
 
-  const handleInviteResponse = (id: number | string, status: 'accepted' | 'declined') => {
-    // Find the invite in localStorage
-    const invitesStr = localStorage.getItem('oxpecker_invites');
-    let doctorName = "the doctor";
-    let doctorId = "";
-    
-    if (invitesStr) {
-      const allInvites = JSON.parse(invitesStr);
-      const inviteIndex = allInvites.findIndex((i: any) => i.id === id);
-      
-      if (inviteIndex !== -1) {
-        allInvites[inviteIndex].status = status;
-        doctorName = allInvites[inviteIndex].doctorName || doctorName;
-        doctorId = allInvites[inviteIndex].doctorId || "";
-        localStorage.setItem('oxpecker_invites', JSON.stringify(allInvites));
+  const handleInviteResponse = async (id: number | string, status: 'accepted' | 'declined') => {
+    let doctorName = selectedNotification?.doctorName || "the doctor";
+    let doctorId = selectedNotification?.doctorId || "";
+
+    // 1. Persist accept/decline on server API across browsers & devices
+    try {
+      const res = await fetch("/api/doctor/assistants", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "respond_invite",
+          inviteId: String(id),
+          assistantId: user?.assistantId,
+          assistantEmail: user?.email,
+          assistantName: user?.name,
+          status,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.invite) {
+          doctorName = data.invite.doctorName || doctorName;
+          doctorId = data.invite.doctorId || doctorId;
+        }
       }
+    } catch {}
+
+    // 2. Sync legacy localStorage cache as secondary offline store
+    const invitesStr = localStorage.getItem('oxpecker_invites');
+    if (invitesStr) {
+      try {
+        const allInvites = JSON.parse(invitesStr);
+        const inviteIndex = allInvites.findIndex((i: any) => i.id === id);
+        if (inviteIndex !== -1) {
+          allInvites[inviteIndex].status = status;
+          doctorName = allInvites[inviteIndex].doctorName || doctorName;
+          doctorId = allInvites[inviteIndex].doctorId || doctorId;
+          localStorage.setItem('oxpecker_invites', JSON.stringify(allInvites));
+        }
+      } catch {}
     }
 
     if (status === 'accepted' && doctorId && user) {
-      // 1. Update global users list
-      const usersStr = localStorage.getItem('oxpecker_users');
-      if (usersStr) {
-        const users = JSON.parse(usersStr);
-        const uIdx = users.findIndex((u: any) => u.id === user.id);
-        if (uIdx !== -1) {
-          users[uIdx].doctorId = doctorId;
-          localStorage.setItem('oxpecker_users', JSON.stringify(users));
-        }
-      }
-      
-      // 2. Update current auth user context
       updateUser({ ...user, doctorId });
       toast.success(`You are now officially connected to ${doctorName}!`);
-
-      // 3. Update Doctor's connected assistants list so they see it in real-time
-      const asstStr = localStorage.getItem('oxpecker_assistants');
-      if (asstStr) {
-        const docAssistants = JSON.parse(asstStr);
-        const aIdx = docAssistants.findIndex((a: any) => a.id === user.assistantId);
-        if (aIdx !== -1) {
-          docAssistants[aIdx].status = "Connected";
-          docAssistants[aIdx].name = user.name;
-          docAssistants[aIdx].color = "text-[#22C55E]";
-          docAssistants[aIdx].bg = "bg-[#22C55E]";
-          docAssistants[aIdx].isPending = false;
-          localStorage.setItem('oxpecker_assistants', JSON.stringify(docAssistants));
-        }
-      }
+    } else if (status === 'declined') {
+      toast.info("Connection request declined.");
     }
 
     // Update local state to reflect UI change instantly

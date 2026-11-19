@@ -7,8 +7,11 @@ import {
   Play, Pause, SkipForward, AlertTriangle, 
   FileText, MoreVertical, Search, Plus, TrendingUp, TrendingDown, CheckCircle2, ChevronDown, X, BellRing, User, Receipt
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Copy, Link2, Stethoscope } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import { derive12DigitAssistantCode } from '@/lib/doctor-assistant-link';
 
 const stats = [
   { title: "Today's Appts", count: "42", trend: "+12%", trendUp: true, icon: Users, color: "text-emerald-700", bg: "bg-emerald-50 border border-emerald-200/80" },
@@ -24,25 +27,92 @@ const INITIAL_QUEUE = [
 ];
 
 export default function AssistantDashboardPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [queue, setQueue] = useState(INITIAL_QUEUE);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [assignedDoctorName, setAssignedDoctorName] = useState("Not Connected");
+  const [assistantCode12, setAssistantCode12] = useState("");
+  const [doctorCodeInput, setDoctorCodeInput] = useState("");
+  const [connectingDoctor, setConnectingDoctor] = useState(false);
 
   useEffect(() => {
-    if ((user as any)?.doctorId) {
-      const usersStr = localStorage.getItem('oxpecker_users');
-      if (usersStr) {
-        const users = JSON.parse(usersStr);
-        const doc = users.find((u: any) => u.id === (user as any).doctorId);
-        if (doc) {
-          setAssignedDoctorName(doc.name || "Assigned Doctor");
+    if (!user) return;
+    const code12 = user.assistantId || derive12DigitAssistantCode(user.id || user.email);
+    setAssistantCode12(code12);
+
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/doctor/assistants?role=assistant&assistantId=${encodeURIComponent(code12)}&email=${encodeURIComponent(user.email || "")}`,
+          { cache: "no-store" }
+        );
+        if (res.ok && active) {
+          const data = await res.json();
+          if (data.assistantCode12) setAssistantCode12(data.assistantCode12);
+          if (data.connectedDoctor?.doctorName) {
+            setAssignedDoctorName(data.connectedDoctor.doctorName);
+          }
+          if (Array.isArray(data.queue) && data.queue.length > 0 && data.connectedDoctor) {
+            setQueue(
+              data.queue.map((q: any, i: number) => ({
+                id: q.token || `S-0${i + 1}`,
+                name: q.name,
+                age: 36,
+                gender: "M",
+                phone: "+88017...",
+                time: q.time || "10:30 AM",
+                type: "Doctor Queue",
+                symptoms: q.info || "Consultation",
+                status: q.status || "Waiting",
+                payment: q.payment || "Paid",
+                paymentMethod: q.paymentMethod || "Online",
+              }))
+            );
+          }
         }
-      }
-    }
+      } catch {}
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [user]);
+
+  const handleConnectDoctorByCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!doctorCodeInput.trim()) return;
+    setConnectingDoctor(true);
+    try {
+      const code12 = assistantCode12 || user?.assistantId || derive12DigitAssistantCode(user?.email || "assistant");
+      const res = await fetch("/api/doctor/assistants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "connect_by_doctor_code",
+          assistantId: code12,
+          assistantName: user?.name || "Clinic Assistant",
+          assistantEmail: user?.email || "assistant@oxpecker.ai",
+          doctorCodeOrEmail: doctorCodeInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Could not connect to doctor.");
+        return;
+      }
+      setAssignedDoctorName(data.invite.doctorName);
+      if (user) updateUser({ ...user, doctorId: data.invite.doctorId });
+      setDoctorCodeInput("");
+      toast.success(`Connected with ${data.invite.doctorName}!`);
+    } catch {
+      toast.error("Network error while connecting.");
+    } finally {
+      setConnectingDoctor(false);
+    }
+  };
 
   useEffect(() => {
     // Simulate fetching dashboard data
@@ -195,6 +265,55 @@ export default function AssistantDashboardPage() {
   return (
     <div className="w-full flex flex-col gap-4 md:gap-6 relative min-h-screen pb-24 lg:pb-10 bg-slate-50">
       
+      {/* 0. Doctor Pairing Code & 12-Digit Assistant Code Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xs">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0">
+            <Stethoscope size={20} />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Doctor Connection Status • <span className={assignedDoctorName !== "Not Connected" ? "text-emerald-600" : "text-amber-600"}>{assignedDoctorName}</span>
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs font-bold text-slate-700">Your 12-Digit Assistant Code:</span>
+              <code className="px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 font-mono text-xs font-black text-slate-900">
+                {assistantCode12 || "Generating..."}
+              </code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(assistantCode12).catch(() => {});
+                  toast.success("12-digit pairing code copied!");
+                }}
+                className="p-1 text-slate-500 hover:text-sky-600 cursor-pointer"
+                aria-label="Copy 12-digit assistant code"
+              >
+                <Copy size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleConnectDoctorByCode} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={doctorCodeInput}
+            onChange={(e) => setDoctorCodeInput(e.target.value)}
+            placeholder="Enter Doctor Code (DOC-...) or Email"
+            className="h-9 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 min-w-[210px]"
+          />
+          <button
+            type="submit"
+            disabled={connectingDoctor}
+            className="h-9 px-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Link2 size={14} />
+            {connectingDoctor ? "Connecting..." : "Connect Doctor"}
+          </button>
+        </form>
+      </div>
+
       {/* 1. HERO: Live Queue Control */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}

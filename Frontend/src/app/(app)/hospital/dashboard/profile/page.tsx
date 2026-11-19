@@ -23,7 +23,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import type { BedGig, BedStatus } from "@/types/hospital-hms";
 import {
   getHospitalBeds,
@@ -75,7 +75,6 @@ export default function HospitalProfilePage() {
 
   return (
     <div className="w-full space-y-8 pb-16">
-      <Toaster position="top-right" richColors />
 
       {/* 1. Singapore-Grade Hospital Header Section */}
       <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-xs overflow-hidden relative">
