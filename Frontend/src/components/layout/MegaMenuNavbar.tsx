@@ -75,49 +75,49 @@ export function MegaMenuNavbar({
   const navRef = React.useRef<HTMLElement>(null);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
 
-  // Mega Menu Data tailored for Oxpecker
+  // Mega Menu Data tailored for Oxpecker AI
   const SERVICES_FEATURES: MegaMenuItem[] = [
     {
-      title: t("Symptom & Care Guide", "লক্ষণ ও স্বাস্থ্য সহায়িকা"),
-      description: t("Describe symptoms in Bengali for practical guidance and specialist advice.", "বাংলায় লক্ষণ লিখে প্রয়োজনীয় পরামর্শ ও সঠিক ডাক্তারের নির্দেশিকা নিন।"),
+      title: t("AI Diagnostic Chat", "এআই লক্ষণ নির্ণয়"),
+      description: t("Describe symptoms in Bengali for instant health insights & specialist advice.", "বাংলায় লক্ষণ লিখে সাথে সাথে সম্ভাব্য পরামর্শ ও সঠিক ডাক্তারের নির্দেশিকা নিন।"),
       href: "/chat",
-      icon: MessageSquare,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      icon: MessageSquare, badge: "AI Powered",
+      iconClassName: "text-sky-600",
     },
     {
       title: t("Prescription Scanner", "প্রেসক্রিপশন স্ক্যানার"),
       description: t("Upload prescription photos to extract medicine names and timings in Bengali.", "প্রেসক্রিপশনের ছবি আপলোড করে ওষুধের নিয়ম ও খাওয়ার সময় বুঝে নিন।"),
       href: "/chat?mode=prescription",
       icon: FileText,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      iconClassName: "text-amber-600",
     },
     {
       title: t("Food Calorie Scanner", "ফুড ক্যালোরি ও ডায়েট"),
-      description: t("Track daily meals, nutritional values, and balanced diet goals.", "খাবারের ছবি তুলে ক্যালোরি ও পুষ্টি উপাদান এবং দৈনিক স্বাস্থ্য লক্ষ্য দেখুন।"),
+      description: t("Scan food items to analyze calories, nutrition values, and daily health goals.", "খাবারের ছবি তুলে ক্যালোরি ও পুষ্টি উপাদান বিশ্লেষণ এবং স্বাস্থ্য লক্ষ্য পূরণ করুন।"),
       href: "/nutrition",
       icon: Apple,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      iconClassName: "text-emerald-600",
     },
     {
       title: t("Specialist Doctors Directory", "বিশেষজ্ঞ ডাক্তার ডিরেক্টরি"),
       description: t("Search BMDC-certified doctors across 20+ medical specialties.", "২০+ বিষয়ের বিএমডিসি ভেরিফাইড ডাক্তারদের প্রোফাইল ও ফী শিডিউল।"),
       href: "/doctors",
       icon: Stethoscope,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      iconClassName: "text-blue-600",
     },
     {
       title: t("Hospital Bed & ICU Tracker", "হাসপাতাল বেড ও আইসিইউ ট্র্যাকার"),
-      description: t("Check bed availability and emergency contacts across major hospitals.", "প্রধান হাসপাতালগুলোর বেড ও আইসিইউ স্ট্যাটাস এবং জরুরি যোগাযোগ।"),
+      description: t("Check real-time bed availabilities and emergency contacts in major hospitals.", "স্কয়ার, ল্যাবএইডসহ প্রধান হাসপাতালগুলোর বেড ও আইসিইউ স্ট্যাটাস।"),
       href: "/hospitals",
       icon: Building2,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      iconClassName: "text-indigo-600",
     },
     {
       title: t("Medicine Usage Guide", "ওষুধের নির্দেশনা ও তথ্য"),
       description: t("Access DGDA registered brand and generic medicine information.", "ডিজিডিএ রেজিস্টার্ড সকল ব্র্যান্ড ও জেনেরিক ওষুধের সঠিক কাজ ও নির্দেশনা।"),
       href: "/medicines",
       icon: Pill,
-      iconClassName: "text-slate-700 group-hover/item:text-[#0B6E99]",
+      iconClassName: "text-[#0878C9]",
     },
   ];
 
@@ -336,15 +336,15 @@ export function MegaMenuNavbar({
                       })}
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-slate-100 px-3 pt-3">
-                      <span className="text-xs font-medium text-slate-500">
-                        {t("Need help choosing the right specialist?", "সঠিক বিশেষজ্ঞ ডাক্তার খুঁজতে সাহায্য দরকার?")}
+                      <span className="text-xs font-semibold text-slate-500">
+                        {t("Need instant AI medical assistance?", "জরুরী এআই স্বাস্থ্য পরামর্শ দরকার?")}
                       </span>
                       <Link
                         href="/chat"
                         onClick={() => setOpenMenu(null)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#0B6E99] hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#0878C9] hover:underline"
                       >
-                        {t("Open Health Guide", "স্বাস্থ্য সহায়িকা দেখুন")}
+                        {t("Ask AI Assistant", "এআই অ্যাসিস্ট্যান্ট খুলুন")}
                         <MoveRight className="size-3.5" />
                       </Link>
                     </div>

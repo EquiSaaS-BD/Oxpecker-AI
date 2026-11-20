@@ -6,54 +6,25 @@ import { HeroLocationDropdown } from "./HeroLocationDropdown";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, Variants } from "framer-motion";
 import {
   Search,
   MessageSquare,
   Stethoscope,
   Pill,
   Building2,
+  MapPin,
+  CheckCircle2,
   ArrowRight,
-  HeartPulse,
+  Activity
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 const SEARCH_TABS = [
-  {
-    id: "doctors",
-    label: "Find Doctors",
-    bnLabel: "ডাক্তার খুঁজুন",
-    icon: Stethoscope,
-    placeholder: "Search by specialty, doctor, or chamber...",
-    bnPlaceholder: "বিভাগ, ডাক্তার বা এলাকার নাম লিখুন...",
-    route: "/doctors",
-  },
-  {
-    id: "medicines",
-    label: "Search Medicines",
-    bnLabel: "ওষুধ খুঁজুন",
-    icon: Pill,
-    placeholder: "Search by brand or generic name...",
-    bnPlaceholder: "ব্র্যান্ড বা জেনেরিক নাম লিখুন...",
-    route: "/medicines",
-  },
-  {
-    id: "hospitals",
-    label: "Hospitals & ICU",
-    bnLabel: "হাসপাতাল ও আইসিইউ",
-    icon: Building2,
-    placeholder: "Search hospitals, beds, or locations...",
-    bnPlaceholder: "হাসপাতাল, বেড বা এলাকার নাম লিখুন...",
-    route: "/hospitals",
-  },
-  {
-    id: "ai",
-    label: "Health Guide",
-    bnLabel: "স্বাস্থ্য সহায়িকা",
-    icon: MessageSquare,
-    placeholder: "Describe symptoms or ask a health question in Bengali or English...",
-    bnPlaceholder: "বাংলা বা ইংরেজিতে আপনার লক্ষণ বা প্রশ্ন লিখুন...",
-    route: "/chat",
-  },
+  { id: "doctors", label: "Find Doctors", bnLabel: "ডাক্তার খুঁজুন", icon: Stethoscope, placeholder: "Search by specialty, doctor, or location...", bnPlaceholder: "বিভাগ, ডাক্তার বা এলাকার নাম লিখুন...", route: "/doctors" },
+  { id: "medicines", label: "Search Medicines", bnLabel: "ওষুধ খুঁজুন", icon: Pill, placeholder: "Search by brand or generic name...", bnPlaceholder: "ব্র্যান্ড বা জেনেরিক নাম লিখুন...", route: "/medicines" },
+  { id: "hospitals", label: "Hospitals & ICU", bnLabel: "হাসপাতাল ও আইসিইউ", icon: Building2, placeholder: "Search hospitals, beds, or locations...", bnPlaceholder: "হাসপাতাল, বেড বা এলাকার নাম লিখুন...", route: "/hospitals" },
+  { id: "ai", label: "Ask AI Health", bnLabel: "এআই স্বাস্থ্য সহকারী", icon: MessageSquare, placeholder: "Describe your symptoms or ask a health question...", bnPlaceholder: "আপনার লক্ষণ লিখুন বা স্বাস্থ্য বিষয়ে প্রশ্ন করুন...", route: "/chat", badge: "Bengali & English", bnBadge: "বাংলা ও ইংরেজি" },
 ];
 
 const POPULAR_SPECIALTIES = [
@@ -65,6 +36,68 @@ const POPULAR_SPECIALTIES = [
   { name: "Orthopedics", bnName: "অর্থোপেডিকস", href: "/doctors?specialty=Orthopedics" },
 ];
 
+// ============================================
+// Staggered Reveal Animation Variants
+// ============================================
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const badgeVariants: Variants = {
+  hidden: { opacity: 0, y: -14, scale: 0.94 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 380, damping: 26 },
+  },
+};
+
+const headlineVariants: Variants = {
+  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const paragraphVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const searchCardVariants: Variants = {
+  hidden: { opacity: 0, y: 28, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 280, damping: 24 },
+  },
+};
+
+const chipsVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
 export function HeroSection() {
   const { t, lang: language } = useLanguage();
   const router = useRouter();
@@ -72,7 +105,7 @@ export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
-  const currentTab = SEARCH_TABS.find((tab) => tab.id === activeTab) || SEARCH_TABS[0];
+  const currentTab = SEARCH_TABS.find(t => t.id === activeTab) || SEARCH_TABS[0];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,83 +121,65 @@ export function HeroSection() {
     router.push(`${currentTab.route}?${params.toString()}`);
   };
 
-  const quickLinks = [
-    {
-      href: "/health-card",
-      icon: HeartPulse,
-      title: t("Emergency Health Info", "জরুরি স্বাস্থ্য তথ্য"),
-      subtitle: t(
-        "Blood group, allergies & emergency contacts",
-        "রক্তের গ্রুপ, অ্যালার্জি ও জরুরি কন্টাক্ট"
-      ),
-    },
-    {
-      href: "/hospitals",
-      icon: Building2,
-      title: t("Hospital Bed Info", "হাসপাতালের বেড তথ্য"),
-      subtitle: t(
-        "ICU, cabin & ward status across hospitals",
-        "প্রধান হাসপাতালের আইসিইউ, কেবিন ও ওয়ার্ড তথ্য"
-      ),
-    },
-    {
-      href: "/doctors",
-      icon: Stethoscope,
-      title: t("Doctor Directory", "ডাক্তার ডিরেক্টরি"),
-      subtitle: t(
-        "BMDC-verified specialists by department",
-        "বিভাগ ও চেম্বার অনুযায়ী বিশেষজ্ঞ ডাক্তার"
-      ),
-    },
-    {
-      href: "/medicines",
-      icon: Pill,
-      title: t("Medicine Guide", "ওষুধের গাইড"),
-      subtitle: t(
-        "Generics, indicative pricing & usage notes",
-        "জেনেরিক নাম, মূল্য ও ব্যবহারের নির্দেশিকা"
-      ),
-    },
-  ];
-
   return (
-    <section className="relative w-full bg-white pt-24 pb-20 md:pt-28 md:pb-24 border-b border-slate-200/80 overflow-hidden">
+    <section className="relative w-full bg-white pt-20 pb-28 md:pt-24 md:pb-36 border-b border-slate-200/60 overflow-hidden">
+      {/* Ambient background */}
       <Hero3DBackground />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Quiet Editorial Eyebrow */}
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0B6E99] mb-4">
-          {t("Bangladesh Digital Healthcare Network", "বাংলাদেশের সমন্বিত স্বাস্থ্যসেবা নেটওয়ার্ক")}
-        </p>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        {/* Trust Signal / Top Badge with live pulsing dot */}
+        <motion.div variants={badgeVariants} className="flex items-center justify-start mb-6">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs backdrop-blur-xs">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
+            </span>
+            <span>{t("Your Personal AI Healthcare Assistant", "আপনার ব্যক্তিগত এআই স্বাস্থ্য সহকারী")}</span>
+          </div>
+        </motion.div>
 
         {/* Main Headline & Subtitle */}
         <div className="text-left mb-8 max-w-3xl">
-          <h1 className="font-display text-3xl sm:text-5xl md:text-[3.25rem] font-extrabold text-slate-900 tracking-tight leading-[1.12] mb-4">
+          <motion.h1
+            variants={headlineVariants}
+            className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12] mb-4"
+          >
             {language === "bn" ? (
               <>
-                আপনার ও পরিবারের স্বাস্থ্যসেবা, <br />
-                <span className="text-[#0B6E99]">এখন এক জায়গায়।</span>
+                আপনার স্বাস্থ্য তথ্য <br />
+                <span className="text-sky-700">এখন এক জায়গায়।</span>
               </>
             ) : (
               <>
-                Healthcare across Bangladesh, <br />
-                <span className="text-[#0B6E99]">organized around you.</span>
+                Your Health Information. <br />
+                <span className="text-sky-700">In One Place.</span>
               </>
             )}
-          </h1>
+          </motion.h1>
 
-          <p className="text-sm sm:text-base md:text-[17px] text-slate-600 leading-relaxed font-normal max-w-2xl">
+          <motion.p
+            variants={paragraphVariants}
+            className="text-sm sm:text-base md:text-[15.5px] text-slate-500 leading-relaxed font-normal max-w-xl mb-2 tracking-normal"
+          >
             {t(
-              "Find verified doctors, check hospital and ICU availability, read prescriptions clearly, and keep your medical records ready whenever you need care.",
-              "নির্ভরযোগ্য ডাক্তার খুঁজুন, হাসপাতালের বেড ও আইসিইউ তথ্য দেখুন, প্রেসক্রিপশন সহজ ভাষায় বুঝুন এবং জরুরি মুহূর্তের জন্য সব স্বাস্থ্য রেকর্ড গুছিয়ে রাখুন।"
+              "Get instant AI-powered health guidance, symptom analysis, prescription understanding, doctor recommendations, and medicine intelligence - all in one secure platform.",
+              "তাৎক্ষণিক এআই স্বাস্থ্য পরামর্শ, লক্ষণ বিশ্লেষণ, প্রেসক্রিপশন ব্যাখ্যা, ডাক্তার সন্ধান এবং ওষুধের নির্ভরযোগ্য তথ্য - সবকিছু এক নিরাপদ প্ল্যাটফর্মে।"
             )}
-          </p>
+          </motion.p>
         </div>
 
-        {/* Clean Institutional Search Box */}
-        <div className="w-full bg-white rounded-2xl p-2.5 sm:p-3 text-left relative z-20 border border-slate-200/90 shadow-[0_6px_28px_rgba(15,23,42,0.06)]">
+        {/* AI-First Search Box */}
+        <motion.div
+          variants={searchCardVariants}
+          className="w-full glass-panel spatial-shadow-lg rounded-3xl p-3 sm:p-4 text-left relative z-20 border border-slate-200/80"
+        >
           {/* Search Tabs */}
-          <div className="flex gap-1.5 pb-2.5 px-1 overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 mb-2">
+          <div className="flex gap-1.5 p-1 overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 mb-2">
             {SEARCH_TABS.map((tab) => {
               const Icon = tab.icon;
               const isSelected = activeTab === tab.id;
@@ -176,29 +191,30 @@ export function HeroSection() {
                     setActiveTab(tab.id);
                     setSearchQuery("");
                   }}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 whitespace-nowrap ${
                     isSelected
-                      ? "bg-slate-900 text-white"
+                      ? "bg-slate-900 text-white shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
                   }`}
                 >
-                  <Icon
-                    size={15}
-                    className={isSelected ? "text-white" : "text-slate-500"}
-                  />
-                  <span>{language === "bn" ? tab.bnLabel : tab.label}</span>
+                  <Icon size={16} className={isSelected ? "text-sky-400" : "text-slate-500"} />
+                  <span className="whitespace-nowrap">{language === "bn" ? tab.bnLabel : tab.label}</span>
+                  {tab.badge && (
+                    <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                      isSelected ? "bg-sky-500 text-white" : "bg-sky-100 text-sky-700"
+                    }`}>
+                      {language === "bn" ? tab.bnBadge : tab.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
           {/* Search Input Form */}
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center"
-          >
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             {activeTab === "doctors" && (
-              <div className="relative sm:w-52 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200/80 pb-2 sm:pb-0 sm:pr-2">
+              <div className="relative sm:w-52 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-100 pb-2 sm:pb-0 sm:pr-2">
                 <HeroLocationDropdown
                   value={selectedLocation}
                   onChange={setSelectedLocation}
@@ -207,76 +223,90 @@ export function HeroSection() {
             )}
 
             <div className="relative flex-1 flex items-center px-3 py-1">
-              <Search size={18} className="text-slate-400 shrink-0 mr-2.5" />
+              <Search size={18} className="text-slate-500 shrink-0 mr-2.5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  language === "bn" ? currentTab.bnPlaceholder : currentTab.placeholder
-                }
-                className="w-full text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent h-10"
+                placeholder={language === "bn" ? currentTab.bnPlaceholder : currentTab.placeholder}
+                className="w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent h-10"
               />
             </div>
 
             <button
               type="submit"
-              className="h-11 px-6 bg-[#0B6E99] hover:bg-[#09587A] text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 shrink-0 transition-colors cursor-pointer"
+              className="h-11 px-6 btn-clay rounded-2xl text-sm font-bold flex items-center justify-center gap-1.5 shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-transform"
             >
               <span>{t("Search", "খুঁজুন")}</span>
-              <ArrowRight size={15} />
+              <ArrowRight size={16} />
             </button>
           </form>
-        </div>
+        </motion.div>
 
-        {/* Popular Specialty Links */}
-        <div className="mt-5 flex flex-wrap items-center justify-start gap-2 text-xs">
-          <span className="text-slate-500 font-medium mr-1">
-            {t("Common departments:", "প্রচলিত বিভাগ:")}
-          </span>
+        {/* Popular Specialty Tags */}
+        <motion.div
+          variants={chipsVariants}
+          className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
+        >
+          <span className="text-slate-500 font-semibold">{t("Explore by specialty:", "বিশেষজ্ঞ বিভাগ খুঁজুন:")}</span>
           {POPULAR_SPECIALTIES.map((spec) => (
             <Link
               key={spec.name}
               href={spec.href}
-              className="px-3 py-1.5 bg-slate-50 hover:bg-[#F0F7FB] text-slate-700 hover:text-[#0B6E99] border border-slate-200/80 hover:border-[#0B6E99]/30 font-medium rounded-lg transition-colors"
+              className="px-3 py-1 bg-white hover:bg-sky-50/70 text-slate-700 hover:text-[#0878C9] hover:border-sky-300 font-medium rounded-lg border border-slate-200 transition-all shadow-2xs"
             >
               {language === "bn" ? spec.bnName : spec.name}
             </Link>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Unified 4-Column Quick-Access Clinical Strip */}
-        <div className="mt-10 bg-white border border-slate-200 rounded-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 overflow-hidden">
-          {quickLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-start gap-3.5 p-4 sm:p-5 hover:bg-slate-50/90 transition-colors text-left"
-              >
-                <div className="mt-0.5 text-slate-700 group-hover:text-[#0B6E99] transition-colors shrink-0">
-                  <Icon size={19} strokeWidth={1.8} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1.5">
-                    <span className="text-sm font-semibold text-slate-900 group-hover:text-[#0B6E99] transition-colors truncate">
-                      {item.title}
-                    </span>
-                    <ArrowRight
-                      size={14}
-                      className="text-slate-300 group-hover:text-[#0B6E99] group-hover:translate-x-0.5 transition-all shrink-0"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-500 leading-snug mt-1">
-                    {item.subtitle}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+        {/* Service summary */}
+        <motion.div
+          variants={chipsVariants}
+          className="mt-10 pt-6 border-t border-slate-200/80 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-4xl text-left"
+        >
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
+            <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200">
+              <Activity size={18} />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">{t("Emergency Health Info", "জরুরি স্বাস্থ্য তথ্য")}</div>
+              <div className="text-[11px] text-slate-500 font-medium">{t("Key Medical Details", "প্রয়োজনীয় চিকিৎসার তথ্য")}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200 relative">
+              <Building2 size={18} />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-white" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">{t("Hospital Bed Information", "হাসপাতালের বেডের তথ্য")}</div>
+              <div className="text-[11px] text-slate-500 font-medium">{t("Planned Updates From Hospitals", "হাসপাতালের পরিকল্পিত আপডেট")}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 border border-sky-200">
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">{t("Doctor Directory", "ডাক্তার ডিরেক্টরি")}</div>
+              <div className="text-[11px] text-slate-500 font-medium">{t("Search by Specialty", "বিভাগ অনুযায়ী খুঁজুন")}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-2.5 rounded-xl glass-pill spatial-shadow-hover transition-all duration-300">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200">
+              <Pill size={18} />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">{t("Medicine Guide", "ওষুধের গাইড")}</div>
+              <div className="text-[11px] text-slate-500 font-medium">{t("Search Medicine Information", "ওষুধের তথ্য খুঁজুন")}</div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

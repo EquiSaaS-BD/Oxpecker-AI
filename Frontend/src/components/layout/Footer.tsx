@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useHackathon } from "@/context/HackathonContext";
 import Image from "next/image";
-import { Mail, PhoneCall } from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  MapPin,
+  Mail,
+  PhoneCall,
+  ShieldCheck,
+
+  Building2,
+} from "lucide-react";
 
 /* -- Inline brand SVGs (lucide-react doesn't ship brand icons reliably) -- */
 const Facebook = ({ size = 16 }: { size?: number }) => (
@@ -19,17 +27,31 @@ const Linkedin = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
 );
 
-export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
+const HOSPITAL_EXAMPLES = [
+  "Square Hospital Dhaka",
+  "Labaid Specialized Hospital",
+  "Popular Diagnostic Centre",
+  "United Hospital Gulshan",
+  "Evercare Hospital Dhaka",
+  "Ibn Sina Specialized Hospital",
+  "Central Hospital Limited",
+  "BRB Hospitals Limited",
+];
+
+export function Footer({ showFeaturedHospitals }: { showFeaturedHospitals?: boolean } = {}) {
   const { isYunet } = useHackathon();
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
+  const shouldShowHospitals = showFeaturedHospitals !== undefined ? showFeaturedHospitals : isLandingPage;
   const CLINICAL_LINKS = [
-    { label: "Symptom & Care Guide", href: "/chat" },
+    { label: "AI Diagnostic Chat", href: "/chat" },
     { label: "Find Doctors", href: "/doctors" },
     { label: "Medicine Directory", href: "/medicines" },
-    { label: "Hospital & Bed Directory", href: "/hospitals" },
+    { label: "Hospital & Bed Tracker", href: "/hospitals" },
   ];
 
   const PLATFORM_LINKS = [
-    { label: "About Oxpecker", href: "/about" },
+    { label: "About Oxpecker AI", href: "/about" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Use", href: "/terms" },
     { label: "Medical Disclaimer", href: "/disclaimer" },
@@ -37,8 +59,36 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
   ];
 
   return (
-    <footer className="relative bg-white border-t border-slate-200">
+    <footer className="relative bg-slate-50 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+        {/* Hospital directory examples - Only visible on Landing Page */}
+        {shouldShowHospitals && (
+        <div id="hospital-directory" className="py-12 sm:py-14 border-b border-slate-200">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-slate-900 text-lg sm:text-xl font-extrabold tracking-tight">
+                Featured Partner Hospitals
+              </h3>
+            </div>
+            <Building2 size={24} className="text-slate-600 hidden sm:block" />
+          </div>
+
+          <div className="relative overflow-hidden">
+            <div className="flex gap-4 animate-marquee hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] motion-reduce:animate-none w-max py-1">
+              {[...HOSPITAL_EXAMPLES, ...HOSPITAL_EXAMPLES].map((name, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-white border border-slate-200 whitespace-nowrap hover:bg-slate-100 hover:border-slate-300 shadow-2xs transition-colors duration-200"
+                >
+                  <Building2 size={15} className="text-sky-600 shrink-0" />
+                  <span className="text-sm font-bold text-slate-700">{name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        )}
+
         {/* Main Footer Colophon */}
         <div className="py-14 sm:py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           {/* Brand & Helpline Column */}
@@ -48,30 +98,34 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
               alt="Oxpecker AI"
               width={240}
               height={70}
-              className="h-14 sm:h-16 w-auto object-contain mb-2"
+              className="h-16 sm:h-20 w-auto object-contain mb-2"
             />
             <p className="text-sm font-normal leading-relaxed text-slate-600 max-w-sm">
-              Oxpecker connects patients, specialist doctors, and hospitals across Bangladesh with clear medical records, emergency Health IDs, and accessible care directories.
+              Oxpecker AI is Bangladesh's centralized digital health network unifying hospitals, doctors, and patient records into an accessible, transparent ecosystem.
             </p>
-
-            <div className="pt-1 flex flex-col sm:flex-row gap-3">
-              <a
-                href="tel:16263"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold hover:bg-slate-100 transition-colors"
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg w-fit">
+              <ShieldCheck size={15} />
+              <span>Patient privacy, data encryption & security prioritized</span>
+            </div>
+            
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <a 
+                href="tel:16263" 
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-100 transition-colors shadow-2xs"
               >
-                <PhoneCall size={14} className="text-[#0B6E99]" />
+                <PhoneCall size={14} className="text-sky-600" />
                 <span>National Health Helpline: 16263 (24/7)</span>
               </a>
-              <a
-                href="mailto:support@oxpecker.equisaas-bd.com"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold hover:bg-slate-100 transition-colors"
+              <a 
+                href="mailto:support@oxpecker.equisaas-bd.com" 
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-100 transition-colors shadow-2xs"
               >
                 <Mail size={14} className="text-slate-500" />
                 <span>support@oxpecker.equisaas-bd.com</span>
               </a>
             </div>
 
-            <div className="flex items-center gap-2.5 pt-1">
+            <div className="flex items-center gap-2.5 pt-2">
               {[
                 { name: "Facebook", icon: Facebook, href: "https://facebook.com/oxpecker" },
                 { name: "YouTube", icon: Youtube, href: "https://youtube.com/@oxpecker_ai" },
@@ -86,7 +140,7 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.name}
-                    className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-[#0B6E99] hover:border-[#0B6E99]/40 transition-colors duration-200"
+                    className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 shadow-2xs transition-colors duration-200"
                   >
                     <Icon size={15} />
                   </a>
@@ -97,9 +151,7 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
 
           {/* Clinical & Directory Links */}
           <div className="lg:col-span-4 space-y-4">
-            <h4 className="text-slate-900 font-bold text-sm tracking-wide">
-              Care &amp; Directories
-            </h4>
+            <h4 className="text-slate-900 font-bold text-sm tracking-wide">Clinical Services & Directory</h4>
             <ul className="space-y-3">
               {CLINICAL_LINKS.map((link) => (
                 <li key={link.href}>
@@ -116,9 +168,7 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
 
           {/* Platform & Transparency Links */}
           <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-slate-900 font-bold text-sm tracking-wide">
-              Platform &amp; Privacy
-            </h4>
+            <h4 className="text-slate-900 font-bold text-sm tracking-wide">Platform & Security</h4>
             <ul className="space-y-3">
               {PLATFORM_LINKS.map((link) => (
                 <li key={link.href}>
@@ -135,32 +185,34 @@ export function Footer(_props: { showFeaturedHospitals?: boolean } = {}) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
+        <div className="py-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 text-center md:text-left">
             <span>&copy; {new Date().getFullYear()} Oxpecker AI.</span>
             <span>All rights reserved.</span>
-            <span className="text-slate-300">|</span>
-            <span>Built by</span>
-            <a
-              href="https://equisaas-bd.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#0B6E99] hover:underline font-semibold"
+            <span className="text-slate-600">|</span>
+            <span>Crafted with precision by</span>
+            <a 
+              href="https://equisaas-bd.com/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-sky-600 hover:text-sky-700 hover:underline font-bold"
             >
-              EquiSaaS Bangladesh
+              Oxpecker AI
             </a>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
             {isYunet && (
-              <a
-                href="https://yunet-aignite26.devpost.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors"
-              >
-                <span>Built for Ostad Presents YUNet AIgnite Buildathon 2026</span>
-              </a>
+            <a
+              href="https://yunet-aignite26.devpost.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-800 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-2xs"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Built for Ostad Presents YUNet AIgnite Buildathon 2026</span>
+            </a>
             )}
+            
           </div>
         </div>
       </div>

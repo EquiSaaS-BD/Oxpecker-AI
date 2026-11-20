@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
+import { motion, Variants } from "framer-motion";
 import {
-  FileText,
+  MessageSquare,
   Building2,
-  HeartPulse,
-  FolderHeart,
+  HeartPulse, Network,
+  Database,
   ArrowRight,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
@@ -16,135 +18,215 @@ export interface WhyUsBentoProps {
   className?: string;
 }
 
+// ============================================
+// Bento Build Animation Variants
+// ============================================
+const bentoContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.14,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const bentoItemVariants: Variants = {
+  hidden: { opacity: 0, y: 35, scale: 0.94 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 260,
+      damping: 22,
+    },
+  },
+};
+
 export function WhyUsBento({ className }: WhyUsBentoProps) {
   const { t } = useLanguage();
 
-  const features = [
-    {
-      eyebrow: t("Medical History", "স্বাস্থ্য রেকর্ড"),
-      eyebrowClass: "text-slate-500",
-      icon: FolderHeart,
-      title: t("Unified Medical Records", "সব স্বাস্থ্য রেকর্ড এক জায়গায়"),
-      description: t(
-        "Keep prescriptions, diagnostic lab reports, and past visits organized chronologically so any doctor can review your history without missing papers.",
-        "প্রেসক্রিপশন, ডায়াগনস্টিক রিপোর্ট ও পূর্বের চিকিৎসার ইতিহাস তারিখ অনুযায়ী গুছিয়ে রাখুন, যাতে নতুন ডাক্তার দেখালে কাগজপত্র হারানোর ভয় না থাকে।"
-      ),
-      href: "/health-card",
-      cta: t("Open Health Records", "হেলথ রেকর্ড দেখুন"),
-    },
-    {
-      eyebrow: t("Emergency Access", "জরুরি সেবা"),
-      eyebrowClass: "text-[#B91C1C]",
-      icon: HeartPulse,
-      title: t("Emergency Health Card", "জরুরি হেলথ কার্ড"),
-      description: t(
-        "Share blood group, serious drug allergies, ongoing medications, and emergency family contacts with ER doctors via QR when every second counts.",
-        "জরুরি মুহূর্তে রোগী কথা বলতে না পারলেও কার্ডের QR কোড স্ক্যান করে ডাক্তার রক্তের গ্রুপ, ড্রাগ অ্যালার্জি ও পরিবারের জরুরি নম্বর দ্রুত দেখতে পারবেন।"
-      ),
-      href: "/scan/HP-2026-8841",
-      cta: t("View Emergency Card", "জরুরি কার্ড দেখুন"),
-    },
-    {
-      eyebrow: t("Facility Lookup", "হাসপাতাল তথ্য"),
-      eyebrowClass: "text-slate-500",
-      icon: Building2,
-      title: t("Hospital & ICU Directory", "হাসপাতাল ও আইসিইউ তথ্য"),
-      description: t(
-        "Compare hospital departments, emergency phone lines, and ICU, cabin, or general bed availability across major clinics before leaving home.",
-        "রওনা হওয়ার আগেই দেশের প্রধান হাসপাতালগুলোর বিভাগ, জরুরি যোগাযোগ নম্বর এবং আইসিইউ, কেবিন ও সাধারণ বেডের অবস্থা দেখে সিদ্ধান্ত নিন।"
-      ),
-      href: "/hospitals",
-      cta: t("Browse Hospitals", "হাসপাতাল দেখুন"),
-    },
-    {
-      eyebrow: t("Clear Guidance", "সহজ ব্যাখ্যা"),
-      eyebrowClass: "text-slate-500",
-      icon: FileText,
-      title: t("Prescription & Report Clarity", "প্রেসক্রিপশন ও রিপোর্ট বুঝতে সহায়তা"),
-      description: t(
-        "Upload handwritten prescriptions or lab reports to review medicine schedules, generic alternatives, and test values in clear everyday Bengali.",
-        "হাতের লেখা প্রেসক্রিপশন বা ল্যাব রিপোর্ট আপলোড করে ওষুধের ডোজ, জেনেরিক নাম ও টেস্টের ফলাফল সহজ বাংলায় স্পষ্টভাবে বুঝে নিন।"
-      ),
-      href: "/reports",
-      cta: t("Upload Report or Prescription", "রিপোর্ট বা প্রেসক্রিপশন দেখুন"),
-    },
-  ];
-
   return (
-    <section
-      id="features"
-      className={cn(
-        "py-16 sm:py-24 bg-white relative z-10 w-full max-w-[1280px] mx-auto px-4 sm:px-6",
-        className
-      )}
-    >
-      {/* Clean Editorial Header */}
-      <div className="max-w-2xl mb-12 lg:mb-14">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0B6E99] mb-2.5">
-          {t("Core Capabilities", "মূল সেবাসমূহ")}
-        </p>
-        <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+    <section id="features" className={cn("py-16 sm:py-24 relative z-10 w-full max-w-[1280px] mx-auto px-4 sm:px-6", className)}>
+      
+      {/* Section Header */}
+      <div className="text-center mb-14 lg:mb-16">
+        <motion.h2
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, delay: 0.08 }}
+          className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight"
+        >
+          {t("One Platform For All", "সবার জন্য এক স্বাস্থ্য প্ল্যাটফর্ম")}
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, delay: 0.15 }}
+          className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto mt-3 font-normal"
+        >
           {t(
-            "Practical healthcare tools built for patients and families",
-            "রোগী ও পরিবারের দৈনন্দিন চিকিৎসার নির্ভরযোগ্য সঙ্গী"
+            "The platform brings doctor, hospital, emergency triage, and digital health-record tools together in one place.",
+            "ডাক্তার, হাসপাতাল এবং স্বাস্থ্য রেকর্ডের আধুনিক সব সুবিধা এখন একটি মাত্র প্ল্যাটফর্মে।"
           )}
-        </h2>
-        <p className="text-slate-600 text-sm sm:text-base mt-3 leading-relaxed">
-          {t(
-            "Designed around real hospital visits in Bangladesh—from finding the right specialist to keeping records safe for emergencies.",
-            "বাংলাদেশের বাস্তব চিকিৎসা অভিজ্ঞতার আলোকে তৈরি—সঠিক ডাক্তার খোঁজা থেকে শুরু করে জরুরি মুহূর্তের সব তথ্য প্রস্তুত রাখতে।"
-          )}
-        </p>
+        </motion.p>
       </div>
 
-      {/* Balanced 2x2 Editorial Feature Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {features.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.title}
-              className="bg-white border border-slate-200/90 rounded-2xl p-7 sm:p-8 hover:border-slate-300 transition-colors flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-4 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0">
-                    <Icon size={20} strokeWidth={1.8} />
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[11px] font-semibold uppercase tracking-wider",
-                      item.eyebrowClass
-                    )}
-                  >
-                    {item.eyebrow}
-                  </span>
-                </div>
+      {/* Bento Grid with Bento Build Animations */}
+      <motion.div 
+        variants={bentoContainerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        {/* Card 1: Central Hospital Server (Spans 2 cols) */}
+        <motion.div 
+          variants={bentoItemVariants}
+          whileHover={{ y: -6, transition: { duration: 0.2 } }}
+          className="md:col-span-2 rounded-[2rem] bg-gradient-to-br from-slate-900 via-[#0B1630] to-slate-950 text-white p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between border border-slate-800 shadow-xl group"
+        >
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute -top-24 -right-24 w-72 h-72 bg-sky-500/15 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
 
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-2.5">
-                  {item.title}
-                </h3>
-                <p className="text-slate-600 text-sm sm:text-[15px] leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-
-              <div className="mt-7 pt-5 border-t border-slate-100">
-                <Link
-                  href={item.href}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0B6E99] hover:text-[#09587A] transition-colors group"
-                >
-                  <span>{item.cta}</span>
-                  <ArrowRight
-                    size={15}
-                    className="group-hover:translate-x-0.5 transition-transform"
-                  />
-                </Link>
-              </div>
+          <div className="relative z-10 space-y-4">
+            <div className="w-13 h-13 rounded-2xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 backdrop-blur-md shadow-inner">
+              <Network size={26} />
             </div>
-          );
-        })}
-      </div>
+            <div className="inline-block px-3 py-1 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-300 text-xs font-bold">
+              {t("Centralized Healthcare Cloud", "এক জায়গায় সব রেকর্ড")}
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {t("Keep Health Records Together", "স্বাস্থ্য রেকর্ড এক জায়গায় রাখুন")}
+            </h3>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl font-medium">
+              {t(
+                "Keep reports, past prescriptions, and important health history together so they can be shared securely with any authorized doctor across Bangladesh.",
+                "রিপোর্ট, আগের প্রেসক্রিপশন ও গুরুত্বপূর্ণ স্বাস্থ্য তথ্য ক্লাউডে এনক্রিপ্টেড রাখুন, যাতে জরুরি মুহূর্তে যে কোনো রেজিস্টার্ড চিকিৎসকের সাথে শেয়ার করা যায়।"
+              )}
+            </p>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-slate-400 relative z-10">
+            <span className="flex items-center gap-2 text-sky-400">
+              <Database size={16} /> {t("Fast & Interoperable Storage", "আন্তর্জাতিক মানের সুরক্ষিত সংরক্ষণ")}
+            </span>
+            <Link href="/about" className="inline-flex items-center gap-1.5 text-sky-400 hover:text-sky-300 transition-colors group-hover:translate-x-1">
+              <span>{t("Learn About Our Architecture", "সিস্টেম আর্কিটেকচার জানুন")}</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Card 2: Emergency Profile */}
+        <motion.div 
+          variants={bentoItemVariants}
+          whileHover={{ y: -6, transition: { duration: 0.2 } }}
+          className="rounded-[2rem] bg-gradient-to-br from-rose-50 via-rose-50/50 to-orange-50/40 p-8 border border-rose-200/90 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-36 h-36 bg-rose-400/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="w-13 h-13 rounded-2xl bg-rose-600 text-white flex items-center justify-center mb-6 shadow-sm group-hover:scale-105 transition-transform">
+              <HeartPulse size={26} />
+            </div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-700 block mb-1">
+              {t("Life-Saving Triage", "জরুরি মুহূর্তে")}
+            </span>
+            <h3 className="text-xl font-extrabold text-slate-900 mb-3">
+              {t("Emergency Health Summary", "জরুরি স্বাস্থ্য তথ্য")}
+            </h3>
+            <p className="text-slate-600 text-sm leading-relaxed font-medium">
+              {t(
+                "Instant emergency QR profile helping authorized doctors access patient blood group, pacemaker status, critical allergies, and emergency contacts in under 5 seconds.",
+                "জরুরি পরিস্থিতিতে কথা বলতে না পারলেও QR কোড স্ক্যান করে ডাক্তার রোগীর রক্তের গ্রুপ, ড্রাগ অ্যালার্জি এবং জরুরি অভিভাবকের ফোন নম্বর পেয়ে যাবেন।"
+              )}
+            </p>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-rose-200/60 flex items-center justify-between text-xs font-bold text-rose-700 relative z-10">
+            <span>{t("Instant 5-Sec Retrieval", "তাৎক্ষণিক ৫ সেকেন্ডে উদ্ধার")}</span>
+            <span className="font-mono bg-rose-100/80 px-2 py-0.5 rounded border border-rose-200 text-[10px]">999 READY</span>
+          </div>
+        </motion.div>
+
+        {/* Card 3: Hospital bed updates */}
+        <motion.div 
+          variants={bentoItemVariants}
+          whileHover={{ y: -6, transition: { duration: 0.2 } }}
+          className="rounded-[2rem] bg-white p-8 border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+        >
+          <div className="relative z-10">
+            <div className="w-13 h-13 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mb-6 shadow-xs group-hover:scale-105 transition-transform">
+              <Building2 size={26} />
+            </div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 block mb-1">
+              {t("Live Capacity", "হাসপাতাল পর্যবেক্ষণ")}
+            </span>
+            <h3 className="text-xl font-extrabold text-slate-900 mb-3">
+              {t("Hospital Bed Information", "হাসপাতালের বেডের তথ্য")}
+            </h3>
+            <p className="text-slate-600 text-sm leading-relaxed font-medium">
+              {t(
+                "Live network telemetry enabling real-time ICU, general bed, and emergency facility availability across leading hospitals in Bangladesh.",
+                "হাসপাতালগুলোর আইসিইউ ও সাধারণ বেডের তথ্য হালনাগাদ দেখে সময় নষ্ট না করে সঠিক হাসপাতালে দ্রুত পৌঁছানোর সুবিধা।"
+              )}
+            </p>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 relative z-10">
+            <span>{t("Verified Telemetry", "যাচাইকৃত নেটওয়ার্ক")}</span>
+            <Link href="/hospitals" className="inline-flex items-center gap-1 hover:text-emerald-800 transition-colors">
+              <span>{t("View Hospitals", "হাসপাতাল দেখুন")}</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Card 4: Bengali AI assistant (Spans 2 cols) */}
+        <motion.div 
+          variants={bentoItemVariants}
+          whileHover={{ y: -6, transition: { duration: 0.2 } }}
+          className="md:col-span-2 rounded-[2rem] bg-gradient-to-br from-white via-sky-50/30 to-slate-50 p-8 sm:p-10 border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform" />
+
+          <div className="relative z-10 space-y-3">
+            <div className="w-13 h-13 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center mb-4 shadow-xs group-hover:scale-105 transition-transform">
+              <MessageSquare size={26} />
+            </div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-700 block">
+              {t("Multilingual Clinical Assistant", "বাংলা ও ইংরেজি এআই ডাক্তার")}
+            </span>
+            <h3 className="text-2xl font-extrabold text-slate-900">
+              {t("Ask Health Questions & Scan Prescriptions", "স্বাস্থ্য প্রশ্ন করুন ও প্রেসক্রিপশন স্ক্যান করুন")}
+            </h3>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-medium max-w-2xl">
+              {t(
+                "Powered by Microsoft Azure OpenAI and Computer Vision Read OCR. Decodes doctor handwriting, checks generic medicine alternatives, and triages symptoms under DGHS & WHO medical protocols.",
+                "মাইক্রোসফট Azure ও কম্পিউটার ভিশন প্রযুক্তির সমন্বয়ে ডাক্তারের হাতের লেখা ডিকোড, সাশ্রয়ী জেনেরিক বিকল্প ওষুধ এবং স্বাস্থ্য অধিদপ্তরের প্রটোকল অনুযায়ী প্রাথমিক পরামর্শ নিন।"
+              )}
+            </p>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs font-bold relative z-10">
+            <span className="text-slate-500 flex items-center gap-1.5">
+              
+              {t("Trained on 9,600+ DGHS/WHO Clinical Cases", "১৫০টি রোগের ৯,৬০০+ ক্লিনিক্যাল কেস")}
+            </span>
+            <Link href="/chat?category=symptoms" className="text-sky-600 hover:text-sky-700 font-extrabold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span>{t("Start AI Health Chat", "এআই স্বাস্থ্য চ্যাট শুরু করুন")}</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
