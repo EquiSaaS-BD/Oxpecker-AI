@@ -37,7 +37,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   const isGuest = !user;
 
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectedChamberIndex, setSelectedChamberIndex] = useState(0);
@@ -60,9 +60,6 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
     if (doc) {
       setDoctor(doc);
     }
-
-    const timer = setTimeout(() => setIsLoading(false), 400);
-    return () => clearTimeout(timer);
   }, [resolvedParams.id]);
 
   const handleBookingClick = () => {

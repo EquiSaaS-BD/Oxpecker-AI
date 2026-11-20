@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Clock, MonitorPlay, UserCheck, Activity, Smartphone, Plus, X, ToggleLeft, ToggleRight, QrCode, Mail, Link as LinkIcon, CheckCircle2, Undo2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useDoctor } from '@/context/DoctorContext';
 import { deriveDoctorConnectCode, isValid12DigitCode } from '@/lib/doctor-assistant-link';
@@ -282,7 +282,7 @@ export default function DoctorDashboardPage() {
                   </div>
                   {queue[1] && (
                     <div className="w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[18px] sm:text-[20px] font-bold text-slate-500 shrink-0">
-                      {queue[1].name.charAt(0)}
+                      {(queue[1]?.name || "P").charAt(0)}
                     </div>
                   )}
                 </div>
@@ -291,7 +291,7 @@ export default function DoctorDashboardPage() {
               {queue.length > 2 && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-[12px] sm:text-[13px] text-slate-500 font-medium bg-slate-50 p-2.5 sm:p-3 rounded-lg border border-slate-200 truncate">
-                    <span className="font-bold text-slate-700">Upcoming:</span> {queue[2].token} - {queue[2].name}
+                    <span className="font-bold text-slate-700">Upcoming:</span> {queue[2]?.token || "-"} - {queue[2]?.name || "Patient"}
                   </p>
                 </div>
               )}
@@ -319,25 +319,31 @@ export default function DoctorDashboardPage() {
             </div>
             
             <div className="flex flex-col gap-3">
-              {connectedAssistants.map((ast) => (
-                <div key={ast.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-[12px] border border-slate-200 group transition-colors hover:border-slate-300 gap-2">
+              {connectedAssistants.map((ast, idx) => {
+                const safeName = ast?.name || "Clinic Assistant";
+                const safeStatus = ast?.status || "Online";
+                const safeColor = ast?.color || "text-emerald-600";
+                const safeBg = ast?.bg || "bg-emerald-50";
+                return (
+                <div key={ast?.id || `ast-${idx}`} className="flex items-center justify-between bg-slate-50 p-4 rounded-[12px] border border-slate-200 group transition-colors hover:border-slate-300 gap-2">
                   <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                    <div className={`w-[40px] h-[40px] rounded-full ${ast.bg}/20 ${ast.color} font-bold flex items-center justify-center text-sm shrink-0`}>
-                      {ast.name.charAt(0)}
+                    <div className={`w-[40px] h-[40px] rounded-full ${safeBg}/20 ${safeColor} font-bold flex items-center justify-center text-sm shrink-0`}>
+                      {safeName.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-[15px] font-bold text-slate-700 leading-tight truncate">{ast.name}</h4>
-                      <span className={`text-[13px] ${ast.color} font-medium flex items-center gap-1.5 mt-0.5 truncate`}>
-                        {!ast.isPending && ast.status.includes('Online') && <span className={`w-1.5 h-1.5 rounded-full ${ast.bg} animate-pulse`}></span>}
-                        {ast.status}
+                      <h4 className="text-[15px] font-bold text-slate-700 leading-tight truncate">{safeName}</h4>
+                      <span className={`text-[13px] ${safeColor} font-medium flex items-center gap-1.5 mt-0.5 truncate`}>
+                        {!ast?.isPending && safeStatus.includes('Online') && <span className={`w-1.5 h-1.5 rounded-full ${safeBg} animate-pulse`}></span>}
+                        {safeStatus}
                       </span>
                     </div>
                   </div>
                   <button onClick={() => handleRemoveAssistant(ast.id)} className="text-[12px] font-bold text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 shrink-0">
-                    {ast.isPending ? 'Cancel' : 'Remove'}
+                    {ast?.isPending ? 'Cancel' : 'Remove'}
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         </div>
@@ -394,7 +400,7 @@ export default function DoctorDashboardPage() {
                   <td className="px-6 py-3 font-medium text-slate-500 whitespace-nowrap">{log.time}</td>
                   <td className="px-6 py-3 font-semibold text-slate-700 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">{log.name.charAt(0)}</div>
+                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">{(log?.name || "A").charAt(0)}</div>
                       <span>{log.name}</span>
                     </div>
                   </td>

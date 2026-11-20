@@ -138,6 +138,24 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
   const [queue, setQueue] = useState<QueuePatient[]>(initialQueue);
   const [previousQueue, setPreviousQueue] = useState<QueuePatient[]>([]);
   
+  const normalizeAssistant = (raw: any, idx = 0) => {
+    const safe = raw && typeof raw === "object" ? raw : {};
+    const status = typeof safe.status === "string" && safe.status ? safe.status : "Online";
+    const isPending = typeof safe.isPending === "boolean" ? safe.isPending : status.toLowerCase().includes("pending");
+    return {
+      ...safe,
+      id: typeof safe.id === "string" && safe.id ? safe.id : `ast-${idx}`,
+      name: typeof safe.name === "string" && safe.name.trim() ? safe.name : "Clinic Assistant",
+      role: typeof safe.role === "string" && safe.role ? safe.role : "Nurse / Assistant",
+      status,
+      time: typeof safe.time === "string" && safe.time ? safe.time : "Shift: Active",
+      color: typeof safe.color === "string" && safe.color ? safe.color : (isPending ? "text-[#F59E0B]" : "text-emerald-600"),
+      bg: typeof safe.bg === "string" && safe.bg ? safe.bg : (isPending ? "bg-[#F59E0B]" : "bg-emerald-50"),
+      isPending,
+      permissions: safe.permissions && typeof safe.permissions === "object" ? safe.permissions : {},
+    };
+  };
+
   const [connectedAssistants, setConnectedAssistants] = useState<any[]>([]);
   
   // Hydrate connected assistants from server API with localStorage offline fallback
@@ -158,9 +176,10 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
         if (res.ok && active) {
           const data = await res.json();
           if (Array.isArray(data.connectedAssistants)) {
-            setConnectedAssistants(data.connectedAssistants);
+            const sanitized = data.connectedAssistants.map((a: any, i: number) => normalizeAssistant(a, i));
+            setConnectedAssistants(sanitized);
             if (typeof window !== "undefined") {
-              localStorage.setItem("oxpecker_assistants", JSON.stringify(data.connectedAssistants));
+              localStorage.setItem("oxpecker_assistants", JSON.stringify(sanitized));
             }
             return;
           }
@@ -172,9 +191,18 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
-            const uniqueAssistants = Array.from(new Map(parsed.map((a: any) => [a.id, a])).values());
-            setConnectedAssistants(uniqueAssistants);
-          } catch {}
+            if (Array.isArray(parsed)) {
+              const normalized = parsed
+                .filter((a: any) => a && typeof a === "object")
+                .map((a: any, i: number) => normalizeAssistant(a, i));
+              const uniqueAssistants = Array.from(new Map(normalized.map((a: any) => [a.id, a])).values());
+              setConnectedAssistants(uniqueAssistants);
+            } else {
+              localStorage.removeItem('oxpecker_assistants');
+            }
+          } catch {
+            localStorage.removeItem('oxpecker_assistants');
+          }
         }
       }
     };

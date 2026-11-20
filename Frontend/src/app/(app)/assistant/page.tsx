@@ -31,7 +31,7 @@ export default function AssistantDashboardPage() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [queue, setQueue] = useState(INITIAL_QUEUE);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [assignedDoctorName, setAssignedDoctorName] = useState("Not Connected");
   const [assistantCode12, setAssistantCode12] = useState("");
   const [doctorCodeInput, setDoctorCodeInput] = useState("");
@@ -113,14 +113,6 @@ export default function AssistantDashboardPage() {
       setConnectingDoctor(false);
     }
   };
-
-  useEffect(() => {
-    // Simulate fetching dashboard data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
   
   // LIVE QUEUE STATE MACHINE
   // States: 'idle' (waiting to start), 'active' (timer running), 'signaled' (doctor blinking yellow)

@@ -104,19 +104,41 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Auto-recover ChunkLoadError on new Vercel deployments */}
+        {/* Auto-recover ChunkLoadError / stale dynamic imports safely with a 15s loop guard */}
         <Script id="chunk-error-recovery" strategy="beforeInteractive">
           {`
-            if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (var i = 0; i < regs.length; i++) regs[i].unregister();
-              });
-            }
-            window.addEventListener('error', function(e) {
-              if (e.message && (e.message.indexOf('Loading chunk') !== -1 || e.message.indexOf('ChunkLoadError') !== -1)) {
-                window.location.reload();
+            (function() {
+              if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  for (var i = 0; i < regs.length; i++) regs[i].unregister();
+                }).catch(function() {});
               }
-            });
+              function recoverChunk(msg) {
+                if (!msg) return;
+                var s = String(msg);
+                if (
+                  s.indexOf('Loading chunk') !== -1 ||
+                  s.indexOf('ChunkLoadError') !== -1 ||
+                  s.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+                  s.indexOf('Importing a module script failed') !== -1
+                ) {
+                  try {
+                    var last = Number(window.sessionStorage.getItem('oxpecker_chunk_reload_ts') || '0');
+                    if (!last || Date.now() - last > 15000) {
+                      window.sessionStorage.setItem('oxpecker_chunk_reload_ts', String(Date.now()));
+                      window.location.reload();
+                    }
+                  } catch (err) {}
+                }
+              }
+              window.addEventListener('error', function(e) {
+                recoverChunk(e && e.message);
+              });
+              window.addEventListener('unhandledrejection', function(e) {
+                var reason = e && e.reason;
+                recoverChunk(typeof reason === 'string' ? reason : (reason && reason.message));
+              });
+            })();
           `}
         </Script>
       </head>

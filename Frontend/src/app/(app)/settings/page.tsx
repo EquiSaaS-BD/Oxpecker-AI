@@ -5,7 +5,7 @@ import { LogOut, User, Camera, Save, Shield, Bell, ChevronDown, ChevronUp, Dropl
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import Image from "next/image";
 import { ImageUploadCropper } from "@/components/shared/ImageUploadCropper";
 import { apiGetProfile, apiUpdateProfile, compressAndResizeImage } from "@/lib/api";
@@ -48,18 +48,18 @@ export default function SettingsPage() {
     setIsLoading(true);
     try {
       const res = await apiGetProfile();
-      const prof = res.data.profile || {};
+      const prof = res?.data?.profile || {};
       setName(prof.name || user?.name || "");
       setEmail(prof.email || user?.email || "");
-      setPhone(prof.phone || "");
-      setDob(prof.date_of_birth || prof.dob || "");
-      setGender(prof.gender || "");
-      setBloodGroup(prof.blood_group || prof.bloodGroup || "");
-      setAddress(prof.address || "");
+      setPhone(prof.phone || user?.phone || "");
+      setDob(prof.date_of_birth || prof.dob || user?.date_of_birth || "");
+      setGender(prof.gender || user?.gender || "");
+      setBloodGroup(prof.blood_group || prof.bloodGroup || user?.blood_group || "");
+      setAddress(prof.address || user?.address || "");
       setNid(prof.nid || "");
       setEmergencyContact(prof.emergency_contact || prof.emergencyContact || "");
       if (prof.image) setProfileImage(prof.image);
-    } catch (e) {
+    } catch {
       toast.error("Failed to load profile data.");
     } finally {
       setIsLoading(false);
@@ -70,6 +70,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) {
       loadProfileData();
+    } else {
+      setIsLoading(false);
     }
   }, [user, loadProfileData]);
 
@@ -218,7 +220,6 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-[#F8FAFC] p-4 md:p-8">
-      <Toaster position="top-center" richColors />
       <div className="max-w-[760px] mx-auto space-y-6 pb-16">
         <h1 className="text-[26px] font-bold text-slate-900 tracking-tight">Profile & Account Settings</h1>
 

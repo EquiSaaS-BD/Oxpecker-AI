@@ -35,7 +35,11 @@ export default function DashboardPage() {
     return <div className="p-8 text-center text-slate-500">ড্যাশবোর্ড লোড করতে সমস্যা হয়েছে।</div>;
   }
 
-  const { user: userProfile, healthScore, reminders: medicineReminders } = dashboardData;
+  const userProfile = dashboardData?.user || {};
+  const healthScore = dashboardData?.healthScore || {};
+  const medicineReminders = Array.isArray(dashboardData?.reminders) ? dashboardData.reminders : [];
+  const safeScore = typeof healthScore.score === "number" ? healthScore.score : 85;
+  const firstName = (userProfile.name || "রোগী").split(" ")[0];
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       
@@ -43,7 +47,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">আপনার স্বাস্থ্য ড্যাশবোর্ড</h1>
-          <p className="text-slate-500 mt-1">স্বাগতম, {userProfile.name.split(' ')[0]}। এখানে আপনার আজকের স্বাস্থ্যের সারসংক্ষেপ।</p>
+          <p className="text-slate-500 mt-1">স্বাগতম, {firstName}। এখানে আপনার আজকের স্বাস্থ্যের সারসংক্ষেপ।</p>
         </div>
         <Link
           href="/chat"
@@ -88,20 +92,20 @@ export default function DashboardPage() {
                       fill="none"
                       stroke="#00687b"
                       strokeWidth="2.8"
-                      strokeDasharray={`${healthScore.score}, 100`}
+                      strokeDasharray={`${safeScore}, 100`}
                       strokeLinecap="round"
                       className="animate-progress"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-bold text-slate-900">{healthScore.score}</span>
-                    <span className="text-sm font-medium text-emerald-600">{healthScore.label}</span>
+                    <span className="text-4xl font-bold text-slate-900">{safeScore}</span>
+                    <span className="text-sm font-medium text-emerald-600">{healthScore.label || "ভালো"}</span>
                   </div>
                 </div>
                 
                 <div className="mt-4 flex items-center gap-2 text-sm font-medium text-indigo-600 bg-indigo-50/30 px-3 py-1 rounded-full">
                   <Activity size={14} />
-                  <span>{healthScore.trendLabel}</span>
+                  <span>{healthScore.trendLabel || "স্থিতিশীল"}</span>
                 </div>
               </div>
             </div>
@@ -115,8 +119,8 @@ export default function DashboardPage() {
                       <UserPlaceholder />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl text-slate-900">{userProfile.name}</h3>
-                      <p className="text-sm text-slate-500">বয়স: {userProfile.age} | রক্ত গ্রুপ: {userProfile.bloodGroup}</p>
+                      <h3 className="font-bold text-xl text-slate-900">{userProfile.name || "রোগী"}</h3>
+                      <p className="text-sm text-slate-500">বয়স: {userProfile.age || "-"} | রক্ত গ্রুপ: {userProfile.bloodGroup || "-"}</p>
                     </div>
                   </div>
                   <div className="bg-indigo-50 text-indigo-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">

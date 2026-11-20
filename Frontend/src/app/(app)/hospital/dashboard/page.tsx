@@ -84,6 +84,7 @@ export default function HospitalDashboardPage() {
     const dReports = getDiagnosticReports();
     setDiagOrdersCount(dOrders.length);
     setDiagCriticalCount(dReports.filter((r) => r.status === "Critical Alert").length);
+    setIsLoading(false);
 
     let cancelled = false;
     (async () => {
@@ -109,12 +110,8 @@ export default function HospitalDashboardPage() {
       }
     })();
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 250);
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
   }, []);
 

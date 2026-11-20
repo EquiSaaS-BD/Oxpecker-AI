@@ -11,7 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toPng, toJpeg } from "html-to-image";
 import { useAuth } from "@/context/AuthContext";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import HealthPassCard from "@/components/health-card/HealthPassCard";
 import { HealthPassBack } from "@/components/health-card/HealthPassBack";
 import VerificationFlow from "@/components/health-card/VerificationFlow";
@@ -22,6 +22,7 @@ import {
   createHealthCard,
   formatDate,
   BANGLADESH_ZILAS,
+  INITIAL_HEALTH_CARDS,
   MOCK_MEDICAL_VISITS,
 } from "@/lib/healthpass";
 import { LocationAutocompleteInput } from "@/components/shared/LocationAutocompleteInput";
@@ -45,11 +46,16 @@ export default function HealthCardPage() {
   // Load existing card
   useEffect(() => {
     async function load() {
-      if (!user) return;
+      if (!user) {
+        setCard(INITIAL_HEALTH_CARDS[0] || null);
+        setVisits(MOCK_MEDICAL_VISITS || []);
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const result = await getHealthCard(user.id);
-        if (result) {
+        if (result?.card) {
           // Check if local location or custom card overrides exist
           const savedLoc = localStorage.getItem(`hp_location_${user.id}`);
           let locData: any = {};
@@ -306,7 +312,6 @@ export default function HealthCardPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
-      <Toaster position="top-center" richColors />
 
       {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

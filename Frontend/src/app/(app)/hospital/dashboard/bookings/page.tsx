@@ -92,8 +92,7 @@ export default function BookingManagementPage() {
 
   useEffect(() => {
     refreshAll();
-    const timer = setTimeout(() => setIsLoading(false), 200);
-    return () => clearTimeout(timer);
+    setIsLoading(false);
   }, []);
 
   // Reset page to 1 whenever search, category, or ward filter changes

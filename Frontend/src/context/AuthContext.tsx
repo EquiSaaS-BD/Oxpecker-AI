@@ -43,73 +43,146 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (userData: AppUser, options?: { cookieAlreadySet?: boolean }) => Promise<void>;
   logout: () => void;
+  clearStaleSession: () => void;
   updateUser: (userData: AppUser) => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function isValidCachedUser(value: unknown): value is AppUser {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.id === "string" &&
+    candidate.id.trim().length > 0 &&
+    typeof candidate.email === "string" &&
+    candidate.email.trim().length > 0 &&
+    typeof candidate.role === "string" &&
+    ["patient", "doctor", "hospital", "admin", "assistant"].includes(candidate.role)
+  );
+}
+
+function clearCachedSessionKeys() {
+  if (typeof localStorage === "undefined") return;
+  localStorage.removeItem("oxpecker_mock_user");
+  localStorage.removeItem("oxpecker_user");
+  localStorage.removeItem("oxpecker_last_activity");
+  localStorage.removeItem("oxpecker_session_expiry");
+  localStorage.removeItem("oxpecker_token");
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Instant optimistic hydration from localStorage, then authoritative background server session check
+  // Authoritative server-cookie-first hydration: NEVER set isLoading=false with a non-null user
+  // until /api/auth/session confirms or sets the HttpOnly oxpecker_session cookie.
   useEffect(() => {
     let active = true;
     const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
 
-    // 1. Instant local cache hydration (<1ms) to eliminate blank loading skeletons
-    let cachedParsed: AppUser | null = null;
-    try {
-      const savedUser = localStorage.getItem("oxpecker_mock_user");
-      const lastActivity = localStorage.getItem("oxpecker_last_activity");
-      if (savedUser && lastActivity) {
-        const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
-        if (timeSinceLastActivity > THIRTY_DAYS_IN_MS) {
-          localStorage.removeItem("oxpecker_mock_user");
-          localStorage.removeItem("oxpecker_last_activity");
-        } else {
-          cachedParsed = normalizeAppUser(JSON.parse(savedUser));
-          if (active) {
-            setUser(cachedParsed);
-            setIsLoading(false);
-          }
-          localStorage.setItem("oxpecker_last_activity", Date.now().toString());
-        }
-      }
-    } catch {}
-
-    // 2. Authoritative background server verification (bounded by 2.5s timeout)
     async function verifyServerSession() {
+      let cachedParsed: AppUser | null = null;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2500);
+      const timer = setTimeout(() => controller.abort(), 5000);
+
       try {
+        // 1. Inspect and validate any localStorage expiry timestamps first
+        if (typeof localStorage !== "undefined") {
+          const savedUser = localStorage.getItem("oxpecker_mock_user");
+          const lastActivity = localStorage.getItem("oxpecker_last_activity");
+          const sessionExpiry = localStorage.getItem("oxpecker_session_expiry");
+
+          const isExpiredByActivity =
+            !!lastActivity && Number.isFinite(parseInt(lastActivity, 10)) &&
+            Date.now() - parseInt(lastActivity, 10) > THIRTY_DAYS_IN_MS;
+          const isExpiredByTimestamp =
+            !!sessionExpiry && Number.isFinite(parseInt(sessionExpiry, 10)) &&
+            Date.now() > parseInt(sessionExpiry, 10);
+
+          if (isExpiredByActivity || isExpiredByTimestamp) {
+            clearCachedSessionKeys();
+          } else if (savedUser) {
+            try {
+              const raw = JSON.parse(savedUser);
+              if (isValidCachedUser(raw)) {
+                cachedParsed = normalizeAppUser(raw);
+              } else {
+                clearCachedSessionKeys();
+              }
+            } catch {
+              clearCachedSessionKeys();
+            }
+          }
+        }
+
+        // 2. Check authoritative HttpOnly session cookie on server
         const res = await fetch("/api/auth/session", {
           credentials: "include",
+          cache: "no-store",
           signal: controller.signal,
         });
+
         if (res.ok) {
-          const data = await res.json();
-          if (active && data?.authenticated && data?.user) {
+          const data = await res.json().catch(() => null);
+          if (active && data?.authenticated && isValidCachedUser(data?.user)) {
             const hydratedUser = normalizeAppUser(data.user);
             setUser(hydratedUser);
-            localStorage.setItem("oxpecker_mock_user", JSON.stringify(hydratedUser));
-            localStorage.setItem("oxpecker_user", JSON.stringify(hydratedUser));
-            localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+            if (typeof localStorage !== "undefined") {
+              localStorage.setItem("oxpecker_mock_user", JSON.stringify(hydratedUser));
+              localStorage.setItem("oxpecker_user", JSON.stringify(hydratedUser));
+              localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+            }
             return;
           }
         }
-        // If no server cookie yet but valid local cache exists, quietly sync cookie
+
+        // 3. No active server cookie yet — handle cached user strictly without cookie desync
         if (cachedParsed) {
-          fetch("/api/auth/session", {
+          if (cachedParsed.role === "admin") {
+            // /api/auth/session rejects unauthenticated admin sessionSync with 403; never keep stale client admin state
+            clearCachedSessionKeys();
+            if (active) setUser(null);
+            return;
+          }
+
+          const syncRes = await fetch("/api/auth/session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
+            signal: controller.signal,
             body: JSON.stringify({ sessionSync: true, user: cachedParsed }),
-          }).catch(() => {});
+          });
+
+          if (syncRes.ok) {
+            if (active) setUser(cachedParsed);
+            if (typeof localStorage !== "undefined") {
+              localStorage.setItem("oxpecker_mock_user", JSON.stringify(cachedParsed));
+              localStorage.setItem("oxpecker_user", JSON.stringify(cachedParsed));
+              localStorage.setItem("oxpecker_last_activity", Date.now().toString());
+            }
+          } else {
+            clearCachedSessionKeys();
+            if (active) setUser(null);
+          }
+          return;
         }
+
+        if (active) setUser(null);
       } catch {
-        // Non-blocking fallback
+        // Offline fallback only when genuinely offline and non-admin
+        if (
+          active &&
+          typeof navigator !== "undefined" &&
+          navigator.onLine === false &&
+          cachedParsed &&
+          cachedParsed.role !== "admin"
+        ) {
+          setUser(cachedParsed);
+        } else if (active) {
+          setUser(null);
+        }
       } finally {
         clearTimeout(timer);
         if (active) setIsLoading(false);
@@ -195,17 +268,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.refresh();
   };
 
-  const logout = () => {
+  const clearStaleSession = () => {
     try {
-      fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
+      fetch("/api/auth/session", { method: "DELETE", credentials: "include" }).catch(() => {});
       supabase.auth.signOut().catch(() => {});
     } catch {}
     setUser(null);
     if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("oxpecker_mock_user");
-      localStorage.removeItem("oxpecker_user");
-      localStorage.removeItem("oxpecker_last_activity");
-      // Clean any other cached role tokens
+      clearCachedSessionKeys();
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
         if (key && (key.startsWith("sb-") || key.includes("token") || key.includes("oxpecker_auth"))) {
@@ -213,6 +283,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
+  };
+
+  const logout = () => {
+    clearStaleSession();
     if (typeof sessionStorage !== "undefined") {
       sessionStorage.clear();
     }
@@ -233,7 +307,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role: user?.role || null, isAuthenticated: !!user, login, logout, updateUser, isLoading }}>
+    <AuthContext.Provider value={{ user, role: user?.role || null, isAuthenticated: !!user, login, logout, clearStaleSession, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, CalendarDays, CalendarClock, Ban, CheckCircle2,
@@ -32,15 +32,7 @@ const mockDates = [
 
 export default function AppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate fetching appointments data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isLoading] = useState(false);
 
   if (isLoading) {
     return (

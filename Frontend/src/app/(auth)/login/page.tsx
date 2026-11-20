@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
@@ -28,7 +28,7 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 function LoginForm() {
-  const { login, isAuthenticated, isLoading, role } = useAuth();
+  const { login, clearStaleSession, isAuthenticated, isLoading, role, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -42,6 +42,7 @@ function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
     if (queryEmail && !email) {
@@ -50,14 +51,37 @@ function LoginForm() {
   }, [queryEmail, email]);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const storedUrl = sessionStorage.getItem("redirect_after_login");
-      if (storedUrl) sessionStorage.removeItem("redirect_after_login");
+    if (isLoading || !isAuthenticated || !user || hasRedirectedRef.current || isSubmitting) return;
+    let active = true;
 
-      const safeTarget = getAuthorizedRedirectUrl(storedUrl, role);
-      router.replace(safeTarget);
+    async function verifyAndRedirect() {
+      try {
+        const res = await fetch("/api/auth/session", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!active) return;
+        if (!res.ok) {
+          // Server cookie missing/invalid — clear stale client state in place instead of looping
+          clearStaleSession();
+          return;
+        }
+        hasRedirectedRef.current = true;
+        const storedUrl = sessionStorage.getItem("redirect_after_login");
+        if (storedUrl) sessionStorage.removeItem("redirect_after_login");
+        const queryRedirect = searchParams?.get("redirect");
+        const safeTarget = getAuthorizedRedirectUrl(storedUrl || queryRedirect, role);
+        router.replace(safeTarget);
+      } catch {
+        // Keep user safely on /login if session verification fails
+      }
     }
-  }, [isLoading, isAuthenticated, role, router]);
+
+    verifyAndRedirect();
+    return () => {
+      active = false;
+    };
+  }, [isLoading, isAuthenticated, user, role, router, clearStaleSession, isSubmitting, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +127,7 @@ function LoginForm() {
       }
 
       toast.success(`Welcome back, ${data.user.name}!`);
+      hasRedirectedRef.current = true;
       await login(data.user, { cookieAlreadySet: true });
     } catch (err: any) {
       const msg =

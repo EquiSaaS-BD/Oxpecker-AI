@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function WalkInPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -32,11 +32,6 @@ export default function WalkInPage() {
 
   useEffect(() => {
     setTokenId('S-' + Math.floor(Math.random() * 900 + 100));
-    // Simulate fetching page layout/data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
   }, []);
 
   const handleInputChange = (field: string, value: string) => {

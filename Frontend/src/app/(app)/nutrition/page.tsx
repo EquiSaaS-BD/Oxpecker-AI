@@ -40,7 +40,7 @@ const GOAL_TARGETS: Record<string, { targetCal: number; targetWater: number; tar
 };
 
 export default function NutritionDashboard() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [meals, setMeals] = useState<MealItem[]>(INITIAL_MEALS);
   const [activeGoal, setActiveGoal] = useState<string>("Weight Loss");
 
@@ -63,11 +63,6 @@ export default function NutritionDashboard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
 
   const totalCalories = meals.reduce((acc, m) => acc + m.cal, 0);
   const currentGoalConfig = GOAL_TARGETS[activeGoal] || GOAL_TARGETS["Weight Loss"];

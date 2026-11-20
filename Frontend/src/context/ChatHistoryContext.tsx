@@ -35,21 +35,55 @@ interface ChatHistoryContextType {
 
 const ChatHistoryContext = createContext<ChatHistoryContextType | undefined>(undefined);
 
+function sanitizeChatThreads(raw: unknown): ChatThread[] {
+  if (!Array.isArray(raw)) return [];
+  const clean: ChatThread[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const t = item as Record<string, unknown>;
+    const id = typeof t.id === "string" && t.id.trim() ? t.id : `thread_${Date.now()}_${clean.length}`;
+    const title = typeof t.title === "string" && t.title.trim() ? t.title : "New Chat";
+    const createdAt = typeof t.createdAt === "number" && Number.isFinite(t.createdAt) ? t.createdAt : Date.now();
+    const updatedAt = typeof t.updatedAt === "number" && Number.isFinite(t.updatedAt) ? t.updatedAt : createdAt;
+    const rawMessages = Array.isArray(t.messages) ? t.messages : [];
+    const messages: Message[] = rawMessages
+      .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && typeof (m as Record<string, unknown>).content === "string")
+      .map((m, idx) => ({
+        id: typeof m.id === "string" && m.id ? m.id : `msg_${createdAt}_${idx}`,
+        role: m.role === "user" ? "user" : "bot",
+        content: String(m.content || ""),
+        ...(typeof m.sensitive === "boolean" ? { sensitive: m.sensitive } : {}),
+        ...(typeof m.imageUrl === "string" ? { imageUrl: m.imageUrl } : {}),
+        ...(typeof m.imageName === "string" ? { imageName: m.imageName } : {}),
+        ...(typeof m.fileSize === "string" ? { fileSize: m.fileSize } : {}),
+      }));
+    clean.push({ id, title, messages, createdAt, updatedAt });
+  }
+  return clean;
+}
+
 export function ChatHistoryProvider({ children }: { children: React.ReactNode }) {
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount with strict schema sanitization
   useEffect(() => {
     try {
       const saved = localStorage.getItem("oxpecker_chat_history");
       if (saved) {
         const parsed = JSON.parse(saved);
-        setThreads(parsed);
+        const sanitized = sanitizeChatThreads(parsed);
+        setThreads(sanitized);
+        if (sanitized.length === 0) {
+          localStorage.removeItem("oxpecker_chat_history");
+        }
       }
     } catch (e) {
-      console.error("Failed to parse chat history:", e);
+      console.error("Failed to parse chat history, resetting cache:", e);
+      try {
+        localStorage.removeItem("oxpecker_chat_history");
+      } catch {}
     }
     setIsLoaded(true);
   }, []);
@@ -97,14 +131,16 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
         if (t.id === threadId) {
           // Auto-generate title from first user message if it's currently "New Chat"
           let newTitle = t.title;
-          if (t.messages.length === 0 && message.role === "user") {
-            const words = message.sensitive ? ["Prescription", "scan"] : message.content.split(" ");
+          const safeContent = typeof message?.content === "string" ? message.content : "";
+          const safeMessages = Array.isArray(t.messages) ? t.messages : [];
+          if (safeMessages.length === 0 && message.role === "user") {
+            const words = message.sensitive ? ["Prescription", "scan"] : safeContent.split(" ");
             newTitle = words.slice(0, 4).join(" ") + (words.length > 4 ? "..." : "");
           }
           return {
             ...t,
             title: newTitle,
-            messages: [...t.messages, message],
+            messages: [...safeMessages, { ...message, content: safeContent }],
             updatedAt: Date.now(),
           };
         }

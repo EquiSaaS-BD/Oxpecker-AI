@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Search, MapPin, Calendar, Building, ChevronDown, Receipt, MessageSquareHeart, CheckCircle2, Clock, Activity, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -29,15 +29,7 @@ export default function AssistantPatientsPage() {
   const [expandedChamberId, setExpandedChamberId] = useState<string | null>(null);
   const [billingPatient, setBillingPatient] = useState<any>(null);
   const [isStartingQueue, setIsStartingQueue] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate fetching patient data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isLoading] = useState(false);
 
   const filteredChambers = CHAMBERS.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

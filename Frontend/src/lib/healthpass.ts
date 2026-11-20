@@ -2062,7 +2062,6 @@ export function setHealthPassActivated(patientId: string, activated: boolean) {
 // ====== API & Search Functions ======
 
 export async function getHealthCard(patientId: string): Promise<HealthPassScanData | null> {
-  await new Promise((r) => setTimeout(r, 250));
   const card = INITIAL_HEALTH_CARDS.find((c) => c.patient_id === patientId) || INITIAL_HEALTH_CARDS[0];
   const isAct = isHealthPassActivated(patientId);
   return {
@@ -2072,7 +2071,6 @@ export async function getHealthCard(patientId: string): Promise<HealthPassScanDa
 }
 
 export async function getHealthCardByNumber(cardNumber: string): Promise<HealthPassScanData | null> {
-  await new Promise((r) => setTimeout(r, 350));
   const normalized = cardNumber?.trim().toUpperCase();
   const card = INITIAL_HEALTH_CARDS.find((c) => c.card_number.toUpperCase() === normalized) || INITIAL_HEALTH_CARDS[0];
   return {

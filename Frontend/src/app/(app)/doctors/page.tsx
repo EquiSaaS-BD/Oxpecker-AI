@@ -83,7 +83,7 @@ function DoctorCardSkeleton() {
 }
 
 export default function DoctorsPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [recommendedSpecialty, setRecommendedSpecialty] = useState<string | null>(null);
   const [fromReportId, setFromReportId] = useState<string | null>(null);
@@ -130,12 +130,6 @@ export default function DoctorsPage() {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
   }, []);
 
   const handleCreateConsentLead = async (e: React.FormEvent) => {

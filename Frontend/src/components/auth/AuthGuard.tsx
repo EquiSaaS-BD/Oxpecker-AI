@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { isRouteAuthorizedForRole, getRoleHomePath } from "@/lib/rbac";
@@ -36,6 +36,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const lastRedirectRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -50,6 +51,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // ── 1. Unauthenticated users ────────────────────────────────
     if (!isAuthenticated) {
       if (isPublicPage) {
+        lastRedirectRef.current = null;
         setIsAuthorized(true);
         return;
       }
@@ -68,7 +70,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem("redirect_after_login", fullUrl);
       }
 
-      router.replace("/login");
+      if (normalizedPath !== "/login" && lastRedirectRef.current !== "/login") {
+        lastRedirectRef.current = "/login";
+        router.replace("/login");
+      }
       return;
     }
 
@@ -84,10 +89,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       console.warn(
         `[RBAC] Access denied: role="${role}" attempted to access "${normalizedPath}". Redirecting to "${home}".`
       );
-      router.replace(home);
+      if (normalizedPath !== home && lastRedirectRef.current !== home) {
+        lastRedirectRef.current = home;
+        router.replace(home);
+      }
       return;
     }
 
+    lastRedirectRef.current = null;
     setIsAuthorized(true);
   }, [isLoading, isAuthenticated, role, pathname, router]);
 

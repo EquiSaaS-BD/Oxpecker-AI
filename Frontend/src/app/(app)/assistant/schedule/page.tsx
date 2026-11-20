@@ -99,15 +99,7 @@ export default function DoctorSchedulePage() {
   const [selectedDoctor, setSelectedDoctor] = useState(mockDoctors[0]);
   const [currentWeek, setCurrentWeek] = useState("Oct 12 - Oct 18, 2026");
   const [activeTab, setActiveTab] = useState<'This Week' | 'Next Week'>('This Week');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate fetching schedule data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [activeTab]); // Re-trigger loading when switching weeks
+  const [isLoading] = useState(false);
 
   if (isLoading) {
     return (

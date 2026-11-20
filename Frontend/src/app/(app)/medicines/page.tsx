@@ -128,14 +128,19 @@ export default function MedicinesPage() {
     [activeCategory, searchQuery]
   );
 
-  // Trigger search/filter changes
+  // Trigger search/filter changes immediately on mount/clear, debounce when typing search query
   useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setPage(1);
+      fetchMedicines(1, true);
+      return;
+    }
     const timer = setTimeout(() => {
       setPage(1);
       fetchMedicines(1, true);
-    }, 350);
+    }, 200);
     return () => clearTimeout(timer);
-  }, [fetchMedicines]);
+  }, [fetchMedicines, searchQuery]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
