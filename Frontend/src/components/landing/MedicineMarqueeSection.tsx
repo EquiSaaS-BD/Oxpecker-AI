@@ -1,310 +1,290 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Pill, 
-  ArrowRight, 
-
-  Search,
-  Activity,
-  BugOff,
-  Apple,
-  Wind,
-  Heart,
-  Thermometer,
-  Syringe,
-  FlaskConical,
-  SlidersHorizontal,
-  X
-} from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES = [
-  { id: "All", name: "All", icon: Pill, color: "text-slate-500", bg: "bg-slate-100" },
-  { id: "Painkiller", name: "Fever & Pain", icon: Thermometer, color: "text-rose-500", bg: "bg-rose-50" },
-  { id: "Gastric", name: "Gastric & Ulcer", icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
-  { id: "Antibiotic", name: "Antibiotics", icon: BugOff, color: "text-purple-500", bg: "bg-purple-50" },
-  { id: "Allergy", name: "Asthma & Allergy", icon: Wind, color: "text-sky-500", bg: "bg-sky-50" },
-  { id: "Vitamins", name: "Vitamins & Calcium", icon: Apple, color: "text-amber-500", bg: "bg-amber-50" },
-  { id: "Cardiac", name: "Heart & Pressure", icon: Heart, color: "text-red-500", bg: "bg-red-50" }
+  { id: "All", name: "All", bnName: "সবগুলো" },
+  { id: "Painkiller", name: "Fever & Pain", bnName: "জ্বর ও ব্যথা" },
+  { id: "Gastric", name: "Gastric & Ulcer", bnName: "গ্যাস্ট্রিক" },
+  { id: "Antibiotic", name: "Antibiotics", bnName: "অ্যান্টিবায়োটিক" },
+  { id: "Allergy", name: "Asthma & Allergy", bnName: "শ্বাসকষ্ট ও অ্যালার্জি" },
+  { id: "Cardiac", name: "Heart & Pressure", bnName: "হৃদরোগ ও প্রেশার" },
+  { id: "Vitamins", name: "Vitamins", bnName: "ভিটামিন" },
 ];
 
-// Mock Data with specific icons mapping to their use cases
 const MEDICINES = [
-  { id: 1, name: "Napa Extend", price: "৳ 2.50", mg: "665mg", type: "Tablet", category: "Painkiller", useFor: "Fever & Body ache", Icon: Thermometer, bgIcon: Pill, iconColor: "text-rose-500", iconBg: "bg-rose-500/10 border-rose-500/20" },
-  { id: 2, name: "Seclo", price: "৳ 6.00", mg: "20mg", type: "Capsule", category: "Gastric", useFor: "Acidity & Heartburn", Icon: Activity, bgIcon: Pill, iconColor: "text-emerald-500", iconBg: "bg-emerald-500/10 border-emerald-500/20" },
-  { id: 13, name: "Napa Syrup", price: "৳ 20.00", mg: "120mg/5ml", type: "Syrup", category: "Painkiller", useFor: "Fever for Kids", Icon: Thermometer, bgIcon: FlaskConical, iconColor: "text-rose-500", iconBg: "bg-rose-500/10 border-rose-500/20" },
-  { id: 3, name: "Sergel", price: "৳ 7.00", mg: "20mg", type: "Capsule", category: "Gastric", useFor: "Ulcer & Acidity", Icon: Activity, bgIcon: Pill, iconColor: "text-emerald-500", iconBg: "bg-emerald-500/10 border-emerald-500/20" },
-  { id: 14, name: "Ceftriaxone", price: "৳ 150.00", mg: "1g", type: "Injection", category: "Antibiotic", useFor: "Critical Infection", Icon: BugOff, bgIcon: Syringe, iconColor: "text-purple-500", iconBg: "bg-purple-500/10 border-purple-500/20" },
-  { id: 5, name: "Monas", price: "৳ 17.50", mg: "10mg", type: "Tablet", category: "Allergy", useFor: "Asthma & Allergies", Icon: Wind, bgIcon: Pill, iconColor: "text-sky-500", iconBg: "bg-sky-500/10 border-sky-500/20" },
-  { id: 11, name: "Azithromycin", price: "৳ 35.00", mg: "500mg", type: "Tablet", category: "Antibiotic", useFor: "Bacterial Inf.", Icon: BugOff, bgIcon: Pill, iconColor: "text-purple-500", iconBg: "bg-purple-500/10 border-purple-500/20" },
-  { id: 9, name: "Ceevit", price: "৳ 2.00", mg: "250mg", type: "Chewable", category: "Vitamins", useFor: "Vitamin C Def.", Icon: Apple, bgIcon: Pill, iconColor: "text-amber-500", iconBg: "bg-amber-500/10 border-amber-500/20" },
-  { id: 15, name: "Bizoran", price: "৳ 14.00", mg: "5/20mg", type: "Tablet", category: "Cardiac", useFor: "High Blood Pressure", Icon: Heart, bgIcon: Pill, iconColor: "text-red-500", iconBg: "bg-red-500/10 border-red-500/20" },
+  {
+    id: 1,
+    name: "Napa Extend",
+    generic: "Paracetamol",
+    strength: "665mg",
+    type: "Tablet",
+    price: "৳ 2.50",
+    category: "Painkiller",
+    useFor: "Fever, mild-to-moderate pain",
+    bnUseFor: "জ্বর ও শরীর ব্যথা",
+  },
+  {
+    id: 2,
+    name: "Seclo",
+    generic: "Omeprazole",
+    strength: "20mg",
+    type: "Capsule",
+    price: "৳ 6.00",
+    category: "Gastric",
+    useFor: "Acidity, reflux & heartburn",
+    bnUseFor: "গ্যাস্ট্রিক ও বুকজ্বালা",
+  },
+  {
+    id: 3,
+    name: "Sergel",
+    generic: "Esomeprazole",
+    strength: "20mg",
+    type: "Capsule",
+    price: "৳ 7.00",
+    category: "Gastric",
+    useFor: "Gastric ulcer & GERD",
+    bnUseFor: "আলসার ও অ্যাসিডিটি",
+  },
+  {
+    id: 5,
+    name: "Monas",
+    generic: "Montelukast",
+    strength: "10mg",
+    type: "Tablet",
+    price: "৳ 17.50",
+    category: "Allergy",
+    useFor: "Asthma & allergic rhinitis",
+    bnUseFor: "অ্যাজমা ও অ্যালার্জি",
+  },
+  {
+    id: 11,
+    name: "Azithromycin",
+    generic: "Azithromycin",
+    strength: "500mg",
+    type: "Tablet",
+    price: "৳ 35.00",
+    category: "Antibiotic",
+    useFor: "Prescribed bacterial infections",
+    bnUseFor: "চিকিৎসকের পরামর্শে ব্যাকটেরিয়াজনিত সংক্রমণ",
+  },
+  {
+    id: 15,
+    name: "Bizoran",
+    generic: "Amlodipine + Olmesartan",
+    strength: "5mg / 20mg",
+    type: "Tablet",
+    price: "৳ 14.00",
+    category: "Cardiac",
+    useFor: "High blood pressure management",
+    bnUseFor: "উচ্চ রক্তচাপ নিয়ন্ত্রণ",
+  },
+  {
+    id: 9,
+    name: "Ceevit",
+    generic: "Ascorbic Acid",
+    strength: "250mg",
+    type: "Chewable Tablet",
+    price: "৳ 2.00",
+    category: "Vitamins",
+    useFor: "Vitamin C supplementation",
+    bnUseFor: "ভিটামিন সি-এর ঘাটতি পূরণ",
+  },
+  {
+    id: 13,
+    name: "Napa Syrup",
+    generic: "Paracetamol",
+    strength: "120mg / 5ml",
+    type: "Syrup",
+    price: "৳ 20.00",
+    category: "Painkiller",
+    useFor: "Pediatric fever & mild pain",
+    bnUseFor: "শিশুদের জ্বর ও ব্যথা",
+  },
+  {
+    id: 14,
+    name: "Ceftriaxone",
+    generic: "Ceftriaxone",
+    strength: "1g",
+    type: "IV / IM Injection",
+    price: "৳ 150.00",
+    category: "Antibiotic",
+    useFor: "Hospital-supervised infection care",
+    bnUseFor: "হাসপাতালের তত্ত্বাবধানে জীবাণু সংক্রমণ চিকিৎসা",
+  },
 ];
 
 export function MedicineMarqueeSection() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const isBn = lang === "bn";
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
-  const filteredMedicines = MEDICINES.filter(med => {
-    const matchesSearch = med.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === "All" || med.category === activeCategory;
+
+  const filteredMedicines = MEDICINES.filter((med) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      med.name.toLowerCase().includes(q) ||
+      med.generic.toLowerCase().includes(q);
+    const matchesCategory =
+      activeCategory === "All" || med.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const MedCard = ({ med, isMarquee = false }: { med: typeof MEDICINES[0], isMarquee?: boolean }) => (
-    <Link 
-      href="/medicines"
-      className={`block relative overflow-hidden bg-white/50 backdrop-blur-xl border border-white/80 p-3 sm:p-5 rounded-[16px] sm:rounded-[24px] shadow-[0_8px_32px_rgba(0,61,155,0.06)] hover:shadow-[0_16px_48px_rgba(0,61,155,0.12)] hover:border-primary/30 transition-all duration-300 group cursor-pointer ${
-        isMarquee ? "w-[280px] sm:w-[350px] shrink-0" : "w-full h-full"
-      }`}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-transparent to-white/40 opacity-50 pointer-events-none z-0"></div>
-      
-      {/* Dynamic Faint Background Icon Based on Type (Syrup, Injection, Pill) */}
-      <div 
-        className="absolute -right-2 -bottom-2 sm:-right-4 sm:-bottom-4 w-24 h-24 sm:w-32 sm:h-32 text-slate-400/[0.05] group-hover:text-sky-500/[0.07] -rotate-12 pointer-events-none select-none group-hover:scale-105 transition-all duration-500 ease-out"
-        style={{
-          maskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)",
-          WebkitMaskImage: "radial-gradient(circle at 75% 75%, black 30%, transparent 85%)"
-        }}
-      >
-        <med.bgIcon 
-          className="w-full h-full"
-          fill="currentColor"
-          stroke="none"
-        />
-      </div>
-
-      <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <div className={`w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] shrink-0 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center border ${med.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
-          <med.Icon className={`w-5 h-5 sm:w-7 sm:h-7 ${med.iconColor}`} strokeWidth={1.5} />
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center mt-1 sm:mt-0 min-w-0">
-          <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-            <h3 className="text-[14px] sm:text-[17px] font-extrabold text-slate-900 group-hover:text-primary transition-colors tracking-tight truncate pr-2">{med.name}</h3>
-            <div className="hidden sm:flex items-center text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0">
-              {t("Example", "উদাহরণ")}
-            </div>
-          </div>
-          
-          <p className="text-[11px] sm:text-[12px] font-semibold text-slate-500 mb-0.5 sm:mb-1 line-clamp-1">{med.mg} <span className="hidden sm:inline">• {med.type}</span></p>
-          
-          <p className={`text-[10px] sm:text-[12px] font-bold ${med.iconColor} truncate`}>
-            <span className="hidden sm:inline">{t("Example use: ", "ব্যবহারের উদাহরণ: ")}</span><span className="font-medium text-slate-600">{med.useFor}</span>
-          </p>
-        </div>
-      </div>
-
-      <div className="relative z-10 flex items-center justify-between pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-slate-200/60">
-        <span className="text-[16px] sm:text-[18px] font-black text-slate-900">{med.price}</span>
-        <span className="text-[11px] sm:text-[13px] font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-          {t("Details", "বিস্তারিত")} <ArrowRight size={12} className="sm:w-3.5 sm:h-3.5" />
-        </span>
-      </div>
-    </Link>
-  );
-
   return (
-    <section 
-      id="medicines" 
-      className="py-24 bg-[#F8FAFC] border-t border-slate-100 overflow-hidden relative"
-      style={{
-        backgroundImage: 'radial-gradient(circle at 25% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 60%), radial-gradient(circle at 75% 100%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)'
-      }}
+    <section
+      id="medicines"
+      className="py-16 lg:py-24 bg-[#F8FAFC] border-y border-slate-200/80"
     >
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 relative z-[60]">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md text-primary border border-primary/10 mb-6 font-bold text-sm shadow-sm">
-            <Pill size={16} />
-            <span>{t("Medicine Directory Preview", "ওষুধ ডিরেক্টরির নমুনা")}</span>
-          </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-[#0a1628] mb-4">
-            {t("Explore Sample Medicine Listings", "ওষুধের নমুনা তালিকা দেখুন")}
-          </h2>
-          <p className="text-slate-500 font-medium max-w-2xl mx-auto">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+        {/* Clean Editorial Header */}
+        <div className="max-w-2xl mb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0B6E99] mb-2.5">
+            {t("Medicine Guide", "ওষুধের নির্দেশিকা")}
+          </p>
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
             {t(
-              "Names, prices, and uses below are examples. Confirm current medicine details with a pharmacy or doctor.",
-              "নিচের নাম, দাম ও ব্যবহারগুলো উদাহরণ। বর্তমান তথ্য ফার্মেসি বা ডাক্তারের কাছ থেকে নিশ্চিত করুন।"
+              "Search Common Medicines & Generics",
+              "সাধারণ ওষুধ ও জেনেরিক তথ্য খুঁজুন"
+            )}
+          </h2>
+          <p className="text-slate-600 text-sm sm:text-base mt-3 leading-relaxed">
+            {t(
+              "Check generic compositions, common clinical uses, and indicative unit MRP in Bangladesh. Always confirm dosage with your physician or licensed pharmacist.",
+              "বাংলাদেশে প্রচলিত ওষুধের জেনেরিক নাম, সাধারণ ব্যবহার এবং আনুমানিক একক মূল্য দেখুন। ব্যবহারের আগে ডাক্তার বা ফার্মাসিস্টের পরামর্শ নিশ্চিত করুন।"
             )}
           </p>
         </div>
-        
-        {/* Search Bar */}
-        <div className="flex justify-center mb-10">
-          <div className="flex items-center gap-2 max-w-[600px] w-full relative z-20">
-            <div className="flex-1 bg-white rounded-[16px] flex items-center p-2 border border-slate-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm h-[54px]">
-              <div className="pl-4 pr-3 text-slate-500">
-                <Search size={20} />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search medicines by name or generic..."
-                className="w-full h-full bg-transparent border-none outline-none py-2 text-[15px] text-slate-900 font-medium placeholder:text-slate-500"
-              />
-            </div>
-            <button 
-              onClick={() => setIsFilterOpen(true)}
-              className="bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-primary rounded-[14px] w-[54px] h-[54px] shrink-0 flex items-center justify-center transition-all shadow-sm"
-            >
-              <SlidersHorizontal size={20} />
-            </button>
-            <button className="hidden sm:flex bg-white hover:bg-slate-50 text-slate-900 rounded-[14px] px-6 h-[54px] items-center justify-center gap-2 text-[15px] font-bold transition-colors shadow-sm shrink-0">
-              Search
-            </button>
+
+        {/* Inline Search & Clean Category Pills */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+          <div className="relative w-full lg:max-w-sm">
+            <Search
+              size={17}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t(
+                "Search by brand or generic name...",
+                "ব্র্যান্ড বা জেনেরিক নাম লিখুন..."
+              )}
+              className="w-full h-11 pl-10 pr-4 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#0B6E99] focus:ring-2 focus:ring-[#0B6E99]/15 transition-all"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {CATEGORIES.map((cat) => {
+              const selected = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    selected
+                      ? "bg-slate-900 text-white border border-slate-900"
+                      : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  {isBn ? cat.bnName : cat.name}
+                </button>
+              );
+            })}
           </div>
         </div>
-        
-        {/* Category Tabs moved to Sidebar */}
-        {/* Category tabs are now inside the filter drawer */}
-        
-        <div className="min-h-[400px]">
-          {filteredMedicines.length > 0 ? (
-            (searchQuery === "" && activeCategory === "All") ? (
-              <div className="mt-12 overflow-hidden w-full relative z-10" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)' }}>
-                {/* Infinite Scrolling Marquee for Default View */}
-                <div
-                  className="flex gap-6 w-max animate-marquee hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] motion-reduce:animate-none"
-                >
-                  {/* Double the array for seamless loop */}
-                  {[...MEDICINES, ...MEDICINES].map((med, idx) => (
-                    <MedCard key={idx} med={med} isMarquee={true} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <motion.div 
-                layout
-                className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 pt-6"
-              >
-                {/* Grid Layout for Filtered View */}
-                {filteredMedicines.map((med) => (
-                  <motion.div
-                    key={med.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <MedCard med={med} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )
-          ) : (
-            <div className="py-20 text-center flex flex-col items-center">
-              <div className="w-20 h-20 bg-white border border-slate-100 rounded-3xl shadow-sm flex items-center justify-center text-slate-500 mb-5">
-                <Search size={36} />
-              </div>
-              <h3 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">No medicines found</h3>
-              <p className="text-slate-500 font-medium">Try selecting a different category or change your search query.</p>
-              <button 
-                onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
-                className="mt-6 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-colors duration-200 shadow-sm"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
-        </div>
 
-      </div>
-
-      {/* Premium Filter Sidebar Drawer */}
-      <AnimatePresence>
-        {isFilterOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setIsFilterOpen(false)}
-              className="fixed inset-0 bg-[#0a1628]/40 backdrop-blur-md z-[100]"
-            />
-            
-            <motion.div
-              initial={{ x: "100%", opacity: 0.5 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 28, stiffness: 300, mass: 0.8 }}
-              className="fixed top-0 right-0 h-full w-full max-w-[340px] bg-white/95 backdrop-blur-xl shadow-[-20px_0_40px_rgba(0,0,0,0.1)] z-[101] flex flex-col rounded-l-[32px] border-l border-white/50 overflow-hidden"
+        {/* Clean 3-Column Medicine Grid */}
+        {filteredMedicines.length === 0 ? (
+          <div className="py-14 text-center bg-white border border-dashed border-slate-200 rounded-2xl">
+            <p className="text-sm font-medium text-slate-600 mb-3">
+              {t(
+                "No medicines matched your search.",
+                "আপনার খোঁজা অনুযায়ী কোনো ওষুধ পাওয়া যায়নি।"
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setActiveCategory("All");
+              }}
+              className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold cursor-pointer hover:bg-slate-800 transition-colors"
             >
-              <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100/50">
-                <h3 className="text-[20px] font-extrabold text-slate-900 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <SlidersHorizontal size={16} className="text-primary" />
+              {t("Reset Filters", "ফিল্টার রিসেট করুন")}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMedicines.map((med) => (
+              <Link
+                key={med.id}
+                href={`/medicines?q=${encodeURIComponent(med.name)}`}
+                className="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-base text-slate-900 group-hover:text-[#0B6E99] transition-colors truncate">
+                        {med.name}
+                      </h3>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5 truncate">
+                        {med.generic}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                      {med.type}
+                    </span>
                   </div>
-                  Filters
-                </h3>
-                <button 
-                  onClick={() => setIsFilterOpen(false)}
-                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-rose-50 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
-                <motion.div 
-                  className="flex flex-col gap-3"
-                  initial="hidden"
-                  animate="show"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
-                    }
-                  }}
-                >
-                  <motion.p variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0 } }} className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-2">Categories</motion.p>
-                  
-                  {CATEGORIES.map(cat => (
-                    <motion.button
-                      variants={{
-                        hidden: { opacity: 0, x: 20 },
-                        show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-                      }}
-                      key={cat.id}
-                      onClick={() => {
-                        setActiveCategory(cat.id);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-[15px] transition-colors duration-200 ${
-                        activeCategory === cat.id 
-                          ? `${cat.bg} ${cat.color}` 
-                          : "bg-transparent text-slate-600 hover:bg-slate-100/80"
-                      }`}
-                    >
-                      <cat.icon size={20} className={activeCategory === cat.id ? cat.color : "text-slate-500 group-hover:text-slate-600"} />
-                      {cat.name}
-                    </motion.button>
-                  ))}
-                </motion.div>
-              </div>
-              
-              <div className="p-6 md:p-8 border-t border-slate-100/50 bg-slate-50/50 backdrop-blur-md">
-                <button 
-                  onClick={() => { setActiveCategory("All"); setSearchQuery(""); setIsFilterOpen(false); }}
-                  className="w-full h-[54px] rounded-2xl border-none bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
+                  <p className="text-xs text-slate-600 mt-3 leading-relaxed">
+                    <span className="font-semibold text-slate-700">
+                      {med.strength}
+                    </span>
+                    <span className="text-slate-300 mx-1.5">·</span>
+                    <span>{isBn ? med.bnUseFor : med.useFor}</span>
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-900 tabular-nums">
+                    {med.price}
+                    <span className="font-normal text-slate-400 ml-1">
+                      / {t("unit", "প্রতিটি")}
+                    </span>
+                  </span>
+                  <span className="font-semibold text-[#0B6E99] inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <span>{t("Details", "বিস্তারিত")}</span>
+                    <ArrowRight size={13} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom CTA */}
+        <div className="mt-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-slate-500">
+          <span>
+            {t(
+              "Indicative unit prices from DGDA reference listings; confirm current retail MRP at your pharmacy.",
+              "মূল্যগুলো আনুমানিক একক খুচরা মূল্যের নির্দেশিকা; কেনার সময় ফার্মেসি থেকে বর্তমান মূল্য নিশ্চিত করুন।"
+            )}
+          </span>
+          <Link
+            href="/medicines"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0B6E99] hover:text-[#09587A] transition-colors shrink-0"
+          >
+            <span>{t("Open Full Medicine Directory", "সম্পূর্ণ ওষুধ ডিরেক্টরি দেখুন")}</span>
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+      </div>
     </section>
   );
 }

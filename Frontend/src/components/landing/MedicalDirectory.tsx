@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Star, Building2, UserCircle2, ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Search,
+  MapPin,
+  Star,
+  Building2,
+  ArrowRight,
+  Stethoscope,
+} from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,391 +23,279 @@ interface HospitalListing {
 }
 
 export function MedicalDirectory() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<"doctors" | "hospitals">("doctors");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
-  const [searchType, setSearchType] = useState<"doctors" | "hospitals">("doctors");
-  const [isFocused, setIsFocused] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
-  
   const [hospitals, setHospitals] = useState<HospitalListing[]>([]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      if (mediaQuery.matches) {
-        setIsPlaying(false);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    fetch('/data/hospitals.json')
-      .then(res => {
+    fetch("/data/hospitals.json")
+      .then((res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         let finalData = data;
         if (Array.isArray(data) && Array.isArray(data[0])) {
           finalData = data.flat();
         }
         setHospitals(Array.isArray(finalData) ? finalData : []);
       })
-      .catch(err => console.error("Error fetching hospitals", err));
+      .catch((err) => console.error("Error fetching hospitals", err));
   }, []);
-  
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const { current } = scrollRef;
-      const scrollAmount = direction === "left" ? -350 : 350;
-      current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  useEffect(() => {
-    setActiveTab(searchType);
-  }, [searchType]);
-
-  // Auto-Scroll Logic (Desktop & Mobile)
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const interval = setInterval(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        // If reached the end, loop back to start instantly to avoid rewind animation
-        if (scrollLeft + clientWidth >= scrollWidth - 20) {
-          scrollRef.current.scrollTo({ left: 0, behavior: "auto" });
-        } else {
-          scrollRef.current.scrollBy({ left: 340, behavior: "smooth" });
-        }
-      }
-    }, 2500); // 2.5 seconds per card
-
-    return () => clearInterval(interval);
-  }, [activeTab, searchQuery, searchLocation, isPlaying]);
-
-  const filteredDoctors = mockDoctors.filter(doc => {
-    const matchesQuery = !searchQuery || 
-                         doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         doc.hospital.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = !searchLocation || doc.location.toLowerCase().includes(searchLocation.toLowerCase());
+  const filteredDoctors = mockDoctors.filter((doc) => {
+    const q = searchQuery.toLowerCase();
+    const loc = searchLocation.toLowerCase();
+    const matchesQuery =
+      !q ||
+      doc.name.toLowerCase().includes(q) ||
+      doc.specialty.toLowerCase().includes(q) ||
+      doc.hospital.toLowerCase().includes(q);
+    const matchesLocation = !loc || doc.location.toLowerCase().includes(loc);
     return matchesQuery && matchesLocation;
   });
 
-  const filteredHospitals = hospitals.filter(hosp => {
-    const query = searchQuery.toLowerCase();
-    const location = searchLocation.toLowerCase();
-    
-    const matchesQuery = !query || 
-                         hosp.name?.toLowerCase()?.includes(query) || 
-                         hosp.specialty?.toLowerCase()?.includes(query) ||
-                         hosp.type?.toLowerCase()?.includes(query);
-                         
-    const matchesLocation = !location || hosp.address?.toLowerCase()?.includes(location);
-    
+  const filteredHospitals = hospitals.filter((hosp) => {
+    const q = searchQuery.toLowerCase();
+    const loc = searchLocation.toLowerCase();
+    const matchesQuery =
+      !q ||
+      hosp.name?.toLowerCase()?.includes(q) ||
+      hosp.specialty?.toLowerCase()?.includes(q) ||
+      hosp.type?.toLowerCase()?.includes(q);
+    const matchesLocation = !loc || hosp.address?.toLowerCase()?.includes(loc);
     return matchesQuery && matchesLocation;
   });
+
+  const visibleDoctors = filteredDoctors.slice(0, 6);
+  const visibleHospitals = filteredHospitals.slice(0, 6);
 
   return (
-    <section id="doctors" className="relative py-16 lg:py-32 bg-white overflow-hidden">
+    <section id="doctors" className="relative py-16 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        
-        <div className="text-center max-w-4xl mx-auto mb-16 lg:mb-20">
-          <motion.span 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4"
-          >
-            <Search size={16} />
-            {t("Doctor & Hospital Examples", "ডাক্তার ও হাসপাতালের উদাহরণ")}
-          </motion.span>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl lg:text-5xl font-bold text-[#0a1628] leading-tight"
-          >
-            {t("Find Care Near You", "কাছের ডাক্তার ও হাসপাতাল খুঁজুন")}
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="mt-6 text-lg text-slate-500 max-w-5xl mx-auto"
-          >
+        {/* Clean Editorial Header */}
+        <div className="max-w-2xl mb-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0B6E99] mb-2.5">
+            {t("Care Directory", "চিকিৎসা ডিরেক্টরি")}
+          </p>
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
             {t(
-              "Browse doctor and hospital listings, compare specialties and locations, and open a profile for more details.",
-              "ডাক্তার ও হাসপাতালের তালিকা দেখুন, বিভাগ ও এলাকা মিলিয়ে খুঁজুন এবং বিস্তারিত জানতে প্রোফাইল খুলুন।"
+              "Find Specialist Doctors & Hospitals",
+              "বিশেষজ্ঞ ডাক্তার ও হাসপাতাল খুঁজুন"
             )}
-          </motion.p>
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+            {t(
+              "Search by name, department, or district to review qualifications, chambers, consultation fees, and facility addresses.",
+              "নাম, বিভাগ বা এলাকা অনুযায়ী খুঁজে ডাক্তারের যোগ্যতা, চেম্বারের সময়, ভিজিট ফী ও হাসপাতালের ঠিকানা দেখে নিন।"
+            )}
+          </p>
         </div>
 
-        {/* Search Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          animate={{ 
-            scale: isFocused ? 1.02 : 1, 
-            boxShadow: isFocused ? "0 20px 40px -10px rgba(47,128,237,0.25)" : "0 10px 30px -10px rgba(0,0,0,0.05)" 
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          viewport={{ once: true }}
-          className={`max-w-5xl mx-auto bg-white p-3 rounded-2xl border flex flex-col md:flex-row gap-3 mb-16 relative z-20 transition-colors duration-300 ${isFocused ? "border-primary/40 ring-4 ring-primary/10" : "border-slate-100"}`}
-        >
-          {/* Professional Text Select */}
-          <div className="relative flex items-center bg-slate-50 rounded-xl px-4 py-3 md:w-48 border-r border-slate-200/50 hover:bg-slate-100 focus-within:ring-2 focus-within:ring-primary/20 transition-all cursor-pointer group shrink-0">
-            <select 
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value as "doctors" | "hospitals")}
-              className="appearance-none bg-transparent border-none outline-none w-full text-slate-700 font-bold cursor-pointer pr-8 z-10"
+        {/* Filter Bar + Tab Switcher */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10">
+          <div className="inline-flex bg-slate-100 p-1 rounded-xl w-fit border border-slate-200/70">
+            <button
+              type="button"
+              onClick={() => setActiveTab("doctors")}
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                activeTab === "doctors"
+                  ? "bg-white text-slate-900 shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <option value="doctors" className="font-medium">{t("Doctors", "ডাক্তার")}</option>
-              <option value="hospitals" className="font-medium">{t("Hospitals", "হাসপাতাল")}</option>
-            </select>
-            <div className="absolute right-4 text-slate-500 group-hover:text-primary transition-colors pointer-events-none z-0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <Stethoscope size={16} />
+              <span>{t("Doctors", "ডাক্তার")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("hospitals")}
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                activeTab === "hospitals"
+                  ? "bg-white text-slate-900 shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Building2 size={16} />
+              <span>{t("Hospitals", "হাসপাতাল")}</span>
+            </button>
+          </div>
+
+          <div className="flex-1 max-w-2xl bg-white p-1.5 rounded-2xl border border-slate-200 shadow-[0_2px_10px_rgba(15,23,42,0.03)] flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 flex items-center bg-slate-50 rounded-xl px-3.5 py-2.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0B6E99]/20 transition-all">
+              <Search size={17} className="mr-2.5 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={
+                  activeTab === "doctors"
+                    ? t("Doctor name or specialty...", "ডাক্তারের নাম বা বিভাগ...")
+                    : t("Hospital or diagnostic center...", "হাসপাতাল বা ডায়াগনস্টিক...")
+                }
+                className="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder:text-slate-400"
+              />
+            </div>
+            <div className="sm:w-52 flex items-center bg-slate-50 rounded-xl px-3.5 py-2.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0B6E99]/20 transition-all">
+              <MapPin size={17} className="mr-2.5 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                placeholder={t("District or area (e.g. Dhaka)", "এলাকা (যেমন: ঢাকা)")}
+                className="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder:text-slate-400"
+              />
             </div>
           </div>
-
-          <div className="flex-1 flex items-center bg-slate-50 rounded-xl px-4 py-3 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-            <Search size={20} className={`mr-3 shrink-0 transition-colors ${isFocused ? "text-primary" : "text-slate-500"}`} />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={searchType === "doctors" ? t("Search by doctor name or specialty...", "ডাক্তারের নাম বা স্পেশালিটি খুঁজুন...") : t("Search hospitals...", "হাসপাতাল খুঁজুন...")}
-              className="bg-transparent border-none outline-none w-full text-slate-700 placeholder:text-slate-500"
-            />
-          </div>
-          <div className="flex-1 flex items-center bg-slate-50 rounded-xl px-4 py-3 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-            <MapPin size={20} className={`mr-3 shrink-0 transition-colors ${isFocused ? "text-primary" : "text-slate-500"}`} />
-            <input 
-              type="text" 
-              value={searchLocation}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onChange={(e) => setSearchLocation(e.target.value)}
-              placeholder={t("Location (e.g. Dhaka)", "লোকেশন (যেমন: ঢাকা)")}
-              className="bg-transparent border-none outline-none w-full text-slate-700 placeholder:text-slate-500"
-            />
-          </div>
-          <button className="bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-primary-container hover:shadow-lg hover:shadow-primary/30 transition-all flex items-center justify-center shrink-0">
-            {t("Search", "খুঁজুন")}
-          </button>
-        </motion.div>
-
-        {/* Toggle Tabs & Carousel Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-10 relative z-20">
-          <div className="bg-slate-100 p-1.5 rounded-xl flex gap-2 shadow-inner">
-            <button
-              onClick={() => setActiveTab("doctors")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                activeTab === "doctors" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <UserCircle2 size={18} />
-              {t("Doctors", "ডাক্তার")}
-            </button>
-            <button
-              onClick={() => setActiveTab("hospitals")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                activeTab === "hospitals" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <Building2 size={18} />
-              {t("Hospitals", "হাসপাতাল")}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            aria-label={isPlaying ? t("Pause auto scroll", "অটো স্ক্রল থামান") : t("Play auto scroll", "অটো স্ক্রল চালু করুন")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
-          >
-            {isPlaying ? <Pause size={14} className="text-slate-600" /> : <Play size={14} className="text-slate-600" />}
-            <span>{isPlaying ? t("Pause Scroll", "স্ক্রল থামান") : t("Auto Scroll", "অটো স্ক্রল")}</span>
-          </button>
         </div>
 
-        {/* Directory Grid */}
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            {activeTab === "doctors" ? (
-                <motion.div 
-                key="doctors"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="relative group/slider"
-                onMouseEnter={() => setIsPlaying(false)}
-                onMouseLeave={() => setIsPlaying(true)}
-                onFocusCapture={() => setIsPlaying(false)}
-                onBlurCapture={() => setIsPlaying(true)}
-              >
-                {/* Scroll Buttons */}
-                <button 
-                  onClick={() => scroll("left")}
-                  className="absolute left-0 sm:-left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center text-slate-500 hover:text-primary opacity-0 group-hover/slider:opacity-100 focus-within:opacity-100 active:opacity-100 transition-all duration-300 hover:scale-125 drop-shadow-[0_4px_4px_rgba(255,255,255,0.8)]"
+        {/* Responsive 3-Column Directory Grid */}
+        {activeTab === "doctors" ? (
+          visibleDoctors.length === 0 ? (
+            <div className="py-16 text-center border border-dashed border-slate-200 rounded-2xl text-slate-500">
+              <p className="text-sm font-medium">
+                {t("No doctors matched your filter criteria.", "আপনার খোঁজা অনুযায়ী কোনো ডাক্তার পাওয়া যায়নি।")}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {visibleDoctors.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors flex flex-col justify-between"
                 >
-                  <ChevronLeft size={32} strokeWidth={2.5} />
-                </button>
-                <button 
-                  onClick={() => scroll("right")}
-                  className="absolute right-0 sm:-right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center text-slate-500 hover:text-primary opacity-0 group-hover/slider:opacity-100 focus-within:opacity-100 active:opacity-100 transition-all duration-300 hover:scale-125 drop-shadow-[0_4px_4px_rgba(255,255,255,0.8)]"
-                >
-                  <ChevronRight size={32} strokeWidth={2.5} />
-                </button>
-
-                {/* Slider Container */}
-                <div 
-                  ref={scrollRef}
-                  className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-4 -mx-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                >
-                  {filteredDoctors.length === 0 ? (
-                    <div className="w-full py-10 flex flex-col items-center justify-center text-slate-500">
-                      <Search size={40} className="mb-4 text-slate-600" />
-                      <p>{t("No doctors found matching your search.", "আপনার খোঁজা ডাক্তার পাওয়া যায়নি।")}</p>
+                  <div>
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-200 bg-slate-50 shrink-0 relative">
+                        <Image
+                          src={doc.image}
+                          alt={doc.name}
+                          fill
+                          sizes="56px"
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-base text-slate-900 truncate">
+                          {doc.name}
+                        </h3>
+                        <p className="text-xs font-semibold text-[#0B6E99] mt-0.5 truncate">
+                          {doc.specialty}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1 truncate">
+                          {doc.title}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    filteredDoctors.map((doc) => (
-                      <motion.div 
-                        key={doc.id}
-                        whileHover={{ y: -5 }}
-                        className="w-[85vw] max-w-[320px] sm:min-w-[320px] snap-center bg-white border border-slate-100 rounded-3xl p-6 shadow-lg shadow-slate-200/40 group hover:border-primary/20 transition-all shrink-0 flex flex-col items-center text-center relative"
-                      >
-                        {/* Rating Badge - Top Right */}
-                        <div className="absolute top-6 right-6 flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold z-10">
-                          <Star size={12} className="fill-orange-500" />
-                          {doc.rating}
-                        </div>
 
-                        {/* Profile Picture */}
-                        <div className="w-20 h-20 rounded-full overflow-hidden shadow-md ring-2 ring-primary/20 ring-offset-2 ring-offset-white mb-4 mt-2 relative">
-                          <Image src={doc.image} alt={doc.name} fill sizes="80px" unoptimized className="object-cover" />
-                        </div>
-                        
-                        {/* Name (One Line) */}
-                        <div className="flex items-center justify-center gap-1.5 mb-1 w-full px-2">
-                          <h3 className="font-bold text-[18px] sm:text-[20px] text-[#0a1628] truncate leading-tight">{doc.name}</h3>
-
-                        </div>
-                        
-                        {/* Specialist */}
-                        <p className="text-primary font-medium text-[14px] mb-5 truncate w-full px-4">{doc.specialty}</p>
-                        
-                        {/* Details */}
-                        <div className="space-y-2.5 mb-6 w-full flex flex-col items-center bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
-                          <div className="flex items-center gap-2 text-slate-600 text-[13.5px] font-medium">
-                            <UserCircle2 size={16} className="text-slate-500" /> {doc.experienceYears} Years Exp.
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600 text-[13.5px] font-medium w-full justify-center px-2">
-                            <MapPin size={16} className="text-slate-500 shrink-0" /> 
-                            <span className="truncate">{doc.location}</span>
-                          </div>
-                        </div>
-
-                        <Link href={`/doctors/${doc.id}`} className="w-full bg-sky-50 hover:bg-sky-600 hover:text-white text-sky-700 font-bold text-[15px] py-3 rounded-xl flex items-center justify-center transition-colors mt-auto border border-sky-200/80 shadow-xs">
-                          {t("View Profile & Book", "প্রোফাইল ও বুকিং")}
-                        </Link>
-                      </motion.div>
-                    ))
-                )}
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="hospitals"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="relative group/slider"
-                onMouseEnter={() => setIsPlaying(false)}
-                onMouseLeave={() => setIsPlaying(true)}
-                onFocusCapture={() => setIsPlaying(false)}
-                onBlurCapture={() => setIsPlaying(true)}
-              >
-                {/* Scroll Buttons */}
-                <button 
-                  onClick={() => scroll("left")}
-                  className="absolute left-0 sm:-left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center text-slate-500 hover:text-secondary opacity-0 group-hover/slider:opacity-100 focus-within:opacity-100 active:opacity-100 transition-all duration-300 hover:scale-125 drop-shadow-[0_4px_4px_rgba(255,255,255,0.8)]"
-                >
-                  <ChevronLeft size={32} strokeWidth={2.5} />
-                </button>
-                <button 
-                  onClick={() => scroll("right")}
-                  className="absolute right-0 sm:-right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center text-slate-500 hover:text-secondary opacity-0 group-hover/slider:opacity-100 focus-within:opacity-100 active:opacity-100 transition-all duration-300 hover:scale-125 drop-shadow-[0_4px_4px_rgba(255,255,255,0.8)]"
-                >
-                  <ChevronRight size={32} strokeWidth={2.5} />
-                </button>
-
-                {/* Slider Container */}
-                <div 
-                  ref={scrollRef}
-                  className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-4 -mx-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                >
-                {filteredHospitals.length === 0 ? (
-                  <div className="w-full py-10 flex flex-col items-center justify-center text-slate-500">
-                    <Building2 size={40} className="mb-4 text-slate-600" />
-                    <p>{t("No hospitals found matching your search.", "আপনার খোঁজা হাসপাতাল পাওয়া যায়নি।")}</p>
+                    <div className="space-y-2 text-xs text-slate-600 bg-slate-50/80 border border-slate-100 rounded-xl p-3.5 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Building2 size={14} className="text-slate-400 shrink-0" />
+                        <span className="truncate font-medium">{doc.hospital}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} className="text-slate-400 shrink-0" />
+                        <span className="truncate">{doc.location}</span>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  filteredHospitals.map((hosp, idx) => (
-                    <motion.div 
-                      key={`hosp-${hosp.id || idx}-${idx}`}
-                      whileHover={{ y: -5 }}
-                      className="w-[85vw] max-w-[320px] sm:min-w-[320px] snap-center bg-white border border-slate-100 rounded-3xl p-6 shadow-lg shadow-slate-200/40 group hover:border-secondary/20 transition-all shrink-0 flex flex-col"
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 text-xs text-slate-600 tabular-nums">
+                      <span>{doc.experienceYears} {t("yrs exp", "বছর অভিজ্ঞতা")}</span>
+                      {typeof doc.fee === "number" && doc.fee > 0 && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="font-semibold text-slate-800">৳{doc.fee}</span>
+                        </>
+                      )}
+                      <span className="text-slate-300">·</span>
+                      <span className="inline-flex items-center gap-1 font-medium text-slate-700">
+                        <Star size={12} className="fill-amber-400 text-amber-400" />
+                        {doc.rating}
+                      </span>
+                    </div>
+
+                    <Link
+                      href={`/doctors/${doc.id}`}
+                      className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-[#0B6E99] text-slate-800 hover:text-white border border-slate-200 hover:border-[#0B6E99] text-xs font-semibold transition-colors shrink-0"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm p-1 flex items-center justify-center shrink-0">
-                          <Building2 size={28} className="text-secondary/60" />
-                        </div>
-                      </div>
-                      <h3 className="font-bold text-[18px] text-[#0a1628] mb-1 line-clamp-1">{hosp.name}</h3>
-                      <p className="text-secondary font-medium text-[13px] mb-4">{hosp.specialty || hosp.type}</p>
-                      
-                      <div className="space-y-2 mb-6 w-full flex flex-col bg-slate-50/50 p-3 rounded-2xl border border-slate-100 flex-grow">
-                        <div className="flex items-start gap-2 text-slate-600 text-[13px] font-medium">
-                          <MapPin size={16} className="text-slate-500 shrink-0 mt-0.5" /> 
-                          <span className="line-clamp-2">{hosp.address}</span>
-                        </div>
-                      </div>
-
-                      <Link href="/hospitals" className="w-full bg-sky-50 hover:bg-sky-600 hover:text-white text-sky-700 font-bold text-[14px] py-2.5 rounded-xl flex items-center justify-center transition-colors mt-auto border border-sky-200/80 shadow-xs">
-                        {t("View Details", "বিস্তারিত দেখুন")}
-                      </Link>
-                    </motion.div>
-                  ))
-                )}
+                      {t("View Profile", "প্রোফাইল")}
+                    </Link>
+                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* View All CTA */}
-          <div className="flex justify-center mt-12">
-            <Link href={activeTab === "doctors" ? "/doctors" : "/hospitals"} className="group flex items-center gap-2 text-sky-700 hover:text-sky-800 font-bold transition-colors">
-              {activeTab === "doctors" ? t("View All Doctors", "সব ডাক্তার দেখুন") : t("View All Hospitals", "সব হাসপাতাল দেখুন")}
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+              ))}
+            </div>
+          )
+        ) : visibleHospitals.length === 0 ? (
+          <div className="py-16 text-center border border-dashed border-slate-200 rounded-2xl text-slate-500">
+            <p className="text-sm font-medium">
+              {t("No hospitals matched your filter criteria.", "আপনার খোঁজা অনুযায়ী কোনো হাসপাতাল পাওয়া যায়নি।")}
+            </p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {visibleHospitals.map((hosp, idx) => (
+              <div
+                key={`hosp-${hosp.id || idx}`}
+                className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start gap-3.5 mb-4">
+                    <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                      <Building2 size={20} strokeWidth={1.8} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-base text-slate-900 line-clamp-1">
+                        {hosp.name}
+                      </h3>
+                      <p className="text-xs font-semibold text-[#0B6E99] mt-0.5 line-clamp-1">
+                        {hosp.specialty || hosp.type || t("Multi-Specialty Hospital", "মাল্টি-স্পেশালিটি হাসপাতাল")}
+                      </p>
+                    </div>
+                  </div>
 
+                  <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3.5 mb-4 text-xs text-slate-600 flex items-start gap-2">
+                    <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
+                    <span className="line-clamp-2 leading-relaxed">{hosp.address}</span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end">
+                  <Link
+                    href="/hospitals"
+                    className="px-4 py-2 rounded-xl bg-slate-50 hover:bg-[#0B6E99] text-slate-800 hover:text-white border border-slate-200 hover:border-[#0B6E99] text-xs font-semibold transition-colors"
+                  >
+                    {t("View Details", "বিস্তারিত দেখুন")}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Directory Full View CTA */}
+        <div className="mt-10 flex justify-center sm:justify-end">
+          <Link
+            href={activeTab === "doctors" ? "/doctors" : "/hospitals"}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0B6E99] hover:text-[#09587A] transition-colors group"
+          >
+            <span>
+              {activeTab === "doctors"
+                ? lang === "bn"
+                  ? `সব ${mockDoctors.length} জন বিশেষজ্ঞ ডাক্তার দেখুন`
+                  : `Browse all ${mockDoctors.length} Specialists`
+                : t("Browse all Hospitals & ICU Status", "সব হাসপাতাল ও আইসিইউ তথ্য দেখুন")}
+            </span>
+            <ArrowRight
+              size={16}
+              className="group-hover:translate-x-0.5 transition-transform"
+            />
+          </Link>
+        </div>
       </div>
     </section>
   );

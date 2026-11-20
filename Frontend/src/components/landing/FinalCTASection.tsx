@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, CalendarPlus } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,50 +8,39 @@ export function FinalCTASection() {
   const { t } = useLanguage();
 
   return (
-    <section 
-      className="relative py-20 lg:py-32 bg-slate-50 overflow-hidden text-center flex flex-col items-center justify-center border-t border-slate-200"
-    >
-      <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 relative z-10">
-        <motion.h2 
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="text-3xl lg:text-5xl font-extrabold text-slate-900 mb-5 tracking-tight leading-tight"
-        >
-          {t("Keep Your Health Records Together", "স্বাস্থ্য রেকর্ড এক জায়গায় রাখুন")}
-        </motion.h2>
-        
-        <motion.p 
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="text-base lg:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed font-normal"
-        >
+    <section className="relative py-20 lg:py-24 bg-[#F8FAFC] border-t border-slate-200 text-center">
+      <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-8">
+        <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight leading-tight">
           {t(
-            "Create a personal health ID and organize your prescriptions and reports in one place.",
-            "নিজের হেলথ আইডি খুলে প্রেসক্রিপশন ও রিপোর্ট এক জায়গায় গুছিয়ে রাখুন।"
+            "Keep your family's health records ready when it matters",
+            "পরিবারের জরুরি স্বাস্থ্য তথ্য প্রস্তুত রাখুন"
           )}
-        </motion.p>
+        </h2>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <Link href="/register" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-xl shadow-md hover:bg-slate-800 transition-colors active:scale-95 w-full sm:w-auto">
-            {t("Create Free Health ID", "ফ্রি হেলথ আইডি খুলুন")}
-            <ArrowRight size={18} />
+        <p className="text-sm sm:text-base lg:text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+          {t(
+            "Create your personal Health ID in under a minute to organize prescriptions, track lab reports, and find trusted specialists across Bangladesh.",
+            "এক মিনিটেরও কম সময়ে নিজের হেলথ আইডি খুলে প্রেসক্রিপশন ও রিপোর্ট গুছিয়ে রাখুন এবং প্রয়োজনে সঠিক ডাক্তার খুঁজে নিন।"
+          )}
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0B6E99] hover:bg-[#09587A] text-white text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
+          >
+            <span>{t("Create Free Health ID", "ফ্রি হেলথ আইডি খুলুন")}</span>
+            <ArrowRight size={16} />
           </Link>
-          
-          <Link href="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-800 font-bold rounded-xl border border-slate-300 hover:bg-slate-100 transition-colors shadow-xs active:scale-95 w-full sm:w-auto">
-            <CalendarPlus size={18} className="text-slate-600" />
-            {t("For Doctors & Hospitals", "ডাক্তার ও হাসপাতালের জন্য")}
+
+          <Link
+            href="/contact"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-slate-800 text-sm font-semibold rounded-xl border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors w-full sm:w-auto"
+          >
+            <CalendarPlus size={16} className="text-slate-600" />
+            <span>{t("For Doctors & Hospitals", "ডাক্তার ও হাসপাতালের জন্য")}</span>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
