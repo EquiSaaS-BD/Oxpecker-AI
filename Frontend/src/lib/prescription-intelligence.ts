@@ -252,10 +252,12 @@ export function normalizeBengaliDigits(input: string): string {
 export function normalizeText(value: unknown): string {
   if (typeof value !== "string") return "";
   let text = normalizeBengaliDigits(value.normalize("NFKC")).trim();
-  const lexicon = getBengaliLexicon();
-  for (const [bn, en] of Object.entries(lexicon)) {
-    if (text.includes(bn)) {
-      text = text.replaceAll(bn, en);
+  if (/[\u0980-\u09FF]/.test(text)) {
+    const lexicon = getBengaliLexicon();
+    for (const [bn, en] of Object.entries(lexicon)) {
+      if (text.includes(bn)) {
+        text = text.replaceAll(bn, en);
+      }
     }
   }
   return text.toLowerCase().replace(/\s+/g, " ").trim();

@@ -508,7 +508,13 @@ export function buildOfflineVisionFallback(
   systemPrompt: string,
   userPrompt: string
 ): VisionAnalysisResult {
-  if (systemPrompt.includes('nutrition') || systemPrompt.includes('food') || userPrompt.toLowerCase().includes('food') || userPrompt.includes('খাবার')) {
+  const isFoodPrompt =
+    systemPrompt.includes('json:nutrition_analysis') ||
+    (/\b(food|meal|calorie|nutrition|diet|formalin)\b/i.test(userPrompt) &&
+      !/\b(medicine|drug|tablet|capsule|syrup|dose|prescription)\b/i.test(userPrompt)) ||
+    (/খাবার|পুষ্টি|ক্যালরি|ফরমালিন/.test(userPrompt) &&
+      !/ওষুধ|প্রেসক্রিপশন|ডোজ|ট্যাবলেট/.test(userPrompt));
+  if (isFoodPrompt) {
     const foodResponse = buildFallbackFoodResponse(userPrompt);
     return {
       rawText: foodResponse,
