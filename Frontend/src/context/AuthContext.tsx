@@ -268,28 +268,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.refresh();
   };
 
-  const clearStaleSession = () => {
-    try {
-      fetch("/api/auth/session", { method: "DELETE", credentials: "include" }).catch(() => {});
-      supabase.auth.signOut().catch(() => {});
-    } catch {}
-    setUser(null);
-    if (typeof localStorage !== "undefined") {
-      clearCachedSessionKeys();
-      for (let i = localStorage.length - 1; i >= 0; i--) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith("sb-") || key.includes("token") || key.includes("oxpecker_auth"))) {
-          localStorage.removeItem(key);
-        }
+  const clearAllClientAuthStorage = () => {
+    clearCachedSessionKeys();
+    if (typeof localStorage === "undefined") return;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("sb-") || key.includes("token") || key.includes("oxpecker_auth"))) {
+        localStorage.removeItem(key);
       }
     }
   };
 
-  const logout = () => {
-    clearStaleSession();
+  const clearStaleSession = () => {
+    try {
+      fetch("/api/auth/session", { method: "DELETE", credentials: "include", keepalive: true }).catch(() => {});
+      supabase.auth.signOut().catch(() => {});
+    } catch {}
+    setUser(null);
+    clearAllClientAuthStorage();
+  };
+
+  const logout = async () => {
+    setUser(null);
+    clearAllClientAuthStorage();
     if (typeof sessionStorage !== "undefined") {
       sessionStorage.clear();
     }
+    try {
+      await Promise.allSettled([
+        fetch("/api/auth/session", {
+          method: "DELETE",
+          credentials: "include",
+          keepalive: true,
+          signal: AbortSignal.timeout(1200),
+        }).catch(() => {}),
+        supabase.auth.signOut().catch(() => {}),
+      ]);
+    } catch {}
     // Hard refresh/redirect to /login to completely eradicate lingering client caches
     if (typeof window !== "undefined") {
       window.location.href = "/login";

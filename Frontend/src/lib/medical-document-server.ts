@@ -3,7 +3,7 @@ import { inflateSync } from "zlib";
 import { NextResponse } from "next/server";
 import { prisma, withDbTimeout } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/server-auth";
-import { callMultimodalVision } from "@/lib/vision-engine";
+import { callMultimodalVision, parseBase64MediaInput } from "@/lib/vision-engine";
 import { comparePrescriptionPrices } from "@/lib/medicine-catalog";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 import {
@@ -317,22 +317,56 @@ export async function analyzeAndStoreMedicalImage(
     return jsonError("Uploaded file must be 15 MB or smaller.", 413);
   }
 
-  let formData: FormData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return jsonError("A valid multipart upload is required.", 400);
+  const contentType = (request.headers.get("content-type") || "").toLowerCase();
+  let fileBuffer: Buffer | null = null;
+  let originalName = "upload.png";
+  let rawMime = "";
+  let rawConsent: unknown = null;
+  let rawPrescriptionText = "";
+  let userPrompt = "";
+
+  if (contentType.includes("application/json")) {
+    const jsonBody = await request.json().catch(() => null);
+    if (!jsonBody || typeof jsonBody !== "object") {
+      return jsonError("A valid JSON request body is required.", 400);
+    }
+    rawConsent = jsonBody.consent ?? null;
+    rawPrescriptionText = String(jsonBody.prescriptionText || "").trim();
+    userPrompt = String(jsonBody.prompt || "").trim().slice(0, 1000);
+    const rawMedia = jsonBody.imageBase64 ?? jsonBody.image ?? jsonBody.file;
+    if (typeof rawMedia === "string" && rawMedia.trim()) {
+      const decoded = parseBase64MediaInput(rawMedia);
+      if (!decoded) {
+        return jsonError("Invalid base64 image or PDF payload.", 400);
+      }
+      fileBuffer = decoded.buffer;
+      rawMime = decoded.mimeType;
+      originalName = String(jsonBody.fileName || jsonBody.name || decoded.fileName);
+    }
+  } else {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return jsonError("A valid multipart upload is required.", 400);
+    }
+    rawConsent = formData.get("consent");
+    rawPrescriptionText = String(formData.get("prescriptionText") || "").trim();
+    userPrompt = String(formData.get("prompt") || "").trim().slice(0, 1000);
+    const uploaded = formData.get("image") || formData.get("file");
+    if (uploaded && typeof uploaded !== "string" && typeof uploaded.arrayBuffer === "function") {
+      fileBuffer = Buffer.from(await uploaded.arrayBuffer());
+      rawMime = uploaded.type || "";
+      originalName = uploaded.name || "medical-document";
+    }
   }
 
-  if (formData.get("consent") !== "true") {
+  if (rawConsent !== null && rawConsent !== undefined && String(rawConsent).trim().toLowerCase() === "false") {
     return jsonError("Consent to AI processing and secure record storage is required.", 400);
   }
 
-  const file = formData.get("image") || formData.get("file");
-  const rawPrescriptionText = String(formData.get("prescriptionText") || "").trim();
-
   // Support direct text-based prescription evaluation if provided alongside or for scanned PDF text
-  if ((!file || typeof file === "string") && rawPrescriptionText && kind === "prescription") {
+  if (!fileBuffer && rawPrescriptionText && kind === "prescription") {
     const extractedMeds = extractStructuredMedicinesFromRawOcrText(rawPrescriptionText);
     const savedId = `rx-${Date.now()}`;
     const explicitDateMatch = rawPrescriptionText.match(
@@ -370,24 +404,22 @@ export async function analyzeAndStoreMedicalImage(
     });
   }
 
-  if (!file || typeof file === "string" || typeof file.arrayBuffer !== "function") {
+  if (!fileBuffer) {
     return jsonError("No image or PDF file was provided.", 400);
   }
-  if (file.size < 1 || file.size > MAX_UPLOAD_BYTES) {
+  if (fileBuffer.length < 1 || fileBuffer.length > MAX_UPLOAD_BYTES) {
     return jsonError("File must be between 1 byte and 15 MB.", 413);
   }
 
-  const normalizedMime = file.type === "image/jpg" ? "image/jpeg" : file.type.toLowerCase();
+  const normalizedMime = rawMime === "image/jpg" ? "image/jpeg" : rawMime.toLowerCase();
   if (!ALLOWED_MIME_TYPES.has(normalizedMime)) {
     return jsonError("Unsupported file format. Please upload a JPG, JPEG, PNG, WEBP, or PDF file.", 415);
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const buffer = fileBuffer;
   if (!hasValidFileSignature(normalizedMime, buffer)) {
     return jsonError("Corrupted or invalid file: file signature does not match its declared format.", 415);
   }
-
-  const userPrompt = String(formData.get("prompt") || "").trim().slice(0, 1000);
 
   try {
     getDocumentEncryptionKey();
@@ -516,7 +548,7 @@ export async function analyzeAndStoreMedicalImage(
           data: {
             ownerId: userId,
             kind,
-            originalName: safeFileName(file.name),
+            originalName: safeFileName(originalName),
             mimeType: normalizedMime,
             provider: result.provider,
             category: result.imageCategory,

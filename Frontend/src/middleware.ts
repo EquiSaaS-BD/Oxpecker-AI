@@ -32,6 +32,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(homeUrl);
   }
 
+  const normalized = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
+  if (normalized === "/admin") {
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+  }
+  if (normalized === "/doctor") {
+    return NextResponse.redirect(new URL("/doctor/dashboard", request.url));
+  }
+  if (normalized === "/hospital") {
+    return NextResponse.redirect(new URL("/hospital/dashboard", request.url));
+  }
+  if (normalized === "/patient") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   return NextResponse.next();
 }
 

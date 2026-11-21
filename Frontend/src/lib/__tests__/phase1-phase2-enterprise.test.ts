@@ -4,10 +4,13 @@ import { withDbTimeout } from "../prisma";
 import { callMultimodalVision } from "../vision-engine";
 import { signSessionToken, SESSION_COOKIE_NAME } from "../server-auth";
 import { GET as emergencyPatientGET } from "../../app/api/emergency/patient/route";
+import { analyzeAndStoreMedicalImage } from "../medical-document-server";
 import {
+  SEEDED_DEMO_ACCOUNTS,
   findAccountByEmail,
   registerNewAccount,
   verifyPasswordHash,
+  verifySeededDemoPassword,
 } from "../auth-registry";
 import {
   createAssistantInvite,
@@ -318,6 +321,56 @@ async function runPhase1And2Tests() {
     );
     const blockedRes = await emergencyPatientGET(blockedReq);
     assert.equal(blockedRes.status, 403);
+  });
+
+  await test("Demo Auth: verifySeededDemoPassword accepts all 5 role passwords & demo123 while rejecting invalid", () => {
+    const pairs: Array<[string, string]> = [
+      ["admin@oxpecker.ai", "admin123"],
+      ["hospital@oxpecker.ai", "hospital123"],
+      ["doctor@oxpecker.ai", "doctor123"],
+      ["assistant@oxpecker.ai", "assistant123"],
+      ["patient@oxpecker.ai", "patient123"],
+    ];
+    for (const [email, pass] of pairs) {
+      const account = SEEDED_DEMO_ACCOUNTS[email];
+      assert.ok(account, `Missing seeded account: ${email}`);
+      assert.equal(verifySeededDemoPassword(pass, account), true);
+      assert.equal(verifySeededDemoPassword("demo123", account), true);
+      assert.equal(verifySeededDemoPassword("WrongPass", account), false);
+    }
+  });
+
+  await test("Medical Document Upload: supports multipart (with or without explicit consent) and JSON imageBase64, rejecting consent=false", async () => {
+    const pngBase64 =
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+    const pngBytes = Buffer.from(pngBase64, "base64");
+
+    const formData = new FormData();
+    formData.append("file", new File([pngBytes], "rx.png", { type: "image/png" }));
+    const mpReq = new NextRequest("http://localhost:3000/api/ai/analyze-prescription", {
+      method: "POST",
+      body: formData,
+    });
+    const mpRes = await analyzeAndStoreMedicalImage(mpReq, "prescription", "json:prescription_analysis");
+    assert.equal(mpRes.status, 200);
+
+    const jsonReq = new NextRequest("http://localhost:3000/api/ai/analyze-report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ imageBase64: `data:image/png;base64,${pngBase64}` }),
+    });
+    const jsonRes = await analyzeAndStoreMedicalImage(jsonReq, "report", "json:report_analysis");
+    assert.equal(jsonRes.status, 200);
+
+    const rejectedForm = new FormData();
+    rejectedForm.append("consent", "false");
+    rejectedForm.append("file", new File([pngBytes], "rx.png", { type: "image/png" }));
+    const rejReq = new NextRequest("http://localhost:3000/api/ai/analyze-prescription", {
+      method: "POST",
+      body: rejectedForm,
+    });
+    const rejRes = await analyzeAndStoreMedicalImage(rejReq, "prescription", "json:prescription_analysis");
+    assert.equal(rejRes.status, 400);
   });
 
   console.log(`\nTotal: ${passed} passed, ${failed} failed`);

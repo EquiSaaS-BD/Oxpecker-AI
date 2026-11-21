@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callMultimodalVision } from '@/lib/vision-engine';
+import { callMultimodalVision, parseBase64MediaInput } from '@/lib/vision-engine';
 
 // ============================================
 // Oxpecker AI - Medical & General Image Analysis API
@@ -40,6 +40,13 @@ If a prescription is detected:
 - Ask the user to use the authenticated prescription scanner for encrypted storage and structured review.
 
 ---
+### INSTRUCTIONS FOR MEDICINE BOX / STRIP (ওষুধের মোড়ক বা পাতা):
+If a medicine box, strip, blister pack, bottle, or leaflet is detected:
+- Identify visible brand name, generic composition (জেনেরিক নাম), strength, and manufacturer.
+- Explain clearly in fluent Bangla: **কী কাজে লাগে (Uses/Indications)**, **খাওয়ার নিয়ম ও ডোজ (Dosage Guidance)**, **প্রধান সতর্কতা ও পার্শ্বপ্রতিক্রিয়া (Precautions)**, এবং **সম্ভাব্য মূল্য (Estimated BDT Price)** বা সমমানের সাশ্রয়ী বিকল্প।
+- Remind the user never to take antibiotics or prescription-only drugs without a physician's approval.
+
+---
 ### INSTRUCTIONS FOR CLINICAL SYMPTOMS (Skin, Cut/Wound, Rash, Eye, Swelling):
 1. **পর্যবেক্ষণ (Visual Findings):** Describe the visible clinical signs safely and objectively.
 2. **প্রাথমিক ফার্স্ট-এইড ও নিরাপদ যত্ন (Safe First-Aid & OTC Care):**
@@ -60,17 +67,47 @@ If a prescription is detected:
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File | null;
-    const userPrompt = ((formData.get('prompt') as string) || '').trim();
+    const contentType = (request.headers.get('content-type') || '').toLowerCase();
+    let buffer: Buffer | null = null;
+    let mimeType = 'image/jpeg';
+    let userPrompt = '';
 
-    if (!file) {
-      return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
+    if (contentType.includes('application/json')) {
+      const body = await request.json().catch(() => null);
+      if (!body || typeof body !== 'object') {
+        return NextResponse.json({ error: 'Invalid JSON request body' }, { status: 400 });
+      }
+      userPrompt = String(body.prompt || '').trim();
+      const parsedMedia = parseBase64MediaInput(body.imageBase64 || body.image || body.file);
+      if (!parsedMedia) {
+        return NextResponse.json({ error: 'No valid image payload provided' }, { status: 400 });
+      }
+      buffer = parsedMedia.buffer;
+      mimeType = parsedMedia.mimeType;
+    } else if (
+      contentType.includes('multipart/form-data') ||
+      contentType.includes('application/x-www-form-urlencoded')
+    ) {
+      const formData = await request.formData().catch(() => null);
+      if (!formData) {
+        return NextResponse.json({ error: 'Invalid multipart upload' }, { status: 400 });
+      }
+      const file = (formData.get('image') || formData.get('file')) as File | null;
+      userPrompt = ((formData.get('prompt') as string) || '').trim();
+
+      if (!file || typeof file === 'string' || typeof file.arrayBuffer !== 'function') {
+        return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
+      }
+
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+      mimeType = file.type || 'image/jpeg';
+    } else {
+      return NextResponse.json(
+        { error: 'Unsupported content-type. Send multipart/form-data or application/json.' },
+        { status: 400 }
+      );
     }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const mimeType = file.type || 'image/jpeg';
 
     const visionResult = await callMultimodalVision(
       buffer,

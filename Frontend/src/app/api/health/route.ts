@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma, withDbTimeout } from "@/lib/prisma";
+import { warmMedicinesDatabase } from "@/lib/medicine-index";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  setImmediate(() => {
+    try {
+      warmMedicinesDatabase();
+    } catch {}
+  });
   let dbStatus: "connected" | "resilient_memory_fallback" = "resilient_memory_fallback";
 
   if (process.env.DATABASE_URL) {

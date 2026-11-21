@@ -42,6 +42,7 @@ let cachedCatalog: { generatedAt: string | null; data: CatalogMedicine[] } | nul
 let cachedCatalogMtime = 0;
 
 function loadCatalog(): { generatedAt: string | null; data: CatalogMedicine[] } {
+  if (cachedCatalog) return cachedCatalog;
   const paths = [
     path.join(process.cwd(), "public/data/medicines.json"),
     path.join(process.cwd(), "organized_medicine_data/organized/medicines.json"),
@@ -61,6 +62,7 @@ let cachedGenericsMap: Map<string, GenericMonograph> | null = null;
 let cachedGenericsMtime = 0;
 
 function loadGenerics(): Map<string, GenericMonograph> {
+  if (cachedGenericsMap) return cachedGenericsMap;
   const paths = [
     path.join(process.cwd(), "public/data/generics.json"),
     path.join(process.cwd(), "organized_medicine_data/organized/generics.json"),

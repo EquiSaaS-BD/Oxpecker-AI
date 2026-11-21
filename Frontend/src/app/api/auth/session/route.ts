@@ -12,6 +12,7 @@ import {
   findAccountByEmail,
   normalizeEmail,
   verifyPasswordHash,
+  verifySeededDemoPassword,
 } from "@/lib/auth-registry";
 import type { UserRole } from "@/context/AuthContext";
 
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
     // 1. Check seeded demo accounts first (instantaneous cryptographic verification)
     const demoAccount = SEEDED_DEMO_ACCOUNTS[lowerEmail];
     if (demoAccount) {
-      if (!verifyPasswordHash(password, demoAccount.passwordSha256)) {
+      if (!verifySeededDemoPassword(password, demoAccount)) {
         return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
       }
       const userPayload = {

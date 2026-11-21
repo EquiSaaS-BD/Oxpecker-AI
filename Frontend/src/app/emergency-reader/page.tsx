@@ -20,11 +20,61 @@ export default function EmergencyReaderPage() {
   const [profile, setProfile] = useState<OfflineEmergencyProfile | null>(null);
   const [manualInput, setManualInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
-  // Check URL fragment hash on mount (e.g. /emergency-reader#data=...)
+  const mapServerPatientToProfile = (patient: any): OfflineEmergencyProfile => ({
+    version: 1,
+    healthId: String(patient.card_number || patient.health_id || patient.id || "HP-2026-8841"),
+    fullName: String(patient.full_name_bn || patient.full_name || "অজ্ঞাত রোগী"),
+    bloodGroup: String(patient.blood_group || "O+"),
+    dateOfBirth: String(patient.date_of_birth || ""),
+    emergencyContact: String(patient.emergency_contact_phone || "16263"),
+    emergencyContactName: String(patient.emergency_contact_name || ""),
+    knownAllergies: Array.isArray(patient.allergies) ? patient.allergies : [],
+    chronicDiseases: Array.isArray(patient.chronic_conditions) ? patient.chronic_conditions : [],
+    currentMedications: Array.isArray(patient.active_medications)
+      ? patient.active_medications
+      : Array.isArray(patient.current_medications)
+      ? patient.current_medications
+      : [],
+    organDonor: Boolean(patient.organ_donor),
+  });
+
+  const lookupByHealthId = async (rawQuery: string) => {
+    const trimmed = rawQuery.trim();
+    if (!trimmed) return;
+    setIsLookingUp(true);
+    try {
+      const res = await fetch(`/api/emergency/patient?query=${encodeURIComponent(trimmed)}`, {
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+      if (res.status === 403) {
+        setError(
+          "রোগী (Patient) অ্যাকাউন্ট থেকে অন্য কারো ইমার্জেন্সি রেকর্ড অনুসন্ধান করা অনুমোদিত নয়। জরুরি ব্রেক-গ্লাস লুকআপের জন্য ডাক্তার/হাসপাতাল হিসেবে প্রবেশ করুন অথবা লগআউট করুন।"
+        );
+        return;
+      }
+      if (res.ok && data?.patient) {
+        setProfile(mapServerPatientToProfile(data.patient));
+        setError(null);
+        return;
+      }
+      setError(data?.error || "সঠিক QR কোড ডাটা বা HealthPass ID পাওয়া যায়নি।");
+    } catch {
+      setError("জরুরি রেকর্ড অনুসন্ধানে নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
+
+  // Check URL fragment hash or query param (?cardId= / ?query=) on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hash = window.location.hash;
+      const params = new URLSearchParams(window.location.search);
+      const queryCard = params.get("cardId") || params.get("query");
+
       if (hash && hash.includes("data=")) {
         const decoded = decodeOfflineQRPayload(hash);
         if (decoded) {
@@ -38,6 +88,9 @@ export default function EmergencyReaderPage() {
         } else {
           setError("QR কোডের ডিজিটাল সিগনেচার অবৈধ বা ডাটা পরিবর্তন (Tampered) করা হয়েছে। কোডটি পুনরায় স্ক্যান করুন।");
         }
+      } else if (queryCard && queryCard.trim()) {
+        setManualInput(queryCard.trim());
+        lookupByHealthId(queryCard.trim());
       } else {
         // Default clean demo patient for preview
         setProfile({
@@ -55,17 +108,20 @@ export default function EmergencyReaderPage() {
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleManualDecode = () => {
-    if (!manualInput.trim()) return;
-    const decoded = decodeOfflineQRPayload(manualInput.trim());
+  const handleManualDecode = async () => {
+    if (isLookingUp) return;
+    const trimmed = manualInput.trim();
+    if (!trimmed) return;
+    const decoded = decodeOfflineQRPayload(trimmed);
     if (decoded) {
       setProfile(decoded);
       setError(null);
-    } else {
-      setError("সঠিক QR কোড ডাটা পাওয়া যায়নি।");
+      return;
     }
+    await lookupByHealthId(trimmed);
   };
 
   return (
@@ -209,18 +265,24 @@ export default function EmergencyReaderPage() {
         {/* Minimal Manual Decoder Input */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
           <span className="text-xs font-medium text-slate-500">
-            ম্যানুয়ালি QR কোড লিংক বা ডাটা পেস্ট করুন:
+            ম্যানুয়ালি QR কোড লিংক বা HealthPass ID (যেমন HP-2026-8841) লিখুন:
           </span>
           <div className="flex gap-2">
             <input
               type="text"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
-              placeholder="https://...#data=..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleManualDecode();
+                }
+              }}
+              placeholder="HP-2026-8841 বা https://...#data=..."
               className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-400"
             />
-            <Button size="sm" onClick={handleManualDecode} variant="outline" className="text-xs h-8">
-              ডিকোড
+            <Button size="sm" onClick={handleManualDecode} disabled={isLookingUp} variant="outline" className="text-xs h-8">
+              {isLookingUp ? "খোঁজা হচ্ছে..." : "ডিকোড / খুঁজুন"}
             </Button>
           </div>
         </div>

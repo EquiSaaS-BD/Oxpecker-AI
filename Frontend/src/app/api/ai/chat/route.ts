@@ -263,7 +263,7 @@ async function streamFromOpenAIEndpoint(
       ...body,
       stream: true,
     }),
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(6500),
   });
 
   if (!response.ok) {
@@ -280,6 +280,14 @@ async function streamFromOpenAIEndpoint(
   const finalizeStream = (controller: ReadableStreamDefaultController) => {
     if (finalized) return;
     finalized = true;
+    if (!accumulatedContent.trim() && ragResult?.synthesizedResponse) {
+      accumulatedContent = ragResult.synthesizedResponse;
+      controller.enqueue(
+        new TextEncoder().encode(
+          `data: ${JSON.stringify({ content: ragResult.synthesizedResponse })}\n\n`
+        )
+      );
+    }
     const enrichment = buildPostStreamEnrichment(accumulatedContent, ragResult);
     if (enrichment) {
       controller.enqueue(
@@ -290,10 +298,25 @@ async function streamFromOpenAIEndpoint(
     controller.close();
   };
 
+  const readChunkWithTimeout = async (timeoutMs: number) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        reader.read(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Stream chunk read timeout')), timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+
   return new ReadableStream({
     async pull(controller) {
       try {
-        const { done, value } = await reader.read();
+        const timeoutMs = accumulatedContent.length > 0 ? 10000 : 6500;
+        const { done, value } = await readChunkWithTimeout(timeoutMs);
         if (done) {
           finalizeStream(controller);
           return;
@@ -323,8 +346,9 @@ async function streamFromOpenAIEndpoint(
             } catch {}
           }
         }
-      } catch (error) {
-        controller.error(error);
+      } catch {
+        reader.cancel().catch(() => {});
+        finalizeStream(controller);
       }
     },
   });
@@ -411,7 +435,7 @@ export async function POST(request: NextRequest) {
               symptoms: queryText,
               category: activeCategory,
             }),
-            signal: AbortSignal.timeout(1800),
+            signal: AbortSignal.timeout(900),
           })
             .then(async (diagRes) => {
               if (!diagRes.ok) return null;

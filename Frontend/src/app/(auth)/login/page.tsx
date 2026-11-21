@@ -324,7 +324,35 @@ function LoginForm() {
             </button>
           </form>
 
-          <div className="mt-7 pt-5 border-t border-slate-100 text-center">
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-2.5">
+              Quick Demo Access
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {[
+                { label: "Patient", email: "patient@oxpecker.ai", password: "patient123" },
+                { label: "Doctor", email: "doctor@oxpecker.ai", password: "doctor123" },
+                { label: "Assistant", email: "assistant@oxpecker.ai", password: "assistant123" },
+                { label: "Hospital", email: "hospital@oxpecker.ai", password: "hospital123" },
+                { label: "Admin", email: "admin@oxpecker.ai", password: "admin123" },
+              ].map((demo) => (
+                <button
+                  key={demo.label}
+                  type="button"
+                  onClick={() => {
+                    setEmail(demo.email);
+                    setPassword(demo.password);
+                    setLoginError(null);
+                  }}
+                  className="px-2.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200 hover:border-sky-200 transition-colors cursor-pointer"
+                >
+                  {demo.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-500 font-medium">
               Don't have an account?{" "}
               <Link href="/register" className="text-slate-900 font-bold hover:underline">

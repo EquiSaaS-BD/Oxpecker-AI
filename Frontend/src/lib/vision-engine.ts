@@ -16,6 +16,72 @@ export interface VisionAnalysisResult {
   provider: string;
 }
 
+export interface ParsedMediaInput {
+  buffer: Buffer;
+  mimeType: string;
+  fileName: string;
+}
+
+function inferMimeFromBytes(bytes: Buffer, fallbackMime: string): string {
+  if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
+    return 'image/png';
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (bytes.length >= 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP') {
+    return 'image/webp';
+  }
+  if (bytes.length >= 5 && bytes.toString('ascii', 0, 5) === '%PDF-') {
+    return 'application/pdf';
+  }
+  return fallbackMime;
+}
+
+export function parseBase64MediaInput(
+  rawInput: unknown,
+  fallbackMime = 'image/png'
+): ParsedMediaInput | null {
+  if (typeof rawInput !== 'string') return null;
+  const trimmed = rawInput.trim();
+  if (!trimmed) return null;
+
+  let declaredMime = fallbackMime;
+  let base64Part = trimmed;
+  const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,([\s\S]+)$/i);
+  if (dataUrlMatch) {
+    declaredMime = dataUrlMatch[1].trim().toLowerCase() || fallbackMime;
+    base64Part = dataUrlMatch[2].trim();
+  }
+
+  const normalizedB64 = base64Part.replace(/\s+/g, '');
+  if (!normalizedB64 || !/^[A-Za-z0-9+/=_-]+$/.test(normalizedB64)) {
+    return null;
+  }
+
+  const buffer = Buffer.from(normalizedB64, 'base64');
+  if (buffer.length === 0) return null;
+
+  const mimeType = inferMimeFromBytes(
+    buffer,
+    declaredMime === 'image/jpg' ? 'image/jpeg' : declaredMime
+  );
+  const ext =
+    mimeType === 'application/pdf'
+      ? 'pdf'
+      : mimeType === 'image/jpeg'
+      ? 'jpg'
+      : mimeType === 'image/webp'
+      ? 'webp'
+      : 'png';
+
+  return {
+    buffer,
+    mimeType,
+    fileName: `upload.${ext}`,
+  };
+}
+
 /**
  * Common non-medical keywords and tags to detect random/unrelated images
  */
@@ -124,8 +190,15 @@ export async function callMultimodalVision(
   userPrompt: string,
   options: { azureOnly?: boolean } = {},
 ): Promise<VisionAnalysisResult> {
+  if (!buffer || buffer.length < 200) {
+    return buildOfflineVisionFallback(systemPrompt, userPrompt);
+  }
+
   const base64Data = buffer.toString('base64');
   const cleanMime = mimeType || 'image/jpeg';
+  const deadline = Date.now() + 7000;
+  const hasBudget = () => Date.now() < deadline - 1000;
+  const timeLeft = (maxMs: number) => Math.max(1200, Math.min(maxMs, deadline - Date.now()));
 
   // -------------------------------------------------------------
   // Provider 1: Microsoft Azure OpenAI Vision (Primary Priority)
@@ -133,7 +206,7 @@ export async function callMultimodalVision(
   const azureKey = process.env.AZURE_OPENAI_API_KEY || process.env.AZURE_OPENAI_KEY || process.env.AZURE_API_KEY;
   const rawEndpoint = process.env.AZURE_OPENAI_ENDPOINT || process.env.AZURE_OPENAI_URL || process.env.AZURE_ENDPOINT;
 
-  if (azureKey && rawEndpoint) {
+  if (azureKey && rawEndpoint && hasBudget()) {
     try {
       let endpoint = rawEndpoint.trim().replace(/\/+$/, '');
       if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
@@ -161,7 +234,7 @@ export async function callMultimodalVision(
             ]
           }
         ],
-        max_completion_tokens: 3500,
+        max_completion_tokens: 1800,
       };
 
       if (deployment.includes('gpt-5') || deployment.includes('o1') || deployment.includes('o3') || deployment.includes('o4')) {
@@ -177,7 +250,7 @@ export async function callMultimodalVision(
           'api-key': azureKey,
         },
         body: JSON.stringify(azurePayload),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(timeLeft(5500)),
       });
 
       if (res.ok) {
@@ -204,9 +277,10 @@ export async function callMultimodalVision(
   // Provider 2: Google Gemini Flash Vision (Fast, Highly Accurate Multimodal)
   // -------------------------------------------------------------
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!options.azureOnly && geminiKey) {
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+  if (!options.azureOnly && geminiKey && hasBudget()) {
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
     for (const model of modelsToTry) {
+      if (!hasBudget()) break;
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
         const combinedPrompt = `${systemPrompt}\n\nUser Request/Question: ${userPrompt || 'Analyze this image thoroughly in Bangla.'}`;
@@ -233,7 +307,7 @@ export async function callMultimodalVision(
               maxOutputTokens: 4096,
             }
           }),
-          signal: AbortSignal.timeout(18000),
+          signal: AbortSignal.timeout(timeLeft(4500)),
         });
 
         if (res.ok) {
@@ -257,7 +331,7 @@ export async function callMultimodalVision(
   // -------------------------------------------------------------
   // Provider 3: OpenAI Vision (Direct)
   // -------------------------------------------------------------
-  if (!options.azureOnly && process.env.OPENAI_API_KEY) {
+  if (!options.azureOnly && process.env.OPENAI_API_KEY && hasBudget()) {
     try {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -280,7 +354,7 @@ export async function callMultimodalVision(
           temperature: 0.2,
           max_tokens: 4096,
         }),
-        signal: AbortSignal.timeout(18000),
+        signal: AbortSignal.timeout(timeLeft(4500)),
       });
 
       if (res.ok) {
@@ -304,7 +378,7 @@ export async function callMultimodalVision(
   // Provider 4: Groq Vision (Llama-3.2 Vision)
   // -------------------------------------------------------------
   const groqKey = process.env.GROQ_API_KEY;
-  if (!options.azureOnly && groqKey) {
+  if (!options.azureOnly && groqKey && hasBudget()) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -326,7 +400,7 @@ export async function callMultimodalVision(
           temperature: 0.2,
           max_tokens: 3500,
         }),
-        signal: AbortSignal.timeout(18000),
+        signal: AbortSignal.timeout(timeLeft(4000)),
       });
 
       if (res.ok) {
@@ -349,7 +423,7 @@ export async function callMultimodalVision(
   // -------------------------------------------------------------
   // Provider 5: Azure Computer Vision Read OCR + Image Analysis
   // -------------------------------------------------------------
-  if (process.env.AZURE_VISION_KEY) {
+  if (process.env.AZURE_VISION_KEY && hasBudget()) {
     try {
       const endpoint = (process.env.AZURE_VISION_ENDPOINT || "https://eastasia.api.cognitive.microsoft.com/").replace(/\/+$/, "");
       const visionUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=read,caption,tags`;
@@ -361,7 +435,7 @@ export async function callMultimodalVision(
           'Content-Type': 'application/octet-stream',
         },
         body: new Uint8Array(buffer),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(timeLeft(4000)),
       });
 
       if (res.ok) {
@@ -424,9 +498,16 @@ export async function callMultimodalVision(
     }
   }
 
-  // -------------------------------------------------------------
-  // Provider 6: Intelligent Offline/Fallback Synthesizer
-  // -------------------------------------------------------------
+  return buildOfflineVisionFallback(systemPrompt, userPrompt);
+}
+
+/**
+ * Provider 6: Intelligent Offline / Fallback Vision Synthesizer
+ */
+export function buildOfflineVisionFallback(
+  systemPrompt: string,
+  userPrompt: string
+): VisionAnalysisResult {
   if (systemPrompt.includes('nutrition') || systemPrompt.includes('food') || userPrompt.toLowerCase().includes('food') || userPrompt.includes('খাবার')) {
     const foodResponse = buildFallbackFoodResponse(userPrompt);
     return {

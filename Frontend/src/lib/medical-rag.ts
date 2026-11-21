@@ -1062,7 +1062,7 @@ export async function executeMedicalRAGWithLiveResearch(
 
   await Promise.race([
     Promise.allSettled(tasks),
-    new Promise<void>((resolve) => setTimeout(resolve, 1200)),
+    new Promise<void>((resolve) => setTimeout(resolve, 650)),
   ]);
   return baseResult;
 }
