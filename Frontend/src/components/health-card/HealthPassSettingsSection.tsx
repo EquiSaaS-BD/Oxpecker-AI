@@ -262,7 +262,6 @@ export function HealthPassSettingsSection({ userData, onProfileUpdated }: Props)
   // Full Activation Flow
   const handleActivate = async () => {
     setIsActivating(true);
-    await new Promise((r) => setTimeout(r, 600));
 
     const newNum = generateCardNumber();
     setCardNumber(newNum);

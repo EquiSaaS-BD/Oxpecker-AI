@@ -1,0 +1,47 @@
+আসসালামু আলাইকুম।
+
+একটি দৃশ্য কল্পনা করুন। বাংলাদেশের প্রত্যন্ত অঞ্চলের একটি পরিবারে হঠাৎ কেউ গুরুতর অসুস্থ হয়ে পড়েছেন। তারা জানেন না কোন বিশেষজ্ঞ ডাক্তার দেখাবেন, কোন হাসপাতাল ভালো, ডাক্তার কোথায় বসেন, কিংবা খরচ সাধ্যের মধ্যে কি না। তার ওপর আছে পুরোনো প্রেসক্রিপশন আর টেস্ট রিপোর্টের কাগজের বোঝা নিয়ে হাসপাতাল থেকে হাসপাতালে দৌড়াদৌড়ি।
+
+এই বাস্তবতা বদলাতেই আমরা তৈরি করেছি Oxpecker AI - উন্নত দেশগুলোর আদলে বাংলাদেশের জন্য একটি স্মার্ট ও সেন্ট্রালাইজড ডিজিটাল হেলথকেয়ার সিস্টেম।
+
+এখানে যে কেউ বাংলায় লিখে বা ভয়েসে নিজের সমস্যা বললেই সাথে সাথে উপযুক্ত বিশেষজ্ঞ ডাক্তার, ভালো হাসপাতাল, দূরত্ব, ফি এবং চিকিৎসার সম্ভাব্য খরচ দেখিয়ে দেবে। আর এখান থেকেই সরাসরি ডাক্তারের অ্যাপয়েন্টমেন্ট ও হাসপাতালের সিট বুক করা যাবে।
+
+তবে আমাদের সবচেয়ে বড় উদ্যোগ-সবার জন্য একটি সম Oxpecker AI ন্বিত ডিজিটাল মেডিকেল পরিচয় ও স্বাস্থ্য রেকর্ড ব্যবস্থা।
+
+আরেকটি মুহূর্ত ভাবুন। সড়ক দুর্ঘটনায় গুরুতর আহত হয়ে একজন অজ্ঞান হয়ে পড়েছেন। কেউ তার পরিচয়, রক্তের গ্রুপ, ডায়াবেটিস বা কোনো ওষুধে অ্যালার্জি আছে কি না-কিছুই জানে না। সরকারি সমন্বয়ে Oxpecker AI-এর মাধ্যমে অনুমোদিত চিকিৎসকরা শুধু তার ফিঙ্গারপ্রিন্ট বা ছবি দিয়ে ডেটাবেসে চেক করলেই মুহূর্তেই তার সম্পূর্ণ মেডিকেল ইতিহাস-অ্যালার্জি, পূর্ববর্তী রোগ, নিয়মিত ওষুধ, প্রেসক্রিপশন ও ডায়াগনস্টিক রিপোর্ট - সামনে চলে আসবে। বাঁচবে অমূল্য জীবন, আর কাগজের ফাইল বয়ে বেড়ানোর দিনও শেষ হবে।
+
+পাশাপাশি আছে আমাদের এআই প্রেসক্রিপশন ও মেডিসিন ইন্টেলিজেন্স। এলোমেলো হাতে লেখা প্রেসক্রিপশন বোঝা আমাদের দেশে বড় ভোগান্তি। Oxpecker AI-তে প্রেসক্রিপশনের ছবি আপলোড করলেই সিস্টেম অস্পষ্ট লেখা স্পষ্টভাবে সাজিয়ে দেয়; সাথে প্রতিটি ওষুধের সঠিক মূল্য, সম্ভাব্য মোট খরচ ও অনুমোদিত জেনেরিক বিকল্প দেখায়। এমনকি কোন ওষুধ কী কাজে লাগে না জানলেও-নাম লিখে বা ছবি দিলেই তার ব্যবহার, ডোজ ও সঠিক তথ্য জানা যাবে।
+
+শুধু রোগী নয়, Oxpecker AI চিকিৎসকদের জন্যও একটি স্মার্ট ক্লিনিক্যাল সহায়ক। সংযুক্ত ডায়াগনস্টিক সেন্টারের রিপোর্ট, পূর্ববর্তী প্রেসক্রিপশন ও মেডিসিন হিস্ট্রি স্বয়ংক্রিয়ভাবে বিশ্লেষণ করে এটি চিকিৎসকের সামনে সুবিন্যস্ত ক্লিনিক্যাল সারসংক্ষেপ তুলে ধরে। এতে ফাইল ঘাঁটার চাপ ও সময় দুই-ই কমে-ফলে চিকিৎসকরা আরও নিখুঁত সিদ্ধান্ত নিতে পারেন এবং কম সময়ে বেশি রোগীকে মানসম্মত সেবা দিতে পারেন।
+
+আমরা ডাক্তার, হাসপাতাল, ক্লিনিক ও ডায়াগনস্টিক সেন্টার-পুরো স্বাস্থ্যব্যবস্থাকে একটি সেন্ট্রালাইজড ডিজিটাল সিস্টেমে যুক্ত করছি।
+
+আমরা শুধু আরেকটি হেলথ অ্যাপ বানাচ্ছি না। Oxpecker AI গড়ে তুলছে বাংলাদেশের পূর্ণাঙ্গ ডিজিটাল স্বাস্থ্য অবকাঠামো-যাতে প্রতিটি মানুষের জন্য স্বাস্থ্যসেবা হয় সহজলভ্য, সাশ্রয়ী, নিরাপদ ও প্রযুক্তিনির্ভর।
+
+ধন্যবাদ।
+
+
+=======================================
+
+
+Assalamu Alaikum.
+
+Imagine a family in a remote area of Bangladesh. Suddenly, someone falls seriously ill. They do not know which specialist to see, which hospital is good, where the doctor sits, or if the cost fits their budget. On top of that, they have to run from hospital to hospital carrying heavy bundles of old prescriptions and test reports.
+
+To change this, we built Oxpecker AI- a smart, centralized digital healthcare system for Bangladesh, like those in developed countries.
+
+Anyone can simply type or speak their problem in Bangla. Right away, Oxpecker AI shows the right specialist, good hospitals, distance, fees, and estimated cost - and lets them directly book doctor appointments and hospital beds.
+
+But our biggest goal is a unified digital medical ID and health record system for everyone.
+
+Now imagine another moment. Someone is severely injured in a road accident and becomes unconscious. Nobody knows their identity, blood group, diabetes, or drug allergies. With government integration, authorized doctors can simply use their fingerprint or photo on Oxpecker AI - and in seconds, their full medical history appears: allergies, past illnesses, regular medicines, prescriptions, and diagnostic reports. This saves lives and ends the burden of carrying paper files forever.
+
+We also built AI prescription and medicine intelligence. Reading messy handwritten prescriptions is a huge daily struggle in our country. Upload a photo to Oxpecker AI, and it turns unclear handwriting into a clean, readable format - showing accurate prices, estimated total cost, and approved generic options. Even if you do not know what a medicine does, just type its name or upload a photo to see its uses, dosage, and full details.
+
+Oxpecker AI is not just for patients - it is also a smart clinical assistant for doctors. It automatically reviews connected diagnostic reports, past prescriptions, and medicine history to show a clear clinical summary. This reduces paperwork and saves time, helping doctors make better decisions and treat more patients with quality care.
+
+We are connecting doctors, hospitals, clinics, and diagnostic centers into one centralized digital system.
+
+We are not just building another health app. Oxpecker AI is building Bangladesh's complete digital health infrastructure - making healthcare accessible, affordable, safe, and technology-driven for everyone.
+
+Thank you.

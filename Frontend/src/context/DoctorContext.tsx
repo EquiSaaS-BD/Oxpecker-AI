@@ -208,13 +208,26 @@ export function DoctorProvider({ children }: { children: ReactNode }) {
     };
 
     void loadAssistants();
-    const handleStorage = () => { void loadAssistants(); };
-    window.addEventListener('storage', handleStorage);
-    const interval = setInterval(() => { void loadAssistants(); }, 3500);
+    const handleVisible = () => {
+      if (typeof document === "undefined" || !document.hidden) {
+        void loadAssistants();
+      }
+    };
+    window.addEventListener("storage", handleVisible);
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisible);
+    }
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void loadAssistants();
+    }, 8000);
 
     return () => {
       active = false;
-      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener("storage", handleVisible);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisible);
+      }
       clearInterval(interval);
     };
   }, []);

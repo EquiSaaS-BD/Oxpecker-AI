@@ -37,7 +37,14 @@ export async function GET(request: Request) {
           );
         }
 
-        const { data: dbRecords, error } = await dbQuery.limit(20);
+        const sbRes = await Promise.race([
+          dbQuery.limit(20),
+          new Promise<{ data: null; error: Error }>((resolve) =>
+            setTimeout(() => resolve({ data: null, error: new Error("Supabase timeout") }), 1200)
+          ),
+        ]);
+        const dbRecords = (sbRes as any)?.data;
+        const error = (sbRes as any)?.error;
 
         if (!error && dbRecords && dbRecords.length > 0) {
           source = "supabase";
@@ -82,22 +89,18 @@ export async function GET(request: Request) {
             is_active: true,
           }));
 
-          // Log break-glass access
-          for (const card of results) {
-            try {
-              await supabase.from("emergency_access_logs").insert([
-                {
-                  patient_uhid: card.card_number,
-                  doctor_name: doctorName,
-                  doctor_bmdc_no: doctorBmdc,
-                  hospital_name: hospitalName,
-                  access_reason: reason,
-                },
-              ]);
-            } catch (auditErr) {
-              console.warn("Audit logging warning:", auditErr);
-            }
-          }
+          // Single non-blocking batch insert for break-glass access
+          Promise.resolve(
+            supabase.from("emergency_access_logs").insert(
+              results.map((card) => ({
+                patient_uhid: card.card_number,
+                doctor_name: doctorName,
+                doctor_bmdc_no: doctorBmdc,
+                hospital_name: hospitalName,
+                access_reason: reason,
+              }))
+            )
+          ).catch(() => {});
         }
       } catch (dbErr) {
         console.warn("Supabase emergency query exception, falling back to local registry:", dbErr);

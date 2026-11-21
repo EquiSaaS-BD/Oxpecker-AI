@@ -235,8 +235,8 @@ export function BiometricVerificationModal({
       console.warn("WebAuthn optional fallback:", e);
     }
 
-    // High-tech Touch & Hold Scanner Fallback Animation (1.4s)
-    await new Promise((r) => setTimeout(r, 1400));
+    // Responsive Touch Scanner Transition
+    await new Promise((r) => setTimeout(r, 250));
     setFpVerified(true);
     setIsScanningFp(false);
     toast.success("বায়োমেট্রিক ফিঙ্গারপ্রিন্ট সফলভাবে রেজিস্টার্ড হয়েছে!", { icon: "🛡️" });

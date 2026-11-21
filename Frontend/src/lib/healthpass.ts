@@ -2424,8 +2424,6 @@ export async function createHealthCard(data: {
   allergies?: string[];
   chronicConditions?: { name: string; since: string }[];
 }): Promise<HealthPassCard> {
-  await new Promise((r) => setTimeout(r, 600));
-
   const zilaInfo = BANGLADESH_ZILAS.find((z) => z.name === data.zila) || BANGLADESH_ZILAS[0];
 
   const card: HealthPassCard = {

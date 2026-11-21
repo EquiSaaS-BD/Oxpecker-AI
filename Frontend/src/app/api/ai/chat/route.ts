@@ -397,33 +397,30 @@ export async function POST(request: NextRequest) {
     // 1. Local clinical analysis for symptom triage
     const clinicalAnalysis = analyzeClinicalCase(queryText, language, activeCategory);
 
-    // 2. Multi-Source Hybrid Medical RAG Pipeline (Local 21,714 Medicines + 1,711 Monographs + Clinical Corpus + Live MedEx/PubMed/YouTube Research)
-    const ragResult = await executeMedicalRAGWithLiveResearch(queryText, language, activeCategory);
+    // 2 & 3. Run Multi-Source Hybrid Medical RAG + Optional Azure Backend Diagnosis in parallel (tightly bounded)
+    const shouldQueryBackendDiag = clinicalAnalysis.detectedSymptoms.length > 0 || clinicalAnalysis.isEmergency;
+    const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'https://oxpecker-api.azurewebsites.net').replace(/\/+$/, '');
 
-    // 3. Query Azure backend clinical AI model if symptoms/emergency detected
-    let backendDiagnosis = null;
-    if (clinicalAnalysis.detectedSymptoms.length > 0 || clinicalAnalysis.isEmergency) {
-      try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://oxpecker-api.azurewebsites.net';
-        const cleanUrl = backendUrl.replace(/\/+$/, '');
-        const diagRes = await fetch(`${cleanUrl}/api/v1/clinical-ai/diagnose`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            symptoms: queryText,
-            category: activeCategory,
-          }),
-          signal: AbortSignal.timeout(3500),
-        });
-
-        if (diagRes.ok) {
-          const diagData = await diagRes.json();
-          if (diagData && diagData.diagnosis && diagData.diagnosis.has_clinical_match) {
-            backendDiagnosis = diagData.diagnosis;
-          }
-        }
-      } catch {}
-    }
+    const [ragResult, backendDiagnosis] = await Promise.all([
+      executeMedicalRAGWithLiveResearch(queryText, language, activeCategory),
+      shouldQueryBackendDiag
+        ? fetch(`${backendUrl}/api/v1/clinical-ai/diagnose`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              symptoms: queryText,
+              category: activeCategory,
+            }),
+            signal: AbortSignal.timeout(1800),
+          })
+            .then(async (diagRes) => {
+              if (!diagRes.ok) return null;
+              const diagData = await diagRes.json();
+              return diagData?.diagnosis?.has_clinical_match ? diagData.diagnosis : null;
+            })
+            .catch(() => null)
+        : Promise.resolve(null),
+    ]);
 
     // 4. Construct RAG-Grounded System Prompt
     const systemPrompt = getSystemPrompt(

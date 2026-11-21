@@ -1,4 +1,9 @@
 import assert from "node:assert/strict";
+import { NextRequest } from "next/server";
+import { withDbTimeout } from "../prisma";
+import { callMultimodalVision } from "../vision-engine";
+import { signSessionToken, SESSION_COOKIE_NAME } from "../server-auth";
+import { GET as emergencyPatientGET } from "../../app/api/emergency/patient/route";
 import {
   findAccountByEmail,
   registerNewAccount,
@@ -221,6 +226,98 @@ async function runPhase1And2Tests() {
       recordedBy: "RN Tania",
     });
     assert.ok(getClinicalCareNotes("ADM-1031").length >= 1);
+  });
+
+  await test("Latency Guard: withDbTimeout short-circuits immediately (<50ms) when DATABASE_URL is absent", async () => {
+    const prevDbUrl = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    const t0 = Date.now();
+    try {
+      await assert.rejects(
+        () => withDbTimeout(new Promise((r) => setTimeout(r, 1500)), 1500),
+        /Database unavailable/
+      );
+      const elapsed = Date.now() - t0;
+      assert.ok(elapsed < 100, `Expected <100ms fast rejection, got ${elapsed}ms`);
+    } finally {
+      if (prevDbUrl !== undefined) process.env.DATABASE_URL = prevDbUrl;
+    }
+  });
+
+  await test("Vision Fallback: callMultimodalVision returns structured prescription & lab fallbacks without throwing", async () => {
+    const keys = [
+      "AZURE_OPENAI_API_KEY",
+      "AZURE_OPENAI_KEY",
+      "AZURE_API_KEY",
+      "GEMINI_API_KEY",
+      "GOOGLE_API_KEY",
+      "OPENAI_API_KEY",
+      "GROQ_API_KEY",
+      "AZURE_VISION_KEY",
+    ];
+    const saved: Record<string, string | undefined> = {};
+    for (const k of keys) {
+      saved[k] = process.env[k];
+      delete process.env[k];
+    }
+    try {
+      const dummyImg = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]);
+      const rxRes = await callMultimodalVision(
+        dummyImg,
+        "image/png",
+        "json:prescription_analysis",
+        "Tab Napa Extra 500mg 1+0+1 3 days"
+      );
+      assert.equal(rxRes.imageCategory, "prescription");
+      assert.ok(rxRes.rawText.includes("json:prescription_analysis"));
+      assert.equal(rxRes.provider, "Oxpecker-Clinical-OCR-Synthesizer");
+
+      const labRes = await callMultimodalVision(
+        dummyImg,
+        "image/png",
+        "json:report_analysis",
+        ""
+      );
+      assert.equal(labRes.imageCategory, "lab_report");
+      assert.ok(labRes.rawText.includes("json:report_analysis"));
+      assert.equal(labRes.provider, "Oxpecker-Lab-Report-Synthesizer");
+    } finally {
+      for (const k of keys) {
+        if (saved[k] !== undefined) process.env[k] = saved[k];
+      }
+    }
+  });
+
+  await test("Emergency Patient API: break-glass cardId lookup returns 200 while patient token is blocked (403)", async () => {
+    const breakGlassReq = new NextRequest(
+      "http://localhost:3000/api/emergency/patient?cardId=HP-2026-94821"
+    );
+    const res = await emergencyPatientGET(breakGlassReq);
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.success, true);
+    assert.equal(json.patient?.uhid, "HP-2026-94821");
+
+    const aliasRes = await emergencyPatientGET(
+      new NextRequest("http://localhost:3000/api/emergency/patient?cardId=HP-2026-8841")
+    );
+    assert.equal(aliasRes.status, 200);
+
+    const patientToken = await signSessionToken({
+      id: "usr-pat-01",
+      email: "patient@oxpecker.ai",
+      name: "Rahim Uddin",
+      role: "patient",
+      organizationId: "org-default",
+    });
+    const blockedReq = new NextRequest(
+      "http://localhost:3000/api/emergency/patient?cardId=HP-2026-8841",
+      {
+        headers: { cookie: `${SESSION_COOKIE_NAME}=${encodeURIComponent(patientToken)}` },
+      }
+    );
+    const blockedRes = await emergencyPatientGET(blockedReq);
+    assert.equal(blockedRes.status, 403);
   });
 
   console.log(`\nTotal: ${passed} passed, ${failed} failed`);

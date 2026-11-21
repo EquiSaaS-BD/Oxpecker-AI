@@ -25,8 +25,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { derive12DigitAssistantCode } from "@/lib/doctor-assistant-link";
 
 type MegaMenuType = "operations" | "management" | null;
 
@@ -52,91 +53,180 @@ export default function AssistantTopNav() {
   }, []);
 
   useEffect(() => {
-    const loadData = () => {
-      if ((user as any)?.assistantId || user?.email) {
-        const invitesStr = localStorage.getItem("oxpecker_invites");
-        if (invitesStr) {
-          const allInvites = JSON.parse(invitesStr);
-          setInvites(
-            allInvites.filter(
-              (i: any) => (i.assistantId === (user as any)?.assistantId || i.email === user?.email) && i.status === "pending"
-            )
+    let active = true;
+    const loadData = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      const currentAstId =
+        (user as any)?.assistantId ||
+        (user ? derive12DigitAssistantCode(user.id || user.email || "assistant") : "");
+
+      let mergedInvites: any[] = [];
+      let mergedNotifs: any[] = [];
+      let serverDoctor: { name: string; location: string } | null = null;
+
+      if (user) {
+        try {
+          const res = await fetch(
+            `/api/doctor/assistants?role=assistant&assistantId=${encodeURIComponent(currentAstId)}&email=${encodeURIComponent(user.email || "")}`,
+            { cache: "no-store" }
           );
-        }
+          if (res.ok && active) {
+            const data = await res.json();
+            if (Array.isArray(data.pendingInvites)) {
+              mergedInvites = data.pendingInvites;
+            }
+            if (Array.isArray(data.notifications)) {
+              mergedNotifs = data.notifications;
+            }
+            if (data.connectedDoctor?.doctorName) {
+              serverDoctor = {
+                name: data.connectedDoctor.doctorName,
+                location: "Connected Chamber",
+              };
+            }
+          }
+        } catch {}
       }
 
-      if (user?.id) {
-        const notifStr = localStorage.getItem("oxpecker_notifications");
-        if (notifStr) {
-          const allNotifs = JSON.parse(notifStr);
-          setNotifications(allNotifs.filter((n: any) => n.targetId === (user as any).assistantId || n.targetId === user.id));
+      if (typeof localStorage !== "undefined") {
+        if (currentAstId || user?.email) {
+          try {
+            const invitesStr = localStorage.getItem("oxpecker_invites");
+            const allInvites = invitesStr ? JSON.parse(invitesStr) : [];
+            if (Array.isArray(allInvites)) {
+              const localPending = allInvites.filter(
+                (i: any) =>
+                  i &&
+                  (i.assistantId === currentAstId || i.email === user?.email) &&
+                  i.status === "pending" &&
+                  !mergedInvites.some((s: any) => s.id === i.id)
+              );
+              mergedInvites = [...mergedInvites, ...localPending];
+            }
+          } catch {}
         }
 
-        if ((user as any).doctorId) {
-          const usersStr = localStorage.getItem("oxpecker_users");
-          if (usersStr) {
-            const users = JSON.parse(usersStr);
-            const doc = users.find((u: any) => u.id === (user as any).doctorId);
-            if (doc) {
-              setAssignedDoctor({
-                name: doc.name || "Assigned Doctor",
-                location: doc.location || "Central Hospital",
-              });
+        if (user?.id) {
+          try {
+            const notifStr = localStorage.getItem("oxpecker_notifications");
+            const allNotifs = notifStr ? JSON.parse(notifStr) : [];
+            if (Array.isArray(allNotifs)) {
+              const localNotifs = allNotifs.filter(
+                (n: any) =>
+                  n &&
+                  (n.targetId === currentAstId || n.targetId === user.id) &&
+                  !mergedNotifs.some((s: any) => s.id === n.id)
+              );
+              mergedNotifs = [...mergedNotifs, ...localNotifs];
             }
+          } catch {}
+
+          if (!serverDoctor && (user as any).doctorId) {
+            try {
+              const usersStr = localStorage.getItem("oxpecker_users");
+              const users = usersStr ? JSON.parse(usersStr) : [];
+              if (Array.isArray(users)) {
+                const doc = users.find((u: any) => u && u.id === (user as any).doctorId);
+                if (doc) {
+                  serverDoctor = {
+                    name: doc.name || "Assigned Doctor",
+                    location: doc.location || "Central Hospital",
+                  };
+                }
+              }
+            } catch {}
           }
         }
       }
+
+      if (active) {
+        setInvites(mergedInvites);
+        setNotifications(mergedNotifs);
+        if (serverDoctor) setAssignedDoctor(serverDoctor);
+      }
     };
 
-    loadData();
-    window.addEventListener("storage", loadData);
-    const interval = setInterval(loadData, 1000);
+    void loadData();
+    const onVisible = () => {
+      if (typeof document === "undefined" || !document.hidden) {
+        void loadData();
+      }
+    };
+    window.addEventListener("storage", onVisible);
+    window.addEventListener("focus", onVisible);
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible);
+    }
+    const interval = setInterval(() => {
+      void loadData();
+    }, 8000);
     return () => {
-      window.removeEventListener("storage", loadData);
+      active = false;
+      window.removeEventListener("storage", onVisible);
+      window.removeEventListener("focus", onVisible);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible);
+      }
       clearInterval(interval);
     };
   }, [user, showNotifications]);
 
-  const handleAcceptInvite = (inviteId: string) => {
-    const invitesStr = localStorage.getItem("oxpecker_invites");
-    if (invitesStr) {
-      const allInvites = JSON.parse(invitesStr);
-      let doctorName = "the doctor";
-      let doctorId = "";
-      let inviteAssistantId = "";
+  const handleAcceptInvite = async (inviteId: string) => {
+    const currentAstId =
+      (user as any)?.assistantId ||
+      (user ? derive12DigitAssistantCode(user.id || user.email || "assistant") : "");
 
-      const updatedInvites = allInvites.map((i: any) => {
-        if (i.id === inviteId) {
-          doctorName = i.doctorName || doctorName;
-          doctorId = i.doctorId || "";
-          inviteAssistantId = i.assistantId || "";
-          return { ...i, status: "accepted" };
-        }
-        return i;
+    let doctorName = "the doctor";
+    let doctorId = "";
+
+    try {
+      const res = await fetch("/api/doctor/assistants", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "respond_invite",
+          inviteId,
+          assistantId: currentAstId,
+          assistantEmail: user?.email,
+          assistantName: user?.name,
+          status: "accepted",
+        }),
       });
-
-      localStorage.setItem("oxpecker_invites", JSON.stringify(updatedInvites));
-      setInvites(
-        updatedInvites.filter(
-          (i: any) => (i.assistantId === (user as any)?.assistantId || i.email === user?.email) && i.status === "pending"
-        )
-      );
-
-      if (doctorId && user) {
-        const usersStr = localStorage.getItem("oxpecker_users");
-        if (usersStr) {
-          const users = JSON.parse(usersStr);
-          const uIdx = users.findIndex((u: any) => u.id === user.id);
-          if (uIdx !== -1) {
-            users[uIdx].doctorId = doctorId;
-            localStorage.setItem("oxpecker_users", JSON.stringify(users));
-          }
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.invite) {
+          doctorName = data.invite.doctorName || doctorName;
+          doctorId = data.invite.doctorId || doctorId;
         }
-        updateUser({ ...user, doctorId });
       }
+    } catch {}
 
-      toast.success(`Invite accepted! You are now connected to ${doctorName}.`);
+    try {
+      const invitesStr = localStorage.getItem("oxpecker_invites");
+      if (invitesStr) {
+        const allInvites = JSON.parse(invitesStr);
+        if (Array.isArray(allInvites)) {
+          const updatedInvites = allInvites.map((i: any) => {
+            if (i?.id === inviteId) {
+              doctorName = i.doctorName || doctorName;
+              doctorId = i.doctorId || doctorId;
+              return { ...i, status: "accepted" };
+            }
+            return i;
+          });
+          localStorage.setItem("oxpecker_invites", JSON.stringify(updatedInvites));
+        }
+      }
+    } catch {}
+
+    setInvites((prev) => prev.filter((i: any) => i.id !== inviteId));
+    if (doctorName !== "the doctor") {
+      setAssignedDoctor({ name: doctorName, location: "Connected Chamber" });
     }
+    if (doctorId && user) {
+      updateUser({ ...user, doctorId });
+    }
+    toast.success(`Invite accepted! You are now connected to ${doctorName}.`);
   };
 
   const totalNotifs = invites.length + notifications.length;
@@ -146,7 +236,6 @@ export default function AssistantTopNav() {
       ref={navRef}
       className="h-[76px] bg-white/90 backdrop-blur-xl border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 sticky top-0 z-40 shadow-xs"
     >
-      <Toaster position="top-center" />
 
       {/* Left side: Doctor Profile & Desktop Mega Menu Navbar */}
       <div className="flex items-center gap-4 lg:gap-6">

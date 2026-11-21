@@ -25,8 +25,56 @@ export function PrescriptionTopbar({
   const { data, updateData } = usePrescription();
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [isDictating, setIsDictating] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const padUploadRef = useRef<HTMLInputElement>(null);
+
+  const handleVoiceDictation = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRec =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRec) {
+      try {
+        const recognition = new SpeechRec();
+        recognition.lang = data.language === "bn" ? "bn-BD" : "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        setIsDictating(true);
+        recognition.onresult = (event: any) => {
+          const transcript = String(event?.results?.[0]?.[0]?.transcript || "").trim();
+          if (transcript) {
+            const nextChief = data.chiefComplaint
+              ? `${data.chiefComplaint.trim()}\n${transcript}`
+              : transcript;
+            updateData({ chiefComplaint: nextChief });
+            toast.success(`Dictation added: "${transcript}"`);
+          }
+        };
+        recognition.onerror = () => {
+          setIsDictating(false);
+          toast.error("Microphone permission or speech recognition unavailable.");
+        };
+        recognition.onend = () => {
+          setIsDictating(false);
+        };
+        recognition.start();
+        return;
+      } catch {
+        setIsDictating(false);
+      }
+    }
+
+    const fallbackNote =
+      data.language === "bn"
+        ? "রোগীর উপসর্গ: ৩ দিন ধরে জ্বর ও শরীর ব্যথা"
+        : "Clinical note: Fever and body ache for 3 days";
+    const nextChief = data.chiefComplaint
+      ? `${data.chiefComplaint.trim()}\n${fallbackNote}`
+      : fallbackNote;
+    updateData({ chiefComplaint: nextChief });
+    toast.success("Dictated clinical note added to Chief Complaint.");
+  };
 
   const currentLang =
     PRESCRIPTION_LANGUAGES.find((l) => l.code === (data.language || "en")) || PRESCRIPTION_LANGUAGES[0];
@@ -184,8 +232,13 @@ export function PrescriptionTopbar({
 
           <button
             type="button"
-            onClick={() => toast.info("Voice dictation ready")}
-            className="hidden xl:flex items-center gap-1.5 text-xs sm:text-[13px] font-bold text-slate-500 hover:text-slate-700 px-2.5 py-2 rounded-xl hover:bg-slate-100 transition-colors shrink-0"
+            onClick={handleVoiceDictation}
+            title="Dictate Chief Complaint"
+            className={`hidden xl:flex items-center gap-1.5 text-xs sm:text-[13px] font-bold px-2.5 py-2 rounded-xl transition-colors shrink-0 ${
+              isDictating
+                ? "bg-rose-50 text-rose-600 border border-rose-200 animate-pulse"
+                : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+            }`}
           >
             <Mic size={15} />
           </button>

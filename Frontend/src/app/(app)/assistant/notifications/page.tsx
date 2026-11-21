@@ -109,13 +109,26 @@ export default function AssistantNotificationsPage() {
     };
 
     void loadData();
-    const onStorage = () => { void loadData(); };
-    window.addEventListener("storage", onStorage);
-    const interval = setInterval(() => { void loadData(); }, 3000);
+    const onVisible = () => {
+      if (typeof document === "undefined" || !document.hidden) {
+        void loadData();
+      }
+    };
+    window.addEventListener("storage", onVisible);
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible);
+    }
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void loadData();
+    }, 8000);
 
     return () => {
       active = false;
-      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("storage", onVisible);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible);
+      }
       clearInterval(interval);
     };
   }, [user]);

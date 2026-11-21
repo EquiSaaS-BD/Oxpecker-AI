@@ -52,8 +52,9 @@ export default function NutritionDashboard() {
   const [scanActiveTab, setScanActiveTab] = useState<"safety" | "nutrition" | "carbon" | "benefits">("safety");
   const [nonFoodWarning, setNonFoodWarning] = useState<string | null>(null);
 
-  // Manual Meal Modal
+  // Manual Meal Modal (Add / Edit)
   const [isAddMealOpen, setIsAddMealOpen] = useState(false);
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
   const [newMealTitle, setNewMealTitle] = useState("Snacks");
   const [newMealName, setNewMealName] = useState("");
   const [newMealCal, setNewMealCal] = useState("250");
@@ -217,6 +218,29 @@ export default function NutritionDashboard() {
     e.preventDefault();
     if (!newMealName.trim()) {
       toast.error("খাবারের নাম প্রদান করুন");
+      return;
+    }
+
+    if (editingMealId) {
+      setMeals((prev) =>
+        prev.map((m) =>
+          m.id === editingMealId
+            ? {
+                ...m,
+                title: newMealTitle,
+                name: newMealName.trim(),
+                cal: parseInt(newMealCal, 10) || m.cal,
+                p: newMealP,
+                c: newMealC,
+                f: newMealF,
+              }
+            : m
+        )
+      );
+      setEditingMealId(null);
+      setIsAddMealOpen(false);
+      setNewMealName("");
+      toast.success("খাবারটি সফলভাবে আপডেট করা হয়েছে!");
       return;
     }
 
@@ -434,7 +458,11 @@ export default function NutritionDashboard() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[20px] font-bold text-slate-800">আজকের খাবারের ডায়েরি</h2>
               <button 
-                onClick={() => setIsAddMealOpen(true)}
+                onClick={() => {
+                  setEditingMealId(null);
+                  setNewMealName("");
+                  setIsAddMealOpen(true);
+                }}
                 className="text-[#2797de] hover:text-sky-700 font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Plus size={16} /> খাবার যোগ করুন
@@ -452,7 +480,16 @@ export default function NutritionDashboard() {
                   f={meal.f} 
                   img={meal.img}
                   onDelete={() => handleDeleteMeal(meal.id)}
-                  onEdit={() => toast.info(`${meal.name} সম্পাদনা মোড সক্রিয়`)}
+                  onEdit={() => {
+                    setEditingMealId(meal.id);
+                    setNewMealTitle(meal.title);
+                    setNewMealName(meal.name);
+                    setNewMealCal(String(meal.cal));
+                    setNewMealP(meal.p);
+                    setNewMealC(meal.c);
+                    setNewMealF(meal.f);
+                    setIsAddMealOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -978,11 +1015,14 @@ export default function NutritionDashboard() {
                 <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#2797de] flex items-center justify-center">
                   <Plus size={20} />
                 </div>
-                <h3 className="font-bold text-slate-900 text-lg">খাবার যোগ করুন</h3>
+                <h3 className="font-bold text-slate-900 text-lg">{editingMealId ? "খাবার সম্পাদনা করুন" : "খাবার যোগ করুন"}</h3>
               </div>
               <button 
                 type="button" 
-                onClick={() => setIsAddMealOpen(false)}
+                onClick={() => {
+                  setIsAddMealOpen(false);
+                  setEditingMealId(null);
+                }}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
               >
                 <X size={20} />

@@ -2,8 +2,16 @@ import { NextResponse } from 'next/server';
 import { getCatalogMedicines, getGenericMonograph, getMedicineSnapshotMetadata, normalizePackageSize } from '@/lib/medicine-catalog';
 import { getOfficialDosageIcon, getMedicinePackaging, getManufacturerAsset } from '@/lib/medicine-brand-assets';
 
-// Memory cache for the large database to avoid reading from disk on every request
-let cachedMedicines: any[] = [];
+// Memory cache with pre-lowercased search indexes & memoized generic/manufacturer metadata
+interface IndexedMedicine {
+  item: any;
+  nameLower: string;
+  genericLower: string;
+  companyLower: string;
+  useForLower: string;
+}
+
+let cachedMedicines: IndexedMedicine[] = [];
 let lastGeneratedAt: string | null = null;
 
 function determineCategory(genericName: string, therapeuticClass?: string): string {
@@ -45,48 +53,98 @@ function getUseFor(category: string, generic: string, monographIndication?: stri
   }
 }
 
-function loadDatabase() {
+function loadDatabase(): IndexedMedicine[] {
   try {
     const catalog = getCatalogMedicines();
     if (cachedMedicines.length > 0 && catalog.generatedAt === lastGeneratedAt) {
       return cachedMedicines;
     }
-    
-    // Map raw data to the format frontend expects
+
+    const genericMetaCache = new Map<
+      string,
+      { monograph: ReturnType<typeof getGenericMonograph>; category: string; useFor: string }
+    >();
+    const assetCache = new Map<string, string | null>();
+    const iconCache = new Map<string, string>();
+    const pkgCache = new Map<string, string>();
+
     cachedMedicines = (catalog.data || []).map((med: any) => {
-      const monograph = getGenericMonograph(med.generic_name || '');
-      const category = determineCategory(med.generic_name, monograph?.therapeutic_class || monograph?.drug_class);
+      const genericName = med.generic_name || '';
+      let genMeta = genericMetaCache.get(genericName);
+      if (!genMeta) {
+        const monograph = getGenericMonograph(genericName);
+        const category = determineCategory(genericName, monograph?.therapeutic_class || monograph?.drug_class);
+        const useFor = getUseFor(category, genericName, monograph?.indication, monograph?.therapeutic_class || monograph?.drug_class);
+        genMeta = { monograph, category, useFor };
+        genericMetaCache.set(genericName, genMeta);
+      }
+
+      const manufacturerKey = med.manufacturer || '';
+      let manufacturerLogoUrl = assetCache.get(manufacturerKey);
+      if (manufacturerLogoUrl === undefined) {
+        manufacturerLogoUrl = manufacturerKey ? (getManufacturerAsset(manufacturerKey)?.logoUrl || null) : null;
+        assetCache.set(manufacturerKey, manufacturerLogoUrl);
+      }
+
+      const dosageKey = med.dosage_form || med.type || '';
+      let dosageIcon = iconCache.get(dosageKey);
+      if (dosageIcon === undefined) {
+        dosageIcon = getOfficialDosageIcon(dosageKey);
+        iconCache.set(dosageKey, dosageIcon);
+      }
+
+      const rawPkg = String(med.package_size || '');
+      let packageSize = pkgCache.get(rawPkg);
+      if (packageSize === undefined) {
+        packageSize = normalizePackageSize(rawPkg) || '';
+        pkgCache.set(rawPkg, packageSize);
+      }
+
       const unitPriceMatch = String(med.package_container || '').match(/Unit\s+Price:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
       const unitPrice = unitPriceMatch ? Number(unitPriceMatch[1].replace(/,/g, '')) : null;
-      const packagePriceMatch = String(med.package_size || '').match(/৳\s*([\d,]+(?:\.\d{1,2})?)/)
+      const packagePriceMatch = rawPkg.match(/৳\s*([\d,]+(?:\.\d{1,2})?)/)
         || String(med.package_container || '').match(/(?:pack|bottle|box|strip)[^৳]*৳\s*([\d,]+(?:\.\d{1,2})?)/i);
       const packagePrice = packagePriceMatch ? Number(packagePriceMatch[1].replace(/,/g, '')) : null;
-      return {
+
+      const name = med.brand_name || 'Unknown';
+      const generic = genericName || 'Unknown Generic';
+      const company = manufacturerKey || 'Unknown Manufacturer';
+      const { monograph, category, useFor } = genMeta;
+
+      const item = {
         id: med.id.toString(),
-        name: med.brand_name || 'Unknown',
-        generic: med.generic_name || 'Unknown Generic',
-        company: med.manufacturer || 'Unknown Manufacturer',
+        name,
+        generic,
+        company,
         strength: med.strength || '',
         price: Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : (Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null),
         priceBasis: Number.isFinite(unitPrice) && unitPrice! > 0 ? 'unit' : (Number.isFinite(packagePrice) && packagePrice! > 0 ? 'package' : null),
         unitPrice: Number.isFinite(unitPrice) && unitPrice! > 0 ? unitPrice : null,
         packagePrice: Number.isFinite(packagePrice) && packagePrice! > 0 ? packagePrice : null,
-        packageSize: normalizePackageSize(med.package_size) || null,
+        packageSize: packageSize || null,
         packageContainer: med.package_container || '',
         type: med.dosage_form || 'Tablet',
         drugType: med.type || 'allopathic',
         slug: med.slug || '',
-        category: category,
-        useFor: getUseFor(category, med.generic_name, monograph?.indication, monograph?.therapeutic_class || monograph?.drug_class),
+        category,
+        useFor,
         indication: monograph?.indication || null,
         indicationDescription: monograph?.indication_description || null,
         drugClass: monograph?.drug_class || monograph?.therapeutic_class || null,
         image: getMedicinePackaging(med.id, med.brand_name) || null,
-        dosageIcon: getOfficialDosageIcon(med.dosage_form || med.type || ''),
-        manufacturerLogoUrl: getManufacturerAsset(med.manufacturer || '')?.logoUrl || null,
+        dosageIcon,
+        manufacturerLogoUrl,
+      };
+
+      return {
+        item,
+        nameLower: name.toLowerCase(),
+        genericLower: generic.toLowerCase(),
+        companyLower: company.toLowerCase(),
+        useForLower: useFor ? useFor.toLowerCase() : '',
       };
     });
-    
+
     lastGeneratedAt = catalog.generatedAt;
     console.log(`[Medicine API] Loaded ${cachedMedicines.length} medicines successfully.`);
     return cachedMedicines;
@@ -99,10 +157,10 @@ function loadDatabase() {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get('q')?.toLowerCase() || '';
+    const q = searchParams.get('q')?.toLowerCase().trim() || '';
     const category = searchParams.get('category') || 'All';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10) || 20));
 
     const allMedicines = loadDatabase();
     
@@ -110,28 +168,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Database not found or empty.' }, { status: 500 });
     }
 
-    // Apply Filters
+    // Apply Filters over pre-lowercased index
     let filtered = allMedicines;
     
     if (category !== 'All') {
-      filtered = filtered.filter(med => med.category === category);
+      filtered = filtered.filter((entry) => entry.item.category === category);
     }
     
     if (q) {
-      filtered = filtered.filter(med => 
-        med.name.toLowerCase().includes(q) || 
-        med.generic.toLowerCase().includes(q) ||
-        med.company.toLowerCase().includes(q) ||
-        (med.useFor && med.useFor.toLowerCase().includes(q))
+      filtered = filtered.filter((entry) =>
+        entry.nameLower.includes(q) ||
+        entry.genericLower.includes(q) ||
+        entry.companyLower.includes(q) ||
+        entry.useForLower.includes(q)
       );
       
-      // Sort by relevance so exact matches (like "Napa") appear before random generic substring matches
       filtered.sort((a, b) => {
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
-        const aGen = a.generic.toLowerCase();
-        const bGen = b.generic.toLowerCase();
-
         const getScore = (name: string, gen: string) => {
           if (name === q) return 100;
           if (gen === q) return 90;
@@ -142,34 +194,37 @@ export async function GET(request: Request) {
           return 10;
         };
 
-        const scoreA = getScore(aName, aGen);
-        const scoreB = getScore(bName, bGen);
+        const scoreA = getScore(a.nameLower, a.genericLower);
+        const scoreB = getScore(b.nameLower, b.genericLower);
 
         if (scoreA !== scoreB) {
           return scoreB - scoreA;
         }
-        
-        // Secondary sort by name
-        return aName.localeCompare(bName);
+        return a.nameLower.localeCompare(b.nameLower);
       });
     }
     
-    // Pagination
     const totalCount = filtered.length;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    const paginatedResults = filtered.slice(startIndex, endIndex);
-    
+    const paginatedResults = filtered.slice(startIndex, endIndex).map((entry) => entry.item);
     const hasMore = endIndex < totalCount;
 
-    return NextResponse.json({
-      totalCount,
-      page,
-      limit,
-      hasMore,
-      priceSnapshot: getMedicineSnapshotMetadata(),
-      data: paginatedResults
-    });
+    return NextResponse.json(
+      {
+        totalCount,
+        page,
+        limit,
+        hasMore,
+        priceSnapshot: getMedicineSnapshotMetadata(),
+        data: paginatedResults,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    );
     
   } catch (error) {
     console.error('[Medicine API] Route Error:', error);

@@ -55,6 +55,13 @@ export default function AssistantSettingsPage() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  useEffect(() => {
+    try {
+      const savedDark = localStorage.getItem("oxpecker_assistant_dark_mode");
+      if (savedDark === "true") setDarkMode(true);
+    } catch {}
+  }, []);
+
   // Load user data into form when available
   useEffect(() => {
     if (user) {
@@ -125,7 +132,7 @@ export default function AssistantSettingsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 min-h-screen pb-24 lg:pb-10 relative overflow-hidden">
+    <div className={`flex-1 flex flex-col min-h-screen pb-24 lg:pb-10 relative overflow-hidden transition-colors ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50"}`}>
       
       {/* Decorative background blobs for glassmorphism refraction */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none" />
@@ -599,8 +606,12 @@ export default function AssistantSettingsPage() {
                           </div>
                           <button 
                             onClick={() => {
-                              setDarkMode(!darkMode);
-                              toast.info("Dark mode coming soon!");
+                              const nextDark = !darkMode;
+                              setDarkMode(nextDark);
+                              try {
+                                localStorage.setItem("oxpecker_assistant_dark_mode", nextDark ? "true" : "false");
+                              } catch {}
+                              toast.success(nextDark ? "High-contrast dark mode enabled" : "Light clinical theme enabled");
                             }}
                             className={`w-14 h-8 rounded-full transition-colors relative shadow-inner ${darkMode ? 'bg-[#2F80ED]' : 'bg-slate-200'}`}
                           >

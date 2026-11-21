@@ -20,10 +20,16 @@ export async function POST(request: Request) {
 
     if (isSupabaseConfigured) {
       try {
-        const { data: dbRecords } = await supabase
-          .from("patient_health_records")
-          .select("*")
-          .limit(30);
+        const sbRes = await Promise.race([
+          supabase
+            .from("patient_health_records")
+            .select("*")
+            .limit(30),
+          new Promise<{ data: null }>((resolve) =>
+            setTimeout(() => resolve({ data: null }), 1200)
+          ),
+        ]);
+        const dbRecords = (sbRes as any)?.data;
 
         if (dbRecords && dbRecords.length > 0) {
           const dbCards = dbRecords
@@ -61,7 +67,7 @@ export async function POST(request: Request) {
               is_active: true,
             }));
 
-          allCards = [...allCards, ...dbCards.filter((c) => !allCards.some((a) => a.id === c.id))];
+          allCards = [...allCards, ...dbCards.filter((c: any) => !allCards.some((a) => a.id === c.id))];
         }
       } catch (dbErr) {
         console.warn("Visual search Supabase warning:", dbErr);
@@ -71,20 +77,18 @@ export async function POST(request: Request) {
     // Perform visual feature matching
     const candidates = await matchPatientPhoto(imageBase64, allCards, targetPatientId);
 
-    // Audit log biometric face scan in emergency access logs
+    // Non-blocking audit log biometric face scan in emergency access logs
     if (isSupabaseConfigured && candidates.length > 0) {
-      try {
-        await supabase.from("emergency_access_logs").insert([
+      Promise.resolve(
+        supabase.from("emergency_access_logs").insert([
           {
             patient_uhid: candidates[0]?.card.card_number || "BIOMETRIC_SCAN",
             doctor_name: doctorName || "Emergency Attending Doctor",
             hospital_name: hospitalName || "Emergency Trauma Dept",
             access_reason: "Visual AI Biometric Facial Recognition Match",
           },
-        ]);
-      } catch (logErr) {
-        console.warn("Audit log warning:", logErr);
-      }
+        ])
+      ).catch(() => {});
     }
 
     return NextResponse.json({

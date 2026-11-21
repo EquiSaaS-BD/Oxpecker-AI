@@ -112,15 +112,14 @@ export default function VerificationFlow({ profileImage, userName, onComplete, o
 
   const handleFaceVerify = async () => {
     setIsProcessing(true);
-    // Simulate face verification delay
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 150));
     setFaceVerified(true);
     setIsProcessing(false);
   };
 
   const handleComplete = async () => {
     setIsProcessing(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 150));
     onComplete(data);
     setIsProcessing(false);
   };
