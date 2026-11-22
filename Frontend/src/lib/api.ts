@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
+import { getPersistedUserAvatar, saveUserAvatarEverywhere } from "./profile-media";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://oxpecker-backend.onrender.com/api/v1";
 
@@ -166,8 +167,16 @@ export const apiGetProfile = async (userId?: string) => {
     const { data: profile, error } = await query.limit(1).maybeSingle();
 
     if (error || !profile) {
-      return { data: { profile: storedUser || {} } };
+      const localFallback = storedUser || {};
+      const persistedImg = localFallback.image || getPersistedUserAvatar(targetId, targetEmail) || "";
+      return { data: { profile: persistedImg ? { ...localFallback, image: persistedImg, avatar_url: persistedImg } : localFallback } };
     }
+
+    const resolvedImg =
+      profile.image ||
+      getPersistedUserAvatar(profile.id || targetId, profile.email || targetEmail) ||
+      storedUser?.image ||
+      "";
 
     return {
       data: {
@@ -185,8 +194,8 @@ export const apiGetProfile = async (userId?: string) => {
           blood_group: profile.blood_group || "",
           bloodGroup: profile.blood_group || "",
           address: profile.address || "",
-          image: profile.image || "",
-          avatar_url: profile.image || "",
+          image: resolvedImg,
+          avatar_url: resolvedImg,
           specialty: profile.specialty || "",
           hospital_name: profile.hospital_name || "",
           join_date: profile.join_date
@@ -300,6 +309,14 @@ export const apiUpdateProfile = async (data: ProfileUpdateInput) => {
           localStorage.setItem(`hp_profile_${targetId}`, JSON.stringify(effectiveProfile));
         }
       } catch {}
+    }
+
+    if (updatePayload.image) {
+      saveUserAvatarEverywhere({
+        id: effectiveProfile.id,
+        email: effectiveProfile.email,
+        image: updatePayload.image,
+      });
     }
 
     return { data: { profile: effectiveProfile } };

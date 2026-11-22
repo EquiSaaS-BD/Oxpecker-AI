@@ -6,8 +6,46 @@ import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { getRoleHomePath, getAuthorizedRedirectUrl } from "@/lib/rbac";
 import { derive12DigitAssistantCode, isValid12DigitCode } from "@/lib/doctor-assistant-link";
+import {
+  PROFILE_AVATAR_EVENT,
+  getPersistedUserAvatar,
+  saveUserAvatarEverywhere,
+} from "@/lib/profile-media";
 
 export type UserRole = "patient" | "doctor" | "hospital" | "admin" | "assistant" | null;
+
+function isSameAppUser(a?: AppUser | null, b?: AppUser | null): boolean {
+  if (!a || !b) return false;
+  if (a.id && b.id && a.id === b.id) return true;
+  const emailA = (a.email || "").trim().toLowerCase();
+  const emailB = (b.email || "").trim().toLowerCase();
+  return Boolean(emailA && emailB && emailA === emailB);
+}
+
+function mergePersistedProfile(serverUser: AppUser, localFallback?: AppUser | null): AppUser {
+  const normalized = normalizeAppUser(serverUser);
+  const sameUser = isSameAppUser(normalized, localFallback);
+  const persistedImage =
+    normalized.image ||
+    getPersistedUserAvatar(normalized.id, normalized.email) ||
+    (sameUser ? localFallback?.image : undefined) ||
+    undefined;
+
+  if (!sameUser || !localFallback) {
+    return persistedImage ? { ...normalized, image: persistedImage } : normalized;
+  }
+
+  return {
+    ...normalized,
+    image: persistedImage,
+    phone: normalized.phone || localFallback.phone,
+    date_of_birth: normalized.date_of_birth || localFallback.date_of_birth,
+    gender: normalized.gender || localFallback.gender,
+    blood_group: normalized.blood_group || localFallback.blood_group,
+    address: normalized.address || localFallback.address,
+    hospital_name: normalized.hospital_name || localFallback.hospital_name,
+  };
+}
 
 function normalizeAppUser(u: AppUser): AppUser {
   if (u.role === "assistant" && !isValid12DigitCode(u.assistantId)) {
@@ -135,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           const data = await res.json().catch(() => null);
           if (active && data?.authenticated && isValidCachedUser(data?.user)) {
-            const hydratedUser = normalizeAppUser(data.user);
+            const hydratedUser = mergePersistedProfile(data.user, cachedParsed);
             setUser(hydratedUser);
             if (typeof localStorage !== "undefined") {
               localStorage.setItem("oxpecker_mock_user", JSON.stringify(hydratedUser));
@@ -230,13 +268,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    const handleAvatarUpdated = (ev: Event) => {
+      const detail = (ev as CustomEvent<{ id?: string | null; email?: string | null; image?: string }>).detail;
+      if (!detail?.image) return;
+      setUser((prev) => {
+        if (!prev) return prev;
+        const emailMatch =
+          detail.email && prev.email && prev.email.trim().toLowerCase() === detail.email.trim().toLowerCase();
+        const idMatch = detail.id && prev.id === detail.id;
+        if (idMatch || emailMatch) {
+          return { ...prev, image: detail.image };
+        }
+        return prev;
+      });
+    };
+    window.addEventListener(PROFILE_AVATAR_EVENT, handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(PROFILE_AVATAR_EVENT, handleAvatarUpdated);
+    };
   }, [user]);
 
   const router = useRouter();
 
   const login = async (userData: AppUser, options?: { cookieAlreadySet?: boolean }) => {
-    const normalized = normalizeAppUser(userData);
+    const normalized = mergePersistedProfile(userData, user);
+    if (normalized.image) {
+      saveUserAvatarEverywhere({ id: normalized.id, email: normalized.email, image: normalized.image });
+    }
     setUser(normalized);
     if (typeof localStorage !== "undefined") {
       localStorage.setItem("oxpecker_mock_user", JSON.stringify(normalized));
@@ -322,7 +381,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (userData: AppUser) => {
-    const normalized = normalizeAppUser(userData);
+    const normalized = mergePersistedProfile(userData, user);
+    if (normalized.image) {
+      saveUserAvatarEverywhere({
+        id: normalized.id,
+        email: normalized.email,
+        image: normalized.image,
+      });
+    }
     setUser(normalized);
     localStorage.setItem("oxpecker_mock_user", JSON.stringify(normalized));
     localStorage.setItem("oxpecker_user", JSON.stringify(normalized));

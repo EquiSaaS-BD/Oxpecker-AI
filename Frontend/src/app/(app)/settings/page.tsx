@@ -12,6 +12,7 @@ import { apiGetProfile, apiUpdateProfile, compressAndResizeImage } from "@/lib/a
 import { MedicalLoader } from "@/components/shared/MedicalLoader";
 import { HealthPassSettingsSection } from "@/components/health-card/HealthPassSettingsSection";
 import { LocationAutocompleteInput } from "@/components/shared/LocationAutocompleteInput";
+import { getPersistedUserAvatar, saveUserAvatarEverywhere } from "@/lib/profile-media";
 
 export default function SettingsPage() {
   const { user, logout, updateUser } = useAuth();
@@ -58,7 +59,8 @@ export default function SettingsPage() {
       setAddress(prof.address || user?.address || "");
       setNid(prof.nid || "");
       setEmergencyContact(prof.emergency_contact || prof.emergencyContact || "");
-      if (prof.image) setProfileImage(prof.image);
+      const resolvedImage = prof.image || user?.image || getPersistedUserAvatar(user?.id, user?.email);
+      if (resolvedImage) setProfileImage(resolvedImage);
     } catch {
       toast.error("Failed to load profile data.");
     } finally {
@@ -167,7 +169,14 @@ export default function SettingsPage() {
       const targetUserId = user?.id || "current";
       const savedCard = localStorage.getItem(`hp_card_${targetUserId}`);
       const currentCard = savedCard ? JSON.parse(savedCard) : {};
-      if (profileImage) currentCard.patient_image = profileImage;
+      if (profileImage) {
+        currentCard.patient_image = profileImage;
+        saveUserAvatarEverywhere({
+          id: user?.id,
+          email: user?.email || email,
+          image: profileImage,
+        });
+      }
       currentCard.patient_name = name;
       currentCard.english_name = name.toUpperCase();
       currentCard.blood_group = bloodGroup;
@@ -226,15 +235,32 @@ export default function SettingsPage() {
         {/* PROFILE COMPLETION CARD */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs flex flex-col sm:flex-row items-center gap-6">
           <div className="relative group shrink-0">
-            <div className="w-24 h-24 rounded-full bg-white text-slate-900 flex items-center justify-center text-2xl font-bold overflow-hidden border-2 border-white ring-2 ring-slate-200">
+            <div className="relative w-24 h-24 rounded-full bg-white text-slate-900 flex items-center justify-center text-2xl font-bold overflow-hidden border-2 border-white ring-2 ring-slate-200">
               {profileImage ? (
-                <Image src={profileImage} alt="Profile" fill className="object-cover" />
+                <Image src={profileImage} alt="Profile" fill sizes="96px" className="object-cover" />
               ) : (
                 <span>{(name || "U").charAt(0).toUpperCase()}</span>
               )}
             </div>
             <ImageUploadCropper 
-              onUpload={(base64) => { setProfileImage(base64); toast.success("Photo cropped & added! Click Save."); }}
+              onUpload={async (base64) => {
+                setProfileImage(base64);
+                saveUserAvatarEverywhere({
+                  id: user?.id,
+                  email: user?.email || email,
+                  image: base64,
+                });
+                if (user) {
+                  updateUser({ ...user, image: base64 });
+                }
+                apiUpdateProfile({
+                  id: user?.id,
+                  email: user?.email || email,
+                  name: name || user?.name,
+                  image: base64,
+                }).catch(() => {});
+                toast.success("Profile photo saved & synced to your Header and Health Card!");
+              }}
               buttonText=""
               icon={<Camera size={22} />}
               className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white cursor-pointer"

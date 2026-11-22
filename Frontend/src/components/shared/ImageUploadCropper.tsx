@@ -56,7 +56,7 @@ export function ImageUploadCropper({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/jpeg,image/png,image/jpg"
+        accept="image/jpeg,image/png,image/jpg,image/webp"
         className="hidden"
       />
       <button

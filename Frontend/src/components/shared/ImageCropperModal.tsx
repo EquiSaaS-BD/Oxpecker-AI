@@ -3,7 +3,6 @@
 import React, { useState, useRef } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import imageCompression from "browser-image-compression";
 import { X } from "lucide-react";
 
 interface ImageCropperModalProps {
@@ -31,7 +30,7 @@ export function ImageCropperModal({
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
-    const crop = centerCrop(
+    const nextCrop = centerCrop(
       makeAspectCrop(
         {
           unit: "%",
@@ -44,60 +43,62 @@ export function ImageCropperModal({
       width,
       height
     );
-    setCrop(crop);
+    setCrop(nextCrop);
+    setCompletedCrop({
+      unit: "px",
+      x: (nextCrop.x / 100) * width,
+      y: (nextCrop.y / 100) * height,
+      width: (nextCrop.width / 100) * width,
+      height: (nextCrop.height / 100) * height,
+    });
   }
 
-  const handleSave = async () => {
-    if (!completedCrop || !imgRef.current) return;
+  const handleSave = () => {
+    if (!imgRef.current) return;
 
     const image = imgRef.current;
+    const scaleX = image.naturalWidth / (image.width || 1);
+    const scaleY = image.naturalHeight / (image.height || 1);
+
+    const activeCrop: PixelCrop =
+      completedCrop && completedCrop.width > 0 && completedCrop.height > 0
+        ? completedCrop
+        : {
+            unit: "px",
+            x: 0,
+            y: 0,
+            width: image.width,
+            height: image.height,
+          };
+
+    const srcWidth = Math.max(1, activeCrop.width * scaleX);
+    const srcHeight = Math.max(1, activeCrop.height * scaleY);
+    const maxDim = 360;
+    const ratio = Math.min(1, maxDim / Math.max(srcWidth, srcHeight));
+
     const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(srcWidth * ratio));
+    canvas.height = Math.max(1, Math.round(srcHeight * ratio));
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    canvas.width = completedCrop.width * scaleX;
-    canvas.height = completedCrop.height * scaleY;
-
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     ctx.drawImage(
       image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      activeCrop.x * scaleX,
+      activeCrop.y * scaleY,
+      srcWidth,
+      srcHeight,
       0,
       0,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY
+      canvas.width,
+      canvas.height
     );
 
-    // Convert canvas to Blob
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
-
-      // Compress
-      const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      };
-
-      try {
-        const compressedFile = await imageCompression(blob as File, options);
-        // Convert to Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(compressedFile);
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          onCropComplete(base64data);
-          onClose();
-        };
-      } catch (error) {
-        console.error("Error compressing image", error);
-      }
-    }, "image/jpeg", 0.9);
+    const base64data = canvas.toDataURL("image/jpeg", 0.84);
+    onCropComplete(base64data);
+    onClose();
   };
 
   return (
@@ -105,11 +106,15 @@ export function ImageCropperModal({
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200">
         <div className="flex justify-between items-center p-4 border-b border-slate-100">
           <h3 className="font-semibold text-slate-800">Crop Image</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 flex flex-col items-center max-h-[60vh] overflow-y-auto">
           <ReactCrop
             crop={crop}
@@ -129,16 +134,17 @@ export function ImageCropperModal({
         </div>
 
         <div className="p-4 border-t border-slate-100 flex justify-end gap-3">
-          <button 
+          <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition-colors"
           >
             Cancel
           </button>
-          <button 
+          <button
+            type="button"
             onClick={handleSave}
-            disabled={!completedCrop}
-            className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium shadow-sm hover:bg-blue-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium shadow-sm hover:bg-blue-700 hover:shadow-md transition-all cursor-pointer"
           >
             Save & Compress
           </button>

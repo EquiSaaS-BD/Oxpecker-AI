@@ -27,6 +27,7 @@ import {
 } from "@/lib/healthpass";
 import { LocationAutocompleteInput } from "@/components/shared/LocationAutocompleteInput";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
+import { PROFILE_AVATAR_EVENT, getPersistedUserAvatar } from "@/lib/profile-media";
 
 export default function HealthCardPage() {
   const { user } = useAuth();
@@ -79,7 +80,13 @@ export default function HealthCardPage() {
             } catch { return {}; }
           })() : {};
 
-          const effectivePhoto = customCardData.patient_image || user.image || storedUser.image || result.card.patient_image || null;
+          const effectivePhoto =
+            user.image ||
+            getPersistedUserAvatar(user.id, user.email) ||
+            customCardData.patient_image ||
+            storedUser.image ||
+            result.card.patient_image ||
+            null;
 
           const mergedCard = {
             ...result.card,
@@ -115,6 +122,26 @@ export default function HealthCardPage() {
     }
     load();
   }, [user]);
+
+  useEffect(() => {
+    const syncCardPhoto = (nextPhoto?: string | null) => {
+      if (!nextPhoto) return;
+      setCard((prev) =>
+        prev && prev.patient_image !== nextPhoto
+          ? { ...prev, patient_image: nextPhoto, photo_url: nextPhoto }
+          : prev
+      );
+    };
+
+    syncCardPhoto(user?.image || getPersistedUserAvatar(user?.id, user?.email));
+
+    const handleAvatarEvent = (ev: Event) => {
+      const detail = (ev as CustomEvent<{ id?: string | null; email?: string | null; image?: string }>).detail;
+      if (detail?.image) syncCardPhoto(detail.image);
+    };
+    window.addEventListener(PROFILE_AVATAR_EVENT, handleAvatarEvent);
+    return () => window.removeEventListener(PROFILE_AVATAR_EVENT, handleAvatarEvent);
+  }, [user?.id, user?.email, user?.image]);
 
   // Download card as high-resolution PNG
   const handleDownload = useCallback(async () => {
@@ -444,7 +471,7 @@ export default function HealthCardPage() {
             className="mb-8"
           >
             <VerificationFlow
-              profileImage={user?.image}
+              profileImage={user?.image || card?.patient_image}
               userName={user?.name}
               onComplete={handleVerificationComplete}
               onCancel={() => setShowVerification(false)}
@@ -508,7 +535,7 @@ export default function HealthCardPage() {
                           <HealthPassCard
                             ref={cardRef}
                             card={card}
-                            profileImage={card.patient_image || user?.image}
+                            profileImage={user?.image || card.patient_image}
                             onFlip={() => setIsFlipped(true)}
                           />
                         </motion.div>
