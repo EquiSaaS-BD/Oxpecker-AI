@@ -220,7 +220,7 @@ function LoginForm() {
           <span className="text-sm font-medium">Back to home</span>
         </Link>
 
-        <div className="bg-white/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-white p-7 sm:p-9 relative z-20 ring-1 ring-black/5">
+        <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_-12px_rgba(15,23,42,0.08)] border border-slate-200/80 p-7 sm:p-9 relative z-20 ring-1 ring-slate-900/[0.03]">
           <div className="mb-6 text-center">
             <Link href="/" className="inline-flex mb-4">
               <Image src="/images/Oxpecker_full_size.png" alt="Oxpecker AI" width={160} height={45} className="h-9 sm:h-10 w-auto object-contain" priority />
@@ -236,7 +236,7 @@ function LoginForm() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading}
-            className="w-full h-[50px] bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold rounded-2xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[14px] active:scale-[0.99] cursor-pointer"
+            className="w-full h-[50px] bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-3 text-[14px] active:scale-[0.99] cursor-pointer"
           >
             {isGoogleLoading ? (
               <>
@@ -260,7 +260,7 @@ function LoginForm() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             {loginError && (
-              <div className="rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-semibold text-rose-700">
+              <div className="rounded-lg bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-semibold text-rose-700">
                 {loginError}
               </div>
             )}
@@ -276,7 +276,7 @@ function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full h-[50px] pl-10 pr-4 rounded-2xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
+                  className="w-full h-[50px] pl-10 pr-4 rounded-xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -291,7 +291,7 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-[50px] pl-10 pr-12 rounded-2xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
+                  className="w-full h-[50px] pl-10 pr-12 rounded-xl bg-black/[0.03] border border-transparent text-[14px] outline-none hover:bg-black/[0.05] focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-100/50 transition-all text-slate-900 font-medium placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -312,7 +312,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-[50px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-1 cursor-pointer"
+              className="w-full h-[50px] bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-sm mt-1 cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
