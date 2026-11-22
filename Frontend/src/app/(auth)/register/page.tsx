@@ -719,15 +719,20 @@ export default function RegisterPage() {
             {/* Background Line */}
             <div className="absolute top-1/2 left-6 right-6 h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
             {/* Active Line */}
-            <div className="absolute top-1/2 left-6 h-1 bg-sky-600 -z-10 -translate-y-1/2 transition-all duration-500 rounded-full" style={{ width: `calc(${(step - 1) * 50}%)` }}></div>
+            <div
+              className="absolute top-1/2 left-6 h-1 bg-gradient-to-r from-emerald-500 to-sky-600 -z-10 -translate-y-1/2 transition-all duration-500 rounded-full"
+              style={{ width: `calc((100% - 3rem) * ${(step - 1) / 2})` }}
+            ></div>
             
             {[1, 2, 3].map((s) => (
               <div key={s} className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${
-                step >= s 
-                  ? "bg-sky-600 text-white shadow-[0_0_0_6px_rgba(112,222,113,0.15)]" 
+                step > s
+                  ? "bg-emerald-500 text-white shadow-[0_0_0_6px_rgba(16,185,129,0.16)]"
+                  : step === s
+                  ? "bg-sky-600 text-white shadow-[0_0_0_6px_rgba(2,132,199,0.16)]"
                   : "bg-white text-slate-500 border-2 border-slate-200"
               }`}>
-                {step > s ? <CheckCircle2 size={24} strokeWidth={3} className="text-slate-900" /> : s}
+                {step > s ? <Check size={22} strokeWidth={3} className="text-white" /> : s}
               </div>
             ))}
           </div>
@@ -735,17 +740,17 @@ export default function RegisterPage() {
           <div className="flex items-center justify-between w-full max-w-[460px] mx-auto mb-10 relative z-10 px-4">
             {/* Background connecting line */}
             <div className="absolute top-1/2 left-8 right-8 h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
-            <div className="absolute top-1/2 left-8 right-8 h-1 bg-sky-600 -z-10 -translate-y-1/2 rounded-full"></div>
+            <div className="absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-emerald-500 to-sky-600 -z-10 -translate-y-1/2 rounded-full"></div>
             
             <div className="flex flex-col items-center gap-1.5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-600 text-white shadow-md">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-500 text-white shadow-md shadow-emerald-500/20">
                 <Check size={20} strokeWidth={3} />
               </div>
               <span className="text-[11px] font-bold text-slate-700 capitalize">{formData.accountType}</span>
             </div>
 
             <div className="flex flex-col items-center gap-1.5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-600 text-white shadow-md">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-500 text-white shadow-md shadow-emerald-500/20">
                 <Check size={20} strokeWidth={3} />
               </div>
               <span className="text-[11px] font-bold text-slate-700">Google Verified</span>

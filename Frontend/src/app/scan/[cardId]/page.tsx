@@ -47,7 +47,7 @@ export default function ScanPage() {
   }, [cardId]);
 
   if (isLoading) {
-    return <MedicalLoader fullScreen text="HealthPass লোড হচ্ছে" />;
+    return <MedicalLoader fullScreen text="Loading HealthPass" />;
   }
 
   if (error || !card) {

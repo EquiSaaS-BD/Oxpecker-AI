@@ -6,36 +6,32 @@ import Link from "next/link";
 import { ChevronRight, Droplet, Flame, Activity, Check, AlertCircle, Calendar, Clock, Moon, Dumbbell, UtensilsCrossed } from "lucide-react";
 import { upcomingAppointment, nutritionData } from "@/data";
 import { fetchDashboardStats } from "@/lib/api";
-
-import { MedicalLoader } from "@/components/shared/MedicalLoader";
+import { useAuth } from "@/context/AuthContext";
 import { MessageMedicalIcon } from "@/components/icons/MessageMedicalIcon";
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<any>({
+    user: {},
+    healthScore: { score: 85 },
+    reminders: [],
+  });
 
   useEffect(() => {
-    async function loadData() {
-      const data = await fetchDashboardStats();
-      setDashboardData(data);
-      setIsLoading(false);
-    }
-    loadData();
+    let active = true;
+    fetchDashboardStats()
+      .then((data) => {
+        if (active && data) {
+          setDashboardData((prev: any) => ({ ...prev, ...data }));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="py-28 flex items-center justify-center">
-        <MedicalLoader text="লোড হচ্ছে" />
-      </div>
-    );
-  }
-
-  if (!dashboardData) {
-    return <div className="p-8 text-center text-slate-500">ড্যাশবোর্ড লোড করতে সমস্যা হয়েছে।</div>;
-  }
-
-  const userProfile = dashboardData?.user || {};
+  const userProfile = { ...(dashboardData?.user || {}), ...(user || {}) };
   const healthScore = dashboardData?.healthScore || {};
   const medicineReminders = Array.isArray(dashboardData?.reminders) ? dashboardData.reminders : [];
   const safeScore = typeof healthScore.score === "number" ? healthScore.score : 85;

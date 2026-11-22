@@ -158,7 +158,7 @@ export function MedicalLoader({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50/80 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/90 backdrop-blur-xs">
         {content}
       </div>
     );

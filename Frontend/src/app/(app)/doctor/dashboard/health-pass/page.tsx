@@ -74,7 +74,7 @@ function DoctorHealthPassContent() {
 export default function DoctorHealthPassPage() {
   return (
     <HealthPassErrorBoundary>
-      <Suspense fallback={<div className="p-8 flex justify-center"><MedicalLoader text="লোড হচ্ছে..." /></div>}>
+      <Suspense fallback={<MedicalLoader fullScreen text="Loading HealthPass" />}>
         <DoctorHealthPassContent />
       </Suspense>
     </HealthPassErrorBoundary>

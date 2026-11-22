@@ -117,6 +117,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        // Instant optimistic hydration on non-auth routes (middleware already verified HttpOnly cookie)
+        const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+        const isAuthPage = pathname === "/login" || pathname.startsWith("/register");
+        if (cachedParsed && !isAuthPage && active) {
+          setUser(cachedParsed);
+          setIsLoading(false);
+        }
+
         // 2. Check authoritative HttpOnly session cookie on server
         const res = await fetch("/api/auth/session", {
           credentials: "include",
