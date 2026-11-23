@@ -260,7 +260,7 @@ export async function callMultimodalVision(
           return {
             rawText: content.trim(),
             imageCategory: detectCategoryFromText(content),
-            isMedical: !content.includes('❌') && !content.includes('non_medical'),
+            isMedical: !textIndicatesNonMedical(content),
             provider: `Azure-OpenAI-${deployment}`
           };
         }
@@ -317,7 +317,7 @@ export async function callMultimodalVision(
             return {
               rawText: candidateText.trim(),
               imageCategory: detectCategoryFromText(candidateText),
-              isMedical: !candidateText.includes('❌') && !candidateText.includes('non_medical'),
+              isMedical: !textIndicatesNonMedical(candidateText),
               provider: `Google-Gemini-${model}`
             };
           }
@@ -364,7 +364,7 @@ export async function callMultimodalVision(
           return {
             rawText: content.trim(),
             imageCategory: detectCategoryFromText(content),
-            isMedical: !content.includes('❌') && !content.includes('non_medical'),
+            isMedical: !textIndicatesNonMedical(content),
             provider: 'OpenAI-gpt-4o-mini'
           };
         }
@@ -410,7 +410,7 @@ export async function callMultimodalVision(
           return {
             rawText: content.trim(),
             imageCategory: detectCategoryFromText(content),
-            isMedical: !content.includes('❌') && !content.includes('non_medical'),
+            isMedical: !textIndicatesNonMedical(content),
             provider: 'Groq-Llama-3.2-Vision'
           };
         }
@@ -525,96 +525,85 @@ export function buildOfflineVisionFallback(
   }
 
   if (systemPrompt.includes('json:prescription_analysis')) {
-    const extracted = userPrompt?.trim()
+    // SAFETY: if the doctor typed the prescription text directly, transcribe ONLY that text.
+    const extracted = userPrompt && userPrompt.trim()
       ? extractStructuredMedicinesFromRawOcrText(userPrompt)
       : [];
-    const fallbackMedicines = extracted.length > 0
-      ? extracted
-      : [
-          {
-            brandName: 'Napa Extend',
-            genericName: 'Paracetamol',
-            strength: '665 mg',
-            dosageForm: 'Tablet',
-            dose: '1 tab',
-            frequency: '1+0+1',
-            duration: '5 days',
-            instructionsTranscribed: 'খাবারের পর (জ্বর বা ব্যথা থাকলে)',
-            confidence: 'uncertain',
-            evidence: 'Fallback OCR preview — verify against original prescription',
-          },
-          {
-            brandName: 'Seclo',
-            genericName: 'Omeprazole',
-            strength: '20 mg',
-            dosageForm: 'Capsule',
-            dose: '1 cap',
-            frequency: '1+0+1',
-            duration: '14 days',
-            instructionsTranscribed: 'সকালে ও রাতে খাবারের ৩০ মিনিট আগে',
-            confidence: 'uncertain',
-            evidence: 'Fallback OCR preview — verify against original prescription',
-          },
-          {
-            brandName: 'Monas',
-            genericName: 'Montelukast',
-            strength: '10 mg',
-            dosageForm: 'Tablet',
-            dose: '1 tab',
-            frequency: '0+0+1',
-            duration: '14 days',
-            instructionsTranscribed: 'রাতে খাবারের পর',
-            confidence: 'uncertain',
-            evidence: 'Fallback OCR preview — verify against original prescription',
-          },
-        ];
 
-    const transcription = {
-      imageQuality: {
-        status: 'partially_readable' as const,
-        reasons: ['Automated OCR fallback active; confirm medicine names and dosages against original prescription.'],
-      },
-      prescriptionDate: null,
-      patientName: null,
-      doctorName: null,
-      medicines: fallbackMedicines,
-      rawOcrText: userPrompt?.trim() || 'Sample prescription text unavailable offline — fallback template active.',
-      uncertainFields: ['Verify handwritten lines manually before dispensing.'],
-      manualReviewRequired: true,
-    };
+    if (extracted.length > 0) {
+      const transcription = {
+        imageQuality: {
+          status: 'partially_readable' as const,
+          reasons: ['Transcribed from the text you provided, not from an image.'],
+        },
+        prescriptionDate: null,
+        patientName: null,
+        doctorName: null,
+        medicines: extracted,
+        rawOcrText: userPrompt.trim(),
+        uncertainFields: ['Verify every line against the original prescription.'],
+        manualReviewRequired: true,
+      };
+      return {
+        rawText: `\`\`\`json:prescription_analysis\n${JSON.stringify(transcription, null, 2)}\n\`\`\``,
+        imageCategory: 'prescription',
+        isMedical: true,
+        provider: 'Oxpecker-Text-Transcription',
+      };
+    }
+
+    // SAFETY: never fabricate medicines when vision providers are unavailable.
     return {
-      rawText: `\`\`\`json:prescription_analysis\n${JSON.stringify(transcription, null, 2)}\n\`\`\``,
-      imageCategory: 'prescription',
-      isMedical: true,
-      provider: 'Oxpecker-Clinical-OCR-Synthesizer',
+      rawText: [
+        '### বিশ্লেষণ সম্ভব নয়',
+        '',
+        'এখন ভালো করে আপনার ছবিটি যাচাই করা যাচ্ছে না (AI ভিশন সেবা সাময়িকভাবে অপলব্ধ / vision service unavailable)।',
+        'ভুল বা বানানো ওষুধ তথ্য দেওয়া কোনো ভাবেই নিরাপদ নয়, তাই আমরা কোনো ফল দেইনি।',
+        '',
+        'যা করতে পারেন:',
+        '- স্পষ্ট, আলোকিত ছবি তুলে আবার আপলোড করুন / Retake a clear photo and try again',
+        '- ওষুধের নাম নিজে লিখে যাচাই করুন / Enter medicine names manually',
+        '- বৈধ চিকিৎসক বা ফার্মাসিস্টের পরামর্শ নিন / Consult a licensed doctor or pharmacist',
+      ].join('\n'),
+      imageCategory: 'non_medical',
+      isMedical: false,
+      provider: 'Oxpecker-Offline-Safe-Fallback',
     };
   }
 
   if (systemPrompt.includes('json:report_analysis')) {
-    const reportFallback = {
-      reportType: 'Complete Blood Count (CBC) & Metabolic Panel',
-      reportDate: null,
-      laboratory: 'Diagnostic Reference Panel',
-      parameters: [
-        { name: 'Hemoglobin (Hb)', value: '12.8', unit: 'g/dL', printedReferenceRange: '12.0 - 16.0', confidence: 'low' },
-        { name: 'HbA1c', value: '6.4', unit: '%', printedReferenceRange: '< 5.7%', confidence: 'low' },
-        { name: 'Fasting Blood Glucose', value: '114', unit: 'mg/dL', printedReferenceRange: '70 - 99', confidence: 'low' },
-      ],
-      uncertainFields: ['Manual clinician review recommended when cloud vision OCR is offline.'],
-    };
+    // SAFETY: never fabricate lab values when vision providers are unavailable.
     return {
-      rawText: `\`\`\`json:report_analysis\n${JSON.stringify(reportFallback, null, 2)}\n\`\`\`\n\n> একজন যোগ্য চিকিৎসকের মাধ্যমে মূল রিপোর্টটি যাচাই করে নিন।`,
-      imageCategory: 'lab_report',
-      isMedical: true,
-      provider: 'Oxpecker-Lab-Report-Synthesizer',
+      rawText: [
+        '### বিশ্লেষণ সম্ভব নয়',
+        '',
+        'এখন ভালো করে আপনার রিপোর্ট পড়া যাচ্ছে না (AI ভিশন সেবা সাময়িকভাবে অপলব্ধ / vision service unavailable)।',
+        'ভুল ল্যাব মান দেখানো বিপদজনক, তাই আমরা কোনো ফল দেইনি।',
+        '',
+        'যা করতে পারেন:',
+        '- স্পষ্ট, সোজা ছবি তুলে আবার আপলোড করুন / Retake a clear photo and try again',
+        '- রিপোর্টের আসল PDF আপলোড করুন / Upload the original PDF',
+        '- যোগ্য চিকিৎসকের মাধ্যমে রিপোর্ট যাচাই করুন / Have a qualified clinician review the report',
+      ].join('\n'),
+      imageCategory: 'non_medical',
+      isMedical: false,
+      provider: 'Oxpecker-Offline-Safe-Fallback',
     };
   }
 
   return {
-    rawText: `### প্রাথমিক ক্লিনিক্যাল ও ওষুধ নির্দেশিকা\n\nআপলোডকৃত ছবিটি তাৎক্ষণিকভাবে পর্যবেক্ষণ করা হয়েছে। ক্লাউড ভিশন সাময়িকভাবে ব্যস্ত থাকায় অনুগ্রহ করে ওষুধের নাম বা উপসর্গ টেক্সটে লিখে নিশ্চিত তথ্য জেনে নিন:\n\n- **ওষুধ যাচাই:** ওষুধের সঠিক ব্যবহার, ডোজ ও জেনেরিক মূল্য জানতে [Medicine Directory](/medicines) দেখুন।\n- **চিকিৎসক পরামর্শ:** ত্বকের র‍্যাশ, ক্ষত বা চলমান উপসর্গ থাকলে নিবন্ধিত চিকিৎসকের পরামর্শ নিন।\n\n\`\`\`json:doctor_recommendation\n{\n  "speciality": "General Medicine",\n  "reason": "সঠিক পরীক্ষা ও প্রেসক্রিপশন যাচাইয়ের জন্য রেজিস্টার্ড চিকিৎসকের পরামর্শ নিন",\n  "urgency": "soon"\n}\n\`\`\``,
-    imageCategory: 'clinical_symptom',
-    isMedical: true,
-    provider: 'Oxpecker-Clinical-Vision-Synthesizer',
+    rawText: [
+      '### বিশ্লেষণ সম্ভব নয়',
+      '',
+      'AI ভিশন সেবা সাময়িকভাবে অপলব্ধ (vision service unavailable), তাই ছবিটি আসলে পরীক্ষা করা হয়নি এবং আমরা কোনো অনুমাননির্ভর উত্তর দিচ্ছি না।',
+      '',
+      '- কিছুক্ষণ পর আবার আপলোড করুন / Please retry in a moment',
+      '- ওষুধের সঠিক ব্যবহার, ডোজ ও জেনেরিক মূল্য জানতে [Medicine Directory](/medicines) দেখুন',
+      '- উপসর্গ থাকলে নিবন্ধিত চিকিৎসকের পরামর্শ নিন / Consult a licensed doctor for symptoms',
+    ].join('\n'),
+    imageCategory: 'non_medical',
+    isMedical: false,
+    provider: 'Oxpecker-Offline-Safe-Fallback',
   };
 }
 
@@ -681,12 +670,33 @@ export function buildFallbackFoodResponse(userPrompt: string): string {
 - **ফুড কার্বন স্ক্যান:** স্থানীয় খাদ্য হওয়ায় কার্বন নির্গমন মাত্র ৩৮০ গ্রাম CO₂e (ইকো গ্রেড: A)।`;
 }
 
+const NON_MEDICAL_TEXT_MARKERS = [
+  'non_medical',
+  'not a prescription',
+  'not a medical',
+  'not a valid',
+  'does not appear to be',
+  'cannot identify',
+  'no medical content',
+  'medical image not detected',
+  'no prescription detected',
+];
+
+function textIndicatesNonMedical(text: string): boolean {
+  const lower = (text || '').toLowerCase();
+  if (lower.includes('image_classification: non_medical')) return true;
+  if (lower.includes('image_classification: medical')) return false;
+  return NON_MEDICAL_TEXT_MARKERS.some((m) => lower.includes(m));
+}
+
 /**
  * Detects image category from text outputs
  */
 function detectCategoryFromText(text: string): ImageCategory {
   const lower = text.toLowerCase();
-  if (lower.includes('non_medical') || lower.includes('মেডিকেল ছবি নয়') || lower.includes('প্রেসক্রিপশন সনাক্ত করা যায়নি')) {
+  if (textIndicatesNonMedical(text)) {
+    return 'non_medical';
+  }  if (lower.includes('non_medical') || lower.includes('মেডিকেল ছবি নয়') || lower.includes('প্রেসক্রিপশন সনাক্ত করা যায়নি')) {
     return 'non_medical';
   }
   if (lower.includes('json:prescription_analysis') || lower.includes('প্রেসক্রিপশন')) {

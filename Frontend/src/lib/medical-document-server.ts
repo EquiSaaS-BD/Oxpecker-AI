@@ -5,6 +5,7 @@ import { prisma, withDbTimeout } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/server-auth";
 import { callMultimodalVision, parseBase64MediaInput } from "@/lib/vision-engine";
 import { comparePrescriptionPrices } from "@/lib/medicine-catalog";
+import { generatePrescriptionAiSummary } from "@/lib/prescription-ai-summary";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
 import {
   buildPrescriptionIntelligence,
@@ -299,6 +300,10 @@ export async function updatePrescriptionTranscription(request: Request) {
       medicineComparisons: comparisons.matches,
       priceSnapshot: comparisons.snapshot,
       intelligence,
+      aiSummary: await generatePrescriptionAiSummary(
+        intelligence,
+        comparisons.snapshot?.source || "Oxpecker verified medicine database"
+      ),
     });
   } catch {
     return jsonError("Could not securely save or recalculate the corrected transcription.", 503);
@@ -401,6 +406,10 @@ export async function analyzeAndStoreMedicalImage(
       priceSnapshot: comparisons.snapshot,
       medicineComparisons: comparisons.matches,
       intelligence,
+      aiSummary: await generatePrescriptionAiSummary(
+        intelligence,
+        comparisons.snapshot?.source || "Oxpecker verified medicine database"
+      ),
     });
   }
 
@@ -485,6 +494,19 @@ export async function analyzeAndStoreMedicalImage(
       }
     } else {
       result = await callMultimodalVision(buffer, normalizedMime, systemPrompt, userPrompt, { azureOnly: false });
+    }
+
+    // SAFETY GATE: never return a medical analysis for an image the vision stack
+    // did not confidently classify as a medical document, or when verification
+    // was unavailable. No fabricated results are ever returned for these cases.
+    if (!result.isMedical || result.imageCategory === 'non_medical') {
+      const message =
+        (result.rawText || '').replace(/```[\s\S]*?```/g, '').trim().slice(0, 600) ||
+        'এই ছবিতে কোনো বৈধ প্রেসক্রিপশন বা মেডিকেল ডকুমেন্ট সনাক্ত করা যায়নি। স্পষ্ট, আলোকিত ছবি আপলোড করুন। / No valid prescription or medical document was detected in this image. Please upload a clear, well-lit photo of a prescription or report.';
+      return NextResponse.json(
+        { error: message, category: 'non_medical', validation: 'rejected' },
+        { status: 422 }
+      );
     }
 
     let parsedPrescription = kind === "prescription" ? parsePrescriptionTranscription(result.rawText) : null;
@@ -592,6 +614,13 @@ export async function analyzeAndStoreMedicalImage(
       priceSnapshot: comparisons.snapshot,
       medicineComparisons: comparisons.matches,
       intelligence,
+      aiSummary:
+        kind === "prescription"
+          ? await generatePrescriptionAiSummary(
+              intelligence,
+              comparisons.snapshot?.source || "Oxpecker verified medicine database"
+            )
+          : undefined,
     });
   } catch {
     return jsonError("Analysis could not be completed. Please check your image quality or try again.", 503);

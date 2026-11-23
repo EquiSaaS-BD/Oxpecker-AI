@@ -2,43 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import { AppointmentPass } from "@/components/appointments/AppointmentPass";
-import { CalendarRange, Stethoscope, Calendar, Clock, MapPin, Video, Navigation, Activity, History, CheckCircle2, XCircle, ArrowRight, Users, AlertTriangle, FileText } from "lucide-react";
-import { motion, AnimatePresence } from 'framer-motion';
+import { CalendarRange, Stethoscope, Calendar, Clock, MapPin, Video, Navigation, Activity, History, CheckCircle2, ArrowRight, Users, AlertTriangle, FileText } from "lucide-react";
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import ReportsPage from "../reports/page";
 import { TelemedicineRoomModal } from "@/components/appointments/TelemedicineRoomModal";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { mockDoctors } from "@/lib/mockData";
 
-const mockDoctorAppointments = [
-  {
-    type: "doctor" as const,
-    id: "AP-8942-01",
-    doctorName: "Prof. Dr. Ahmed Rahman, FCPS, MD",
-    doctorImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop",
-    specialty: "Senior Consultant - Interventional Cardiology",
-    hospitalName: "National Heart Foundation & Research Institute",
-    hospitalLogo: "/images/Oxpecker_icon.png",
-    address: "Plot-4, Section-2, Mirpur, Dhaka 1216",
-    date: "28 Oct, 2026",
-    time: "10:30 AM",
-    patientName: "রহিম উদ্দিন (Rahim Uddin)",
-    age: "51",
-    guardianName: "Fatema Begum (Wife)",
-    phone: "+880 1711-000000",
-    fee: 1200,
-    advancePaid: 1200,
-    status: "Confirmed" as const
-  }
-];
+// SAFETY: resolve the real profile of the doctor actually stored on the
+// appointment record. Never substitutes another doctor's photo or identity.
+const resolveDoctorProfile = (name?: string | null) => {
+  if (!name) return null;
+  const clean = String(name).toLowerCase().replace(/,.*$/, "").replace(/^prof\./, "").trim();
+  return (
+    mockDoctors.find((d) => {
+      const dn = d.name.toLowerCase().replace(/^prof\./, "").trim();
+      return clean === dn || dn.includes(clean) || clean.includes(dn.replace("dr. ", ""));
+    }) || null
+  );
+};
 
-const mockHistoryAppointments = [
-  { id: "AP-8120", doctor: "Prof. Dr. Ahmed Rahman", specialty: "Interventional Cardiologist", hospital: "Square Hospital Ltd.", date: "15 Oct, 2026", time: "05:00 PM", status: "Completed", fee: 1200 },
-  { id: "AP-7840", doctor: "Prof. Dr. Aminul Rahman", specialty: "Endocrinologist & Diabetologist", hospital: "BIRDEM Hospital", date: "14 Sep, 2026", time: "11:30 AM", status: "Completed", fee: 1500 },
-  { id: "AP-7052", doctor: "Dr. Nusrat Jahan", specialty: "Internal Medicine Specialist", hospital: "Dhaka Medical College Hospital", date: "20 Jul, 2026", time: "10:00 AM", status: "Completed", fee: 800 },
-  { id: "AP-6401", doctor: "Dr. Farzana Yasmin", specialty: "Laparoscopic Surgeon", hospital: "Labaid Specialized Hospital", date: "10 May, 2026", time: "04:30 PM", status: "Completed", fee: 1000 },
-];
+const doctorAvatar = (name?: string | null) => resolveDoctorProfile(name)?.image || "/images/Oxpecker_icon.png";
 
 export default function AppointmentsPage() {
   const { user } = useAuth();
@@ -60,7 +47,7 @@ export default function AppointmentsPage() {
               type: "doctor" as const,
               id: `HUB-${String(a.id).slice(0, 8).toUpperCase()}`,
               doctorName: a.doctorName || "Specialist Doctor",
-              doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
+              doctorImage: doctorAvatar(a.doctorName),
               specialty: `${a.specialty || "Specialist"}${a.source && a.source !== "oxpecker" ? ` (${a.source})` : ""}`,
               hospitalName: a.hospitalName || "Oxpecker Partner Hospital",
               hospitalLogo: "/images/Oxpecker_icon.png",
@@ -68,7 +55,7 @@ export default function AppointmentsPage() {
               date: a.date || (a.dateTime ? String(a.dateTime).slice(0, 10) : "Scheduled"),
               time: a.time || "10:30 AM",
               patientName: hubData?.patient?.name || user?.name || "Patient",
-              age: String(hubData?.patient?.age || "30"),
+              age: hubData?.patient?.age != null && hubData.patient.age !== "" ? String(hubData.patient.age) : "N/A",
               guardianName: "Self",
               phone: hubData?.patient?.phone || "N/A",
               fee: Number(a.fee) || 1000,
@@ -98,7 +85,7 @@ export default function AppointmentsPage() {
                 type: "doctor" as const,
                 id: `BK-${b.id.slice(0, 8).toUpperCase()}`,
                 doctorName: b.doctor_name || "Specialist Doctor",
-                doctorImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop",
+                doctorImage: doctorAvatar(b.doctor_name),
                 specialty: b.doctor_specialty || "Specialist",
                 hospitalName: "Oxpecker Partner Hospital",
                 hospitalLogo: "/images/Oxpecker_icon.png",
@@ -106,7 +93,7 @@ export default function AppointmentsPage() {
                 date: b.booking_date,
                 time: b.booking_time,
                 patientName: b.patient_name,
-                age: "28",
+                age: "N/A",
                 guardianName: "Self",
                 phone: b.patient_phone || "N/A",
                 fee: Number(b.total_fee) || 1050,
@@ -120,14 +107,14 @@ export default function AppointmentsPage() {
         console.error("Failed to load live appointments:", err);
       }
 
-      if (combined.length > 0) {
-        setLiveAppointments(combined);
-      }
+      setLiveAppointments(combined);
     }
     loadBookings();
   }, [user]);
 
-  const allDoctorAppointments = liveAppointments.length > 0 ? liveAppointments : mockDoctorAppointments;
+  // SAFETY: only real, live appointment records — no mock fallback. If there
+  // are none, the tabs show honest empty states instead of another doctor's data.
+  const allDoctorAppointments = liveAppointments;
   const currentAppointment = allDoctorAppointments[0];
   
   // Dynamic Queue Simulation
@@ -163,7 +150,7 @@ export default function AppointmentsPage() {
   let tokenText = "text-[#00C2A8]";
   let mainText = "text-slate-900";
   let iconTheme = "text-slate-500";
-  let message = `Doctor is seeing S-${String(14 - peopleAhead).padStart(2, '0')}`;
+  let message = "Doctor is seeing other patients";
   let highlightBg = "bg-[#00C2A8]/10";
   let badgeTheme = "bg-[#00C2A8]/10 text-[#00C2A8]";
 
@@ -187,17 +174,13 @@ export default function AppointmentsPage() {
 
   const handleVideoCall = () => {
     setIsVideoModalOpen(true);
-    toast.success("ডা. ফারজানা আলমের লাইভ টেলিমেডিসিন কক্ষে যুক্ত হওয়া হয়েছে।");
+    toast.success(`${currentAppointment?.doctorName || "Doctor"} এর লাইভ টেলিমেডিসিন কক্ষে যুক্ত হওয়া হয়েছে।`);
   };
 
   const handleViewDetails = (doctorName: string) => {
     setActiveTab("passes");
     toast.info(`${doctorName} এর অ্যাপয়েন্টমেন্ট মেমো প্রদর্শিত হচ্ছে।`);
-  };
-
-  const handleLoadMore = () => {
-    toast.success("সকল অতীত অ্যাপয়েন্টমেন্ট হিস্ট্রি লোড হয়েছে।");
-  };
+  };
 
   return (
     <div className="h-full overflow-y-auto bg-[#F7FAFC] font-sans pb-32">
@@ -243,7 +226,29 @@ export default function AppointmentsPage() {
            ========================================= */}
         {activeTab === "tracker" && (
            <div className="w-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             
+
+             {!currentAppointment && (
+               <div className="w-full min-h-[300px] bg-white rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.04)] border border-slate-100 p-10 flex flex-col items-center justify-center gap-4 text-center">
+                 <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                   <CalendarRange size={26} />
+                 </div>
+                 <div>
+                   <h3 className="text-lg font-[900] text-slate-900">No Active Appointment</h3>
+                   <p className="text-sm text-slate-500 mt-1 max-w-sm">
+                     You have no upcoming appointments yet. Book a doctor to see your live queue tracker here.
+                   </p>
+                   <p className="text-[13px] text-slate-400 mt-1">আপনার কোনো আসন্ন অ্যাপয়েন্টমেন্ট নেই। ডাক্তার বুক করলে এখানে লাইভ ট্র্যাকার দেখা যাবে।</p>
+                 </div>
+                 <button
+                   onClick={() => (window.location.href = "/doctors")}
+                   className="mt-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-xl transition-colors"
+                 >
+                   Book a Doctor
+                 </button>
+               </div>
+             )}
+
+             {currentAppointment && (
              <div className="w-full min-h-[400px] bg-white rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.04)] border border-slate-100 p-5 md:p-8 flex flex-col gap-8">
                
                {/* Top Section: Doctor & Location */}
@@ -318,7 +323,7 @@ export default function AppointmentsPage() {
                          Your Token
                        </span>
                        <div className={`text-[72px] font-[900] leading-none tracking-tighter transition-colors duration-500 drop-shadow-sm ${tokenText}`}>
-                         S-14
+                         {currentAppointment.id.replace(/[^A-Z0-9]/g, "").slice(-4)}
                        </div>
                      </div>
                    
@@ -362,6 +367,8 @@ export default function AppointmentsPage() {
                </motion.div>
 
              </div>
+             )}
+
            </div>
         )}
 
@@ -392,21 +399,33 @@ export default function AppointmentsPage() {
             </h2>
             
             <div className="flex flex-col gap-4">
-              {mockHistoryAppointments.map((apt, idx) => (
-                <div key={idx} className="bg-white border border-slate-200/80 rounded-[24px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:border-slate-300 transition-all cursor-pointer group">
-                  
+              {liveAppointments.length === 0 ? (
+                <div className="bg-white border border-slate-200/80 rounded-[24px] p-10 flex flex-col items-center justify-center gap-3 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <History size={26} />
+                  </div>
+                  <h3 className="text-lg font-[900] text-slate-900">No Past Appointments</h3>
+                  <p className="text-sm text-slate-500 max-w-sm">
+                    Your completed and past appointments will appear here once you have consultation history.
+                  </p>
+                  <p className="text-[13px] text-slate-400">আপনার অতীত অ্যাপয়েন্টমেন্টের হিস্ট্রি এখানে দেখা যাবে।</p>
+                </div>
+              ) : liveAppointments.map((apt) => (
+                <div key={apt.id} className="bg-white border border-slate-200/80 rounded-[24px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:border-slate-300 transition-all cursor-pointer group">
+
                   <div className="flex items-center gap-5">
                     {/* Date Bubble */}
                     <div className="w-[72px] h-[72px] rounded-[20px] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0 group-hover:bg-sky-600/5 group-hover:border-primary/20 transition-colors">
-                      <span className="text-[24px] font-[900] text-slate-800 leading-none group-hover:text-sky-600 transition-colors">{apt.date.split(' ')[0]}</span>
-                      <span className="text-[12px] font-[800] text-slate-500 uppercase mt-1 tracking-wider">{apt.date.split(' ')[1].replace(',', '')}</span>
+                      <Calendar size={22} className="text-sky-600" />
+                      <span className="text-[11px] font-[800] text-slate-500 mt-1.5">{apt.time}</span>
                     </div>
-                    
+
                     {/* Info */}
                     <div>
-                      <h3 className="text-[20px] font-[900] text-slate-900 group-hover:text-[#00C2A8] transition-colors tracking-tight">{apt.doctor}</h3>
+                      <h3 className="text-[20px] font-[900] text-slate-900 group-hover:text-[#00C2A8] transition-colors tracking-tight">{apt.doctorName}</h3>
                       <p className="text-[15px] font-medium text-slate-500">{apt.specialty}</p>
-                      <p className="text-[14px] text-slate-500 mt-1.5 font-bold flex items-center gap-1.5"><Clock size={14}/> {apt.time} • ৳{apt.fee}</p>
+                      <p className="text-[14px] text-slate-500 mt-1.5 font-bold flex items-center gap-1.5 flex-wrap"><MapPin size={14}/> {apt.hospitalName} • {apt.date}</p>
+                      <p className="text-[14px] text-slate-500 font-bold">{apt.fee && Number(apt.fee) > 0 ? `৳${apt.fee}` : "Fee: N/A"}</p>
                     </div>
                   </div>
 
@@ -417,12 +436,12 @@ export default function AppointmentsPage() {
                         <CheckCircle2 size={16} /> Completed
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-red-50 text-red-500 text-[14px] font-[800] rounded-full border border-red-100">
-                        <XCircle size={16} /> Cancelled
+                      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-sky-50 text-sky-600 text-[14px] font-[800] rounded-full border border-sky-100">
+                        <CheckCircle2 size={16} /> {apt.status || "Confirmed"}
                       </span>
                     )}
-                    <button 
-                      onClick={() => handleViewDetails(apt.doctor)}
+                    <button
+                      onClick={() => handleViewDetails(apt.doctorName)}
                       className="text-[15px] font-[800] text-[#00C2A8] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 cursor-pointer"
                     >
                       View Details <ArrowRight size={18} />
@@ -431,15 +450,6 @@ export default function AppointmentsPage() {
 
                 </div>
               ))}
-            </div>
-            
-            <div className="mt-10 text-center">
-              <button 
-                onClick={handleLoadMore}
-                className="px-8 py-3.5 bg-white border-2 border-slate-200 text-slate-700 font-[800] text-[15px] rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
-              >
-                Load More History
-              </button>
             </div>
           </div>
         )}
@@ -458,12 +468,12 @@ export default function AppointmentsPage() {
       <TelemedicineRoomModal
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
-        doctorName={mockDoctorAppointments[0].doctorName}
-        specialty={mockDoctorAppointments[0].specialty}
-        doctorImage={mockDoctorAppointments[0].doctorImage}
-        hospitalName={mockDoctorAppointments[0].hospitalName}
-        patientName={mockDoctorAppointments[0].patientName}
-        serialNumber="S-14"
+        doctorName={currentAppointment?.doctorName || "Doctor"}
+        specialty={currentAppointment?.specialty || ""}
+        doctorImage={currentAppointment?.doctorImage || "/images/Oxpecker_icon.png"}
+        hospitalName={currentAppointment?.hospitalName || "Oxpecker"}
+        patientName={currentAppointment?.patientName || user?.name || "Patient"}
+        serialNumber={currentAppointment?.id.replace(/[^A-Z0-9]/g, "").slice(-4) || "S-00"}
       />
 
     </div>

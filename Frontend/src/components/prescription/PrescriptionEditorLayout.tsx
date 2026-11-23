@@ -51,7 +51,7 @@ export function PrescriptionEditorLayout({
             type="button"
             onClick={() => setMobileAIOpen(true)}
             aria-label="Open AI Clinical Assistant"
-            className="xl:hidden fixed bottom-5 right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 bg-white border border-slate-200 shadow-xl rounded-full flex items-center justify-center text-slate-900 hover:scale-105 active:scale-95 transition-all p-1"
+            className="xl:hidden fixed bottom-5 right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 bg-white border border-slate-200 shadow-xl rounded-full flex items-center justify-center text-slate-900 transition-all p-1"
           >
             <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-950 flex items-center justify-center">
               <Image 

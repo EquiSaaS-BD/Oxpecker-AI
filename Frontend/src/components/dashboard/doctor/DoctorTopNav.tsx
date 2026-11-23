@@ -117,11 +117,6 @@ export default function DoctorTopNav({ onMenuClick }: { onMenuClick?: () => void
 
       {/* Desktop Mega Menus */}
       <div className="hidden lg:flex items-center gap-1">
-        {/* Desktop Brand Link */}
-        <Link href="/?view=home" className="flex items-center gap-2 mr-3 group px-2 py-1 rounded-xl hover:bg-slate-50 transition-colors" title="Return to Home">
-          <Image src="/images/Oxpecker_icon.png" alt="Oxpecker AI" width={26} height={26} className="object-contain group-hover:scale-105 transition-transform" priority />
-          <span className="text-xs font-black text-slate-900 tracking-tight">Oxpecker <span className="text-sky-600">AI</span></span>
-        </Link>
         {/* Clinical Dropdown */}
         <div className="relative">
           <button

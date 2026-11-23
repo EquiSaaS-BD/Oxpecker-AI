@@ -18,6 +18,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   const resolvedParams = use(params);
   const { user } = useAuth();
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
+  const [doctorNotFound, setDoctorNotFound] = useState(false);
   const [step, setStep] = useState(1);
   
   // Form State
@@ -59,10 +60,34 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     const rawId = resolvedParams.id;
-    let doc = mockDoctors.find(function(d) { return d.id === rawId || d.id === ("doc-" + rawId) || d.id.replace("doc-", "") === rawId; });
-    if (!doc && mockDoctors.length > 0) doc = mockDoctors[0];
+    const doc = mockDoctors.find(function(d) { return d.id === rawId || d.id === ("doc-" + rawId) || d.id.replace("doc-", "") === rawId; });
+    // SAFETY: never substitute another doctor's profile for an unknown ID.
     if (doc) setDoctor(doc);
+    else setDoctorNotFound(true);
   }, [resolvedParams.id]);
+
+  if (doctorNotFound) {
+    return (
+      <div className="h-full min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-white p-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+          <ArrowLeft size={26} />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Doctor Not Found</h2>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm">
+            The doctor profile you are trying to book could not be found. Please go back and select a doctor from the directory.
+          </p>
+          <p className="text-[13px] text-slate-400 mt-1">অনুগ্রহ করে ডাক্তারের তালিকা থেকে আবার নির্বাচন করুন।</p>
+        </div>
+        <button
+          onClick={() => router.push("/doctors")}
+          className="mt-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-xl transition-colors"
+        >
+          Browse Doctors
+        </button>
+      </div>
+    );
+  }
 
   if (!doctor) {
     return (

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Trash2, GripVertical, Mic, Bot, ChevronDown } from "lucide-react";
+import { Plus, Search, Trash2, GripVertical, ChevronDown } from "lucide-react";
 import { usePrescription } from "@/context/PrescriptionContext";
 
 interface QuickMedItem {
@@ -485,23 +485,6 @@ export function MedicineBuilder() {
     ]);
   };
 
-  const addAISuggestion = () => {
-    setMedicines([
-      ...medicines,
-      {
-        id: Date.now(),
-        name: "Cap. Seclo 20 mg",
-        type: "Capsule",
-        dosageM: "1",
-        dosageN: "0",
-        dosageE: "1",
-        frequency: "Daily",
-        duration: "14 Days",
-        notes: "Before meal",
-      },
-    ]);
-  };
-
   const removeMedicine = (id: number | string) => {
     setMedicines(medicines.filter((m) => m.id !== id));
   };
@@ -562,16 +545,6 @@ export function MedicineBuilder() {
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            title="AI Suggestion"
-            onClick={addAISuggestion}
-            className="flex items-center justify-center gap-1.5 text-[13px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-[10px] transition-all active:scale-95"
-          >
-            <Bot size={16} />
-            <span className="hidden sm:inline">AI Suggest</span>
-          </button>
-
           <button
             type="button"
             title="Add Medicine"

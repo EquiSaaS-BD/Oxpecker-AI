@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { User, Activity, Clock, FileText, Pill, AlertTriangle, X, Eye, Bot, Loader2 } from "lucide-react";
+import { User, Activity, Clock, FileText, Pill, AlertTriangle, X, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useDoctor } from "@/context/DoctorContext";
@@ -10,8 +10,6 @@ import { useDoctor } from "@/context/DoctorContext";
 export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boolean }) {
   const [selectedHistory, setSelectedHistory] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
 
   const { testReports } = useDoctor();
   
@@ -23,19 +21,8 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
     setIsMounted(true);
   }, []);
 
-  const handleGenerateAISummary = (reportDetails: string) => {
-    setAiLoading(true);
-    setAiSummary(null);
-    // Simulate AI generation delay
-    setTimeout(() => {
-      setAiLoading(false);
-      setAiSummary(`AI Insight: Based on the report, the patient has a mildly abnormal result. Ensure follow-up in 2 weeks. The key highlights are: ${reportDetails}`);
-    }, 1500);
-  };
-
   const closeHistory = () => {
     setSelectedHistory(null);
-    setAiSummary(null);
   };
 
   return (
@@ -43,7 +30,7 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
       {/* Patient Profile Card */}
       <div className={`bg-white rounded-2xl shadow-xs border border-slate-200 p-4 shrink-0 ${isDesktop ? 'w-full' : 'w-full lg:w-[350px]'}`}>
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-full flex items-center justify-center text-white shadow-xs shrink-0">
+          <div className="w-10 h-10 bg-sky-600 rounded-full flex items-center justify-center text-white shadow-xs shrink-0">
             <User size={19} />
           </div>
           <div className="flex-1 min-w-0">
@@ -69,14 +56,14 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
 
         {/* Critical Info: Clean, High-Contrast Medical Badges */}
         <div className={`grid ${isDesktop ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-          <div className="flex items-start gap-2 bg-gradient-to-br from-rose-50 to-red-50/50 text-rose-800 p-2.5 rounded-xl border border-rose-200 shadow-2xs hover:border-rose-300 transition-colors">
+          <div className="flex items-start gap-2 bg-rose-50 text-rose-800 p-2.5 rounded-xl border border-rose-200 shadow-2xs hover:border-rose-300 transition-colors">
             <AlertTriangle size={15} className="mt-0.5 shrink-0 text-rose-600" />
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-wider text-rose-700 mb-0.5">Allergies</p>
               <p className="text-[11px] font-bold text-rose-950 leading-tight truncate">Penicillin, Peanuts</p>
             </div>
           </div>
-          <div className="flex items-start gap-2 bg-gradient-to-br from-sky-50 to-blue-50/50 text-sky-800 p-2.5 rounded-xl border border-sky-200 shadow-2xs hover:border-sky-300 transition-colors">
+          <div className="flex items-start gap-2 bg-sky-50 text-sky-800 p-2.5 rounded-xl border border-sky-200 shadow-2xs hover:border-sky-300 transition-colors">
             <Activity size={15} className="mt-0.5 shrink-0 text-sky-600" />
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-wider text-sky-700 mb-0.5">Chronic</p>
@@ -107,7 +94,7 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
                 </>
               )}
               <p className="text-[10.5px] font-bold text-emerald-700 mb-1">Current Appt</p>
-              <div className="bg-gradient-to-br from-emerald-50/90 to-teal-50/40 border border-emerald-200 rounded-xl p-2.5 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-xs group">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-xs group">
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                   <p className="text-[12px] font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors leading-tight">Prescribing...</p>
@@ -140,7 +127,7 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
                       isReport: true
                     });
                   }}
-                  className="bg-gradient-to-br from-sky-50/90 to-indigo-50/40 border border-sky-200 rounded-xl p-2.5 hover:border-sky-400 hover:shadow-md transition-all cursor-pointer shadow-xs group"
+                  className="bg-sky-50 border border-sky-200 rounded-xl p-2.5 hover:border-sky-400 hover:shadow-md transition-all cursor-pointer shadow-xs group"
                 >
                   <div className="flex items-center gap-1.5 mb-1 justify-between">
                     <div className="flex items-center gap-1.5 min-w-0">
@@ -242,32 +229,10 @@ export function PatientContextSidebar({ isDesktop = false }: { isDesktop?: boole
                       </div>
                       <h4 className="font-bold text-slate-900">Dr. pekr Report Analysis</h4>
                     </div>
-                    
-                    {!aiSummary && !aiLoading && (
-                      <p className="text-sm text-slate-600 mb-4">Click to generate an AI summary and get automated clinical insights on this test report.</p>
-                    )}
-                    
-                    {aiLoading && (
-                      <div className="flex items-center gap-2 text-sky-600 text-sm font-medium mb-4">
-                        <Loader2 size={16} className="animate-spin" /> Analyzing report...
-                      </div>
-                    )}
-                    
-                    {aiSummary && (
-                      <div className="bg-white rounded-xl p-4 text-sm text-slate-800 leading-relaxed shadow-xs border border-slate-200 mb-4">
-                        {aiSummary}
-                      </div>
-                    )}
 
-                    {!aiSummary && (
-                      <button 
-                        onClick={() => handleGenerateAISummary(selectedHistory.details)}
-                        disabled={aiLoading}
-                        className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50"
-                      >
-                        <Bot size={16} /> Generate AI Summary
-                      </button>
-                    )}
+                    <div className="bg-white rounded-xl p-4 text-sm text-slate-800 leading-relaxed shadow-xs border border-slate-200">
+                      {selectedHistory.details}
+                    </div>
                   </div>
                 )}
               </div>

@@ -38,6 +38,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
 
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
   const [isLoading] = useState(false);
+  const [doctorNotFound, setDoctorNotFound] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectedChamberIndex, setSelectedChamberIndex] = useState(0);
@@ -45,20 +46,18 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     const rawId = resolvedParams.id;
     // Match directly, or with doc- prefix, or stripping doc-
-    let doc = mockDoctors.find(
+    const doc = mockDoctors.find(
       (d) =>
         d.id === rawId ||
         d.id === `doc-${rawId}` ||
         d.id.replace("doc-", "") === rawId
     );
 
-    // Fallback to first doctor if invalid ID provided so page never hangs
-    if (!doc && mockDoctors.length > 0) {
-      doc = mockDoctors[0];
-    }
-
+    // SAFETY: never substitute another doctor's profile for an unknown ID.
     if (doc) {
       setDoctor(doc);
+    } else {
+      setDoctorNotFound(true);
     }
   }, [resolvedParams.id]);
 
@@ -78,6 +77,31 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  if (doctorNotFound) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-4 bg-white rounded-3xl border border-slate-100 shadow-sm p-10 max-w-md text-center">
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+            <Stethoscope size={28} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Doctor Not Found</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              The doctor profile you requested could not be found.
+            </p>
+            <p className="text-[13px] text-slate-400 mt-1">অনুগ্রহ করে ডাক্তারের তালিকা থেকে আবার নির্বাচন করুন।</p>
+          </div>
+          <button
+            onClick={() => router.push("/doctors")}
+            className="mt-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-xl transition-colors"
+          >
+            Browse Doctors
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !doctor) {
     return (

@@ -9,7 +9,9 @@ import {
   buildPrescriptionIntelligence,
   extractStructuredMedicinesFromRawOcrText,
 } from "@/lib/prescription-intelligence";
+import { generatePrescriptionAiSummary } from "@/lib/prescription-ai-summary";
 import { parsePrescriptionTranscription } from "@/lib/prescription-ocr";
+import { getMedicineSnapshotMetadata } from "@/lib/medicine-catalog";
 
 export const runtime = "nodejs";
 
@@ -116,6 +118,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       intelligence,
+      aiSummary: await generatePrescriptionAiSummary(
+        intelligence,
+        getMedicineSnapshotMetadata().source || "Oxpecker verified medicine database"
+      ),
     });
   } catch {
     return NextResponse.json(

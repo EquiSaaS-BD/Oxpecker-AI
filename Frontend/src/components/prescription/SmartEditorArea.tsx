@@ -170,43 +170,43 @@ export function SmartEditorArea({ onFinalize }: SmartEditorAreaProps) {
         {isLoading ? (
           <div className="w-full flex flex-col gap-5 animate-in fade-in duration-500">
             {/* Patient Info Header Skeleton */}
-            <div className="w-full h-[140px] bg-slate-50 border border-slate-200 rounded-[12px] shadow-sm animate-pulse p-4 flex flex-col gap-4">
+            <div className="w-full h-[140px] bg-white border border-slate-200 rounded-[12px] shadow-sm animate-pulse p-4 flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-slate-700 rounded-full shrink-0" />
+                <div className="w-16 h-16 bg-slate-200 rounded-full shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="w-1/3 h-5 bg-slate-700 rounded-md" />
-                  <div className="w-1/4 h-4 bg-slate-800 rounded-md" />
+                  <div className="w-1/3 h-5 bg-slate-200 rounded-md" />
+                  <div className="w-1/4 h-4 bg-slate-200 rounded-md" />
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className="w-20 h-6 bg-slate-700 rounded-md" />
-                <div className="w-24 h-6 bg-slate-700 rounded-md" />
+                <div className="w-20 h-6 bg-slate-200 rounded-md" />
+                <div className="w-24 h-6 bg-slate-200 rounded-md" />
               </div>
             </div>
 
             {/* Text Area Skeleton 1 */}
             <div className="w-full min-h-[100px] p-4 bg-white border border-slate-200 rounded-[12px] shadow-sm flex flex-col gap-3 animate-pulse">
-              <div className="w-40 h-5 bg-slate-800 rounded-md" />
-              <div className="w-full h-4 bg-slate-50 rounded-md mt-2" />
-              <div className="w-3/4 h-4 bg-slate-50 rounded-md" />
+              <div className="w-40 h-5 bg-slate-200 rounded-md" />
+              <div className="w-full h-4 bg-slate-100 rounded-md mt-2" />
+              <div className="w-3/4 h-4 bg-slate-100 rounded-md" />
             </div>
 
             {/* Text Area Skeleton 2 */}
             <div className="w-full min-h-[120px] p-4 bg-white border border-slate-200 rounded-[12px] shadow-sm flex flex-col gap-3 animate-pulse">
-              <div className="w-36 h-5 bg-slate-800 rounded-md" />
-              <div className="w-full h-4 bg-slate-50 rounded-md mt-2" />
-              <div className="w-full h-4 bg-slate-50 rounded-md" />
-              <div className="w-1/2 h-4 bg-slate-50 rounded-md" />
+              <div className="w-36 h-5 bg-slate-200 rounded-md" />
+              <div className="w-full h-4 bg-slate-100 rounded-md mt-2" />
+              <div className="w-full h-4 bg-slate-100 rounded-md" />
+              <div className="w-1/2 h-4 bg-slate-100 rounded-md" />
             </div>
 
             {/* Vitals Grid Skeleton */}
             <div className="w-full p-4 bg-white border border-slate-200 rounded-[12px] shadow-sm flex flex-col gap-4 animate-pulse">
-              <div className="w-32 h-5 bg-slate-800 rounded-md" />
+              <div className="w-32 h-5 bg-slate-200 rounded-md" />
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div key={i} className="bg-slate-50 border border-slate-200 rounded-[10px] p-3 flex flex-col gap-2 h-[72px]">
-                    <div className="w-16 h-3 bg-slate-700 rounded-md" />
-                    <div className="w-12 h-5 bg-slate-700 rounded-md" />
+                    <div className="w-16 h-3 bg-slate-200 rounded-md" />
+                    <div className="w-12 h-5 bg-slate-200 rounded-md" />
                   </div>
                 ))}
               </div>
@@ -214,9 +214,9 @@ export function SmartEditorArea({ onFinalize }: SmartEditorAreaProps) {
             
             {/* Meds Skeleton */}
             <div className="w-full min-h-[160px] p-4 bg-white border border-slate-200 rounded-[12px] shadow-sm flex flex-col gap-3 animate-pulse">
-              <div className="w-32 h-5 bg-slate-800 rounded-md" />
-              <div className="w-full h-12 bg-slate-50 rounded-lg mt-2" />
-              <div className="w-full h-12 bg-slate-50 rounded-lg" />
+              <div className="w-32 h-5 bg-slate-200 rounded-md" />
+              <div className="w-full h-12 bg-slate-100 rounded-lg mt-2" />
+              <div className="w-full h-12 bg-slate-100 rounded-lg" />
             </div>
           </div>
         ) : (
@@ -252,18 +252,18 @@ export function SmartEditorArea({ onFinalize }: SmartEditorAreaProps) {
             <h3 className="text-[16px] font-semibold text-slate-800">VITALS TODAY</h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: "Blood Pressure", unit: "mmHg", placeholder: "120/80", field: "bp", border: "bg-rose-500", text: "text-rose-400" },
-                { label: "Pulse", unit: "bpm", placeholder: "72", field: "pulse", border: "bg-orange-500", text: "text-orange-400" },
-                { label: "Temperature", unit: "°F", placeholder: "98.6", field: "temp", border: "bg-amber-500", text: "text-amber-400" },
-                { label: "Weight", unit: "kg", placeholder: "70", field: "weight", border: "bg-blue-500", text: "text-blue-400" },
-                { label: "Height", unit: "cm", placeholder: "170", field: "height", border: "bg-sky-500", text: "text-sky-400" },
-                { label: "BMI", unit: "kg/m²", placeholder: "24.2", field: "bmi", border: "bg-indigo-500", text: "text-indigo-400" },
-                { label: "SpO₂", unit: "%", placeholder: "98", field: "spo2", border: "bg-cyan-500", text: "text-cyan-400" },
-                { label: "Blood Sugar", unit: "mg/dL", placeholder: "110", field: "bloodSugar", border: "bg-fuchsia-500", text: "text-fuchsia-400" },
+                { label: "Blood Pressure", unit: "mmHg", placeholder: "120/80", field: "bp" },
+                { label: "Pulse", unit: "bpm", placeholder: "72", field: "pulse" },
+                { label: "Temperature", unit: "°F", placeholder: "98.6", field: "temp" },
+                { label: "Weight", unit: "kg", placeholder: "70", field: "weight" },
+                { label: "Height", unit: "cm", placeholder: "170", field: "height" },
+                { label: "BMI", unit: "kg/m²", placeholder: "24.2", field: "bmi" },
+                { label: "SpO₂", unit: "%", placeholder: "98", field: "spo2" },
+                { label: "Blood Sugar", unit: "mg/dL", placeholder: "110", field: "bloodSugar" },
               ].map((vital, idx) => (
                 <div key={idx} className="bg-white border border-slate-200 rounded-[10px] p-2.5 flex flex-col justify-center h-[72px] transition-colors hover:border-slate-300 relative overflow-hidden group">
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${vital.border} opacity-80 group-hover:opacity-100 transition-opacity`} />
-                  <span className={`text-[11px] font-bold mb-0.5 uppercase tracking-wider pl-1.5 ${vital.text}`}>{vital.label}</span>
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 bg-sky-500 opacity-80 group-hover:opacity-100 transition-opacity`} />
+                  <span className={`text-[11px] font-bold mb-0.5 uppercase tracking-wider pl-1.5 text-slate-500`}>{vital.label}</span>
                   <div className="flex items-center gap-1 pl-1.5 z-10">
                     <input 
                       type="text" 
@@ -298,9 +298,9 @@ export function SmartEditorArea({ onFinalize }: SmartEditorAreaProps) {
             {data.investigationsList && data.investigationsList.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {data.investigationsList.map((test, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-900/30 border border-sky-500/20 text-sky-400 text-[13px] font-bold rounded-lg shadow-sm">
+                  <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 border border-sky-200 text-sky-700 text-[13px] font-bold rounded-lg shadow-sm">
                     <span className="opacity-50 mr-1 text-[11px]">{idx + 1}.</span> {test}
-                    <button onClick={() => handleRemoveInvestigation(test)} className="ml-1 p-0.5 hover:bg-sky-600/20 rounded-full transition-colors">
+                    <button onClick={() => handleRemoveInvestigation(test)} className="ml-1 p-0.5 hover:bg-sky-100 rounded-full transition-colors">
                       <X size={14} />
                     </button>
                   </div>

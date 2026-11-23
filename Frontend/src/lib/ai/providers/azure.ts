@@ -36,33 +36,40 @@ export class AzureOpenAIProvider implements AIProvider {
     return `${this.config.endpoint}/openai/deployments/${this.config.deployment}/chat/completions?api-version=${this.config.apiVersion}`;
   }
 
+  /**
+   * GPT-5 / o-series reasoning models reject `max_tokens` and custom
+   * `temperature`; they require `max_completion_tokens` instead.
+   */
+  private isReasoningModel(): boolean {
+    return /(^|[^a-z0-9])(gpt-5|o1|o3|o4)([^a-z0-9]|$)/i.test(this.config.deployment || '');
+  }
+
+  /**
+   * Build the chat-completions body. `reasoning` forces the GPT-5 style
+   * (max_completion_tokens, no temperature).
+   */
+  private buildChatBody(messages: ChatMessage[], reasoning: boolean, stream = false): Record<string, unknown> {
+    const body: Record<string, unknown> = stream
+      ? { messages, stream: true }
+      : { messages };
+    if (reasoning) {
+      // Reasoning models need a larger token budget since reasoning tokens
+      // count against max_completion_tokens before any visible text.
+      body.max_completion_tokens = Math.max(this.config.maxTokens, 2000);
+    } else {
+      body.temperature = this.config.temperature;
+      body.max_tokens = this.config.maxTokens;
+    }
+    if (stream) body.stream = true;
+    return body;
+  }
+
   async chat(messages: ChatMessage[]): Promise<ChatCompletionResponse> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.timeout);
 
-    try {
-      const res = await fetch(this.getCompletionsUrl(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-key': this.config.apiKey,
-        },
-        body: JSON.stringify({
-          messages,
-          temperature: this.config.temperature,
-          max_tokens: this.config.maxTokens,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`[Azure OpenAI] HTTP ${res.status}: ${errorText}`);
-      }
-
-      const json = await res.json();
+    const parseResponse = (json: any): ChatCompletionResponse => {
       const choice = json.choices?.[0];
-
       return {
         content: choice?.message?.content ?? '',
         finishReason: choice?.finish_reason ?? null,
@@ -76,6 +83,46 @@ export class AzureOpenAIProvider implements AIProvider {
         model: json.model ?? this.config.deployment,
         provider: this.name,
       };
+    };
+
+    try {
+      let body = this.buildChatBody(messages, this.isReasoningModel());
+      let res = await fetch(this.getCompletionsUrl(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.config.apiKey,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      // Compatibility retry: classic Chat Completions body sent to a
+      // reasoning model (or vice versa). Detect the API's parameter complaint
+      // and retry once with the alternate body style.
+      if (!res.ok && res.status === 400) {
+        const errorText = await res.text().catch(() => '');
+        if (/max_completion_tokens|unsupported parameter/i.test(errorText)) {
+          body = this.buildChatBody(messages, !this.isReasoningModel());
+          res = await fetch(this.getCompletionsUrl(), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'api-key': this.config.apiKey,
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+        }
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`[Azure OpenAI] HTTP ${res.status}: ${errorText}`);
+      }
+
+      const json = await res.json();
+      return parseResponse(json);
     } finally {
       clearTimeout(timer);
     }
@@ -88,12 +135,7 @@ export class AzureOpenAIProvider implements AIProvider {
         'Content-Type': 'application/json',
         'api-key': this.config.apiKey,
       },
-      body: JSON.stringify({
-        messages,
-        stream: true,
-        temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
-      }),
+      body: JSON.stringify(this.buildChatBody(messages, this.isReasoningModel(), true)),
       signal: AbortSignal.timeout(this.config.timeout),
     });
 

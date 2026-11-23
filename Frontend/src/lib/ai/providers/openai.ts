@@ -99,11 +99,24 @@ export class OpenAIProvider {
    * @throws {Error} On network failure, timeout, or API error.
    */
   async chat(messages: ChatMessage[]): Promise<ChatCompletionResponse> {
-    const body = this.buildRequestBody(messages, false);
-    const response = await this.fetchWithTimeout(
+    let body = this.buildRequestBody(messages, false);
+    let response = await this.fetchWithTimeout(
       `${this.baseUrl}/v1/chat/completions`,
       body,
     );
+
+    // Compatibility retry: classic body sent to a reasoning model (or
+    // vice versa). Retry once with the alternate parameter style.
+    if (!response.ok && response.status === 400) {
+      const errorText = await response.text().catch(() => '');
+      if (/max_completion_tokens|unsupported parameter/i.test(errorText)) {
+        body = this.buildRequestBody(messages, false, !this.isReasoningModel());
+        response = await this.fetchWithTimeout(
+          `${this.baseUrl}/v1/chat/completions`,
+          body,
+        );
+      }
+    }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'Unknown error');
@@ -188,20 +201,32 @@ export class OpenAIProvider {
   // Private helpers
   // -----------------------------------------------------------------------
 
+  /** GPT-5 / o-series reasoning models reject `max_tokens` and custom `temperature`. */
+  private isReasoningModel(): boolean {
+    return /(^|[^a-z0-9])(gpt-5|o1|o3|o4)([^a-z0-9]|$)/i.test(this.model || '');
+  }
+
   /** Build the JSON request body for Chat Completions. */
   private buildRequestBody(
     messages: ChatMessage[],
     stream: boolean,
+    reasoning: boolean = this.isReasoningModel(),
   ): Record<string, unknown> {
     const body: Record<string, unknown> = {
       model: this.model,
       messages,
-      temperature: this.temperature,
       stream,
     };
 
-    if (this.maxTokens !== undefined) {
-      body.max_tokens = this.maxTokens;
+    if (reasoning) {
+      // Reasoning models need a larger budget: reasoning tokens count against
+      // max_completion_tokens before any visible text is produced.
+      body.max_completion_tokens = Math.max(this.maxTokens ?? 4096, 2000);
+    } else {
+      body.temperature = this.temperature;
+      if (this.maxTokens !== undefined) {
+        body.max_tokens = this.maxTokens;
+      }
     }
 
     if (stream) {

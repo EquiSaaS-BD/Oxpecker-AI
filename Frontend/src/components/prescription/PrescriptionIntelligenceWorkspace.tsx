@@ -36,6 +36,7 @@ import { ClinicalSafetyAlerts } from "@/components/prescription/ClinicalSafetyAl
 import { checkPrescriptionSafety } from "@/lib/clinical-safety";
 import { PrescriptionSavingsCard } from "@/components/prescription/PrescriptionSavingsCard";
 import { calculatePrescriptionSavings, PrescribedMedicineForSavings } from "@/lib/prescription-savings";
+import type { PrescriptionAiAiSummary } from "@/lib/prescription-ai-summary";
 import { jsPDF } from "jspdf";
 import { requestMedicalDocumentConsent, getPrescriptionAuthToken } from "@/lib/medical-document-client";
 import type {
@@ -224,6 +225,7 @@ export function PrescriptionIntelligenceWorkspace({
 
   // Intelligence Result State (Strictly real uploaded results only; never demo data)
   const [intelligence, setIntelligence] = useState<PrescriptionIntelligenceResult | null>(null);
+  const [aiSummary, setAiSummary] = useState<PrescriptionAiAiSummary | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [activeViewTab, setActiveViewTab] = useState<"cards" | "summary">("cards");
   const [showOriginalImageModal, setShowOriginalImageModal] = useState(false);
@@ -247,6 +249,7 @@ export function PrescriptionIntelligenceWorkspace({
           const parsed = JSON.parse(raw);
           if (parsed && parsed.prescriptionId === initialPrescriptionId) {
             setIntelligence(parsed);
+            setAiSummary(null);
             setActiveViewTab("summary");
           }
         }
@@ -353,6 +356,7 @@ export function PrescriptionIntelligenceWorkspace({
 
         if (data.intelligence) {
           setIntelligence(data.intelligence);
+          setAiSummary(data.aiSummary ?? null);
           persistActiveSession(data.intelligence);
           setActiveViewTab("cards");
           const extractedCount = data.intelligence.summary.totalExtractedCount;
@@ -375,6 +379,7 @@ export function PrescriptionIntelligenceWorkspace({
         const msg = err instanceof Error ? err.message : "Prescription processing failed.";
         setErrorMessage(msg);
         setIntelligence(null);
+        setAiSummary(null);
         persistActiveSession(null);
         toast.error(msg);
       } finally {
@@ -487,6 +492,7 @@ export function PrescriptionIntelligenceWorkspace({
         throw new Error(data.error || "Failed to recalculate prescription totals.");
       }
       setIntelligence(data.intelligence);
+      setAiSummary(data.aiSummary ?? null);
       persistActiveSession(data.intelligence);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not recalculate prices.");
@@ -608,6 +614,7 @@ export function PrescriptionIntelligenceWorkspace({
 
   const handleClearAnalysis = () => {
     setIntelligence(null);
+    setAiSummary(null);
     setSelectedFile(null);
     setPreviewUrl(null);
     setOriginalPreviewUrl(null);
@@ -1263,11 +1270,45 @@ export function PrescriptionIntelligenceWorkspace({
                   </div>
                 )}
 
+                {/* AI Price Summary (database-verified, LLM-narrated) */}
+                {aiSummary && (
+                  <div className="w-full rounded-2xl border border-sky-100 bg-white p-5 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#111827]">
+                        <span className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                          <FileCheck2 size={14} />
+                        </span>
+                        AI Price Summary
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                        {aiSummary.summary
+                          ? `Verified against database • ${aiSummary.provider}`
+                          : "Verified against database"}
+                      </span>
+                    </div>
+                    {aiSummary.summary ? (
+                      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-700">
+                        {aiSummary.summary}
+                      </p>
+                    ) : (
+                      <p className="text-[13px] leading-relaxed text-slate-600">
+                        {aiSummary.error ||
+                          "AI price summary could not be generated. Please use the verified table below."}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-slate-400 border-t border-slate-100 pt-2">
+                      Prices are from the verified database snapshot and may differ slightly at pharmacies —
+                      confirm at the counter. Oxpecker AI informs but never replaces a doctor&rsquo;s or
+                      pharmacist&rsquo;s judgment.
+                    </p>
+                  </div>
+                )}
+
                 {/* Prescription Cost Savings & Generic Substitution */}
                 {prescriptionSavingsReport && (
                   <div className="w-full">
-                    <PrescriptionSavingsCard 
-                      savingsReport={prescriptionSavingsReport} 
+                    <PrescriptionSavingsCard
+                      savingsReport={prescriptionSavingsReport}
                       language="bn"
                     />
                   </div>
