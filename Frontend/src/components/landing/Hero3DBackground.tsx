@@ -2,242 +2,237 @@
 
 import React, { useEffect, useRef } from "react";
 
-const CELL_SIZE = 48;
-const TILE_INSET = 1.5;
-const TILE_RADIUS = 6;
-const DECAY_MS = 480;
+const DECAY_MS = 360;
+const LERP_MS = 55;
 
 interface CellState {
   col: number;
   row: number;
   intensity: number;
-  peak: number;
 }
 
-const GRID_MASK_STYLE: React.CSSProperties = {
-  maskImage: "radial-gradient(ellipse 82% 72% at 50% 42%, #000 60%, transparent 100%)",
-  WebkitMaskImage: "radial-gradient(ellipse 82% 72% at 50% 42%, #000 60%, transparent 100%)",
+const VIGNETTE_MASK_STYLE: React.CSSProperties = {
+  maskImage:
+    "radial-gradient(ellipse 60% 52% at 50% 36%, #000 45%, rgba(0,0,0,0.45) 72%, transparent 100%)",
+  WebkitMaskImage:
+    "radial-gradient(ellipse 60% 52% at 50% 36%, #000 45%, rgba(0,0,0,0.45) 72%, transparent 100%)",
 };
-
-function traceRoundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + w - radius, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-  ctx.lineTo(x + w, y + h - radius);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-  ctx.lineTo(x + radius, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-}
 
 export function Hero3DBackground() {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
+    const gridEl = gridRef.current;
     const canvas = canvasRef.current;
     const host = wrapper?.parentElement;
-    if (!wrapper || !canvas || !host) return;
+    if (!wrapper || !gridEl || !canvas || !host) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
-    if (prefersReducedMotion || !hasFinePointer) return;
-
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
 
     const cells = new Map<string, CellState>();
-    let activeKey: string | null = null;
     let rafId: number | null = null;
     let lastTime = performance.now();
     let width = wrapper.clientWidth;
     let height = wrapper.clientHeight;
+    let cellSize = width < 640 ? 40 : 48;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const syncCanvasSize = () => {
+    let pointerInside = false;
+    let targetX = -9999;
+    let targetY = -9999;
+    let smoothX = -9999;
+    let smoothY = -9999;
+    let glowStrength = 0;
+
+    const syncDimensions = () => {
       width = wrapper.clientWidth;
       height = wrapper.clientHeight;
+      cellSize = width < 640 ? 40 : 48;
+      gridEl.style.backgroundSize = `${cellSize}px ${cellSize}px`;
+
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    syncCanvasSize();
-
-    const resizeObserver = new ResizeObserver(() => {
-      syncCanvasSize();
-      if (cells.size > 0 && rafId === null) {
-        lastTime = performance.now();
-        rafId = requestAnimationFrame(render);
-      }
-    });
-    resizeObserver.observe(wrapper);
-
-    const boostCell = (col: number, row: number, intensity: number) => {
-      if (col < 0 || row < 0) return;
-      if (col * CELL_SIZE >= width || row * CELL_SIZE >= height) return;
-      const key = `${col}:${row}`;
-      const existing = cells.get(key);
-      if (existing) {
-        existing.intensity = Math.max(existing.intensity, intensity);
-        existing.peak = Math.max(existing.peak, intensity);
-      } else {
-        cells.set(key, { col, row, intensity, peak: intensity });
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
     };
+
+    syncDimensions();
 
     const startLoop = () => {
-      if (rafId !== null) return;
+      if (rafId !== null || prefersReducedMotion || !ctx) return;
       lastTime = performance.now();
       rafId = requestAnimationFrame(render);
     };
 
+    const resizeObserver = new ResizeObserver(() => {
+      syncDimensions();
+      if ((cells.size > 0 || glowStrength > 0.004) && rafId === null) {
+        startLoop();
+      }
+    });
+    resizeObserver.observe(wrapper);
+
+    if (prefersReducedMotion || !ctx) {
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+
     function render(now: number) {
-      const dt = Math.min(64, Math.max(0, now - lastTime));
+      const dt = Math.min(64, Math.max(1, now - lastTime));
       lastTime = now;
 
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.clearRect(0, 0, width, height);
 
+      const lerpAlpha = 1 - Math.exp(-dt / LERP_MS);
       const decayFactor = Math.exp(-dt / DECAY_MS);
 
+      if (pointerInside) {
+        smoothX += (targetX - smoothX) * lerpAlpha;
+        smoothY += (targetY - smoothY) * lerpAlpha;
+        glowStrength += (1 - glowStrength) * lerpAlpha;
+      } else {
+        glowStrength *= decayFactor;
+      }
+
       for (const [key, cell] of cells.entries()) {
-        if (key === activeKey) {
-          cell.intensity = Math.max(1, cell.intensity * decayFactor);
-        } else {
-          cell.intensity *= decayFactor;
-        }
-
-        if (cell.intensity < 0.015) {
+        cell.intensity *= decayFactor;
+        if (cell.intensity < 0.004) {
           cells.delete(key);
-          continue;
         }
+      }
 
-        const alpha = Math.min(1, cell.intensity);
-        const lift = 1 * alpha;
-        const x = cell.col * CELL_SIZE + TILE_INSET;
-        const y = cell.row * CELL_SIZE + TILE_INSET - lift;
-        const tileSize = CELL_SIZE - TILE_INSET * 2;
+      if (pointerInside || glowStrength > 0.02) {
+        const proximityRadius = cellSize * 2.6;
+        const minCol = Math.max(0, Math.floor((smoothX - proximityRadius) / cellSize));
+        const maxCol = Math.min(
+          Math.floor(width / cellSize),
+          Math.floor((smoothX + proximityRadius) / cellSize)
+        );
+        const minRow = Math.max(0, Math.floor((smoothY - proximityRadius) / cellSize));
+        const maxRow = Math.min(
+          Math.floor(height / cellSize),
+          Math.floor((smoothY + proximityRadius) / cellSize)
+        );
 
-        // Multi-layered tactile elevation shadow & sky-tinted surface fill
-        ctx!.save();
-        ctx!.shadowColor = `rgba(15, 23, 42, ${(0.11 * alpha).toFixed(4)})`;
-        ctx!.shadowBlur = 14 * alpha;
-        ctx!.shadowOffsetX = 0;
-        ctx!.shadowOffsetY = 4 * alpha;
+        const activeScale = pointerInside ? 1 : glowStrength;
+        for (let col = minCol; col <= maxCol; col++) {
+          const cx = (col + 0.5) * cellSize;
+          for (let row = minRow; row <= maxRow; row++) {
+            const cy = (row + 0.5) * cellSize;
+            const dist = Math.hypot(cx - smoothX, cy - smoothY);
+            if (dist >= proximityRadius) continue;
+            const u = 1 - dist / proximityRadius;
+            const smoothWeight = u * u * (3 - 2 * u) * activeScale;
+            if (smoothWeight < 0.004) continue;
 
-        traceRoundedRect(ctx!, x, y, tileSize, tileSize, TILE_RADIUS);
-        const grad = ctx!.createLinearGradient(x, y, x, y + tileSize);
-        grad.addColorStop(0, `rgba(255, 255, 255, ${(0.96 * alpha).toFixed(4)})`);
-        grad.addColorStop(1, `rgba(224, 242, 254, ${(0.68 * alpha).toFixed(4)})`);
-        ctx!.fillStyle = grad;
-        ctx!.fill();
-        ctx!.restore();
+            const key = `${col}:${row}`;
+            const existing = cells.get(key);
+            if (existing) {
+              existing.intensity = Math.max(existing.intensity, smoothWeight);
+            } else {
+              cells.set(key, { col, row, intensity: smoothWeight });
+            }
+          }
+        }
+      }
 
-        // Crisp medical-sky selection border + ambient secondary glow
-        ctx!.save();
-        ctx!.shadowColor = `rgba(2, 132, 199, ${(0.12 * alpha).toFixed(4)})`;
-        ctx!.shadowBlur = 8 * alpha;
-        traceRoundedRect(ctx!, x, y, tileSize, tileSize, TILE_RADIUS);
-        ctx!.strokeStyle = `rgba(2, 132, 199, ${(0.36 * alpha).toFixed(4)})`;
-        ctx!.lineWidth = 1.15;
-        ctx!.stroke();
-        ctx!.restore();
+      // 1. Soft borderless neutral slate cell wash strictly inside 1px grid lines
+      const fillSize = cellSize - 1;
+      for (const cell of cells.values()) {
+        const x = cell.col * cellSize + 1;
+        const y = cell.row * cellSize + 1;
+        ctx!.fillStyle = `rgba(15, 23, 42, ${(0.048 * cell.intensity).toFixed(4)})`;
+        ctx!.fillRect(x, y, fillSize, fillSize);
+      }
 
-        // Subtle inner top edge highlight for tactile finish
-        ctx!.save();
+      // 2. Soft diffused radial cursor aura + softly illuminated neutral grid hairlines
+      if (glowStrength > 0.004 && smoothX > -9000) {
+        const auraRadius = 180;
+        const auraGrad = ctx!.createRadialGradient(smoothX, smoothY, 0, smoothX, smoothY, auraRadius);
+        auraGrad.addColorStop(0, `rgba(15, 23, 42, ${(0.025 * glowStrength).toFixed(4)})`);
+        auraGrad.addColorStop(0.6, `rgba(15, 23, 42, ${(0.008 * glowStrength).toFixed(4)})`);
+        auraGrad.addColorStop(1, "rgba(15, 23, 42, 0)");
+        ctx!.fillStyle = auraGrad;
         ctx!.beginPath();
-        ctx!.moveTo(x + TILE_RADIUS, y + 1);
-        ctx!.lineTo(x + tileSize - TILE_RADIUS, y + 1);
-        ctx!.strokeStyle = `rgba(255, 255, 255, ${(0.85 * alpha).toFixed(4)})`;
+        ctx!.arc(smoothX, smoothY, auraRadius, 0, Math.PI * 2);
+        ctx!.fill();
+
+        const lineRadius = 160;
+        const lineGrad = ctx!.createRadialGradient(smoothX, smoothY, 0, smoothX, smoothY, lineRadius);
+        lineGrad.addColorStop(0, `rgba(15, 23, 42, ${(0.055 * glowStrength).toFixed(4)})`);
+        lineGrad.addColorStop(0.65, `rgba(15, 23, 42, ${(0.02 * glowStrength).toFixed(4)})`);
+        lineGrad.addColorStop(1, "rgba(15, 23, 42, 0)");
+
+        ctx!.save();
+        ctx!.strokeStyle = lineGrad;
         ctx!.lineWidth = 1;
+        ctx!.beginPath();
+
+        const startX = Math.max(0, Math.floor((smoothX - lineRadius) / cellSize) * cellSize);
+        const endX = Math.min(width, Math.ceil((smoothX + lineRadius) / cellSize) * cellSize);
+        const startY = Math.max(0, Math.floor((smoothY - lineRadius) / cellSize) * cellSize);
+        const endY = Math.min(height, Math.ceil((smoothY + lineRadius) / cellSize) * cellSize);
+
+        for (let gx = startX; gx <= endX; gx += cellSize) {
+          ctx!.moveTo(gx + 0.5, startY);
+          ctx!.lineTo(gx + 0.5, endY);
+        }
+        for (let gy = startY; gy <= endY; gy += cellSize) {
+          ctx!.moveTo(startX, gy + 0.5);
+          ctx!.lineTo(endX, gy + 0.5);
+        }
         ctx!.stroke();
         ctx!.restore();
       }
 
-      if (cells.size > 0 || activeKey !== null) {
+      if (pointerInside || cells.size > 0 || glowStrength > 0.004) {
         rafId = requestAnimationFrame(render);
       } else {
+        ctx!.clearRect(0, 0, width, height);
         rafId = null;
       }
     }
 
-    const isInteractiveTarget = (target: EventTarget | null) =>
-      Boolean((target as Element | null)?.closest?.("form, button, a, input, select, textarea"));
-
-    const getCellFromPointer = (e: PointerEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
       const rect = wrapper.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) return null;
-      return {
-        col: Math.floor(x / CELL_SIZE),
-        row: Math.floor(y / CELL_SIZE),
-      };
-    };
-
-    const handlePointerMove = (e: PointerEvent) => {
-      if (isInteractiveTarget(e.target)) {
-        activeKey = null;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        pointerInside = false;
         return;
       }
-      const pos = getCellFromPointer(e);
-      if (!pos) {
-        activeKey = null;
-        return;
+      if (!pointerInside && glowStrength <= 0.004) {
+        smoothX = x;
+        smoothY = y;
       }
-      const nextKey = `${pos.col}:${pos.row}`;
-      if (activeKey === nextKey && cells.has(nextKey)) return;
-
-      activeKey = nextKey;
-      boostCell(pos.col, pos.row, 1);
-      boostCell(pos.col - 1, pos.row, 0.22);
-      boostCell(pos.col + 1, pos.row, 0.22);
-      boostCell(pos.col, pos.row - 1, 0.22);
-      boostCell(pos.col, pos.row + 1, 0.22);
-      startLoop();
-    };
-
-    const handlePointerDown = (e: PointerEvent) => {
-      if (isInteractiveTarget(e.target)) return;
-      const pos = getCellFromPointer(e);
-      if (!pos) return;
-      boostCell(pos.col, pos.row, 1.22);
-      boostCell(pos.col - 1, pos.row, 0.3);
-      boostCell(pos.col + 1, pos.row, 0.3);
-      boostCell(pos.col, pos.row - 1, 0.3);
-      boostCell(pos.col, pos.row + 1, 0.3);
+      pointerInside = true;
+      targetX = x;
+      targetY = y;
       startLoop();
     };
 
     const handlePointerLeave = () => {
-      activeKey = null;
+      pointerInside = false;
     };
 
     host.addEventListener("pointermove", handlePointerMove, { passive: true });
-    host.addEventListener("pointerdown", handlePointerDown, { passive: true });
     host.addEventListener("pointerleave", handlePointerLeave, { passive: true });
 
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
       host.removeEventListener("pointermove", handlePointerMove);
-      host.removeEventListener("pointerdown", handlePointerDown);
       host.removeEventListener("pointerleave", handlePointerLeave);
     };
   }, []);
@@ -248,30 +243,31 @@ export function Hero3DBackground() {
       aria-hidden="true"
       className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none"
     >
-      {/* Precision 48x48 hairline grid with radial edge fade */}
+      {/* Neutral hairline grid gently framed by center radial vignette */}
       <div
-        className="absolute inset-0 opacity-[0.045]"
+        ref={gridRef}
+        className="absolute inset-0 opacity-[0.038]"
         style={{
           backgroundImage:
-            "linear-gradient(to right, #020617 1px, transparent 1px), linear-gradient(to bottom, #020617 1px, transparent 1px)",
+            "linear-gradient(to right, #0f172a 1px, transparent 1px), linear-gradient(to bottom, #0f172a 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          ...GRID_MASK_STYLE,
+          ...VIGNETTE_MASK_STYLE,
         }}
       />
 
-      {/* Interactive tactile selectable-tile canvas (60fps, zero React re-renders) */}
+      {/* Smooth borderless neutral slate interactive surface + subtle cursor light */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={GRID_MASK_STYLE}
+        style={VIGNETTE_MASK_STYLE}
       />
 
-      {/* Soft natural ambient glow */}
+      {/* Subtle neutral pearl ambient haze at top center */}
       <div
         className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[360px] rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at center, rgba(2, 132, 199, 0.08) 0%, rgba(240, 249, 255, 0) 70%)",
+            "radial-gradient(circle at center, rgba(100, 116, 139, 0.07) 0%, rgba(248, 250, 252, 0) 70%)",
         }}
       />
     </div>
